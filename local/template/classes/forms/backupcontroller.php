@@ -72,23 +72,67 @@ class backupcontroller extends \core\form\persistent {
         $mform->setType('action', PARAM_ALPHANUMEXT);
         $mform->setConstant('action', $this->_customdata['action']);
 
-        // name.
-        $mform->addElement('text', 'name', get_string('backupcontrollername', 'local_template'), 'maxlength="64" size="64"');
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addHelpButton('name', 'backupcontrollername', 'local_template');
-        $mform->addRule('name', get_string('required'), 'required', null, 'client');
+        // backupid.
+        $mform->addElement('text', 'backupid', get_string('backupid', 'local_template'), 'maxlength="64" size="64"');
+        $mform->setType('backupid', PARAM_TEXT);
+        //$mform->addHelpButton('backupid', 'jobname', 'local_template');
+        //$mform->addRule('backupid', get_string('required'), 'required', null, 'client');
 
-        // templateid.
-        if (is_template_admin()) {
-            // Attach this backupcontroller to any template.
-            $template = $DB->get_records_menu('local_template', null, 'timemodified DESC', 'id, name');
+        // operation.
+        $choices = models\backupcontroller::get_operation_choices();
+        $mform->addElement('select', 'operation', get_string('operation', 'local_template'), $choices);
 
-        } else {
-            // Attach this backupcontroller only to template created by current user.
-            $template = $DB->get_records_menu('local_template', ['usercreated' => $USER->id], 'timemodified DESC', 'id, name');
-        }
+        // type.
+        $choices = models\backupcontroller::get_type_choices();
+        $mform->addElement('select', 'type', get_string('type', 'local_template'), $choices);
+
+        // itemid.
+        $mform->addElement('text', 'itemid', get_string('itemid', 'local_template'));
+        $mform->setType('itemid', PARAM_INT);
+
+        // format.
+        $choices = models\backupcontroller::get_format_choices();
+        $mform->addElement('select', 'format', get_string('format'), $choices);
+
+        // interactive.
+        $choices = models\backupcontroller::get_interactive_choices();
+        $mform->addElement('select', 'interactive', get_string('interactive', 'local_template'), $choices);
+
+        // purpose.
+        $choices = models\backupcontroller::get_purpose_choices();
+        $mform->addElement('select', 'purpose', get_string('backupmode', 'backup'), $choices);
+
+        // userid.
+        $mform->addElement('text', 'userid', get_string('user'));
+        $mform->setType('userid', PARAM_INT);
+
+        // status.
+        $choices = models\backupcontroller::get_status_choices();
+        $mform->addElement('select', 'status', get_string('status'), $choices);
+
+        // execution.
+        $choices = models\backupcontroller::get_execution_choices();
+        $mform->addElement('select', 'execution', get_string('execution', 'local_template'), $choices);
+
+        // executiontime.
+        $mform->addElement('text', 'executiontime', get_string('executiontime', 'local_template'));
+
+        // checksum.
+        $mform->addElement('text', 'checksum', get_string('checksum', 'local_template'));
+        $mform->setType('checksum', PARAM_RAW);
+
+        // progress.
+        $mform->addElement('text', 'progress', get_string('progress', 'local_template'));
+        $mform->setType('progress', PARAM_FLOAT);
+
+        // controller.
+        // $mform->addElement('textarea', 'controller', get_string('controller', 'local_template'), 'wrap="virtual" rows="20" cols="50"');
+
+        $mform->addElement('header', 'controllerheader', get_string('controller', 'local_template'));
+        $mform->addElement('html', '<pre>' . print_r(unserialize(base64_decode($record->controller)), true) . '</pre>');
 
         // errormessages.
+        /*
         if (is_template_admin()) {
             $mform->addElement('header', 'errors', get_string('errormessages', 'local_template'));
             $mform->addElement('textarea', 'errormessages', get_string('errormessages', 'local_template'), array('rows' => 6, 'cols' => 80, 'class' => 'smalltext'));
@@ -97,6 +141,7 @@ class backupcontroller extends \core\form\persistent {
             $mform->addElement('header', 'errors', get_string('log', 'local_template'));
             $mform->addElement('html', $OUTPUT->box(nl2br($record->errormessages)));
         }
+        */
 
         $this->add_action_buttons(true);
 

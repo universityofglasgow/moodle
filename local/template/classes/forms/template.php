@@ -48,7 +48,7 @@ class template extends \core\form\persistent {
     protected static $persistentclass = 'local_template\\models\\template';
 
     /** @var array Fields to remove from the persistent validation. */
-    protected static $foreignfields = array('action');
+    protected static $foreignfields = ['action'];
 
 
     public const STEPPER_HEADER = 1;
@@ -104,18 +104,18 @@ class template extends \core\form\persistent {
         //$mform->addElement('hidden', 'courseid', $course->id);
         //$mform->setType('courseid', PARAM_INT);
 
+        if (empty($this->_customdata['admin'])) {
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_HEADER, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_HEADER, []));
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_INTRODUCTION, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_INTRODUCTION, []));
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_TEMPLATE, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_TEMPLATE, []));
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_START, []));
-
-        //$mform->addElement('header', 'coursedetails', get_string('coursedetails', 'local_template'));
-
-
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_START, []));
+        } else {
+            $mform->addElement('header', 'coursedetails', get_string('coursedetails', 'local_template'));
+        }
 
         global $DB;
         $templatecategories = get_config('local_template', 'categories');
@@ -299,15 +299,13 @@ class template extends \core\form\persistent {
         }
         */
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_END, []));
+        if (empty($this->_customdata['admin'])) {
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_END, []));
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_START, []));
-        //echo $renderer->render_stepper(self::STEPPER_DESCRIPTION, []);
-
-
-        //$mform->addElement('header', 'description', get_string('description', 'local_template'));
-
-
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_START, []));
+        } else {
+            $mform->addElement('header', 'description', get_string('description', 'local_template'));
+        }
 
 
 
@@ -325,10 +323,16 @@ class template extends \core\form\persistent {
             $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
         }
 
+        if (empty($this->_customdata['admin'])) {
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_END, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_ENROLMENT_START, []));
+        } else {
+            $mform->addElement('header', 'enrolment', get_string('enrolment', 'local_template'));
+        }
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_END, []));
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_ENROLMENT_START, []));
-        //$mform->addElement('header', 'enrolment', get_string('enrolment', 'local_template'));
+        // Boolean flag for whether a gudatabase enrolment method should be added to the course.
+        $mform->addElement('advcheckbox', 'gudbenrolment', get_string('gudbenrolment', 'local_template'), get_string('gudbaddenrolment', 'local_template'), null, [0, 1]);
+        $mform->addHelpButton('gudbenrolment', 'gudbaddenrolment', 'local_template');
 
 
         // TODO: include enrol
@@ -404,11 +408,14 @@ class template extends \core\form\persistent {
 
         //echo $renderer->render_stepper(self::STEPPER_IMPORT, []);
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_ENROLMENT_END, []));
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_START, []));
+        if (empty($this->_customdata['admin'])) {
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_ENROLMENT_END, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_START, []));
+        } else {
+            $mform->addElement('header', 'import', get_string('import', 'local_template'));
+        }
 
 
-        //$mform->addElement('header', 'import', get_string('controllers', 'local_template'));
         list($insql, $params) = $DB->get_in_or_equal($importcategories, SQL_PARAMS_QM, 'param', false);
         $importcourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
         $importcourses = array_merge([0 => ''], $importcourses);
@@ -419,18 +426,6 @@ class template extends \core\form\persistent {
         $mform->setDefault('importcourseid', 0);
 
 
-        $mform->addElement('header', 'admin', get_string('admin', 'local_template'));
-        $mform->addElement('autocomplete', 'createdcourseid', get_string('createdcourse', 'local_template'), $importcourses);
-        $mform->setDefault('createdcourseid', 0);
-
-        //$mform->addElement('header', 'controllers', get_string('controllers', 'local_template'));
-        $controllers = $DB->get_records_menu('backup_controllers', null, 'timemodified DESC', 'id, backupid');
-
-        $mform->addElement('text', 'copybackupid', get_string('copybackup', 'local_template'), $controllers);
-        $mform->addElement('text', 'copyrestoreid', get_string('copyrestore', 'local_template'), $controllers);
-        $mform->addElement('text', 'importbackupid', get_string('importbackup', 'local_template'), $controllers);
-        $mform->addElement('text', 'importrestoreid', get_string('importrestore', 'local_template'), $controllers);
-
         //$buttonarray = array();
         // $buttonarray[] = $mform->createElement('submit', 'submitreturn', get_string('copyreturn', 'backup'));
         //$buttonarray[] = $mform->createElement('submit', 'submitdisplay', get_string('copyview', 'backup'));
@@ -438,13 +433,31 @@ class template extends \core\form\persistent {
         //$mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
 
 
-        $this->add_action_buttons(true);
+
 
         //$mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));
+        if (empty($this->_customdata['admin'])) {
+            $mform->addElement('html', '<br><hr>');
+            $this->add_action_buttons(true, 'Create Course');
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
+        } else {
+            $mform->addElement('header', 'admin', get_string('admin', 'local_template'));
+            $mform->addElement('autocomplete', 'createdcourseid', get_string('createdcourse', 'local_template'), $importcourses);
+            $mform->setDefault('createdcourseid', 0);
 
-        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
+            $mform->addElement('header', 'controllers', get_string('controllers', 'local_template'));
+            $controllers = $DB->get_records_menu('backup_controllers', null, 'timemodified DESC', 'id, backupid');
+
+            $mform->addElement('text', 'copybackupid', get_string('copybackup', 'local_template'), $controllers);
+            $mform->addElement('text', 'copyrestoreid', get_string('copyrestore', 'local_template'), $controllers);
+            $mform->addElement('text', 'importbackupid', get_string('importbackup', 'local_template'), $controllers);
+            $mform->addElement('text', 'importrestoreid', get_string('importrestore', 'local_template'), $controllers);
+
+            $this->add_action_buttons();
+        }
+
 
         /*
 

@@ -110,7 +110,7 @@ class persistentcollection implements Countable, renderable, templatable {
 
         $fields = '*';
 
-        $this->collection = $persistentclass::get_records($params, $sort, $order, $limitfrom, $limitnum);
+        // $this->collection = $persistentclass::get_records($params, $sort, $order, $limitfrom, $limitnum);
         $this->collection = $persistentclass::get_records_select($select, $params, $orderby, $fields, $limitfrom, $limitnum);
         $this->persistentproperties = $persistentclass::properties_definition($parentid);
         $this->collectionproperties = $persistentclass::collection_properties();

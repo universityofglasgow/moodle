@@ -48,11 +48,19 @@ class template extends \core\persistent implements renderable, templatable {
 
     const TABLE = 'local_template';
 
-    public static $templateperpage = 10;
+    public const FILEAREA_COURSEIMAGE = 'courseimage';
+
+    public static $templateperpage = 20;
 
     private $backupcontrollers = null;
 
     private $createuser = null;
+
+    private $templatecourse = null;
+
+    private $importcourse = null;
+
+    private $createdcourse = null;
 
     /**
      * @var \local_tempalte\local\notifications notifications
@@ -171,7 +179,13 @@ class template extends \core\persistent implements renderable, templatable {
                 'null' => NULL_NOT_ALLOWED,
                 'default' => true,
             ],
-
+            'gudbenrolment' => [
+                'type' => PARAM_BOOL,
+                'description' => 'Boolean flag for whether a gudatabase enrolment method should be added to the course.',
+                'null' => NULL_NOT_ALLOWED,
+                'optional' => false,
+                'default' => false,
+            ],
             'gudbstatus' => [
                 'type' => PARAM_INT,
                 'description' => 'gudatabase status 0..9 are system constants, 0 means active enrolment, see ENROL_STATUS_* constants, plugins may define own status greater than 10',
@@ -253,30 +267,38 @@ class template extends \core\persistent implements renderable, templatable {
                 'label' => get_string('timemodified', 'local_template'),
                 'alignment' => 'left',
             ],
-            'fullname' => [
-                'label' => get_string('fullname', 'local_template'),
+            'category' => [
+                'label' => get_string('category', 'local_template'),
+                'alignment' => 'left',
+            ],
+            'createdcourseid' => [
+                'label' => get_string('createdcourse', 'local_template'),
+                'alignment' => 'left',
+            ],
+            'templatecourseid' => [
+                'label' => get_string('templatecourse', 'local_template'),
                 'alignment' => 'left',
             ],
             'importcourseid' => [
                 'label' => get_string('importcourse', 'local_template'),
                 'alignment' => 'left',
             ],
-            'createdcourseid' => [
-                'label' => get_string('importcourse', 'local_template'),
+        'backupcontrollercollection' => [
+            'label' => get_string('backupcontrollers', 'local_template'),
+            'alignment' => 'left',
+            'callback' => "get_backupcontrollercollection",
+        ],
+            'usercreated' => [
+                'label' => get_string('username', 'local_template'),
                 'alignment' => 'left',
-            ],
-            'backupcontrollercollection' => [
-                'label' => get_string('backupcontrollers', 'local_template'),
-                'alignment' => 'left',
-                'callback' => "get_backupcontrollercollection",
             ],
         ];
         if (is_template_admin()) {
-            $properties['usercreated'] = [
-                'label' => get_string('username', 'local_template'),
-                'alignment' => 'left',
-                'alignment' => 'left',
-            ];
+            //$properties['usercreated'] = [
+            //    'label' => get_string('username', 'local_template'),
+            //    'alignment' => 'left',
+            //    'alignment' => 'left',
+            //];
         }
 
         $properties['edit'] = [
@@ -302,13 +324,13 @@ class template extends \core\persistent implements renderable, templatable {
 
     public function redirect_coursepage() {
         global $CFG;
-        $courseid = $this->get('createdcourseid');
+        $courseid = $this->raw_get('createdcourseid');
         $coursepage = new \moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $courseid]);
         redirect($coursepage->out(false));
     }
 
     protected function get_timemodified() {
-        $timemodified = userdate($this->raw_get('timemodified'), get_string('strftimedatefullshort', 'core_langconfig'));
+        $timemodified = userdate($this->raw_get('timemodified'), get_string('strftimedatetimeshort', 'core_langconfig'));
         if (empty($timemodified)) {
             $timemodified = get_string('missingtemplatedate','local_template');
         }
@@ -323,7 +345,7 @@ class template extends \core\persistent implements renderable, templatable {
         $name = format_string($name);
         if (!empty($path)) {
             global $OUTPUT;
-            $name .= $OUTPUT->spacer() . template_icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->get('id')]);
+            $name .= $OUTPUT->spacer() . template_icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
         }
         return $name;
     }
@@ -359,6 +381,130 @@ class template extends \core\persistent implements renderable, templatable {
     }
     */
 
+    protected function get_category() {
+        $categoryid = $this->raw_get('category');
+        if (!empty($categoryid)) {
+            global $DB;
+            $category = $DB->get_record('course_categories', ['id' => $categoryid]);
+            if (empty($category)) {
+                return get_string('missingcategory','local_template');
+            }
+            global $CFG, $OUTPUT;
+            $url = $CFG->wwwroot . '/course/index.php';
+            return format_string($category->name) . $OUTPUT->spacer() . template_icon_link('preview', $url, ['categoryid' => $categoryid]);
+        }
+        return get_string('missingcategory','local_template');
+    }
+
+    protected function get_templatecourseid() {
+        $templatecourse = $this->get_templatecourse();
+
+        if (empty($templatecourse)) {
+            $templatecourse = get_string('missingtemplatecourse','local_template');
+        } else {
+            global $CFG, $OUTPUT;
+            $url = $CFG->wwwroot . '/course/view.php';
+            $templatecourse = format_string($templatecourse->fullname) . $OUTPUT->spacer() . template_icon_link('preview', $url, ['id' => $templatecourse->id]);
+        }
+        return $templatecourse;
+    }
+
+    public function get_templatecourse() {
+        if ($this->templatecourse) {
+            return $this->templatecourse;
+        } else {
+            $this->templatecourse = $this->read_templatecourse();
+            return $this->templatecourse;
+        }
+    }
+
+    private function read_templatecourse() {
+        $templatecourseid = $this->raw_get('templatecourseid');
+        if (!empty($templatecourseid)) {
+            global $DB;
+            $course = $DB->get_record('course', ['id' => $templatecourseid]);
+            if (empty($course)) {
+                $this->notifications->add('Created course does not exist.', notifications::ERROR);
+                return false;
+            }
+            return $course;
+        }
+        return false;
+    }
+
+    protected function get_importcourseid() {
+        $importcourse = $this->get_importcourse();
+
+        if (empty($importcourse)) {
+            $importcourse = get_string('missingimportcourse','local_template');
+        } else {
+            global $CFG, $OUTPUT;
+            $url = $CFG->wwwroot . '/course/view.php';
+            $importcourse = format_string($importcourse->fullname) . $OUTPUT->spacer() . template_icon_link('preview', $url, ['id' => $importcourse->id]);
+        }
+        return $importcourse;
+    }
+
+    public function get_importcourse() {
+        if ($this->importcourse) {
+            return $this->importcourse;
+        } else {
+            $this->importcourse = $this->read_importcourse();
+            return $this->importcourse;
+        }
+    }
+
+    private function read_importcourse() {
+        $importcourseid = $this->raw_get('importcourseid');
+        if (!empty($importcourseid)) {
+            global $DB;
+            $course = $DB->get_record('course', ['id' => $importcourseid]);
+            if (empty($course)) {
+                $this->notifications->add('Created course does not exist.', notifications::ERROR);
+                return false;
+            }
+            return $course;
+        }
+        return false;
+    }
+
+    protected function get_createdcourseid() {
+        $createdcourse = $this->get_createdcourse();
+
+        if (empty($createdcourse)) {
+            $createdcourse = get_string('missingcreatedcourse','local_template');
+        } else {
+            global $CFG, $OUTPUT;
+            $url = $CFG->wwwroot . '/course/view.php';
+            $createdcourse = format_string($createdcourse->fullname) . $OUTPUT->spacer() . template_icon_link('preview', $url, ['id' => $createdcourse->id]);
+        }
+        return $createdcourse;
+    }
+
+    public function get_createdcourse() {
+        if ($this->createdcourse) {
+            return $this->createdcourse;
+        } else {
+            $this->createdcourse = $this->read_createdcourse();
+            return $this->createdcourse;
+        }
+    }
+
+    private function read_createdcourse() {
+        $createdcourseid = $this->raw_get('createdcourseid');
+        if (!empty($createdcourseid)) {
+            global $DB;
+            $course = $DB->get_record('course', ['id' => $createdcourseid]);
+            if (empty($course)) {
+                $this->notifications->add('Created course does not exist.', notifications::ERROR);
+                return false;
+            }
+            return $course;
+        }
+        return false;
+    }
+
+
     public function get_backupcontrollercollection() {
         global $PAGE, $SESSION;
         $view = 'table';
@@ -371,11 +517,8 @@ class template extends \core\persistent implements renderable, templatable {
             }
         }
 
-        return '';
-        // TODO: uncomment when backup controllers are working
-        //$backupcontrollers = \local_template\models\backupcontroller::collection($this->raw_get('id'), $view, $show, ['templateid' => $this->get('id')]);
-        //// $backupcontrollers = new backupcontrollercollection('backupcontroller Rows', controllers\backupcontroller::path(), $view, $show, ['templateid' => $this->get('id')]);
-        //return $backupcontrollers->render();
+        $backupcontrollers = \local_template\models\backupcontroller::collection($this->raw_get('id'), $view, $show);
+        return $backupcontrollers->render();
     }
 
     public function get_identifier() {
@@ -520,7 +663,7 @@ class template extends \core\persistent implements renderable, templatable {
     }
 
     private function read_backupcontrollers() {
-        $id = $this->get('id');
+        $id = $this->raw_get('id');
         if (!empty($id)) {
             $backupcontrollers = \local_template\models\backupcontroller::get_records(['templateid' => $id], 'timemodified', 'DESC');
             return $backupcontrollers;
@@ -593,7 +736,7 @@ class template extends \core\persistent implements renderable, templatable {
     }
 
     public function get_formattedtimecreated() {
-        return userdate($this->raw_get('timecreated'), get_string('strftimedatefullshort', 'langconfig'));
+        return userdate($this->raw_get('timecreated'), get_string('strftimedatetimeshort', 'langconfig'));
     }
 
     /**
@@ -668,7 +811,7 @@ class template extends \core\persistent implements renderable, templatable {
         foreach ($templatecollection as $template) {
             $record = [];
 
-            $templatedate = userdate($template->get('timemodified'), get_string('strftimedatefullshort', 'core_langconfig'));
+            $templatedate = userdate($template->get('timemodified'), get_string('strftimedatetimeshort', 'core_langconfig'));
             if (empty($templatedate)) {
                 $templatedate = get_string('missingtemplatedate','local_template');
             }
@@ -796,7 +939,7 @@ class template extends \core\persistent implements renderable, templatable {
         list($fullname, $shortname) = \restore_dbops::calculate_course_names(
             0, get_string('copyingcourse', 'backup'), get_string('copyingcourseshortname', 'backup'));
         $createdcourseid = \restore_dbops::create_new_course($fullname, $shortname, $copydata->category);
-        $rc = new \restore_controller($this->get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $rc = new \restore_controller($this->raw_get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_COPY, $USER->id, \backup::TARGET_NEW_COURSE, null,
             \backup::RELEASESESSION_NO, $copydata);
         $this->set('copyrestoreid', $rc->get_restoreid());
@@ -816,8 +959,8 @@ class template extends \core\persistent implements renderable, templatable {
         global $CFG, $DB;
         $started = time();
 
-        $backupid = $this->get('copybackupid');
-        $restoreid = $this->get('copyrestoreid');
+        $backupid = $this->raw_get('copybackupid');
+        $restoreid = $this->raw_get('copyrestoreid');
         $backuprecord = $DB->get_record('backup_controllers', array('backupid' => $backupid), 'id, itemid', MUST_EXIST);
         $restorerecord = $DB->get_record('backup_controllers', array('backupid' => $restoreid), 'id, itemid', MUST_EXIST);
 
@@ -826,7 +969,8 @@ class template extends \core\persistent implements renderable, templatable {
         try {
             $bc = \backup_controller::load_controller($backupid); // Get the backup controller by backup id.
         } catch (\backup_dbops_exception $e) {
-            //mtrace('Course copy: Can not load backup controller for copy, marking job as failed');
+            mtrace('Course copy: Can not load backup controller for copy, marking job as failed');
+            var_dump($e);
             delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
             return; // Return early as we can't continue.
         }
@@ -987,7 +1131,7 @@ class template extends \core\persistent implements renderable, templatable {
         global $USER;
 
         // Import backup controller. MODE_IMPORT DOESNT CREATE FILE. MODE_IMPORT / GENERAL
-        $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->get('importcourseid'), \backup::FORMAT_MOODLE,
+        $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->raw_get('importcourseid'), \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO, \backup::MODE_IMPORT, $USER->id);
         $this->set('importbackupid', $importbc->get_backupid());
         $importbc->save_controller();
@@ -998,7 +1142,7 @@ class template extends \core\persistent implements renderable, templatable {
         $this->save();
 
         // Import restore controller. SAMESITE vs GENERAL
-        //$importrc = new \restore_controller($this->get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        //$importrc = new \restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
         //    \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
         //$this->set('importrestoreid', $importrc->get_restoreid());
         //$importrc->save_controller();
@@ -1006,11 +1150,11 @@ class template extends \core\persistent implements renderable, templatable {
         // Import backup controller.
         $importbcprogress = new \core\progress\display();
         $importbcprogress->set_display_names();
-        $importbc = \backup_controller::load_controller($this->get('importbackupid'));
+        $importbc = \backup_controller::load_controller($this->raw_get('importbackupid'));
         $importbc->set_progress($importbcprogress);
         $importbc->execute_plan();
         $results = $importbc->get_results();
-        $backupid1 = $this->get('importbackupid');
+        $backupid1 = $this->raw_get('importbackupid');
         $backupid2 = $importbc->get_backupid();
 
         // Extract backup
@@ -1022,17 +1166,18 @@ class template extends \core\persistent implements renderable, templatable {
         $importrcprogress = new \core\progress\display();
         $importrcprogress->set_display_names();
 
-        // $importrc = \restore_controller::load_controller($this->get('importrestoreid'));
+        // $importrc = \restore_controller::load_controller($this->raw_get('importrestoreid'));
         global $USER;
-        $createdcourseid = $this->get('createdcourseid');
+        $createdcourseid = $this->raw_get('createdcourseid');
         // Import restore controller. SAMESITE vs GENERAL
-        $importrc = new \restore_controller($this->get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $importrc = new \restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
         $this->set('importrestoreid', $importrc->get_restoreid());
         //$importrc->save_controller();
         //$importrc->set_progress($importrcprogress);
         $importrc->execute_precheck();
         $importrc->execute_plan();
+        //$importrc->save_controller();
 
         /*
                 $importrc->save_controller();
@@ -1057,8 +1202,8 @@ class template extends \core\persistent implements renderable, templatable {
         global $CFG, $DB;
         $started = time();
 
-        $backupid = $this->get('copybackupid');
-        $restoreid = $this->get('copyrestoreid');
+        $backupid = $this->raw_get('copybackupid');
+        $restoreid = $this->raw_get('copyrestoreid');
         $backuprecord = $DB->get_record('backup_controllers', array('backupid' => $backupid), 'id, itemid', MUST_EXIST);
         $restorerecord = $DB->get_record('backup_controllers', array('backupid' => $restoreid), 'id, itemid', MUST_EXIST);
 
@@ -1220,11 +1365,11 @@ class template extends \core\persistent implements renderable, templatable {
         // Import backup controller.
         $importbcprogress = new \core\progress\display();
         $importbcprogress->set_display_names();
-        $importbc = \backup_controller::load_controller($this->get('importbackupid'));
+        $importbc = \backup_controller::load_controller($this->raw_get('importbackupid'));
         $importbc->set_progress($importbcprogress);
         $importbc->execute_plan();
         $results = $importbc->get_results();
-        $backupid1 = $this->get('importbackupid');
+        $backupid1 = $this->raw_get('importbackupid');
         $backupid2 = $importbc->get_backupid();
 
         // Extract backup
@@ -1236,11 +1381,11 @@ class template extends \core\persistent implements renderable, templatable {
         $importrcprogress = new \core\progress\display();
         $importrcprogress->set_display_names();
 
-        // $importrc = \restore_controller::load_controller($this->get('importrestoreid'));
+        // $importrc = \restore_controller::load_controller($this->raw_get('importrestoreid'));
         global $USER;
-        $createdcourseid = $this->get('createdcourseid');
+        $createdcourseid = $this->raw_get('createdcourseid');
         // Import restore controller. SAMESITE vs GENERAL
-        $importrc = new \restore_controller($this->get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $importrc = new \restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
         $this->set('importrestoreid', $importrc->get_restoreid());
 
@@ -1270,14 +1415,14 @@ class template extends \core\persistent implements renderable, templatable {
         global $USER, $CFG;
 
         // Prevent duplicate values on fullname and shortname
-        list($fullname, $shortname) = \restore_dbops::calculate_course_names(0, $this->get('fullname'), $this->get('shortname'));
+        list($fullname, $shortname) = \restore_dbops::calculate_course_names(0, $this->raw_get('fullname'), $this->raw_get('shortname'));
         $this->set('fullname', $fullname);
         $this->set('shortname', $shortname);
         $createdcourseid = $this->create_new_course();
         $this->set('createdcourseid', $createdcourseid);
 
         // Copy backup controller.
-        $copybc = new \backup_controller(\backup::TYPE_1COURSE, $this->get('templatecourseid'), \backup::FORMAT_MOODLE,
+        $copybc = new \backup_controller(\backup::TYPE_1COURSE, $this->raw_get('templatecourseid'), \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id, \backup::RELEASESESSION_YES);
         $test = $copybc->get_backupid();
         $this->set('copybackupid', $test);
@@ -1289,14 +1434,14 @@ class template extends \core\persistent implements renderable, templatable {
         $copybc->execute_plan();
         $results = $copybc->get_results();
 
-        $coursecontext = \context_course::instance($this->get('templatecourseid'));
+        $coursecontext = \context_course::instance($this->raw_get('templatecourseid'));
         // Get the backup file.
         $fs = get_file_storage();
         $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', false, 'id ASC');
         $backupfile = reset($files);
 
         // Extract backup file.
-        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $this->get('copybackupid');
+        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $this->raw_get('copybackupid');
 
         $fp = get_file_packer('application/vnd.moodle.backup');
         $files = $fp->extract_to_pathname($backupfile, $path);
@@ -1305,7 +1450,7 @@ class template extends \core\persistent implements renderable, templatable {
 /*
         $copybcprogress = new \core\progress\display();
         $copybcprogress->set_display_names();
-        $copybc = \backup_controller::load_controller($this->get('copybackupid'));
+        $copybc = \backup_controller::load_controller($this->raw_get('copybackupid'));
         $copybc->set_progress($copybcprogress);
         $copybc->execute_plan();
         $results = $copybc->get_results();
@@ -1314,7 +1459,7 @@ class template extends \core\persistent implements renderable, templatable {
 
         global $CFG;
         // Get the backup file.
-        $coursecontext = \context_course::instance($this->get('templatecourseid'));
+        $coursecontext = \context_course::instance($this->raw_get('templatecourseid'));
         $fs = get_file_storage();
         $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', false, 'id ASC');
         $backupfile = reset($files);
@@ -1340,7 +1485,7 @@ class template extends \core\persistent implements renderable, templatable {
         /*
         $copyrcprogress = new \core\progress\display();
         $copyrcprogress->set_display_names();
-        $copyrc = \restore_controller::load_controller($this->get('copyrestoreid'));
+        $copyrc = \restore_controller::load_controller($this->raw_get('copyrestoreid'));
         $copyrc->set_progress($copyrcprogress);
         $copyrc->execute_precheck();
         $copyrc->execute_plan();
@@ -1350,16 +1495,16 @@ class template extends \core\persistent implements renderable, templatable {
 
         /*
         // Import backup controller.
-        $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->get('importcourseid'), \backup::FORMAT_MOODLE,
+        $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->raw_get('importcourseid'), \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id, \backup::RELEASESESSION_YES);
         $this->set('importbackupid', $importbc->get_backupid());
         $importbc->save_controller();
         //$importbc->destroy();
 
         // Import restore controller.
-        $importrc = new \restore_controller($this->get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $importrc = new \restore_controller($this->raw_get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_IMPORT, $USER->id, \backup::TARGET_EXISTING_ADDING, null,
-            \backup::RELEASESESSION_NO, $this->get_copydata());
+            \backup::RELEASESESSION_NO, $this->raw_get_copydata());
         $this->set('importrestoreid', $importrc->get_restoreid());
         $importrc->save_controller();
         // $importrc->destroy();
@@ -1374,7 +1519,7 @@ class template extends \core\persistent implements renderable, templatable {
 
         $importbcprogress = new \core\progress\display();
         $importbcprogress->set_display_names();
-        $importbc = \backup_controller::load_controller($this->get('importbackupid'));
+        $importbc = \backup_controller::load_controller($this->raw_get('importbackupid'));
         $importbc->set_progress($importbcprogress);
         $importbc->execute_plan();
         $results = $importbc->get_results();
@@ -1382,7 +1527,7 @@ class template extends \core\persistent implements renderable, templatable {
 
         $importrcprogress = new \core\progress\display();
         $importrcprogress->set_display_names();
-        $importrc = \restore_controller::load_controller($this->get('importrestoreid'));
+        $importrc = \restore_controller::load_controller($this->raw_get('importrestoreid'));
         $importrc->set_progress($importrcprogress);
         $importrc->execute_precheck();
         $importrc->execute_plan();
@@ -1393,20 +1538,25 @@ class template extends \core\persistent implements renderable, templatable {
     private function process_enrolment() {
         global $DB;
 
+        $gudbenrolment = $this->raw_get('gudbenrolment');
+        if (empty($gudbenrolment)) {
+            return;
+        }
+
         $pluginname = 'gudatabase';
 
         $fields = [
-            'status' => $this->get('gudbstatus'), // status - enable existing enrolments. bigint10
-            'customint3' => $this->get('gudbsettingscodes'), // settingscodes - enable codes in course settings.  bigint10
-            'customint6' => $this->get('gudballowhidden'), // allowhidden allow hidden course customint6
-            'customtext1' => $this->get('gudbcodelist'), // codelist more codes customtext1 text
+            'status' => $this->raw_get('gudbstatus'), // status - enable existing enrolments. bigint10
+            'customint3' => $this->raw_get('gudbsettingscodes'), // settingscodes - enable codes in course settings.  bigint10
+            'customint6' => $this->raw_get('gudballowhidden'), // allowhidden allow hidden course customint6
+            'customtext1' => $this->raw_get('gudbcodelist'), // codelist more codes customtext1 text
         ];
 
         // Get the enrol plugin.
         $plugin = enrol_get_plugin($pluginname);
 
         // Get existing instances.
-        $instances  = enrol_get_instances($this->get('createdcourseid'), false);
+        $instances  = enrol_get_instances($this->raw_get('createdcourseid'), false);
         foreach ($instances as $instance) {
             if ($instance->enrol === $pluginname) {
                 break;
@@ -1425,14 +1575,14 @@ class template extends \core\persistent implements renderable, templatable {
 
     private function get_copydata() {
         return (object)[
-            'courseid' =>  $this->get('templatecourseid'),
-            'fullname' => $this->get('fullname'),
-            'shortname' => $this->get('shortname'),
-            'category' => $this->get('category'),
-            'visible' => $this->get('visible'),
-            'startdate' => $this->get('startdate'),
-            'enddate' => $this->get('enddate'),
-            'idnumber' => $this->get('idnumber'),
+            'courseid' =>  $this->raw_get('templatecourseid'),
+            'fullname' => $this->raw_get('fullname'),
+            'shortname' => $this->raw_get('shortname'),
+            'category' => $this->raw_get('category'),
+            'visible' => $this->raw_get('visible'),
+            'startdate' => $this->raw_get('startdate'),
+            'enddate' => $this->raw_get('enddate'),
+            'idnumber' => $this->raw_get('idnumber'),
             'userdata' => 0,
             'keptroles' => [],
         ];
@@ -1443,16 +1593,16 @@ class template extends \core\persistent implements renderable, templatable {
         $time = time();
 
         return (object)[
-            'id' => $this->get('createdcourseid'),
-            'fullname' => $this->get('fullname'),
-            'shortname' => $this->get('shortname'),
-            'category' => $this->get('category'),
-            'summary' => $this->get('summary'),
-            'summaryformat' => $this->get('summaryformat'),
-            'visible' => $this->get('visible'),
-            'startdate' => $this->get('startdate'),
-            'enddate' => $this->get('enddate'),
-            'idnumber' => $this->get('idnumber'),
+            'id' => $this->raw_get('createdcourseid'),
+            'fullname' => $this->raw_get('fullname'),
+            'shortname' => $this->raw_get('shortname'),
+            'category' => $this->raw_get('category'),
+            'summary' => $this->raw_get('summary'),
+            'summaryformat' => $this->raw_get('summaryformat'),
+            'visible' => $this->raw_get('visible'),
+            'startdate' => $this->raw_get('startdate'),
+            'enddate' => $this->raw_get('enddate'),
+            'idnumber' => $this->raw_get('idnumber'),
             'sortorder' => 0,
             'timecreated'  => $time,
             'timemodified' => $time
@@ -1468,7 +1618,7 @@ class template extends \core\persistent implements renderable, templatable {
      */
     private function create_new_course() {
         global $DB;
-        $category = $DB->get_record('course_categories', ['id' => $this->get('category')], '*', MUST_EXIST);
+        $category = $DB->get_record('course_categories', ['id' => $this->raw_get('category')], '*', MUST_EXIST);
         $courseid = $DB->insert_record('course', $this->get_course());
         $category->coursecount++;
         $DB->update_record('course_categories', $category);
@@ -1521,7 +1671,7 @@ class template extends \core\persistent implements renderable, templatable {
     private function backup() {
 
 
-        list($fullname, $shortname) = \restore_dbops::calculate_course_names(0, $this->get('fullname'), $this->get('shortname'));
+        list($fullname, $shortname) = \restore_dbops::calculate_course_names(0, $this->raw_get('fullname'), $this->raw_get('shortname'));
         $this->set('fullname', $fullname);
         $this->set('shortname', $shortname);
         $createdcourseid = $this->create_new_course();
@@ -1536,8 +1686,8 @@ class template extends \core\persistent implements renderable, templatable {
         //$this->assertFalse(has_capability($this->capabilityname, $this->course2context, $this->user));
 
         // Perform backup and restore.
-        $backupid = $this->perform_backup($this->get('templatecourseid'));
-        $this->perform_restore($backupid, $this->get('createdcourseid'));
+        $backupid = $this->perform_backup($this->raw_get('templatecourseid'));
+        $this->perform_restore($backupid, $this->raw_get('createdcourseid'));
 
         // Confirm course2 has the capability for the user.
         //$this->assertTrue(has_capability($this->capabilityname, $this->course2context, $this->user));

@@ -34,6 +34,9 @@
         {{#categories}}
             {{> local_template/slider }}
         {{/categories}}
+        {{^categories}}
+            {{> core/notification_info}}
+        {{/categories}}
     </div>
     <button class="btn btn-primary float-right" onclick="templatestepper.next();">Next</button>
 </div>

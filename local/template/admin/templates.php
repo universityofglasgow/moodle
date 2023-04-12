@@ -61,7 +61,7 @@ switch ($action) {
     case 'createtemplate':
         //notification::info('Should be zero: ' . optional_param('id', 0, PARAM_INT));
         $templateid = optional_param('templateid', 0, PARAM_INT);
-        template::display($templateid);
+        template::display($templateid, null, true);
         break;
 
     case 'edittemplate':

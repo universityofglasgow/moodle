@@ -62,10 +62,9 @@ class renderer extends plugin_renderer_base {
     }
 
     //\local_template\models\template $template,
-    public function render_stepper($step, $data) {
+    public function render_stepper($step, $data = []) {
         global $CFG;
         $template = '';
-        $data = [];
 
         switch ($step) {
             case \local_template\forms\template::STEPPER_HEADER:
@@ -84,7 +83,7 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_COURSE_END:
-                $data = null;
+                $data = (object)['buttons' => true];
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_DESCRIPTION_START:
@@ -92,7 +91,7 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_DESCRIPTION_END:
-                $data = null;
+                $data = (object)['buttons' => true];
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_ENROLMENT_START:
@@ -100,7 +99,7 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_ENROLMENT_END:
-                $data = null;
+                $data = (object)['buttons' => true];
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_IMPORT_START:
@@ -108,7 +107,7 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_IMPORT_END:
-                $data = null;
+                $data = (object)['buttons' => false];
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_FOOTER:
@@ -150,15 +149,19 @@ class renderer extends plugin_renderer_base {
         ];
     }
 
-    private function get_data_template() {
+    private function get_data_template()
+    {
 
         global $DB, $USER, $CFG;
-
-        $tempaltecategories = [];
-        $settingscategoryids = explode(',', get_config('local_template', 'categories'));
+        $templatecategories = [];
+        $templatecoursecount = 0;
+        $settingscategories = get_config('local_template', 'categories');
+        $settingscategoryids = array_filter(explode(',', $settingscategories));
 
         foreach ($settingscategoryids as $settingscategoryid) {
-
+            if (empty($settingscategoryid)) {
+                continue;
+            }
             $category = \core_course_category::get($settingscategoryid);
             $courses = $category->get_courses(['summary']); //  'sort' => ['timecreated' => -1]
             $templatecourses = [];
@@ -177,6 +180,12 @@ class renderer extends plugin_renderer_base {
                 // course_get_format($course)->uses_sections()
 
                 $templatecourses[] = $templatecourse;
+                $templatecoursecount++;
+            }
+
+            $description = '';
+            if (isset($category->description)) {
+                $description = format_text($category->description);
             }
             $templatecategory = (object)[
                 'categoryname' => $category->get_formatted_name(),
@@ -187,9 +196,15 @@ class renderer extends plugin_renderer_base {
             $templatecategories[] = $templatecategory;
         }
 
+        $message = '';
+        if (empty($templatecoursecount)) {
+            $message = get_string('notemplatesfound', 'local_template');
+        }
+
         return (object) [
             'step' => 2,
-            'categories' => $templatecategories
+            'categories' => $templatecategories,
+            'message' => $message
         ];
 
 /*

@@ -24,6 +24,9 @@
 
 $string['pluginname'] = 'Course template selector';
 
+$string['addnewcourse'] = 'Add new course with template';
+$string['usedefaultmoodlefunctions'] = 'Use default moodle course functions';
+
 $string['addnewcoursehook'] = 'Add new course hook';
 $string['addnewcoursehook_desc'] = 'Enable add new course redirection to course template selector';
 $string['categories'] = 'Course Categories';
@@ -70,8 +73,15 @@ $string['edit'] = 'Edit';
 
 $string['edittemplate'] = 'Edit template';
 
+$string['gudbenrolment'] = 'Automated Database Enrolment';
+
+$string['gudbaddenrolment'] = 'Add enrolment method';
+$string['gudbaddenrolment_help'] = 'Whether to add an automatic enrolment method';
 
 $string['addnewtemplate'] = 'Add new template';
+
+$string['addnewbackupcontroller'] = 'Add New Backup Controller';
+$string['editbackupcontroller'] = 'Edit Backup Controller';
 
 $string['admin'] = 'Admin';
 $string['coursedetails'] = 'Course Details';
@@ -80,3 +90,64 @@ $string['description'] = 'Description';
 $string['enrolment'] = 'Enrolment';
 $string['import'] = 'Import';
 $string['controllers'] = 'Controllers';
+
+$string['category'] = 'Category';
+$string['missingcategory'] = 'Missing Category';
+
+$string['missingcreatedcourse'] = 'Missing Created Course';
+$string['missingtemplatecourse'] = 'Missing Template Course';
+$string['missingimportcourse'] = 'Missing Import Course';
+
+$string['notemplatesfound'] = 'No templates found.';
+
+$string['backupcontroller'] = 'Backup Controller';
+$string['nobackupcontrollersdefined'] = 'No backup controllers';
+$string['addbackupcontroller'] = 'Add Backup Controller';
+$string['createbackupcontroller'] = 'Create Backup Controller';
+
+$string['backupcontrollerstatuscreated'] = 'Created';
+$string['backupcontrollerstatusrequireconv'] = 'Requires Conversion';
+$string['backupcontrollerstatusplanned'] = 'Planned';
+$string['backupcontrollerstatusconfigured'] = 'Configured';
+$string['backupcontrollerstatussettingui'] = 'Setting User Interface';
+$string['backupcontrollerstatusneedprecheck'] = 'Needs Precheck';
+$string['backupcontrollerstatusawaiting'] = 'Awating';
+$string['backupcontrollerstatusexecuting'] = 'Executing';
+$string['backupcontrollerstatusfinishederr'] = 'Finished with error';
+$string['backupcontrollerstatusfinishedok'] = 'Finished OK'; // backupfinished
+
+$string['backupcontrolleroperationbackup'] = 'Backup';
+$string['backupcontrolleroperationrestore'] = 'Restore';
+
+$string['backupcontrollertypeunknown'] = 'Unknown';
+$string['backupcontrollertypeactivity'] = 'Activity';
+$string['backupcontrollertypescetion'] = 'Section';
+$string['backupcontrollertypecourse'] = 'Course';
+
+$string['backupcontrollerpurposegeneral'] = 'General'; // backupmode10
+$string['backupcontrollerpurposeimport'] = 'Import'; // backupmode20
+$string['backupcontrollerpurposehub'] = 'Hub'; // backupmode30
+$string['backupcontrollerpurposesamesite'] = 'Same Site'; // backupmode40
+$string['backupcontrollerpurposeautomated'] = 'Automated'; // backupmode50
+$string['backupcontrollerpurposeconverted'] = 'Converted'; // backupmode60
+$string['backupcontrollerpurposeasync'] = 'Asynchronous'; // backupmode70
+$string['backupcontrollerpurposecopy'] = 'Copy';
+
+$string['execution'] = 'Execution';
+$string['backupcontrollerexecutionimmediate'] = 'Immediate';
+$string['backupcontrollerexecutiondelayed'] = 'Delayed';
+
+$string['executiontime'] = 'Execution Time';
+
+$string['backupid'] = 'Backup ID';
+$string['operation'] = 'Operation';
+$string['type'] = 'Type';
+$string['status'] = 'Status';
+$string['purpose'] = 'Purpose';
+$string['itemid'] = 'Item ID';
+$string['format'] = 'Format';
+$string['interactive'] = 'Interactive';
+$string['progress'] = 'Progress';
+$string['checksum'] = 'Interactive';
+$string['controller'] = 'Controller';
+

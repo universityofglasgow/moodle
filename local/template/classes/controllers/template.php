@@ -142,7 +142,7 @@ class template {
         die;
     }
 
-    public static function display($id, $form=null) {
+    public static function display($id, $form=null, $admin = false) {
         global $OUTPUT, $PAGE;
 
         // Are we 'creating' or 'editing'?
@@ -163,6 +163,7 @@ class template {
                 'id' => $id,
                 'persistent' => $template,
                 'action' => 'edittemplate',
+                'admin' => $admin
             ];
 
             // Constructor calls set_data.
@@ -447,7 +448,7 @@ class template {
         foreach ($templatecollection as $template) {
             $record = [];
 
-            $templatedate = userdate($template->get('timemodified'), get_string('strftimedatefullshort', 'core_langconfig'));
+            $templatedate = userdate($template->get('timemodified'), get_string('strftimedatetimeshort', 'core_langconfig'));
             if (empty($templatedate)) {
                 $templatedate = get_string('missingtemplatedate','local_template');
             }

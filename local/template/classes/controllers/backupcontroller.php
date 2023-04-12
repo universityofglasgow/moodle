@@ -62,7 +62,7 @@ class backupcontroller {
             'action' => 'viewbackupcontroller',
         ];
 
-        $name = shorten_text(format_string($record->get('name')));
+        $name = shorten_text(format_string($record->get_name()));
 
         $form = new forms\backupcontroller($PAGE->url->out(false), $customdata, 'post', '', null, false);
         // Print the page.
@@ -89,7 +89,7 @@ class backupcontroller {
         } else {
             $backupcontroller = new models\backupcontroller($id);
             $record = $backupcontroller->read();
-            $strheading = get_string('editbackupcontroller', 'local_template', shorten_text(format_string($record->get('name'))));
+            $strheading = get_string('editbackupcontroller', 'local_template', shorten_text(format_string($record->get_name())));
         }
 
         // Initialise a form object if we haven't been provided with one.
@@ -141,7 +141,7 @@ class backupcontroller {
             try {
                 $data->usercreated = $USER->id;
 
-                $backupcontrollertext = $data->name;
+                $backupcontrollertext = $data->operation . ' of ' . $data->type . '(' . $data->itemid . ') - ' . $data->status;
 
                 $backupcontroller = null;
                 if (empty($data->id)) {
@@ -176,9 +176,9 @@ class backupcontroller {
             $backupcontroller = new models\backupcontroller($id);
             $backupcontroller->set('hidden', models\backupcontroller::HIDDEN_FALSE);
             if ($backupcontroller->update()) {
-                notification::success('backupcontroller ' . $backupcontroller->get('name') . ' shown');
+                notification::success('backupcontroller ' . $backupcontroller->get_name() . ' shown');
             } else {
-                notification::error('Could not show backupcontroller ' . $backupcontroller->get('name'));
+                notification::error('Could not show backupcontroller ' . $backupcontroller->get_name());
             }
         }
         self::do_redirect();
@@ -211,25 +211,12 @@ class backupcontroller {
         self::do_redirect();
     }
 
-    public static function hide($id) {
-        if (!empty($id)) {
-            $backupcontroller = new models\backupcontroller($id);
-            $backupcontroller->set('hidden', models\backupcontroller::HIDDEN_TRUE);
-            if ($backupcontroller->update()) {
-                notification::success('backupcontroller ' . $backupcontroller->get('name') . ' is now hidden. Now only template admin can see this record.');
-            } else {
-                notification::error('Could not hide backupcontroller ' . $backupcontroller->get('name'));
-            }
-        }
-        self::do_redirect();
-    }
-
     public static function delete($id) {
         $backupcontroller = new models\backupcontroller($id);
         $name = get_string('missingbackupcontrollername', 'local_template');
-        if (models\backupcontroller::has_property('name')) {
-            $name = $backupcontroller->get('name');
-        }
+        //if (models\backupcontroller::has_property('name')) {
+            $name = $backupcontroller->get_name();
+        //}
 
         if (!empty($id)) {
             if (confirm_sesskey()) {
@@ -339,7 +326,7 @@ class backupcontroller {
             }
             $record[] = format_string($backupcontrollerdate);
 
-            $backupcontrollername = $backupcontroller->get('name');
+            $backupcontrollername = $backupcontroller->get_name();
             if (empty($backupcontrollername)) {
                 $backupcontrollername = get_string('missingbackupcontrollername','local_template');
             }

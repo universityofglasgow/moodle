@@ -46,10 +46,7 @@ class backupcontroller extends \core\persistent {
 
     const TABLE = 'backup_controllers';
 
-    public static $backupcontrollersperpage = 10;
-
-    public const FILEAREA_EXPORT = 'export';
-
+    public static $backupcontrollersperpage = 20;
 
     private $template;
     private $course;
@@ -64,26 +61,6 @@ class backupcontroller extends \core\persistent {
 
     private $createuser = null;
 
-    private $backupcontrollergrades = null;
-    private $backupcontrollerrows = null;
-
-
-    /** @var array $helpers
-     *
-     * ```php
-     *     $helpers = [
-     *         'connect_course' => [
-     *             '178' => [],
-     *             '1104' => [],
-     *             '2209' => []
-     *         ]
-     *     ];
-     * ```
-     *
-     */
-    private $helpers = null;
-
-    private $progress = null;
 
     /**
      * Return the definition of the properties of this model.
@@ -223,20 +200,31 @@ class backupcontroller extends \core\persistent {
 
         global $DB;
         $ids = [];
-        $templates = $DB->get_records('local_template', null, null, 'id, copybackupid, copyrestoreid, importbackupid, importrestoreid');
-        foreach ($templates as $template) {
-            $ids[] = $template->copybackupid;
-            $ids[] = $template->copyrestoreid;
-            $ids[] = $template->importbackupid;
-            $ids[] = $template->importrestoreid;
+
+        $conditions = null;
+        if (!empty($parentid)) {
+            $conditions = ['id' => $parentid];
         }
+        $templates = $DB->get_records('local_template', $conditions, null, 'id, copybackupid, copyrestoreid, importbackupid, importrestoreid');
+        foreach ($templates as $template) {
+            if (!empty($template->copybackupid)) $ids[] = $template->copybackupid;
+            if (!empty($template->copyrestoreid)) $ids[] = $template->copyrestoreid;
+            if (!empty($template->importbackupid)) $ids[] = $template->importbackupid;
+            if (!empty($template->importrestoreid)) $ids[] = $template->importrestoreid;
+        }
+
         if (count($ids) > 0) {
-            list($templateselect, $templateparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+            list($templateselect, $templateparams) = $DB->get_in_or_equal($ids);
             if (!is_array($params)) {
                 $params = [];
             }
             $params = array_merge($params, $templateparams);
-            $select = 'id ' . $templateselect;
+            $select = 'backupid ' . $templateselect;
+        } else {
+            if (!empty($parentid)) {
+                $select = '1 = 0';
+            }
+
         }
 
         if (!is_template_admin()) {
@@ -260,8 +248,24 @@ class backupcontroller extends \core\persistent {
                 'label' => get_string('timemodified', 'local_template'),
                 'alignment' => 'left',
             ],
+            'operation' => [
+                'label' => get_string('operation', 'local_template'),
+                'alignment' => 'left',
+            ],
+            'type' => [
+                'label' => get_string('type', 'local_template'),
+                'alignment' => 'left',
+            ],
+            'purpose' => [
+                'label' => get_string('purpose', 'local_template'),
+                'alignment' => 'left',
+            ],
             'status' => [
                 'label' => get_string('status', 'local_template'),
+                'alignment' => 'left',
+            ],
+            'progress' => [
+                'label' => get_string('progress', 'local_template'),
                 'alignment' => 'left',
             ],
         ];
@@ -289,29 +293,25 @@ class backupcontroller extends \core\persistent {
         $this->notifications = new notifications();
 
         if (!empty($id)) {
-            if (!empty($this->raw_get('templateid'))) {
-                $this->get_template();
-            }
-            if (!empty($this->raw_get('courseid'))) {
-                $this->get_course();
-            }
+            $this->get_template();
+            $this->get_course();
         }
     }
 
     protected function get_timemodified() {
-        $timemodified = userdate($this->raw_get('timemodified'), get_string('strftimedatefullshort', 'core_langconfig'));
+        $timemodified = userdate($this->raw_get('timemodified'), get_string('strftimedatetimeshort', 'core_langconfig'));
         if (empty($timemodified)) {
             $timemodified = get_string('missingbackupcontrollerdate','local_template');
         }
         return $timemodified;
     }
 
-    protected function get_name($path = null) {
-        $name = $this->raw_get('name');
-        if (empty($name)) {
-            $name = get_string('missingbackupcontrollername','local_template');
-        }
-        $name = format_string($name);
+    public function get_name($path = null) {
+        $operation = $this->get_operation();
+        $type = $this->get_status();
+        $itemid = $this->raw_get('itemid');
+        $status = $this->get_status();
+        $name = $operation . ' of ' . $type . '(' . $itemid . ') - ' . $status;
         if (!empty($path)) {
             global $OUTPUT;
             $name .= $OUTPUT->spacer() . template_icon_link('edit', $path, ['action' => 'editbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
@@ -320,10 +320,128 @@ class backupcontroller extends \core\persistent {
         return $name;
     }
 
+    protected function get_operation() {
+        $operation = self::get_operation_string($this->raw_get('operation'));
+        return format_string($operation);
+    }
+
+    public static function get_operation_choices() {
+        return [
+            backup::OPERATION_BACKUP => get_string('backupcontrolleroperationbackup', 'local_template'),
+            backup::OPERATION_RESTORE => get_string('backupcontrolleroperationrestore', 'local_template'),
+        ];
+    }
+
+    public static function get_operation_string($operation) {
+        $choices = self::get_operation_choices();
+        return $choices[$operation];
+    }
+
+    protected function get_type() {
+        $type = self::get_type_string($this->raw_get('type'));
+        return format_string($type);
+    }
+
+    public static function get_type_choices() {
+        return [
+            '' => get_string('backupcontrollertypeunknown', 'local_template'),
+            backup::TYPE_1ACTIVITY => get_string('backupcontrollertypeactivity', 'local_template'),
+            backup::TYPE_1SECTION => get_string('backupcontrollertypescetion', 'local_template'),
+            backup::TYPE_1COURSE => get_string('backupcontrollertypecourse', 'local_template'),
+        ];
+    }
+
+    public static function get_type_string($type) {
+        $choices = self::get_type_choices();
+        return $choices[$type];
+    }
+
+    protected function get_purpose() {
+        $purpose = self::get_purpose_string($this->raw_get('purpose'));
+        return format_string($purpose);
+    }
+
+    public static function get_purpose_choices() {
+        return [
+            backup::MODE_GENERAL => get_string('backupcontrollerpurposegeneral', 'local_template'),
+            backup::MODE_IMPORT => get_string('backupcontrollerpurposeimport', 'local_template'),
+            backup::MODE_HUB => get_string('backupcontrollerpurposehub', 'local_template'),
+            backup::MODE_SAMESITE => get_string('backupcontrollerpurposesamesite', 'local_template'),
+            backup::MODE_AUTOMATED => get_string('backupcontrollerpurposeautomated', 'local_template'),
+            backup::MODE_CONVERTED => get_string('backupcontrollerpurposeconverted', 'local_template'),
+            backup::MODE_ASYNC => get_string('backupcontrollerpurposeasync', 'local_template'),
+            backup::MODE_COPY => get_string('backupcontrollerpurposecopy', 'local_template'),
+
+        ];
+    }
+
+    public static function get_purpose_string($purpose) {
+        $choices = self::get_purpose_choices();
+        return $choices[$purpose];
+    }
+
+    protected function get_format() {
+        $format = self::get_format_string($this->raw_get('format'));
+        return format_string($format);
+    }
+
+    public static function get_format_choices() {
+        return [
+
+            backup::FORMAT_MOODLE => get_string('backupformatmoodle2', 'backup'),
+            backup::FORMAT_MOODLE1 => get_string('backupformatmoodle1', 'backup'),
+            backup::FORMAT_IMSCC1 => get_string('backupformatimscc1', 'backup'),
+            backup::FORMAT_IMSCC11 => get_string('backupformatimscc11', 'backup'),
+            backup::FORMAT_UNKNOWN => get_string('backupformatunknown', 'backup'),
+        ];
+    }
+
+    public static function get_format_string($format) {
+        $choices = self::get_format_choices();
+        return $choices[$format];
+    }
+
+    public static function get_interactive_choices() {
+        return [
+            backup::INTERACTIVE_NO => get_string('no'),
+            backup::INTERACTIVE_YES => get_string('yes'),
+        ];
+    }
+
     protected function get_status() {
-        global $OUTPUT;
         $status = self::get_status_string($this->raw_get('status'));
-        return $this->progress() . $OUTPUT->spacer() . format_string($status);
+        return format_string($status);
+    }
+
+    public static function get_status_choices() {
+        return [
+            backup::STATUS_CREATED => get_string('backupcontrollerstatuscreated', 'local_template'),
+            backup::STATUS_REQUIRE_CONV => get_string('backupcontrollerstatusrequireconv', 'local_template'),
+            backup::STATUS_PLANNED => get_string('backupcontrollerstatusplanned', 'local_template'),
+            backup::STATUS_CONFIGURED => get_string('backupcontrollerstatusconfigured', 'local_template'),
+            backup::STATUS_SETTING_UI => get_string('backupcontrollerstatussettingui', 'local_template'),
+            backup::STATUS_NEED_PRECHECK => get_string('backupcontrollerstatusneedprecheck', 'local_template'),
+            backup::STATUS_AWAITING => get_string('backupcontrollerstatusawaiting', 'local_template'),
+            backup::STATUS_EXECUTING => get_string('backupcontrollerstatusexecuting', 'local_template'),
+            backup::STATUS_FINISHED_ERR => get_string('backupcontrollerstatusfinishederr', 'local_template'),
+            backup::STATUS_FINISHED_OK => get_string('backupcontrollerstatusfinishedok', 'local_template'),
+        ];
+    }
+
+    public static function get_status_string($status) {
+        $choices = self::get_status_choices();
+        return $choices[$status];
+    }
+
+    public static function get_execution_choices() {
+        return [
+            backup::EXECUTION_INMEDIATE => get_string('backupcontrollerexecutionimmediate', 'local_template'),
+            backup::EXECUTION_DELAYED => get_string('backupcontrollerexecutiondelayed', 'local_template'),
+        ];
+    }
+
+    protected function get_progress() {
+        return $this->progress();
     }
 
     protected function get_exportfileid() {
@@ -337,40 +455,11 @@ class backupcontroller extends \core\persistent {
         return $exportfile;
     }
 
-    public function get_backupcontrollergradecollection() {
-        global $PAGE, $SESSION;
-        $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
-            if ($view == 'header') {
-                $view = 'table';
-            }
-        }
-
-        $backupcontrollergrades = \local_template\models\backupcontrollergrade::collection($this->raw_get('id'), $view, true, ['backupcontrollerid' => $this->raw_get('id')], 'sortorder', 'ASC');
-        //$backupcontrollergrades = new backupcontrollergradecollection('backupcontroller Grades', controllers\backupcontrollergrade::path(), $view, false, ['backupcontrollerid' => $this->raw_get('id')]);
-        return $backupcontrollergrades->render();
-    }
-
-    public function get_backupcontrollerrowcollection() {
-        global $PAGE, $SESSION;
-        $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
-            if ($view == 'header') {
-                $view = 'table';
-            }
-        }
-
-        $backupcontrollerrows = new backupcontrollerrowcollection('backupcontroller Rows', controllers\backupcontrollerrow::path(), $view, false, ['backupcontrollerid' => $this->raw_get('id')]);
-        return $backupcontrollerrows->render();
-    }
-
-    protected function get_usercreated() {
+    protected function get_userid() {
         if ($this->createuser) {
             return fullname($this->createuser);
         } else {
-            $this->createuser = $this->read_user($this->raw_get('usercreated'));
+            $this->createuser = $this->read_user($this->raw_get('userid'));
             return fullname($this->createuser);
         }
     }
@@ -407,26 +496,12 @@ class backupcontroller extends \core\persistent {
         $path = controllers\backupcontroller::path();
         $actions = '';
 
-        $gradeslink = $this->get_grades_link();
-        if (!empty($gradeslink)) {
-            $actions .= template_icon_link('grades', $gradeslink);
-        }
-
         // preview, add, edit, hide, show, moveup, movedown, delete
         $actions .= template_icon_link('preview', $path, ['action' => 'viewbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
 
         $actions .= template_icon_link('edit', $path, ['action' => 'editbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
 
-        if (is_template_admin()) {
-            if ($this->raw_get('hidden')) {
-                $actions .= template_icon_link('show', $path, ['action' => 'showbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
-            } else {
-                $actions .= template_icon_link('hide', $path, ['action' => 'hidebackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
-            }
-            $actions .= template_icon_link('delete', $path, ['action' => 'deletebackupcontroller', 'backupcontrollerid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
-        } else {
-            $actions .= template_icon_link('delete', $path, ['action' => 'hidebackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
-        }
+        $actions .= template_icon_link('delete', $path, ['action' => 'deletebackupcontroller', 'backupcontrollerid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
 
         $actions .= template_icon_link('go', $path, ['action' => 'runbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
 
@@ -453,32 +528,6 @@ class backupcontroller extends \core\persistent {
         ];
     }
 
-    public static function get_row_choices() {
-        return [
-
-        ];
-    }
-
-    public static function get_status_choices() {
-        return [
-            backup::STATUS_CREATED => get_string('backupcontrollerstatuscreated', 'local_template'),
-            backup::STATUS_REQUIRE_CONV => get_string('backupcontrollerstatusrequireconv', 'local_template'),
-            backup::STATUS_PLANNED => get_string('backupcontrollerstatusplanned', 'local_template'),
-            backup::STATUS_CONFIGURED => get_string('backupcontrollerstatusconfigured', 'local_template'),
-            backup::STATUS_SETTING_UI => get_string('backupcontrollerstatussettingui', 'local_template'),
-            backup::STATUS_NEED_PRECHECK => get_string('backupcontrollerstatusneedprecheck', 'local_template'),
-            backup::STATUS_AWAITING => get_string('backupcontrollerstatusawaiting', 'local_template'),
-            backup::STATUS_EXECUTING => get_string('backupcontrollerstatusexecuting', 'local_template'),
-            backup::STATUS_FINISHED_ERR => get_string('backupcontrollerstatusfinishederr', 'local_template'),
-            backup::STATUS_FINISHED_OK => get_string('backupcontrollerstatusfinishedok', 'local_template'),
-        ];
-    }
-
-    public static function get_status_string($status) {
-        $choices = self::get_status_choices();
-        return $choices[$status];
-    }
-
     public function has_errors() {
         return $this->notifications->has_errors();
     }
@@ -490,7 +539,7 @@ class backupcontroller extends \core\persistent {
 
 
     public function get_identifier() {
-        return $this->raw_get('name');
+        return $this->raw_get('backupid');
     }
 
     public function get_helpers() {
@@ -602,16 +651,17 @@ class backupcontroller extends \core\persistent {
         ];
         $templates = $DB->get_records_select('local_template', $where , $params);
         if (count($templates) == 0) {
-            throw new \coding_exception('Backup controller has no template');
+            // throw new \coding_exception('Backup controller has no template');
         }
         if (count($templates) > 1) {
-            throw new \coding_exception('Backup controller has too many templates');
+            // throw new \coding_exception('Backup controller has too many templates');
         }
 
         if (!empty($templateid)) {
             $template = new template($templateid, $templates[0]);
             return $template;
         }
+        return null;
     }
 
     public function get_course() {
@@ -624,66 +674,11 @@ class backupcontroller extends \core\persistent {
     }
 
     private function read_course() {
-        $courseid = $this->raw_get('courseid');
+        $itemid = $this->raw_get('itemid');
         if (!empty($courseid)) {
             global $DB;
-            $course = $DB->get_record('course', ['id' => $this->raw_get('courseid')]);
+            $course = $DB->get_record('course', ['id' => $itemid]);
             return $course;
-        }
-    }
-
-    public function get_createuser() {
-        if ($this->createuser) {
-            return fullname($this->createuser);
-        } else {
-            $this->createuser = $this->read_user($this->raw_get('usercreated'));
-            return fullname($this->createuser);
-        }
-    }
-
-    private function read_user($userid) {
-        if (!empty($userid)) {
-
-            if (!core_user::is_real_user($userid)) {
-                $this->userstatus = get_string('invaliduser', 'error');
-                return false;
-            }
-
-            $user = core_user::get_user($userid);
-
-            if (!$user) {
-                $this->userstatus = get_string('invaliduser', 'error');
-                return false;
-            }
-
-            if ($user->deleted) {
-                $this->userstatus = get_string('userdeleted', 'moodle'); // error
-                return $user;
-            }
-
-            if (empty($user->confirmed)) {
-                $this->userstatus = get_string('usernotconfirmed', 'moodle', $user->username);
-                return $user;
-            }
-
-            if (isguestuser($user)) {
-                $this->userstatus = get_string('guestsarenotallowed', 'error');
-                return $user;
-            }
-
-            if ($user->suspended) {
-                $this->userstatus = get_string('suspended', 'auth');
-                return $user;
-            }
-
-            if ($user->auth == 'nologin') {
-                $this->userstatus = get_string('suspended', 'auth');
-                return $user;
-            }
-
-            $this->userstatus = '';
-
-            return $user;
         }
     }
 
@@ -767,57 +762,83 @@ class backupcontroller extends \core\persistent {
         return true;
     }
 
-    private function deletebackupcontrollerrows() {
-        $backupcontrollerrows = $this->get_backupcontrollerrows();
-        foreach ($backupcontrollerrows as $backupcontrollerrow) {
-            if (!$backupcontrollerrow->delete()) {
+    private function read_user() {
+        $userid = $this->raw_get('userid');
+        if (!empty($userid)) {
+
+            if (!core_user::is_real_user($userid)) {
+                $this->userstatus = get_string('invaliduser', 'error');
                 return false;
             }
-        }
-        return true;
-    }
 
-    public function cascadedelete() {
+            $user = core_user::get_user($userid);
 
-        // 1. Delete file from mdl_file using file API
-        // 2. Delete all backupcontrollerrows
-        // 2. Delete all backupcontrollergradess for this backupcontroller
-        // 3. Delete self
-
-        if (!$this->deletefile()) {
-            return false;
-        }
-        if (!$this->deletebackupcontrollerrows()) {
-            return false;
-        }
-
-        $backupcontrollergrades = $this->get_backupcontrollergrades();
-        foreach ($backupcontrollergrades as $backupcontrollergrade) {
-            if (!$backupcontrollergrade->delete()) {
+            if (!$user) {
+                $this->userstatus = get_string('invaliduser', 'error');
                 return false;
             }
-        }
 
-        // Finally delete self.
-        if (!parent::delete()) {
-            return false;
-        }
+            if ($user->deleted) {
+                $this->userstatus = get_string('userdeleted', 'moodle'); // error
+                return $user;
+            }
 
-        return true;
+            if (empty($user->confirmed)) {
+                $this->userstatus = get_string('usernotconfirmed', 'moodle', $user->username);
+                return $user;
+            }
+
+            if (isguestuser($user)) {
+                $this->userstatus = get_string('guestsarenotallowed', 'error');
+                return $user;
+            }
+
+            if ($user->suspended) {
+                $this->userstatus = get_string('suspended', 'auth');
+                return $user;
+            }
+
+            if ($user->auth == 'nologin') {
+                $this->userstatus = get_string('suspended', 'auth');
+                return $user;
+            }
+
+            $this->userstatus = '';
+
+            return $user;
+        }
     }
 
     public function get_formattedtimecreated() {
-        return userdate($this->raw_get('timecreated'), get_string('strftimedatefullshort', 'langconfig'));
+        return userdate($this->raw_get('timecreated'), get_string('strftimedatetimeshort', 'langconfig'));
     }
 
-    public function get_grades_link() {
-        $course = $this->get_course();
-        if (!empty($course)) {
-            $coursecontext = \context_course::instance($course->id);
-            if (has_capability('gradereport/grader:view', $coursecontext) && has_capability('moodle/grade:viewall', $coursecontext)) {
-                global $CFG;
-                return new \moodle_url($CFG->wwwroot . '/grade/report/grader/index.php', ['id' => $course->id]);
-            }
-        }
+    public function progress() {
+
+        $progress = $this->raw_get('progress');
+
+        $content = '';
+        $content .= \html_writer::start_tag('div', ['class' => 'container']);
+        $content .= \html_writer::start_tag('div', ['class' => 'progress']);
+        $content .= $this->progresslevel($progress, 'info');
+        //$content .= $this->progresslevel($this->raw_get('recordsinfo'), $numrecords, 'info');
+        //$content .= $this->progresslevel($this->raw_get('recordssuccess'), $numrecords, 'success');
+        //$content .= $this->progresslevel($this->raw_get('recordswarning'), $numrecords, 'warning');
+        //$content .= $this->progresslevel($this->raw_get('recordserror'), $numrecords, 'danger');
+        $content .= \html_writer::end_tag('div');
+
+        $content .= \html_writer::end_tag('div');
+        return $content;
+    }
+
+    private static function progresslevel($progress, $class) {
+
+        $percentage = round($progress * 100);
+
+        return \html_writer::tag('div', '<span>' . $percentage . '</span>', [
+            'class' => 'progress-bar bg-' . $class . ' position-relative',
+            'role' => 'progressbar',
+            'style' => 'width:' . $percentage .'%',
+        ]);
     }
 }

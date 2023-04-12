@@ -27,6 +27,7 @@
           <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course end date"/>
           <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Desination course visible"/>
 
+          <FIELD NAME="gudbenrolment" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Boolean flag for whether a gudatabase enrolment method should be added to the course."/>
           <FIELD NAME="gudbstatus" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="gudatabase status 0..9 are system constants, 0 means active enrolment, see ENROL_STATUS_* constants, plugins may define own status greater than 10"/>
           <FIELD NAME="gudbsettingscodes" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Enable codes in course settings - When enabled also process any valid codes found in this courses shortname or idnumber fields. Only one enrolment method per course should have this set"/>
           <FIELD NAME="gudballowhidden" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Allow hidden course - If enabled, automatic enrolment will function even if the course is hidden. By default hidden courses are ignored"/>
