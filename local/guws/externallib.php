@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/externallib.php");
- 
+
 class local_guws_external extends external_api {
 
     /**
@@ -149,7 +149,7 @@ class local_guws_external extends external_api {
                 'groups' => new external_multiple_structure(
                     new external_single_structure([
                         'id' => new external_value(PARAM_INT, 'Moodle internal group id'),
-                        'name' => new external_value(PARAM_TEXT, 'Group name') 
+                        'name' => new external_value(PARAM_TEXT, 'Group name')
                     ])
                 ),
                 'status' => new external_value(PARAM_TEXT, 'Submission status'),
@@ -270,7 +270,7 @@ class local_guws_external extends external_api {
                 'timemodifiedgrade' => $grades ? date('YmdHis', $grades->timemodified) : '',
                 'grade' => $grade,
                 'feedbackcomments' => $comments ? $comments->commenttext : '',
-            ]; 
+            ];
         }
 
         if (!$results) {
@@ -345,7 +345,7 @@ class local_guws_external extends external_api {
         $results = [];
         foreach ($params['participants'] as $participant) {
             $userid = $participant['userid'];
-      
+
             // Check the user is a participant
             if (!array_key_exists($userid, $currentparticipants)) {
                 $results[] = [
@@ -514,6 +514,7 @@ class local_guws_external extends external_api {
                 'courseid' => new external_value(PARAM_INT, 'Moodle course id'),
                 'starred' => new external_value(PARAM_BOOL, 'Course is starred'),
                 'visible' => new external_value(PARAM_BOOL, 'Course is visible to students'),
+                'hasaccessed' => new external_value(PARAM_BOOL, 'Course has been accessed or not'),
                 'lastvisit' => new external_value(PARAM_INT, 'Last visited (timestamp)'),
             ])
         );
@@ -541,6 +542,7 @@ class local_guws_external extends external_api {
             $result->courseid = $course->id;
             $result->starred = $course->starred;
             $result->visible = $course->visible;
+            $result->hasaccessed = $course->hasaccessed;
             $result->lastvisit = $course->lastaccess;
             $results[] = $result;
         }
@@ -565,8 +567,8 @@ class local_guws_external extends external_api {
      */
     public static function guid_completion_returns() {
         return new external_value(PARAM_BOOL, 'Completed');
-    }  
-    
+    }
+
     /**
      * guid_completion
      * @param string $guid
@@ -576,8 +578,8 @@ class local_guws_external extends external_api {
         global $CFG, $DB;
 
         // Check params
-        $params = self::validate_parameters(self::guid_completion_parameters(), ['courseid' => $courseid, 'guid' => $guid]);   
-        
+        $params = self::validate_parameters(self::guid_completion_parameters(), ['courseid' => $courseid, 'guid' => $guid]);
+
         // find GUID
         $user = $DB->get_record('user', ['username' => $guid, 'mnethostid' => $CFG->mnet_localhost_id], '*', MUST_EXIST);
 
