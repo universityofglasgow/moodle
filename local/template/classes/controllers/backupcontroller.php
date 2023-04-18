@@ -171,19 +171,6 @@ class backupcontroller {
         self::display($id, $templateid, $form);
     }
 
-    public static function show($id) {
-        if (!empty($id)) {
-            $backupcontroller = new models\backupcontroller($id);
-            $backupcontroller->set('hidden', models\backupcontroller::HIDDEN_FALSE);
-            if ($backupcontroller->update()) {
-                notification::success('backupcontroller ' . $backupcontroller->get_name() . ' shown');
-            } else {
-                notification::error('Could not show backupcontroller ' . $backupcontroller->get_name());
-            }
-        }
-        self::do_redirect();
-    }
-
     public static function runbackupcontroller($id) {
 
         global $OUTPUT;
@@ -275,119 +262,6 @@ class backupcontroller {
         }
         $backupcontrollers = models\backupcontroller::collection($parentid, $view);
         return $backupcontrollers->render() . $backupcontrollers->render_paging_bar(self::path());
-
-        global $PAGE, $SESSION;
-        $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
-        }
-
-        $backupcontrollers = new backupcontrollercollection('backupcontroller Rows', self::path(), $view);
-        return $backupcontrollers->render();
-
-        global $SESSION, $OUTPUT, $USER;
-        $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
-        }
-
-        $headings = ['date', 'backupcontrollername', 'status', 'exportfile', 'grades'];
-        $headingalignment = ['left', 'left', 'left', 'left', 'left'];
-        $norecordslangstring = 'nobackupcontrollersdefined';
-        $addrecordlangstring = 'addbackupcontroller';
-        $addnewiconlink = template_icon_link('add',self::path(), ['id' => '0', 'action' => 'createbackupcontroller', 'templateid' => $templateid]);
-        $containsactions = true;
-
-        $filters = [];
-        if (!empty($templateid)) {
-            $filters['templateid'] = $templateid;
-        }
-
-        if (is_template_admin()) {
-            // Add usercreated column
-            $headings[] = 'user';
-            $headingalignment[] = 'left';
-        } else {
-            // Only show records for current user, and not hidden records.
-            $filters['usercreated'] = $USER->id;
-            $filters['hidden'] = models\template::HIDDEN_FALSE;
-        }
-
-        $records = [];
-        $backupcontrollers = models\backupcontroller::get_records($filters, 'timemodified', 'DESC');
-
-        foreach ($backupcontrollers as $backupcontroller) {
-
-            $record = [];
-
-            $backupcontrollerdate = userdate($backupcontroller->get('timemodified'), get_string('strftimedatetimeshort', 'core_langconfig'));
-            if (empty($backupcontrollerdate)) {
-                $backupcontrollerdate = get_string('missingbackupcontrollerdate','local_template');
-            }
-            $record[] = format_string($backupcontrollerdate);
-
-            $backupcontrollername = $backupcontroller->get_name();
-            if (empty($backupcontrollername)) {
-                $backupcontrollername = get_string('missingbackupcontrollername','local_template');
-            }
-            $backupcontrollername = format_string($backupcontrollername);
-            $backupcontrollername .= $OUTPUT->spacer() . template_icon_link('edit',self::path(), ['action' => 'editbackupcontroller', 'backupcontrollerid' => $backupcontroller->get('id')]);
-            $record[] = $backupcontrollername;
-
-            $status = models\backupcontroller::get_status_string($backupcontroller->get('status'));
-            $record[] = self::progress($backupcontroller) . $OUTPUT->spacer() . format_string($status);
-
-            $file = $backupcontroller->get_file();
-            if (empty($file)) {
-                $exportfile = get_string('missingfilename','local_template');
-            } else {
-                $exportfile = template_icon_link('download', $backupcontroller->get_file_url());
-            }
-            $record[] = $exportfile;
-
-            $grades = backupcontrollergrade::renderbackupcontrollergrades($backupcontroller->get('id'), false);
-            $record[] = $grades;
-
-            if (is_template_admin()) {
-                // Show user
-                $record[] = format_string(fullname($backupcontroller->get_createuser()));
-            }
-
-            $actions = '';
-
-            $gradeslink = $backupcontroller->get_grades_link();
-            if (!empty($gradeslink)) {
-                $actions .= template_icon_link('grades', $gradeslink);
-            }
-
-            // add, edit, hide, show, moveup, movedown, delete
-            $actions .= template_icon_link('edit', self::path(), ['action' => 'editbackupcontroller', 'templateid' => $templateid, 'backupcontrollerid' => $backupcontroller->get('id')]);
-
-            if (is_template_admin()) {
-                if ($backupcontroller->get('hidden')) {
-                    $actions .= template_icon_link('show', self::path(), ['action' => 'showbackupcontroller', 'templateid' => $templateid, 'backupcontrollerid' => $backupcontroller->get('id')]);
-                } else {
-                    $actions .= template_icon_link('hide', self::path(), ['action' => 'hidebackupcontroller', 'templateid' => $templateid, 'backupcontrollerid' => $backupcontroller->get('id')]);
-                }
-                $actions .= template_icon_link('delete', self::path(), ['action' => 'deletebackupcontroller', 'templateid' => $templateid, 'backupcontrollerid' => $backupcontroller->get('id'), 'sesskey' => sesskey()]);
-            } else {
-                $actions .= template_icon_link('delete', self::path(), ['action' => 'hidebackupcontroller', 'templateid' => $templateid, 'backupcontrollerid' => $backupcontroller->get('id')]);
-            }
-
-            $actions .= template_icon_link('go', self::path(), ['action' => 'runbackupcontroller', 'templateid' => $templateid, 'backupcontrollerid' => $backupcontroller->get('id')]);
-
-            $record[] = $actions;
-
-            // Append this backupcontroller to records for output
-            $records[] = $record;
-        }
-
-        if ($view == 'table' || $view == 'header' && $hasparent) {
-            $output = local_template_create_action_table($records, $headings, $headingalignment, $norecordslangstring, $addrecordlangstring, $addnewiconlink, $containsactions);
-        } else {
-            $output = local_template_create_action_list($records, $headings, $headingalignment, $norecordslangstring, $addrecordlangstring, $addnewiconlink, $containsactions);
-        }
-        return $output;
     }
 
     // TODO: Use static bootstrap progress bar for status field

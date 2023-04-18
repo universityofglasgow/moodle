@@ -47,6 +47,24 @@ if ($hassiteconfig) {
         1, [0 => get_string('no'), 1 => get_string('yes')]
     ));
 
+    $settings->add(new admin_setting_configselect('local_template/addnewcoursebutton',
+        get_string('addnewcoursebutton', 'local_template'),
+        get_string('addnewcoursebutton_desc', 'local_template'),
+        1, [0 => get_string('no'), 1 => get_string('yes')]
+    ));
+
+    $settings->add(new admin_setting_configselect('local_template/addnewcoursecategoryactionbar',
+        get_string('addnewcoursecategoryactionbar', 'local_template'),
+        get_string('addnewcoursecategoryactionbar_desc', 'local_template'),
+        1, [0 => get_string('no'), 1 => get_string('yes')]
+    ));
+
+    $settings->add(new admin_setting_configselect('local_template/addnewcoursecoursemanagement',
+        get_string('addnewcoursecoursemanagement', 'local_template'),
+        get_string('addnewcoursecoursemanagement_desc', 'local_template'),
+        1, [0 => get_string('no'), 1 => get_string('yes')]
+    ));
+
     $categories = core_course_category::make_categories_list('moodle/course:create');
     $settings->add(new autocomplete('local_template/categories',
         get_string('categories', 'local_template'),
@@ -62,6 +80,13 @@ if ($hassiteconfig) {
             get_string('introduction', 'local_template'),
             get_string('introduction_desc', 'local_template'),
             get_string('introduction_default', 'local_template')
+        )
+    );
+
+    $ADMIN->add('courses',
+        new admin_externalpage('addnewcourseviatemplate', new lang_string('addnewcourseviatemplate', 'local_template'),
+            new moodle_url('/local/template/index.php'),
+            ['moodle/category:manage']
         )
     );
 }

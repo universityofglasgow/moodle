@@ -214,7 +214,7 @@ class template {
         die;
     }
 
-    public static function process($id) {
+    public static function process($id, $admin = false) {
         global $PAGE, $USER;
 
         $template = null;
@@ -222,6 +222,7 @@ class template {
             'persistent' => $template,
             'id' => $id,
             'action' => 'edittemplate',
+            'admin' => $admin,
         ];
         if (!empty($id)) {
             $template = new models\template($id);
@@ -235,6 +236,19 @@ class template {
         if ($data) {
 
             unset($data->action);
+            $process = false;
+            $redirect = false;
+            if (isset($data->createandredirect)) {
+                $process = true;
+                $redirect = true;
+                unset($data->createandredirect);
+            }
+            if (isset($data->createcourse)) {
+                $process = true;
+                unset($data->createcourse);
+            }
+            unset($data->savetemplate);
+
 
             try {
                 $data->usercreated = $USER->id;
@@ -245,18 +259,18 @@ class template {
                 if (empty($data->id)) {
                     $template = new models\template(0, $data);
                     if ($template->create()) {
-                        notification::success("template: $templatetext successfully created");
+                        notification::success("Course wizard: $templatetext successfully created");
                     } else {
-                        notification::error("Could not create template: $templatetext");
+                        notification::error("Could not create course wizard: $templatetext");
                     }
 
                 } else {
                     $template = new models\template();
                     $template->from_record($data);
                     if ($template->update()) {
-                        notification::success("template: $templatetext updated");
+                        notification::success("Course wizard: $templatetext updated");
                     } else {
-                        notification::error("Could not update template: $templatetext");
+                        notification::error("Could not update course wizard: $templatetext");
                     }
                 }
 
@@ -294,9 +308,16 @@ class template {
                     $template->preprocess();
                     */
                // }
-
-                $template->process();
-                $template->redirect_coursepage();
+                if ($process) {
+                    if ($template->process()) {
+                        notification::success("Course wizard: $templatetext successfully processed");
+                    } else {
+                        notification::error("Could not process course wizard: $templatetext");
+                    }
+                }
+                if ($redirect) {
+                    $template->redirect_coursepage();
+                }
 
             } catch (\Exception $e) {
                 notification::error($e->getMessage());
@@ -402,6 +423,16 @@ class template {
 
     }
 
+    public static function rendertemplates($parentid = 0) {
+        global $SESSION;
+        $view = 'table';
+        if (object_property_exists($SESSION, 'local_template_view')) {
+            $view = $SESSION->local_template_view;
+        }
+        $templates = models\template::collection($parentid, $view);
+        return $templates->render() . $templates->render_paging_bar(self::path());
+    }
+
     private static function rendertemplate($parentid = 0) {
         global $SESSION;
         $view = 'table';
@@ -438,7 +469,6 @@ class template {
         } else {
             // Only show records for current user, and not hidden records.
             $filters['usercreated'] = $USER->id;
-            $filters['hidden'] = models\template::HIDDEN_FALSE;
         }
 
         $records = [];

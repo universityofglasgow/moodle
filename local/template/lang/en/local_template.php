@@ -29,6 +29,16 @@ $string['usedefaultmoodlefunctions'] = 'Use default moodle course functions';
 
 $string['addnewcoursehook'] = 'Add new course hook';
 $string['addnewcoursehook_desc'] = 'Enable add new course redirection to course template selector';
+
+$string['addnewcoursebutton'] = 'Add new course button';
+$string['addnewcoursebutton_desc'] = 'Add addtional Add new course via template button alongside Add new course buttons (performed by theme)';
+
+$string['addnewcoursecategoryactionbar'] = 'Add new course to category action bar';
+$string['addnewcoursecategoryactionbar_desc'] = 'Add additional Add new course via template option to category page options dropdown (performed by theme)';
+
+$string['addnewcoursecoursemanagement'] = 'Add new course to course management';
+$string['addnewcoursecoursemanagement_desc'] = 'Add additional Add new course via template button to course management page (performed by theme)';
+
 $string['categories'] = 'Course Categories';
 $string['categories_desc'] = 'List of course categories that are defined as holding template courses';
 
@@ -52,7 +62,7 @@ $string['dashboard'] = 'Dashboard';
 $string['managetemplate'] = 'Your user has the <strong>Manage Template capability <i class="fa fa-user-secret"></i></strong>.';
 
 
-$string['createnewtemplate'] = 'Create new template';
+$string['createnewtemplate'] = 'Create new course via template';
 $string['templatecourse'] = 'Template Course';
 $string['importcourse'] = 'Import Course';
 $string['summary'] = 'Course Summary';
@@ -94,9 +104,9 @@ $string['controllers'] = 'Controllers';
 $string['category'] = 'Category';
 $string['missingcategory'] = 'Missing Category';
 
-$string['missingcreatedcourse'] = 'Missing Created Course';
+$string['missingcreatedcourse'] = 'No Created Course';
 $string['missingtemplatecourse'] = 'Missing Template Course';
-$string['missingimportcourse'] = 'Missing Import Course';
+$string['missingimportcourse'] = 'No Import Course';
 
 $string['notemplatesfound'] = 'No templates found.';
 
@@ -150,4 +160,13 @@ $string['interactive'] = 'Interactive';
 $string['progress'] = 'Progress';
 $string['checksum'] = 'Interactive';
 $string['controller'] = 'Controller';
+
+
+$string['createandredirect'] = 'Create and go to course';
+$string['createcourse'] = 'Create course';
+$string['savetemplate'] = 'Save draft without creating course';
+
+$string['addnewcourseviatemplate'] = 'Add a new course via template';
+
+$string['newcoursejobs'] = 'New Course Jobs';
 

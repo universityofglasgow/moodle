@@ -229,7 +229,7 @@ class backupcontroller extends \core\persistent {
 
         if (!is_template_admin()) {
             global $USER;
-            // Only show records for current user, and not hidden records.
+            // Only show records for current user
             $params['userid'] = $USER->id;
         }
 

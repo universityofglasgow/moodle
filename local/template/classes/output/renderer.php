@@ -49,6 +49,27 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template('local_template/page', $data);
     }
 
+    public function render_import_search_form($courseid) {
+        $url = new \moodle_url('/local/template/index.php', ['id' => $courseid]);
+        $search = new \import_course_search(['url' => $url]);
+
+        global $PAGE;
+        $backuprenderer = $PAGE->get_renderer('core','backup');
+        $courses = $backuprenderer->render($search);
+
+        // TODO: correct context?
+        $context = \context_course::instance($courseid);
+
+        $data = (object)[
+            'url' => '',
+            'courseid' => $courseid,
+            'target' => \backup::TARGET_CURRENT_ADDING,
+            'courses' => $courses,
+            'contextid' => $context->id,
+        ];
+        return parent::render_from_template('local_template/import-course-selector', $data);
+    }
+
     /**
      * Defer to template.
      *

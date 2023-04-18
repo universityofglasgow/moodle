@@ -59,6 +59,7 @@ class persistentcollection implements Countable, renderable, templatable {
     protected $page = 0;
     protected $perpage = 10;
     protected $pageparam = 'page';
+    protected $addnew = false;
 
 
     /**
@@ -73,7 +74,7 @@ class persistentcollection implements Countable, renderable, templatable {
      * @param int $perpage The number of entries that should be shown per page
      * @throws coding_exception
      */
-    public function __construct($persistentclass = '', $parentid = 0, $view = 'table', $displayheadings = true, $select = '', $params = null, $sort = 'timemodified', $order = 'DESC', $page = 0, $perpage = 10) {
+    public function __construct($persistentclass = '', $parentid = 0, $view = 'table', $displayheadings = true, $select = '', $params = null, $sort = 'timemodified', $order = 'DESC', $page = 0, $perpage = 10, $addnew = false) {
         if (empty($persistentclass)) {
             throw new coding_exception('Static property $persistentclass must be set.');
         }
@@ -93,6 +94,7 @@ class persistentcollection implements Countable, renderable, templatable {
 
         $this->page = $page;
         $this->perpage = $perpage;
+        $this->addnew = $addnew;
 
         if (property_exists($persistentclass, 'pageparam')) {
             $this->pageparam = $persistentclass::$pageparam;
@@ -137,8 +139,6 @@ view
 edit
 delete
 
-automatic hidden
-automatic sortorder
 
         */
 
@@ -154,8 +154,6 @@ automatic sortorder
     public function count() {
         return count($this->collection);
     }
-
-    // abstract function define_fields();
 
     public function hide_headings() {
         $this->displayheadings = false;
@@ -262,7 +260,8 @@ automatic sortorder
             'displayheadings' => $this->displayheadings,
             'fields' => $this->fields,
             'rows' => $rows,
-            'addnew' => $this->persistentclass::add_new($this->parentid, true),
+            'addnew' => $this->addnew,
+            'addnewurl' => $this->persistentclass::add_new($this->parentid, true),
         ];
 
         // echo '<pre>' . var_export($data, true) . '</pre>';sssss

@@ -121,7 +121,7 @@ class template extends \core\form\persistent {
         $templatecategories = get_config('local_template', 'categories');
         list($insql, $params) = $DB->get_in_or_equal($templatecategories);
         $templatecourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
-        $templatecourses = array_merge([0 => ''], $templatecourses);
+        $templatecourses = [0 => ''] + $templatecourses;
 
         $mform->addElement('autocomplete', 'templatecourseid', get_string('templatecourse', 'local_template'), $templatecourses);
         $mform->addRule('templatecourseid', null, 'required', null, 'client');
@@ -418,7 +418,7 @@ class template extends \core\form\persistent {
 
         list($insql, $params) = $DB->get_in_or_equal($importcategories, SQL_PARAMS_QM, 'param', false);
         $importcourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
-        $importcourses = array_merge([0 => ''], $importcourses);
+        $importcourses = [0 => ''] + $importcourses;
 
         $mform->addElement('autocomplete', 'importcourseid', get_string('importcourse', 'local_template'), $importcourses);
         //$mform->addRule('importcourseid', null, 'required', null, 'client');
@@ -437,26 +437,51 @@ class template extends \core\form\persistent {
 
         //$mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
 
+        $mform->addElement('html', '<br><hr>');
+
+        $buttonarray = array();
+        $buttonarray[] = &$mform->createElement('submit', 'createandredirect', get_string('createandredirect', 'local_template'));
+        $buttonarray[] = &$mform->createElement('submit', 'createcourse', get_string('createcourse', 'local_template'));
+        $buttonarray[] = &$mform->createElement('submit', 'savetemplate', get_string('savetemplate', 'local_template'));
+        $buttonarray[] = &$mform->createElement('cancel');
+        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->closeHeaderBefore('buttonar');
+
+        //$this->add_action_buttons(true, 'Create Course');
+
         if (empty($this->_customdata['admin'])) {
-            $mform->addElement('html', '<br><hr>');
-            $this->add_action_buttons(true, 'Create Course');
+
+
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
         } else {
-            $mform->addElement('header', 'admin', get_string('admin', 'local_template'));
-            $mform->addElement('autocomplete', 'createdcourseid', get_string('createdcourse', 'local_template'), $importcourses);
-            $mform->setDefault('createdcourseid', 0);
+            $mform->addElement('header', 'createdcourse', get_string('createdcourse', 'local_template'));
+            $createdcoursename = get_string('missingcreatedcourse', 'local_template');
+            if (!empty($record->createdcourseid)) {
+                $createdcoursename = $DB->get_field('course', 'fullname', ['id' => $record->createdcourseid]);
+            }
+            $mform->addElement('static', 'createdcoursename', get_string('createdcourse', 'local_template'), $createdcoursename);
+            //$mform->addElement('autocomplete', 'createdcourseid', get_string('createdcourse', 'local_template'), $importcourses);
+            //$mform->setDefault('createdcourseid', 0);
 
-            $mform->addElement('header', 'controllers', get_string('controllers', 'local_template'));
-            $controllers = $DB->get_records_menu('backup_controllers', null, 'timemodified DESC', 'id, backupid');
+            //$mform->addElement('header', 'controllers', get_string('controllers', 'local_template'));
+            //$controllers = $DB->get_records_menu('backup_controllers', null, 'timemodified DESC', 'id, backupid');
 
-            $mform->addElement('text', 'copybackupid', get_string('copybackup', 'local_template'), $controllers);
-            $mform->addElement('text', 'copyrestoreid', get_string('copyrestore', 'local_template'), $controllers);
-            $mform->addElement('text', 'importbackupid', get_string('importbackup', 'local_template'), $controllers);
-            $mform->addElement('text', 'importrestoreid', get_string('importrestore', 'local_template'), $controllers);
+            //$mform->addElement('text', 'copybackupid', get_string('copybackup', 'local_template'), $controllers);
+            //$mform->addElement('text', 'copyrestoreid', get_string('copyrestore', 'local_template'), $controllers);
+            //$mform->addElement('text', 'importbackupid', get_string('importbackup', 'local_template'), $controllers);
+            //$mform->addElement('text', 'importrestoreid', get_string('importrestore', 'local_template'), $controllers);
 
-            $this->add_action_buttons();
+            if (!empty($record->id)) {
+                $mform->addElement('header', 'backupcontrollers', get_string('backupcontrollers', 'local_template'));
+                $mform->addElement('html', $OUTPUT->box(controllers\backupcontroller::renderbackupcontrollers($record->id, true)));
+            }
         }
+
+        $mform->addElement('header', 'newcoursejobs', get_string('newcoursejobs', 'local_template'));
+        $mform->addElement('html', $OUTPUT->box(controllers\template::rendertemplates($record->id, true)));
+
+
 
 
         /*
@@ -606,19 +631,28 @@ class template extends \core\form\persistent {
     */
     public function extra_validation($data, $files, array &$errors) {
         global $DB;
-        //$errors = parent::validation($data, $files);
 
-        // Add field validation check for duplicate shortname.
-        $courseshortname = $DB->get_record('course', array('shortname' => $data->shortname), 'fullname', IGNORE_MULTIPLE);
-        if ($courseshortname) {
-            $errors['shortname'] = get_string('shortnametaken', '', $courseshortname->fullname);
+        $validateshortname = true;
+        $record = $this->get_persistent()->to_record();
+        if (!empty($record->id)) {
+            if (!empty($record->createdcourseid)) {
+                $validateshortname = false;
+            }
         }
+        // If the template record is already processed and destination course already created, allow resaving of duplicate shortname/idnumber
+        if ($validateshortname) {
+            // Add field validation check for duplicate shortname.
+            $courseshortname = $DB->get_record('course', array('shortname' => $data->shortname), 'fullname', IGNORE_MULTIPLE);
+            if ($courseshortname) {
+                $errors['shortname'] = get_string('shortnametaken', '', $courseshortname->fullname);
+            }
 
-        // Add field validation check for duplicate idnumber.
-        if (!empty($data->idnumber)) {
-            $courseidnumber = $DB->get_record('course', array('idnumber' => $data->idnumber), 'idnumber', IGNORE_MULTIPLE);
-            if ($courseidnumber) {
-                $errors['idnumber'] = get_string('courseidnumbertaken', 'error', $courseidnumber->fullname);
+            // Add field validation check for duplicate idnumber.
+            if (!empty($data->idnumber)) {
+                $courseidnumber = $DB->get_record('course', array('idnumber' => $data->idnumber), 'idnumber', IGNORE_MULTIPLE);
+                if ($courseidnumber) {
+                    $errors['idnumber'] = get_string('courseidnumbertaken', 'error', $courseidnumber->fullname);
+                }
             }
         }
 

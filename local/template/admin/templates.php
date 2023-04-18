@@ -69,7 +69,7 @@ switch ($action) {
         if (empty($templateid)) {
             $templateid = optional_param('id', 0, PARAM_INT);
         }
-        template::process($templateid);
+        template::process($templateid, true);
         break;
 
     case 'deletetemplate':
