@@ -126,3 +126,17 @@ function theme_hillhead40_pluginfile($course, $cm, $context, $filearea, $args, $
         send_file_not_found();
     }
 }
+
+/**
+ * Returns whether the course selector plugin /local/template is present.
+ *
+ * @return boolean Whether the plugin is available.
+ */
+function theme_hillhead40_exists_template_plugin() {
+    global $CFG;
+
+    if (file_exists("{$CFG->dirroot}/local/template/version.php")) {
+        return is_readable("{$CFG->dirroot}/local/template/version.php");
+    }
+    return false;
+}
