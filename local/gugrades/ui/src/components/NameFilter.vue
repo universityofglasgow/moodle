@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-    import {ref, defineEmits, onMounted} from '@vue/runtime-core';
+    import {ref, defineEmits, onMounted, defineExpose} from '@vue/runtime-core';
     import InitialBar from '@/components/InitialBar.vue';
     import { getstrings } from '@/js/getstrings.js';
 
@@ -23,6 +23,10 @@
     const last = ref('all');
     const strings = ref({});
     const showreset = ref(false);
+
+    defineExpose({
+        reset_filter,
+    });
 
     /**
      * Process letter selected in one of the bars

@@ -49,7 +49,7 @@ if ($hassiteconfig) {
         });
 
         // These are the formats supported by the maintainer.
-        $supportedformatsbydefault = ['weeks' => 1, 'topics' => 1, 'topcoll' => 1];
+        $supportedformatsbydefault = ['weeks' => 1, 'topics' => 1, 'topcoll' => 1, 'onetopic' => 1, 'grid' => 1, 'tiles' => 1];
 
         $settings->add(new admin_setting_configmulticheckbox(
             'block_massaction/applicablecourseformats',
@@ -57,6 +57,13 @@ if ($hassiteconfig) {
             new lang_string('applicablecourseformats_description', 'block_massaction'),
             $supportedformatsbydefault,
             $plugins)
+        );
+
+        $settings->add(new admin_setting_configcheckbox(
+            'block_massaction/limittoenrolled',
+            new lang_string('limittoenrolled', 'block_massaction'),
+            new lang_string('limittoenrolled_description', 'block_massaction'),
+            1)
         );
     }
 }

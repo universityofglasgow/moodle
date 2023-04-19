@@ -120,6 +120,7 @@
      * Page selected on paging bar
      */
     function pagechanged(page) {
+        namefilterref.reset_filter();
         currentpage.value = page;
         get_pagedusers();
     }
