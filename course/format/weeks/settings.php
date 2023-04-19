@@ -1,3 +1,4 @@
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -12,29 +13,24 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/* jshint node: true, browser: false */
-/* eslint-env node */
 
 /**
- * @copyright  2021 Andrew Nicols
+ * Settings for format_weeks
+ *
+ * @package    format_weeks
+ * @copyright  2020 Amaia Anabitarte <amaia@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-module.exports = grunt => {
-    grunt.loadNpmTasks('grunt-sass');
+defined('MOODLE_INTERNAL') || die;
 
-    grunt.config.merge({
-        sass: {
-            dist: {
-                files: {
-                    "theme/boost/style/moodle.css": "theme/boost/scss/preset/default.scss",
-                    "theme/classic/style/moodle.css": "theme/classic/scss/classicgrunt.scss"
-                }
-            },
-            options: {
-                implementation: require('sass'),
-                includePaths: ["theme/boost/scss/", "theme/classic/scss/"]
-            }
-        },
-    });
-};
+if ($ADMIN->fulltree) {
+    $url = new moodle_url('/admin/course/resetindentation.php', ['format' => 'weeks']);
+    $link = html_writer::link($url, get_string('resetindentation', 'admin'));
+    $settings->add(new admin_setting_configcheckbox(
+        'format_weeks/indentation',
+        new lang_string('indentation', 'format_weeks'),
+        new lang_string('indentation_help', 'format_weeks').'<br />'.$link,
+        1
+    ));
+}
