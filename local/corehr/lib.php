@@ -15,14 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Sychronise completion data for CoreHR
  *
  * @package    local_corehr
- * @copyright  2016 Howard Miller
+ * @copyright  2023
+ * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2023042000;
-$plugin->requires = 2018051700;
-$plugin->component = 'local_corehr';
-$plugin->description = 'Sychronise completion data for CoreHR';
+function local_corehr_extend_navigation_course($parentnode, $course, $context) {
+    if (!has_capability('local/corehr:config', $context)) {
+        return;
+    }
+    $url = new moodle_url('/local/corehr/config.php', ['id' => $course->id]);
+    $name = get_string('pluginname', 'local_corehr');
+    $icon = new pix_icon('t/completion_complete', '');
+    $parentnode->add($name, $url, navigation_node::NODETYPE_LEAF, 'corehr', null, $icon);
+    $parentnode->make_active();
+}
