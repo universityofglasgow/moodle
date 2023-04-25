@@ -22,16 +22,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// require_once(__DIR__ . '/locallib.php');
-// add_new_course_hook();
-
-
-function is_template_admin() {
+function local_template_is_admin() {
     // return false;
     return has_capability('local/template:managetemplate', \context_system::instance());
 }
 
-function template_admin() {
+function local_template_is_admin_page() {
+    global $PAGE;
+    if ($PAGE->title == get_string('pluginname', 'local_template')) {
+        return false;
+    }
+    if ($PAGE->title == get_string('templateadmin', 'local_template')) {
+        return true;
+    }
+}
+
+function local_template_admin() {
     global $OUTPUT;
     $data = [
         'links' => [
@@ -44,7 +50,7 @@ function template_admin() {
     return $OUTPUT->render_from_template('local_template/admin', $data);
 }
 
-function enforce_template_security($requiremanagement = false) {
+function local_template_enforce_security($requiremanagement = false) {
     require_login(null, false);
     if (isguestuser()) {
         redirect('/login/index.php');
@@ -80,7 +86,7 @@ function enforce_template_security($requiremanagement = false) {
  * @return int The requested paging
  * @throws coding_exception
  */
-function template_get_paging(string $pagingtype, int $templateparent = null, int $backupcontrollerparent = null) {
+function local_template_get_paging(string $pagingtype, int $templateparent = null, int $backupcontrollerparent = null) {
     global $SESSION;
 
     $page = 0;
@@ -169,7 +175,7 @@ function template_get_paging(string $pagingtype, int $templateparent = null, int
  * @throws coding_exception
  * @throws moodle_exception
  */
-function template_icon_link(string $type, $url, array $urlparams = null) {
+function local_template_icon_link(string $type, $url, array $urlparams = null) {
     global $OUTPUT;
     if (is_string($url)) {
         $url = new moodle_url($url, $urlparams);
@@ -412,7 +418,7 @@ function local_template_pluginfile($course, $cm, $context, $filearea, $args, $fo
     }
 
     // Enforce login and capability checks.
-    enforce_template_security();
+    local_template_enforce_security();
 
     // Leave this line out if you set the itemid to null in make_pluginfile_url (set $itemid to 0 instead).
     $itemid = array_shift($args); // The first item in the $args array.
@@ -421,7 +427,7 @@ function local_template_pluginfile($course, $cm, $context, $filearea, $args, $fo
     // user really does have access to the file in question.
 
     // Managetemplate users have access to all files.
-    if (!is_template_admin()) {
+    if (!local_template_is_admin()) {
         if ($filearea == 'import') {
             $template = new \local_template\models\template($itemid);
             global $USER;

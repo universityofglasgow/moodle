@@ -33,6 +33,8 @@
           <FIELD NAME="gudballowhidden" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Allow hidden course - If enabled, automatic enrolment will function even if the course is hidden. By default hidden courses are ignored"/>
           <FIELD NAME="gudbcodelist" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="More codes (one per line)"/>
 
+          <FIELD NAME="hidden" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Boolean value to store whether template has been hidden"/>
+
           <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course time created"/>
           <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Desination course time modified"/>
           <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Record user created"/>

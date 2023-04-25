@@ -41,7 +41,7 @@ require_once $CFG->libdir . '/adminlib.php';
 // @codingStandardsIgnoreLine
 require_once $CFG->dirroot . '/local/template/lib.php';
 
-enforce_template_security(true);
+local_template_enforce_security(true);
 
 $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/index.php'));
 $PAGE->navbar->add(get_string('templateadmin', 'local_template'), new moodle_url('/local/template/admin/index.php'));

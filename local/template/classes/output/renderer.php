@@ -146,11 +146,11 @@ class renderer extends plugin_renderer_base {
         global $CFG;
 
         $introduction = get_config('local_template', 'introduction');
-        $categoryid = optional_param('category', 0, PARAM_INT); // Course category - can be changed in edit form.
-        $returnto = optional_param('returnto', 0, PARAM_ALPHANUM); // Generic navigation return page switch.
-        $returnurl = optional_param('returnurl', '', PARAM_LOCALURL); // A return URL. returnto must also be set to 'url'.
+        $categoryid = optional_param('category', 0, PARAM_INT);
+        $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
+        $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
-        $params = [];
+        $params['action'] = 'rejectlocaltemplate';
         if (!empty($categoryid)) {
             $params['category'] = $categoryid;
         }
@@ -161,7 +161,7 @@ class renderer extends plugin_renderer_base {
             $params['returnurl'] = $returnurl;
         }
 
-        $addnewcourselink = (new \moodle_url($CFG->wwwroot . '/course/edit.php', $params))->out();
+        $addnewcourselink = (new \moodle_url($CFG->wwwroot . '/local/template/index.php', $params))->out(false);
 
         return [
             'step' => 1,

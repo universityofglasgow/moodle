@@ -189,7 +189,7 @@ class backupcontroller extends \core\persistent {
     }
 
     public static function collection($parentid = 0, $view = 'table', $displayheadings = true, $params = null, $sort = 'timemodified', $order = 'DESC') {
-        $backupcontrollerspage = template_get_paging('backupcontrollerspage', $parentid);
+        $backupcontrollerspage = local_template_get_paging('backupcontrollerspage', $parentid);
 
         $backupcontrollersperpage = self::$backupcontrollersperpage;
         if (!empty(get_config('local_template', 'backupcontrollersperpage'))) {
@@ -227,7 +227,7 @@ class backupcontroller extends \core\persistent {
 
         }
 
-        if (!is_template_admin()) {
+        if (!local_template_is_admin()) {
             global $USER;
             // Only show records for current user
             $params['userid'] = $USER->id;
@@ -270,7 +270,7 @@ class backupcontroller extends \core\persistent {
             ],
         ];
 
-        if (is_template_admin()) {
+        if (local_template_is_admin()) {
             $properties['userid'] = [
                 'label' => get_string('username', 'local_template'),
                 'alignment' => 'left',
@@ -314,7 +314,7 @@ class backupcontroller extends \core\persistent {
         $name = $operation . ' of ' . $type . '(' . $itemid . ') - ' . $status;
         if (!empty($path)) {
             global $OUTPUT;
-            $name .= $OUTPUT->spacer() . template_icon_link('edit', $path, ['action' => 'editbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
+            $name .= $OUTPUT->spacer() . local_template_icon_link('edit', $path, ['action' => 'editbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
         }
 
         return $name;
@@ -450,7 +450,7 @@ class backupcontroller extends \core\persistent {
         if (empty($file)) {
             $exportfile = get_string('missingfilename','local_template');
         } else {
-            $exportfile = template_icon_link('download', $this->get_file_url());
+            $exportfile = local_template_icon_link('download', $this->get_file_url());
         }
         return $exportfile;
     }
@@ -465,7 +465,7 @@ class backupcontroller extends \core\persistent {
     }
 
     public static function add_new_icon($parentid = 0) {
-        return template_icon_link('add', controllers\template::path(), ['id' => '0', 'action' => 'createbackupcontroller', 'templateid' => $parentid]);
+        return local_template_icon_link('add', controllers\template::path(), ['id' => '0', 'action' => 'createbackupcontroller', 'templateid' => $parentid]);
     }
 
     public static function add_new($parentid) {
@@ -497,13 +497,13 @@ class backupcontroller extends \core\persistent {
         $actions = '';
 
         // preview, add, edit, hide, show, moveup, movedown, delete
-        $actions .= template_icon_link('preview', $path, ['action' => 'viewbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
+        $actions .= local_template_icon_link('preview', $path, ['action' => 'viewbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
 
-        $actions .= template_icon_link('edit', $path, ['action' => 'editbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
+        $actions .= local_template_icon_link('edit', $path, ['action' => 'editbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
 
-        $actions .= template_icon_link('delete', $path, ['action' => 'deletebackupcontroller', 'backupcontrollerid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
+        $actions .= local_template_icon_link('delete', $path, ['action' => 'deletebackupcontroller', 'backupcontrollerid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
 
-        $actions .= template_icon_link('go', $path, ['action' => 'runbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
+        $actions .= local_template_icon_link('go', $path, ['action' => 'runbackupcontroller', 'backupcontrollerid' => $this->raw_get('id')]);
 
         return $actions;
     }

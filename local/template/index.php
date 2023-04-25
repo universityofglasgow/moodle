@@ -42,7 +42,7 @@ require_once $CFG->libdir . '/adminlib.php';
 // @codingStandardsIgnoreLine
 require_once $CFG->dirroot . '/local/template/lib.php';
 
-enforce_template_security(true);
+local_template_enforce_security(true);
 
 // $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/index.php'));
 // $PAGE->navbar->add(get_string('templateadmin', 'local_template'), new moodle_url('/local/template/admin/index.php'));
@@ -70,6 +70,16 @@ switch ($action) {
             $templateid = optional_param('id', 0, PARAM_INT);
         }
         template::process($templateid);
+        break;
+
+    case 'showtemplate':
+        $templateid = required_param('templateid', PARAM_INT);
+        template::show($templateid);
+        break;
+
+    case 'hidetemplate':
+        $templateid = required_param('templateid', PARAM_INT);
+        template::hide($templateid);
         break;
 
     case 'deletetemplate':
@@ -144,6 +154,31 @@ switch ($action) {
     case 'deletebackupcontroller':
         $backupcontrollerid = required_param('backupcontrollerid', PARAM_INT);
         backupcontroller::delete($backupcontrollerid);
+        break;
+
+    case 'rejectlocaltemplate':
+        global $SESSION;
+        $SESSION->reject_local_template = true;
+
+        $categoryid = optional_param('category', 0, PARAM_INT);
+        $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
+        $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+
+        $params = [];
+        if (!empty($categoryid)) {
+            $params['category'] = $categoryid;
+        }
+        if (!empty($returnto)) {
+            $params['returnto'] = $returnto;
+        }
+        if (!empty($returnurl)) {
+            $params['returnurl'] = $returnurl;
+        }
+
+        $courseurl = (new \moodle_url($CFG->wwwroot . '/course/edit.php', $params))->out();
+
+        redirect($courseurl);
+
         break;
 
     default:
