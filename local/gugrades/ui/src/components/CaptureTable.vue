@@ -120,7 +120,11 @@
      * Page selected on paging bar
      */
     function pagechanged(page) {
-        namefilterref.reset_filter();
+        //window.console.log(namefilterref);
+        if ('reset_filter' in namefilterref) {
+            window.console.log('GOT TO PAGE CHANGE RESET');
+            namefilterref.reset_filter();
+        }
         currentpage.value = page;
         get_pagedusers();
     }

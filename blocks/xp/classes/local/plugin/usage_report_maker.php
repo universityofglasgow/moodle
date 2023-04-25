@@ -71,7 +71,7 @@ class usage_report_maker {
 
         $data = (object) [
             'url' => $CFG->wwwroot,
-            'siteidentifier' => $CFG->siteidentifier,
+            'siteidentifier' => get_site_identifier(),
             'moodle_version' => $CFG->version,
             'moodle_release' => $CFG->release,
         ];
@@ -139,9 +139,11 @@ class usage_report_maker {
             return null;
         }
 
+        // @codingStandardsIgnoreStart
         $TOTARA = new \stdClass();
         include($CFG->dirroot . '/version.php');
         return isset($TOTARA->version) ? $TOTARA->version : null;
+        // @codingStandardsIgnoreEnd
     }
 
     /**

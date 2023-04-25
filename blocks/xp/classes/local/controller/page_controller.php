@@ -165,7 +165,6 @@ abstract class page_controller extends course_route_controller {
             }
         }
 
-
         $config = $this->world->get_config();
         $context = $this->world->get_context();
         $blocktitle = $config->get('blocktitle');
@@ -180,7 +179,7 @@ abstract class page_controller extends course_route_controller {
         if ($this->has_sub_navigation()) {
             $this->page_sub_navigation();
         }
-        echo html_writer::start_div('xp-flex-1 xp-w-full');
+        echo html_writer::start_div('xp-flex-1 xp-w-full xp-min-w-px');
         $this->page_notices();
         $this->page_content();
         echo html_writer::end_div();

@@ -75,7 +75,32 @@ class restore_xp_block_structure_step extends restore_structure_step {
      * Process block.
      */
     protected function process_block($data) {
-        // Nothing to do here... \o/!
+        global $DB;
+
+        $target = $this->get_task()->get_target();
+        $courseid = $this->get_courseid();
+
+        // The backup target expects that all content is first being removed. Since deleting the block
+        // instance does not delete the data itself, we must manually delete everything.
+        if ($target == backup::TARGET_CURRENT_DELETING || $target == backup::TARGET_EXISTING_DELETING) {
+            $this->log('block_xp: deleting all data in target course', backup::LOG_DEBUG);
+
+            // Removing associated data.
+            $conditions = ['courseid' => $courseid];
+            $DB->delete_records('block_xp', $conditions);
+            $DB->delete_records('block_xp_config', $conditions);
+            $DB->delete_records('block_xp_filters', $conditions);
+            $DB->delete_records('block_xp_log', $conditions);
+
+            // Removing old preferences.
+            $sql = $DB->sql_like('name', ':name');
+            $DB->delete_records_select('user_preferences', $sql, [
+                'name' => 'block_xp-notice-block_intro_' . $courseid
+            ]);
+            $DB->delete_records_select('user_preferences', $sql, [
+                'name' => 'block_xp_notify_level_up_' . $courseid
+            ]);
+        }
     }
 
     /**
@@ -103,6 +128,43 @@ class restore_xp_block_structure_step extends restore_structure_step {
     protected function process_filter($data) {
         global $DB;
         $data['courseid'] = $this->get_courseid();
+
+        // We must never have more than one category grades rule, and it should be a ruleset.
+        if (!empty($data['category']) && $data['category'] == block_xp_filter::CATEGORY_GRADES) {
+
+            // If there is only rule, and its empty, then we restore on top of it.
+            $records = $DB->get_records('block_xp_filters', ['courseid' => $data['courseid'], 'category' => $data['category']]);
+            if (count($records) === 1) {
+
+                $record = reset($records);
+                $filter = block_xp_filter::load_from_data($record);
+                $rule = $filter->get_rule();
+
+                if ($rule instanceof block_xp_ruleset) {
+                    $rules = $rule->get_rules();
+                    if (!empty($rules)) {
+                        // The ruleset is not empty, there are existing rules, pass.
+                        $this->log("block_xp: grades rules not restored, existing grade rules found", backup::LOG_DEBUG);
+                        return;
+                    }
+
+                    // Update the record.
+                    $DB->update_record('block_xp_filters', ['id' => $record->id] + $data);
+                    return;
+
+                } else {
+                    // It really should be a ruleset, odd, let's just pass.
+                    $this->log("block_xp: grades rules not restored, existing grade rules found", backup::LOG_DEBUG);
+                    return;
+                }
+
+            } else if (count($records) > 1) {
+                // It's safer to ignore this.
+                $this->log("block_xp: grades rules not restored, multiple existing grade rules found", backup::LOG_DEBUG);
+                return;
+            }
+        }
+
         $DB->insert_record('block_xp_filters', $data);
     }
 

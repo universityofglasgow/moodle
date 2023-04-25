@@ -117,7 +117,7 @@ class event_lister {
      *                   ]
      *               ];
      */
-    public final function get_events_list() {
+    final public function get_events_list() {
         $key = 'list';
         if (true || false === ($list = $this->cache->get($key))) {
             $list = $this->construct_events_list();
@@ -178,19 +178,28 @@ class event_lister {
         // We need to disable debugging as some events can be deprecated.
         $debuglevel = $CFG->debug;
         $debugdisplay = $CFG->debugdisplay;
+        $debugusers = $CFG->debugusers;
+        $CFG->debugusers = '';
         set_debugging(0, false);
 
         // Check that the event exists, and is not an abstract event.
-        if (method_exists($class, 'get_static_info')) {
-            $ref = new \ReflectionClass($class);
-            if (!$ref->isAbstract()) {
-                $infos = $class::get_static_info();
-                $infos['name'] = method_exists($class, 'get_name_with_info') ? $class::get_name_with_info() : $class::get_name();
-                $infos['isdeprecated'] = method_exists($class, 'is_deprecated') ? $class::is_deprecated() : false;
+        try {
+            if (method_exists($class, 'get_static_info')) {
+                $ref = new \ReflectionClass($class);
+                if (!$ref->isAbstract()) {
+                    $infos = $class::get_static_info();
+                    $hasinfomethod = method_exists($class, 'get_name_with_info');
+                    $infos['name'] = $hasinfomethod ? $class::get_name_with_info() : $class::get_name();
+                    $infos['isdeprecated'] = method_exists($class, 'is_deprecated') ? $class::is_deprecated() : false;
+                }
             }
+        } catch (\Exception $e) {
+            // Capture all exceptions to ensure we're not breaking the page, and resetting the debugging parameters.
+            $infos = $infos; // Make the codechecker happy.
         }
 
         // Restore debugging.
+        $CFG->debugusers = $debugusers;
         set_debugging($debuglevel, $debugdisplay);
 
         return $infos;

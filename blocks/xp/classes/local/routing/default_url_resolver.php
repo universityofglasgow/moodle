@@ -62,7 +62,7 @@ class default_url_resolver implements url_resolver {
      * Return the route's URL from the current request.
      *
      * This makes assumptions on the current request, etc...
-     * Shamelessly mostly copied from {@link get_file_arguements()}.
+     * Shamelessly mostly copied from {@see get_file_arguments()}.
      *
      * @return string
      */
@@ -86,7 +86,7 @@ class default_url_resolver implements url_resolver {
         }
 
         // Did we have a relative path yet?
-        if ($relativepath !== false and $relativepath !== '') {
+        if ($relativepath !== false && $relativepath !== '') {
             return $relativepath;
         }
         $relativepath = false;
