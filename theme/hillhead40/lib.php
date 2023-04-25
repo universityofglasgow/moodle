@@ -140,3 +140,12 @@ function theme_hillhead40_exists_template_plugin() {
     }
     return false;
 }
+
+if (theme_hillhead40_exists_template_plugin()) {
+    global $CFG;
+
+    // Moodle codechecker incorrectly asserts require_once must use parenthesis.
+    // @codingStandardsIgnoreLine
+    require_once $CFG->dirroot . '/local/template/locallib.php';
+    local_template_add_new_course_hook();
+}

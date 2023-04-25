@@ -40,7 +40,7 @@ class backupcontroller {
 
     public static function path() {
         global $CFG;
-        if (is_template_admin()) {
+        if (local_template_is_admin()) {
             return $CFG->wwwroot . '/local/template/admin/backupcontrollers.php';
         } else {
             return $CFG->wwwroot . '/local/template/index.php';
@@ -230,14 +230,14 @@ class backupcontroller {
             new \moodle_url(self::path(), ['action' => 'createbackupcontroller']),
             get_string('createbackupcontroller', 'local_template')
         );
-        if (is_template_admin()) {
+        if (local_template_is_admin()) {
             $buttons .= $OUTPUT->single_button(new \moodle_url(self::path()), get_string('admin', 'local_template'));
         }
 
         // Print the header.
         echo $OUTPUT->header();
-        if (is_template_admin()) {
-            echo template_admin();
+        if (local_template_is_admin()) {
+            echo local_template_admin();
         }
         echo $OUTPUT->heading(get_string('backupcontroller', 'local_template'));
 

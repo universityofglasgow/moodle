@@ -1,7 +1,7 @@
 <?php
 
 
-function add_new_course_hook() {
+function local_template_add_new_course_hook() {
     // Based on plugin setting, hook into page load to test if requested page is course-edit without id (add new course)
     global $PAGE, $SESSION;
 
@@ -12,22 +12,30 @@ function add_new_course_hook() {
             $addnewcoursehook = get_config('local_template', 'addnewcoursehook');
 
             if ($addnewcoursehook) {
+
+                // If id is present, it's an edit view, not a create view
                 $id = optional_param('id', 0, PARAM_INT); // Course id.
                 if (!$id) {
 
-                    $categoryid = optional_param('category', 0, PARAM_INT);
-                    $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
-                    $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+                    $reject_local_template = false;
+                    if (isset($SESSION->reject_local_template)) {
+                        $reject_local_template = $SESSION->reject_local_template;
+                    }
 
-                    $courseurl = new moodle_url('/local/template', [
-                        'id' => $id,
-                        'categoryid' => $categoryid,
-                        'returnto' => $returnto,
-                        'returnurl' => $returnurl,
-                    ]);
+                    if (empty($reject_local_template)) {
+                        $categoryid = optional_param('category', 0, PARAM_INT);
+                        $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
+                        $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
-                    // If
-                    redirect($courseurl);
+                        $courseurl = new moodle_url('/local/template', [
+                            'id' => $id,
+                            'categoryid' => $categoryid,
+                            'returnto' => $returnto,
+                            'returnurl' => $returnurl,
+                        ]);
+
+                        redirect($courseurl);
+                    }
                 }
             }
         }

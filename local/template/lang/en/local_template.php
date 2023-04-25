@@ -168,5 +168,5 @@ $string['savetemplate'] = 'Save draft without creating course';
 
 $string['addnewcourseviatemplate'] = 'Add a new course via template';
 
-$string['newcoursejobs'] = 'New Course Jobs';
+$string['log'] = 'Log';
 

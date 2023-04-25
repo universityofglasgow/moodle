@@ -82,7 +82,7 @@ class template extends \core\form\persistent {
         $mform->setConstant('action', $this->_customdata['action']);
 
         $record = $this->get_persistent()->to_record();
-        if (is_template_admin()) {
+        if (local_template_is_admin()) {
             if (!empty($record->id)) {
                 //notification::success('Edit Mode');
             } else {
@@ -478,7 +478,7 @@ class template extends \core\form\persistent {
             }
         }
 
-        $mform->addElement('header', 'newcoursejobs', get_string('newcoursejobs', 'local_template'));
+        $mform->addElement('header', 'log', get_string('log', 'local_template'));
         $mform->addElement('html', $OUTPUT->box(controllers\template::rendertemplates($record->id, true)));
 
 
