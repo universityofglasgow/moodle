@@ -36,7 +36,7 @@ global $USER, $SESSION;
     $twohours = $currenttime - 2*60*60;
 
     if (!isset($SESSION->statscount) || $SESSION->statscount["timeupdated"]<$twohours) {
-    $get_stats_counts = assessments_statistics::get_stats_counts($USER->id);
+    $get_stats_counts = newassessments_statistics::get_stats_counts($USER->id);
 
     $sub_assess = $get_stats_counts->submitted;
     $tobe_sub = $get_stats_counts->tobesubmit;
