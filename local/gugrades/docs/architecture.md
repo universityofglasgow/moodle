@@ -40,6 +40,10 @@ In general, the plugin will access existing Moodle APIs and database tables. Som
 * Data will be uploaded through the UI both manually and by CSV upload
 * The plugin has its own data structures and these will either be directly accessible and/or through an API (TBD) for student dashboard and/or reporting. 
 
+### Linking to moodle
+
+The plugin uses Moodle standard navigation APIs to add the link to 'UofG Grades' into each course's "More..." menu.
+
 # Detailed code layout
 
 ## "Backend" implementation
@@ -55,3 +59,24 @@ The current web service functions are as follows:
 | get_grade_item       | Returns full details of the selected grad item. 
 | get_levelonecategories | Lists the top level grade categories for the initial selection (e.g. Summative / Formative)
 
+
+## User interface
+
+The user interface is written entirely in Vue.js.  This is effectively allows new HTML elements to be created as what Vue calls "components". These contain all logic and presentation to render that element. 
+Properties and events are fully supported.
+
+This implies a hierarchy of functionality. The components leverage Moodle ajax calls to interact with the backend. 
+
+The current Components are as follows:
+
+| Component            | Description
+|----------------------|--------------------------------------------------------------|
+| App                  | Top level of UI. Called from the plugin's index.php |
+| CaptureAggregation   | Container for the capture and aggregation screens |
+| TabsNav              | Shows tabs to select Grade capture, Aggregation and Settings |
+| LevelOneSelect       | Shows a drop down to select the top level grade category (Note that if there are none an error is displayed) |
+| ActivityTree         | Constructs a tree structure of grade categories and grade-items. User selects current item. View changes to the selected item until clicked again |
+| CaptureTable         | Paginated table of users and grades during capture |
+| NameFilter           | Replicates Moodle's standard initial letter name filter in Vue |
+| InitialBar           | Used by NameFilter - shows one line of letters |
+| PagingBar            | Allows page to be selected when sufficient students to paginate table |
