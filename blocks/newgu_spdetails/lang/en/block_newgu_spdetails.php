@@ -34,3 +34,15 @@ $string['tobesubmitted'] = 'To be submitted / attended';
 $string['submitted'] = ' submitted';
 $string['overdue'] = 'Overdue';
 $string['marked'] = ' marked';
+
+$string['assessmenttype'] = 'Assessment Type';
+$string['weight'] = 'Weight';
+$string['duedate'] = 'Due Date';
+$string['yourgrade'] = 'Your grade';
+
+$string['currentlyenrolledin'] = 'Currently enrolled in';
+$string['pastcourses'] = 'Past Courses';
+
+$string['navtitle'] = 'Assessments';
+
+$string['noassessments'] = 'No assessments';

@@ -24,7 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-class assessments_statistics {
+class newassessments_statistics {
 
 public static function return_enrolledcourses($userid) {
         global $DB;
@@ -56,7 +56,7 @@ public static function get_stats_counts($userid)
 {
     global $DB;
 
-    $courses = assessments_statistics::return_enrolledcourses($userid);
+    $courses = newassessments_statistics::return_enrolledcourses($userid);
 
     $courseids = implode(', ', $courses);
 
@@ -112,13 +112,13 @@ public static function get_stats_counts($userid)
 
      }
 
-     // WRITE CODE HERE TO FETCH overdue FOR forum, quiz and workshop
+     // WRITE CODES HERE TO FETCH overdue FOR forum, quiz and workshop
 
 
 
 
      // ASSESSMENTS MARKED
-     $marked = $DB->count_records_select('grade_grades', 'finalgrade != "Null" AND usermodified != "Null"', ['userid' => $userid]);
+     $marked = $DB->count_records_select('grade_grades', 'finalgrade != "Null" AND usermodified != "Null" AND userid=:userid', ['userid' => $userid]);
 
      // FINAL STATISTICS TO BE RETURNED
      $counts = new stdClass;
