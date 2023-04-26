@@ -48,5 +48,10 @@ The backend / business logic is written as PHP classes and is primarily exposed 
 
 The current web service functions are as follows:
 
-get_activities
-: Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item.
+| API Function         | Description
+|----------------------|---------------------------------------------------------------------------- |
+| get_activities       | Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item. |
+| get_capture_page     | Given the ID of the selected activity this returns all the data needed to display the current table of the grade capture page. This includes all the students who can access the selected activity. |
+| get_grade_item       | Returns full details of the selected grad item. 
+| get_levelonecategories | Lists the top level grade categories for the initial selection (e.g. Summative / Formative)
+
