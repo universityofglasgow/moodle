@@ -26,3 +26,27 @@ The classes/ directory also contains a number of classes that contain static sha
 * The user interface access the backend using web services. This leverages Moodle's standard web service library. See https://moodledev.io/docs/apis/subsystems/external
 * Some 'glue logic' is coded as a Moodle AMD module to allow the Vue code to access Moodle's javascript modules (e.g. strings, ajax, notifications). 
 
+## Interfaces
+
+In general, the plugin will access existing Moodle APIs and database tables. Some of these are as follows...
+
+* The Gradebook tables and API are used to access a number of items:
+    * Gradeable items (e.g. grades activities, manual grades)
+    * Gradebook structure (grade category tree structure and containing grade items)
+    * Grade category settings (aggregation schema)
+    * Grade item settings (hidden, overridden and so on)
+* The Moodle course module API to discover details about individual activities
+* Moodle Assignment database tables / API. Assignment is a special case in that it we need to support hidden grading, workflow status and the activity manipulating its own grades. 
+* Data will be uploaded through the UI both manually and by CSV upload
+* The plugin has its own data structures and these will either be directly accessible and/or through an API (TBD) for student dashboard and/or reporting. 
+
+# Detailed code layout
+
+## "Backend" implementation
+
+The backend / business logic is written as PHP classes and is primarily exposed through normal Moodle external APIs (web services). These are supported by utility classes for commonly/repeatedly used functions. 
+
+The current web service functions are as follows:
+
+get_activities
+: Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item.
