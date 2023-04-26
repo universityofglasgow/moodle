@@ -71,12 +71,12 @@ The current Components are as follows:
 
 | Component            | Description
 |----------------------|--------------------------------------------------------------|
-| App                  | Top level of UI. Called from the plugin's index.php |
-| CaptureAggregation   | Container for the capture and aggregation screens |
-| TabsNav              | Shows tabs to select Grade capture, Aggregation and Settings |
-| LevelOneSelect       | Shows a drop down to select the top level grade category (Note that if there are none an error is displayed) |
-| ActivityTree         | Constructs a tree structure of grade categories and grade-items. User selects current item. View changes to the selected item until clicked again |
-| CaptureTable         | Paginated table of users and grades during capture |
-| NameFilter           | Replicates Moodle's standard initial letter name filter in Vue |
-| InitialBar           | Used by NameFilter - shows one line of letters |
-| PagingBar            | Allows page to be selected when sufficient students to paginate table |
+| [App](../ui/src/App.vue) | Top level of UI. Called from the plugin's index.php |
+| [CaptureAggregation](../ui/src/views/CaptureAggregation.vue) | Container for the capture and aggregation screens |
+| [TabsNav](../ui/src/components/TabsNav.vue) | Shows tabs to select Grade capture, Aggregation and Settings |
+| [LevelOneSelect](../ui/src/components/LevelOneSelect.vue) | Shows a drop down to select the top level grade category (Note that if there are none an error is displayed) |
+| [ActivityTree](../ui/src/components/ActivityTree.vue) | Constructs a tree structure of grade categories and grade-items. User selects current item. View changes to the selected item until clicked again |
+| [CaptureTable](../ui/src/components/CaptureTable.vue) | Paginated table of users and grades during capture |
+| [NameFilter](../ui/src/components/NameFilter.vue) | Replicates Moodle's standard initial letter name filter in Vue |
+| [InitialBar](../ui/src/components/InitialBar.vue) | Used by NameFilter - shows one line of letters |
+| [PagingBar](../ui/src/components/PagingBar.vue) | Allows page to be selected when sufficient students to paginate table |
