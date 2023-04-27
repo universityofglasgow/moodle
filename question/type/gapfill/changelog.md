@@ -1,7 +1,14 @@
-### Version 2.136 of the Moodle Gapfill question type Month 2022
-Remove html comments from code before rendering. There is no
-reason to include comments at run time and when people copy and paste
-from other sources it can include items like  <!--[if !supportLists]
+### Version 2.137 of the Moodle Gapfill question type April 2023
+Fix compatibility on mobile with dark theme (css tweak)
+https://github.com/marcusgreen/moodle-qtype_gapfill/pull/100
+
+Centre droptarget text to better handle long answers
+https://github.com/marcusgreen/moodle-qtype_gapfill/issues/99
+
+Additional English language sample questions.
+
+### Version 2.136 of the Moodle Gapfill question type Nov 2022
+Remove html comments from code before rendering. There is no reason to include comments at run time and when people copy and paste from other sources it can include items like  <!--[if !supportLists]
 creating spurious gaps. Thanks to sunnac for reporting this.
 
 New behat test to confirm core mlang and mlang2 filters work as expected.
