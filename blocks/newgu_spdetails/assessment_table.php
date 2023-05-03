@@ -10,6 +10,8 @@ global $CFG,$USER, $DB;
 
 require "$CFG->libdir/tablelib.php";
 
+require_once('locallib.php');
+
 
 class assessment_table extends table_sql
 {
@@ -84,6 +86,7 @@ class assessment_table extends table_sql
         }
 
         return $assessmenttype;
+        //return json_encode($values);
 
     }
 
@@ -118,6 +121,15 @@ class assessment_table extends table_sql
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
+
+      $arr_module = $DB->get_record('modules', array('name'=>'quiz'));
+      $moduleid = $arr_module->id;
+
+//      $arr_coursemodule = $DB->get_record('course_modules', array('course'=>$courseid, 'module'=>$moduleid, 'instance'=>$instance));
+
+      //$cmid = $arr_coursemodule->id;
+
+
 
       $duedate = 0;
 
@@ -161,6 +173,9 @@ class assessment_table extends table_sql
 
       if ($modulename=="assign") {
           $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
+
+          $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
+
           if (!empty($arr_assign)) {
             $allowsubmissionsfromdate = $arr_assign->allowsubmissionsfromdate;
             $duedate = $arr_assign->duedate;
@@ -175,28 +190,34 @@ class assessment_table extends table_sql
               $status = $arr_assignsubmission->status;
             } else {
               $status = 'tosubmit';
-              $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $itemid;
+              $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
             }
           }
       }
 
       if ($modulename=="forum") {
             $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
+
+            $cmid = newassessments_statistics::get_cmid('forum', $courseid, $iteminstance);
+
             if ($forumsubmissions>0) {
                 $status = 'submitted';
             } else {
                 $status = 'tosubmit';
-                $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $itemid;
+                $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
             }
         }
 
         if ($modulename=="quiz") {
+
+              $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
+
               $quizattempts = $DB->count_records('quiz_attempts', array('quiz'=>$iteminstance, 'userid'=>$USER->id, 'state'=>'finished'));
               if ($quizattempts>0) {
                   $status = 'submitted';
               } else {
                   $status = 'tosubmit';
-                  $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $iteminstance;
+                  $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
               }
         }
 

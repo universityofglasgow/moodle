@@ -130,6 +130,22 @@ public static function get_stats_counts($userid)
      return $counts;
 
 }
+
+public static function get_cmid($cmodule, $courseid, $instance) {
+  // cmodule is module name e.g. quiz, forums etc.
+  global $DB;
+
+  $arr_module = $DB->get_record('modules', array('name'=>$cmodule));
+  $moduleid = $arr_module->id;
+
+  $arr_coursemodule = $DB->get_record('course_modules', array('course'=>$courseid, 'module'=>$moduleid, 'instance'=>$instance));
+
+  $cmid = $arr_coursemodule->id;
+
+  return $cmid;
+
+}
+
 }
 
 ?>

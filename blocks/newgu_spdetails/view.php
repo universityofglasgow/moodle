@@ -108,12 +108,20 @@ $PAGE->requires->js_amd_inline("
 
                                         $table->set_sql('*', "{grade_items}", "courseid in (".$str_courses.") && courseid>1 && itemtype='mod'");
 
+                                        $table->no_sorting('course');
+                                        $table->no_sorting('assessment');
+                                        $table->no_sorting('assessmenttype');
+                                        $table->no_sorting('weight');
+                                        $table->no_sorting('duedate');
+                                        $table->no_sorting('status');
+                                        $table->no_sorting('yourgrade');
+                                        $table->no_sorting('feedback');
+
                                         $table->define_baseurl("$CFG->wwwroot/blocks/newgu_spdetails/view.php");
 
-                                        $table->sortable(true, 'username');
-                                        $table->sortable(true, 'firstaccess');
 
-                                        echo '
+
+                                        echo '<div style="width:100%">
                                         <label>Show
                                             <select onchange="alert(this.value)" name="grades_length" aria-controls="grades" class="" fdprocessedid="qno">
                                               <option value="10">10</option>
@@ -123,7 +131,8 @@ $PAGE->requires->js_amd_inline("
                                             </select> entries</label>
 
                                         <label style="float: right;">Search: <input type="search" class="" placeholder="" aria-controls="grades"></label>
-                                        ';
+                                        </div>
+                                        <div style="clear:both;"></div>';
 
                                         $table->out(20, true);
 

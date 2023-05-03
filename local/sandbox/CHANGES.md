@@ -4,6 +4,12 @@ moodle-local_sandbox
 Changes
 -------
 
+### v4.1-r1
+
+* 2023-01-21 - Prepare compatibility for Moodle 4.1.
+* 2023-03-11 - Make codechecker happy again
+* 2022-11-28 - Updated Moodle Plugin CI to latest upstream recommendations
+
 ### v4.0-r1
 
 * 2022-07-12 - Fix Behat tests which broke with Moodle 4.0
