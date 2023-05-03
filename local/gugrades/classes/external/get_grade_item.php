@@ -58,15 +58,7 @@ class get_grade_item extends \external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        return [
-            'id' => $item->id,
-            'courseid' => $item->courseid,
-            'categoryid' => $item->categoryid,
-            'itemname' => $item->itemname,
-            'itemtype' => $item->itemtype,
-            'itemmodule' => $item->itemmodule,
-            'iteminstance' => $item->iteminstance,            
-        ];
+        return \local_gugrades\api::get_grade_item($itemid);
     }
 
     public static function execute_returns() {

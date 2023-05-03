@@ -1,7 +1,12 @@
 <template>
     <div>
+        <div class="border rounded p-2 py-4 mt-2">
+            <button class="btn btn-primary" @click="showimportmodal = true">Import grades</button>
+        </div>
+
         <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
         <PagingBar :totalrows="totalrows" :perpage="perpage" @pagechange="pagechanged"></PagingBar>
+
         <div class="table-responsive">
             <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
                 <thead class="thead-light">
@@ -22,6 +27,10 @@
         </div>
 
         <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
+
+        <Teleport to="body">
+            <ModalForm :show="showimportmodal" @close="showimportmodal = false"></ModalForm>
+        </Teleport>
     </div>   
 </template>
 
@@ -29,6 +38,7 @@
     import {ref, defineProps, computed, watch, onMounted} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
     import PagingBar from '@/components/PagingBar.vue';
+    import ModalForm from '@/components/ModalForm.vue';
     import { getstrings } from '@/js/getstrings.js';
 
     const PAGESIZE = 20;
@@ -45,6 +55,7 @@
     const currentpage = ref(1);
     const usershidden = ref(false);
     const namefilterref = ref(null);
+    const showimportmodal = ref(false);
 
     let firstname = '';
     let lastname = '';

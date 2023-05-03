@@ -63,21 +63,7 @@ class get_capture_page extends \external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        // Instantiate object for this activity type
-        $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
-        $activity->set_name_filter($firstname, $lastname);
-
-        // Get start point for LIMIT
-        $pagingfrom = ($pageno - 1) * $pagelength;
-
-        // Get list of users.
-        // Will be everybody for 'manual' grades or filtered list for modules.
-        $users = $activity->get_users();
-
-        return [
-            'users' => json_encode($users),
-            'hidden' => $activity->is_names_hidden(),
-        ];
+        return \local_gugrades\api::get_capture_page($courseid, $gradeitemid, $pageno, $pagelength, $firstname, $lastname);
     }
 
     public static function execute_returns() {

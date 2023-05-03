@@ -50,14 +50,16 @@ The plugin uses Moodle standard navigation APIs to add the link to 'UofG Grades'
 
 The backend / business logic is written as PHP classes and is primarily exposed through normal Moodle external APIs (web services). These are supported by utility classes for commonly/repeatedly used functions. 
 
+Each API function is accessible in two places. The parameters etc. are the same. They can all be accessed either as a static method in classes/api.php or by a Moodle web service. 
+
 The current web service functions are as follows:
 
 | API Function         | Description
 |----------------------|---------------------------------------------------------------------------- |
-| get_activities       | Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item. |
-| get_capture_page     | Given the ID of the selected activity this returns all the data needed to display the current table of the grade capture page. This includes all the students who can access the selected activity. |
-| get_grade_item       | Returns full details of the selected grad item. 
-| get_levelonecategories | Lists the top level grade categories for the initial selection (e.g. Summative / Formative)
+| [get_activities](../classes/external/get_activities.php) | Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item. |
+| [get_capture_page](../classes/external/get_capture_page.php)| Given the ID of the selected activity this returns all the data needed to display the current table of the grade capture page. This includes all the students who can access the selected activity. |
+| [get_grade_item](../classes/external/get_grade_item.php)| Returns full details of the selected grad item. 
+| [get_levelonecategories](../classes/external/get_levelonecategories.php) | Lists the top level grade categories for the initial selection (e.g. Summative / Formative)
 
 
 ## User interface

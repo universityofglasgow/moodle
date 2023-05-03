@@ -48,18 +48,7 @@ class get_levelonecategories extends \external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        // Get level 1 categories
-        $grades = new \local_gugrades\grades($courseid);
-        $results = [];
-        $categories = $grades->get_firstlevel();
-        foreach ($categories as $category) {
-            $results[] = [
-                'id' => $category->id,
-                'fullname' => $category->fullname,
-            ];
-        }
-
-        return $results;
+        return \local_gugrades\api::get_levelonecategories($courseid);
     }
 
     public static function execute_returns() {
