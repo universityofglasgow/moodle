@@ -131,9 +131,13 @@ class template extends \core\form\persistent {
             }
         }
 
-        list($insql, $params) = $DB->get_in_or_equal($categories);
-        $templatecourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
-        $templatecourses = [0 => ''] + $templatecourses;
+        if (empty($categories)) {
+            $templatecourses = [0 => ''];
+        } else {
+            list($insql, $params) = $DB->get_in_or_equal($categories);
+            $templatecourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
+            $templatecourses = [0 => ''] + $templatecourses;
+        }
         $mform->addElement('autocomplete', 'templatecourseid', get_string('templatecourse', 'local_template'), $templatecourses);
         $mform->addRule('templatecourseid', null, 'required', null, 'client');
         $mform->setDefault('templatecourseid', 0);
