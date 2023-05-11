@@ -35,10 +35,10 @@ function local_starredcourses_extend_navigation_course(navigation_node $parent, 
 
     if ($ufservice->favourite_exists('core_course', 'courses', $course->id, \context_course::instance($course->id))) {
         $name = get_string('unstarcourse', 'local_starredcourses');
-        $url = new moodle_url('/theme/hillhead40/course-unstar.php?id=' . $course->id);
+        $url = new moodle_url('/local/starredcourses/course-unstar.php?id=' . $course->id);
     } else {
         $name = get_string('starcourse', 'local_starredcourses');
-        $url = new moodle_url('/theme/hillhead40/course-star.php?id=' . $course->id);
+        $url = new moodle_url('/local/starredcourses/course-star.php?id=' . $course->id);
     }
 
     $parent->add($name, $url, navigation_node::NODETYPE_LEAF, $name, 'starredcourses-settings');
