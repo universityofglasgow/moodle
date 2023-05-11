@@ -170,3 +170,4 @@ $string['addnewcourseviatemplate'] = 'Add a new course via template';
 
 $string['log'] = 'Log';
 
+$string['notemplatedefined'] = 'No log items';

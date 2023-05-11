@@ -29,6 +29,8 @@ use local_template\controllers\backupcontroller;
 use local_template\models;
 use local_template\local\notifications;
 use local_template\core;
+use local_template\utils;
+
 use moodle_database;
 use renderable;
 use renderer_base;
@@ -250,7 +252,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function collection($parentid = 0, $view = 'table', $displayheadings = true, $params = null, $sort = 'timemodified', $order = 'DESC') {
 
-        $templatepage = local_template_get_paging('templatepage');
+        $templatepage = utils::get_paging('templatepage');
 
         $templateperpage = self::$templateperpage;
         if (!empty(get_config('local_template', 'templateperpage'))) {
@@ -258,7 +260,7 @@ class template extends \core\persistent implements renderable, templatable {
         }
 
         $addnew = false;
-        if (!local_template_is_admin()) {
+        if (!utils::is_admin()) {
             global $USER;
             // Only show records for current user, and not hidden records.
             $params['usercreated'] = $USER->id;
@@ -298,7 +300,7 @@ class template extends \core\persistent implements renderable, templatable {
             ],
         ];
 
-        if (local_template_is_admin_page()) {
+        if (utils::is_admin_page()) {
             $properties['backupcontrollercollection'] = [
                 'label' => get_string('backupcontrollercollection', 'local_template'),
                 'alignment' => 'left',
@@ -312,7 +314,7 @@ class template extends \core\persistent implements renderable, templatable {
             ];
         }
 
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             $properties['usercreated'] = [
                 'label' => get_string('username', 'local_template'),
                 'alignment' => 'left',
@@ -362,7 +364,7 @@ class template extends \core\persistent implements renderable, templatable {
         $name = format_string($name);
         if (!empty($path)) {
             global $OUTPUT;
-            $name .= $OUTPUT->spacer() . local_template_icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
+            $name .= $OUTPUT->spacer() . utils::icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
         }
         return $name;
     }
@@ -408,7 +410,7 @@ class template extends \core\persistent implements renderable, templatable {
             }
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/index.php';
-            return format_string($category->name) . $OUTPUT->spacer() . local_template_icon_link('preview', $url, ['categoryid' => $categoryid]);
+            return format_string($category->name) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['categoryid' => $categoryid]);
         }
         return get_string('missingcategory','local_template');
     }
@@ -421,7 +423,7 @@ class template extends \core\persistent implements renderable, templatable {
         } else {
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/view.php';
-            $templatecourse = format_string($templatecourse->fullname) . $OUTPUT->spacer() . local_template_icon_link('preview', $url, ['id' => $templatecourse->id]);
+            $templatecourse = format_string($templatecourse->fullname) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['id' => $templatecourse->id]);
         }
         return $templatecourse;
     }
@@ -457,7 +459,7 @@ class template extends \core\persistent implements renderable, templatable {
         } else {
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/view.php';
-            $importcourse = format_string($importcourse->fullname) . $OUTPUT->spacer() . local_template_icon_link('preview', $url, ['id' => $importcourse->id]);
+            $importcourse = format_string($importcourse->fullname) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['id' => $importcourse->id]);
         }
         return $importcourse;
     }
@@ -493,7 +495,7 @@ class template extends \core\persistent implements renderable, templatable {
         } else {
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/view.php';
-            $createdcourse = format_string($createdcourse->fullname) . $OUTPUT->spacer() . local_template_icon_link('preview', $url, ['id' => $createdcourse->id]);
+            $createdcourse = format_string($createdcourse->fullname) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['id' => $createdcourse->id]);
         }
         return $createdcourse;
     }
@@ -552,7 +554,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function add_new_icon($parentid) {
         global $OUTPUT;
-        return local_template_icon_link('add', controllers\template::path(), ['action' => 'createtemplate', 'id' => '0']);
+        return utils::icon_link('add', controllers\template::path(), ['action' => 'createtemplate', 'id' => '0']);
     }
 
     public static function add_new($parentid) {
@@ -587,22 +589,22 @@ class template extends \core\persistent implements renderable, templatable {
         $path = controllers\template::path();
         $actions = '';
         // preview, add, edit, hide, show, moveup, movedown, delete
-        $actions .= local_template_icon_link('preview', $path, ['action' => 'viewtemplate', 'templateid' => $this->raw_get('id')]);
-        $actions .= local_template_icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
+        $actions .= utils::icon_link('preview', $path, ['action' => 'viewtemplate', 'templateid' => $this->raw_get('id')]);
+        $actions .= utils::icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
 
 
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             if ($this->raw_get('hidden')) {
-                $actions .= local_template_icon_link('show', $path, ['action' => 'showtemplate', 'templateid' => $this->raw_get('id')]);
+                $actions .= utils::icon_link('show', $path, ['action' => 'showtemplate', 'templateid' => $this->raw_get('id')]);
             } else {
-                $actions .= local_template_icon_link('hide', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
+                $actions .= utils::icon_link('hide', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
             }
-            $actions .= local_template_icon_link('delete', $path, ['action' => 'deletetemplate', 'templateid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
+            $actions .= utils::icon_link('delete', $path, ['action' => 'deletetemplate', 'templateid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
         } else {
-            $actions .= local_template_icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
+            $actions .= utils::icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
         }
 
-        $actions .= local_template_icon_link('go', $path, ['action' => 'runtemplate', 'templateid' => $this->raw_get('id')]);
+        $actions .= utils::icon_link('go', $path, ['action' => 'runtemplate', 'templateid' => $this->raw_get('id')]);
         return $actions;
     }
 
@@ -831,7 +833,7 @@ class template extends \core\persistent implements renderable, templatable {
 
         $norecordslangstring = 'notemplatedefined';
         $addrecordlangstring = 'addtemplate';
-        $addnewiconlink = local_template_icon_link('add', $path, ['action' => 'createtemplate', 'id' => '0']);
+        $addnewiconlink = utils::icon_link('add', $path, ['action' => 'createtemplate', 'id' => '0']);
         $containsactions = true;
 
         if ($view == 'table') {
@@ -844,7 +846,7 @@ class template extends \core\persistent implements renderable, templatable {
         }
 
         $filters = [];
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             // Add usercreated column
             $headings[] = [
                 'columnindex' => 4,
@@ -875,7 +877,7 @@ class template extends \core\persistent implements renderable, templatable {
                 $templatename = get_string('missingtemplatename','local_template');
             }
             $templatename = format_string($templatename);
-            $templatename .= $OUTPUT->spacer() . local_template_icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $template->get('id')]);
+            $templatename .= $OUTPUT->spacer() . utils::icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $template->get('id')]);
 
             $record[] = $templatename;
 
@@ -900,24 +902,24 @@ class template extends \core\persistent implements renderable, templatable {
                 $record[] = backupcontroller::renderbackupcontrollers($template->get('id'), false);
             }
 
-            if (local_template_is_admin()) {
+            if (utils::is_admin()) {
                 // Show user
                 $record[] = format_string(fullname($template->get_createuser()));
             }
 
             $actions = '';
             // add, edit, hide, show, moveup, movedown, delete
-            $actions .= local_template_icon_link('edit',$path, ['action' => 'edittemplate', 'templateid' => $template->get('id')]);
+            $actions .= utils::icon_link('edit',$path, ['action' => 'edittemplate', 'templateid' => $template->get('id')]);
 
-            if (local_template_is_admin()) {
+            if (utils::is_admin()) {
                 if ($template->get('hidden')) {
-                    $actions .= local_template_icon_link('show', $path, ['action' => 'showtemplate', 'templateid' => $template->get('id')]);
+                    $actions .= utils::icon_link('show', $path, ['action' => 'showtemplate', 'templateid' => $template->get('id')]);
                 } else {
-                    $actions .= local_template_icon_link('hide', $path, ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
+                    $actions .= utils::icon_link('hide', $path, ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
                 }
-                $actions .= local_template_icon_link('delete', $path, ['action' => 'deletetemplate', 'templateid' => $template->get('id'), 'sesskey' => sesskey()]);
+                $actions .= utils::icon_link('delete', $path, ['action' => 'deletetemplate', 'templateid' => $template->get('id'), 'sesskey' => sesskey()]);
             } else {
-                $actions .= local_template_icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
+                $actions .= utils::icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
             }
 
             $record[] = $actions;

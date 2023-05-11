@@ -26,6 +26,7 @@ namespace local_template\forms;
 use core\notification;
 use local_template\models;
 use local_template\controllers;
+use local_template\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -82,7 +83,7 @@ class template extends \core\form\persistent {
         $mform->setConstant('action', $this->_customdata['action']);
 
         $record = $this->get_persistent()->to_record();
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             if (!empty($record->id)) {
                 //notification::success('Edit Mode');
             } else {
@@ -118,15 +119,24 @@ class template extends \core\form\persistent {
         }
 
         global $DB;
+
+        // Get plugin config setting list of template course categories.
         $templatecategories = get_config('local_template', 'categories');
-        list($insql, $params) = $DB->get_in_or_equal($templatecategories);
+
+        $categories = [];
+        // Reduce set of template categories based on user capability in each category.
+        foreach (explode(',', $templatecategories) as $categoryid) {
+            if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
+                $categories[] = $categoryid;
+            }
+        }
+
+        list($insql, $params) = $DB->get_in_or_equal($categories);
         $templatecourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
         $templatecourses = [0 => ''] + $templatecourses;
-
         $mform->addElement('autocomplete', 'templatecourseid', get_string('templatecourse', 'local_template'), $templatecourses);
         $mform->addRule('templatecourseid', null, 'required', null, 'client');
         $mform->setDefault('templatecourseid', 0);
-        //$mform->addHelpButton('category', 'coursecategory');
         //$mform->addHelpButton('category', 'coursecategory');
 
 

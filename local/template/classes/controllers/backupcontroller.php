@@ -29,6 +29,7 @@ use local_template\models;
 use local_template\forms;
 use core\notification;
 use moodle_url;
+use local_template\utils;
 
 define(NO_OUTPUT_BUFFERING, true);
 
@@ -40,7 +41,7 @@ class backupcontroller {
 
     public static function path() {
         global $CFG;
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             return $CFG->wwwroot . '/local/template/admin/backupcontrollers.php';
         } else {
             return $CFG->wwwroot . '/local/template/index.php';
@@ -230,14 +231,14 @@ class backupcontroller {
             new \moodle_url(self::path(), ['action' => 'createbackupcontroller']),
             get_string('createbackupcontroller', 'local_template')
         );
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             $buttons .= $OUTPUT->single_button(new \moodle_url(self::path()), get_string('admin', 'local_template'));
         }
 
         // Print the header.
         echo $OUTPUT->header();
-        if (local_template_is_admin()) {
-            echo local_template_admin();
+        if (utils::is_admin()) {
+            echo utils::admin();
         }
         echo $OUTPUT->heading(get_string('backupcontroller', 'local_template'));
 

@@ -30,6 +30,7 @@ use local_template\forms;
 use core\notification;
 use moodle_url;
 use paging_bar;
+use local_template\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -41,7 +42,7 @@ class template {
 
     public static function path() {
         global $CFG;
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             return $CFG->wwwroot . '/local/template/admin/templates.php';
         } else {
             return $CFG->wwwroot . '/local/template/index.php';
@@ -274,7 +275,7 @@ class template {
                     }
                 }
 
-                if (local_template_is_admin() || $id == 0) {
+                if (utils::is_admin() || $id == 0) {
                     /*
                     $data = file_postupdate_standard_filemanager($data, 'importfile', models\template::get_importfileoptions(), models\template::get_context(),
                         models\template::TABLE, models\template::FILEAREA_IMPORT, $template->get('id'));
@@ -423,16 +424,16 @@ class template {
         $buttons = self::view_buttons();
 
         // Create a new template link.
-        $buttons .= local_template_icon_link('add', self::path(), ['action' => 'createtemplate', 'id' => '0']);
+        $buttons .= utils::icon_link('add', self::path(), ['action' => 'createtemplate', 'id' => '0']);
         // $buttons .= $OUTPUT->single_button(new \moodle_url(self::path(), array('action' => 'createtemplate')), get_string('createtemplate', 'local_template'));
-        if (local_template_is_admin()) {
+        if (utils::is_admin()) {
             $buttons .= \html_writer::link(new \moodle_url(self::path()), '<i class="fa fa-user-secret" title="Admin" role="img" aria-label="Admin"></i>', ['title' => 'Admin']);
         }
 
         // Print the header.
         echo $OUTPUT->header();
-        if (local_template_is_admin()) {
-            echo local_template_admin();
+        if (utils::is_admin()) {
+            echo utils::admin();
         }
         echo $OUTPUT->heading(get_string('template', 'local_template'));
         echo $confirm;
@@ -468,116 +469,5 @@ class template {
         }
         $template = models\template::collection($parentid, $view);
         return $template->render() . $template->render_paging_bar(self::path());
-
-
-
-        global $SESSION, $OUTPUT, $PAGE, $USER;
-        $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
-        }
-        $headings = ['date', 'name', 'importfile'];
-        $headingalignment = ['left', 'left', 'left'];
-        $norecordslangstring = 'notemplatedefined';
-        $addrecordlangstring = 'addtemplate';
-        $addnewiconlink = local_template_icon_link('add', self::path(), ['action' => 'createtemplate', 'id' => '0']);
-        $containsactions = true;
-
-        if ($view == 'table') {
-            $headings[] = 'backupcontrollers';
-            $headingalignment[] = 'left';
-        }
-
-        $filters = [];
-        if (local_template_is_admin()) {
-            // Add usercreated column
-            $headings[] = 'user';
-            $headingalignment[] = 'left';
-        } else {
-            // Only show records for current user, and not hidden records.
-            $filters['usercreated'] = $USER->id;
-        }
-
-        $records = [];
-        $templatecollection = models\template::get_records($filters, 'timemodified', 'DESC');
-
-        $output = '';
-        foreach ($templatecollection as $template) {
-            $record = [];
-
-            $templatedate = userdate($template->get('timemodified'), get_string('strftimedatetimeshort', 'core_langconfig'));
-            if (empty($templatedate)) {
-                $templatedate = get_string('missingtemplatedate','local_template');
-            }
-            $record[] = format_string($templatedate);
-
-            $templatename = $template->get('name');
-            if (empty($templatename)) {
-                $templatename = get_string('missingtemplatename','local_template');
-            }
-            $templatename = format_string($templatename);
-            $templatename .= $OUTPUT->spacer() . local_template_icon_link('edit',self::path(), ['action' => 'edittemplate', 'templateid' => $template->get('id')]);
-
-            $record[] = $templatename;
-
-            $importfile = '';
-            if (!empty($template->get('courses'))) {
-                $importfile .= $template->get('courses') . '<br>';
-            }
-            if (!empty($template->get('assessments'))) {
-                $importfile .= $template->get('assessments') . '<br>';
-            }
-
-            $file = $template->get_file();
-            if (empty($file)) {
-                $importfile .= get_string('missingfilename','local_template');
-            } else {
-                $importfile .= local_template_icon_link('download', $template->get_file_url());
-            }
-            $record[] = $importfile;
-
-            if ($view == 'table') {
-                $record[] = backupcontroller::renderbackupcontrollers($template->get('id'), false);
-            }
-
-            if (local_template_is_admin()) {
-                // Show user
-                $record[] = format_string(fullname($template->get_createuser()));
-            }
-
-            $actions = '';
-            // add, edit, hide, show, moveup, movedown, delete
-            $actions .= local_template_icon_link('edit',self::path(), ['action' => 'edittemplate', 'templateid' => $template->get('id')]);
-
-            if (local_template_is_admin()) {
-                if ($template->get('hidden')) {
-                    $actions .= local_template_icon_link('show',self::path(), ['action' => 'showtemplate', 'templateid' => $template->get('id')]);
-                } else {
-                    $actions .= local_template_icon_link('hide',self::path(), ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
-                }
-                $actions .= local_template_icon_link('delete',self::path(), ['action' => 'deletetemplate', 'templateid' => $template->get('id'), 'sesskey' => sesskey()]);
-            } else {
-                $actions .= local_template_icon_link('delete',self::path(), ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
-            }
-
-            $record[] = $actions;
-            $records[] = $record;
-            $renderer = $PAGE->get_renderer('local_template');
-            $output .= $renderer->render($template);
-        }
-        /*
-        if ($view == 'table') {
-            $output = create_action_table($records, $headings, $headingalignment, $norecordslangstring, $addrecordlangstring, $addnewiconlink, $containsactions);
-        } else {
-            if ($view == 'list') {
-                $output = create_action_list($records, $headings, $headingalignment, $norecordslangstring, $addrecordlangstring, $addnewiconlink, $containsactions);
-            } else {
-                $output = create_action_collapse($records, $headings, $headingalignment, $norecordslangstring, $addrecordlangstring, $addnewiconlink, $containsactions);
-            }
-        }
-        */
-        // $output .= backupcontroller::renderbackupcontrollers$template->get('id'));
-
-        return $output;
     }
 }
