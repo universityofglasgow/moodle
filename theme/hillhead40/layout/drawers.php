@@ -80,8 +80,8 @@ $primary = new core\navigation\output\primary($PAGE);
 $renderer = $PAGE->get_renderer('core');
 $primarymenu = $primary->export_for_template($renderer);
 
-// Because the navigation hook *_extend_navigation() no longer appears to
-// work in M4, we need to slot this in before Preferences, and it's divider.
+// Because the navigation hook *_extend_navigation_*() only works for local, mod
+// and report plugins, we need to slot this in before Preferences, and its divider.
 if (isset($primarymenu['user']['items']) && count($primarymenu['user']['items']) > 0) {
     $usesaccessibilitytools = get_user_preferences('theme_hillhead40_accessibility', false);
     $varg = 'clear';
