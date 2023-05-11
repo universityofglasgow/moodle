@@ -27,14 +27,15 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
     'local/template:usetemplate' => [
-        'riskbitmask' => RISK_PERSONAL,
+        'riskbitmask' => RISK_SPAM, RISK_XSS, RISK_PERSONAL,
         'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => [
             'guest' => CAP_PREVENT,
             'student' => CAP_PREVENT,
             'teacher' => CAP_PREVENT,
             'editingteacher' => CAP_PREVENT,
+            'coursecreator' => CAP_ALLOW,
             'manager' => CAP_ALLOW
         ],
         'clonepermissionsfrom' => 'moodle/course:create'
@@ -49,38 +50,8 @@ $capabilities = [
             'student' => CAP_PREVENT,
             'teacher' => CAP_PREVENT,
             'editingteacher' => CAP_PREVENT,
-            'manager' => CAP_ALLOW
+            'coursecreator' => CAP_PREVENT,
+            'manager' => CAP_PREVENT
         ],
-
-        'clonepermissionsfrom' => 'moodle/course:create'
     ]
 ];
-
-/*
-$capabilities = [
-
-    'local/template:usetemplate' => array(
-        'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'guest' => CAP_PREVENT,
-            'student' => CAP_PREVENT,
-            'teacher' => CAP_PREVENT,
-            'editingteacher' => CAP_PREVENT,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    'local/template:addcourse' => [
-        'riskbitmask' => RISK_XSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_COURSECAT,
-        'archetypes' => [
-            'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ],
-        'clonepermissionsfrom' => 'moodle/course:create'
-    ],
-];
-*/

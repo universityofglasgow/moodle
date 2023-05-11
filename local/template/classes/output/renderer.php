@@ -170,14 +170,20 @@ class renderer extends plugin_renderer_base {
         ];
     }
 
-    private function get_data_template()
-    {
+    private function get_data_template() {
 
         global $DB, $USER, $CFG;
         $templatecategories = [];
         $templatecoursecount = 0;
         $settingscategories = get_config('local_template', 'categories');
-        $settingscategoryids = array_filter(explode(',', $settingscategories));
+        $settingscategoryids = [];
+
+        // Reduce set of template categories based on user capability in each category.
+        foreach (explode(',', $settingscategories) as $categoryid) {
+            if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
+                $settingscategoryids[] = $categoryid;
+            }
+        }
 
         foreach ($settingscategoryids as $settingscategoryid) {
             if (empty($settingscategoryid)) {
@@ -227,66 +233,6 @@ class renderer extends plugin_renderer_base {
             'categories' => $templatecategories,
             'message' => $message
         ];
-
-/*
-
-        foreach ($templatecategories as $templatecategory) {
-            $courseshtml = '';
-            foreach ($templatecategory->courses as $templatecourse) {
-
-
-                //$preview = $OUTPUT->pix_icon('t/preview', 'preview');
-                //$buttons = $OUTPUT->single_button( , $preview, 'get');
-                $url = (new moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $templatecourse->id]))->out();
-
-                $buttons = '<a type="button" href="' . $url . '" class="btn btn-success">Preview &nbsp;<i class="fa fa-search-plus"></i></a>
-                    <button type="button" class="btn btn-success add-template" data-id="' . $templatecourse->id . '">Use template &nbsp;<i class="fa fa-plus"></i></button><br>';
-
-                $html = '<div class="card" data-toggle="modal" data-target="#course-modal-' . $templatecourse->id .'">
-                    <div class="card-header">
-                        <img class="card-img-top w-100" alt="' . $templatecourse->fullname .'" data-lazy="' . $templatecourse->image .'">
-                    </div>
-
-                    <div class="card-body">
-                        <h5 class="card-title">' . $templatecourse->fullname .'</h5>
-                        <p class="card-text">' . $templatecourse->summary .'</p>
-                    </div>
-                    <div class="card-footer">
-                        ' . $buttons . '
-                        <small class="text-muted">
-                            <i class="fa fa-list"></i> ' . $templatecourse->format .'
-                        </small>
-                    </div>
-                </div>';
-                $templatecourse->html = $html;
-                $courseshtml .= $html;
-            }
-            $html = '<div class="slider-container">
-                                    <h1>' . $templatecategory->name .'</h1>
-
-                                    <!-- lastload progressive -->
-                                    <section id="block_slick-slider-' . $templatecategory->id .'" class="responsive slider card-deck"
-                                             data-adaptive-height="true"
-                                             data-slick=\'{
-            "arrows": true,
-            "dots": true,
-            "infinite": true,
-            "slidesToShow": 4,
-            "slidesToScroll": 4,
-            "lazyLoad": "progressive",
-            "responsive": [
-                {"breakpoint": 1200, "settings": {"lazyLoad": "progressive", "slidesToShow": 3, "slidesToScroll": 3}},
-                {"breakpoint": 1024, "settings": {"lazyLoad": "ondemand", "slidesToShow": 2, "slidesToScroll": 2}},
-                {"breakpoint":  600, "settings": {"lazyLoad": "ondemand", "slidesToShow": 1, "slidesToScroll": 1}},
-                {"breakpoint":  480, "settings": "unslick"}
-                ]
-        }\'>' . $courseshtml . '</section></div>';
-
-            $templatecategory->html = $html;
-            $categorieshtml .= $html;
-        }
-
-*/
     }
 
 }

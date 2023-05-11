@@ -27,6 +27,8 @@ define('NO_OUTPUT_BUFFERING', true);
 // @codingStandardsIgnoreLine
 require '../../../config.php';
 
+use local_template\utils;
+
 global $CFG, $PAGE, $OUTPUT;
 
 // Moodle codechecker incorrectly asserts require_once must use parenthesis.
@@ -37,7 +39,7 @@ require_once $CFG->libdir . '/adminlib.php';
 // @codingStandardsIgnoreLine
 require_once $CFG->dirroot . '/local/template/lib.php';
 
-local_template_enforce_security(true);
+utils::enforce_security(true);
 
 $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/index.php'));
 $PAGE->navbar->add(get_string('templateadmin', 'local_template'), new moodle_url('/local/template/admin/index.php'));
@@ -46,5 +48,5 @@ $PAGE->set_url(new moodle_url('/local/template/admin/index.php'));
 $PAGE->set_title(get_string('templateadmin', 'local_template'));
 
 echo $OUTPUT->header();
-echo local_template_admin();
+echo utils::admin();
 echo $OUTPUT->footer();
