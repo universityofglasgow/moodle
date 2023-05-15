@@ -565,5 +565,91 @@ function xmldb_local_recompletion_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021112400, 'local', 'recompletion');
     }
 
+    if ($oldversion < 2023022100) {
+
+        // Define field id to be added to local_recompletion_cha.
+        $table = new xmldb_table('local_recompletion_cha');
+
+        // Adding fields to table local_recompletion_cha.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+        $table->add_field('choiceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'choiceid');
+        $table->add_field('optionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userid');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'optionid');
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timemodified');
+
+        // Adding keys to table local_recompletion_cha.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('choiceid', XMLDB_KEY_FOREIGN, ['choiceid'], 'choice', ['id']);
+
+        // Adding indexes to table local_recompletion_cha.
+        $table->add_index('course', XMLDB_INDEX_NOTUNIQUE, ['course']);
+
+        // Conditionally launch create table for local_recompletion_cha.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Recompletion savepoint reached.
+        upgrade_plugin_savepoint(true, 2023022100, 'local', 'recompletion');
+    }
+
+    if ($oldversion < 2023040300) {
+
+        // Update the format of older recompletionemailbody field data to html.
+        $recompletionconfig = $DB->get_recordset('local_recompletion_config', array('name' => 'recompletionemailbody'));
+        foreach ($recompletionconfig as $record) {
+            $message = $record->value;
+            if (strpos($message, '<') === false) {
+                // Plain text only.
+                $messagehtml = text_to_html($message, null, false, true);
+            } else {
+                // This is most probably the tag/newline soup known as FORMAT_MOODLE.
+                $messagehtml = format_text($message, FORMAT_MOODLE, array('para' => false,
+                    'newlines' => true, 'filter' => true));
+            }
+            // Update record with html formatted text.
+            $record->value = $messagehtml;
+            $DB->update_record('local_recompletion_config', $record);
+            // Add format record for editor element.
+            $record->name = 'recompletionemailbody_format';
+            $record->value = '1';
+            $DB->insert_record('local_recompletion_config', $record);
+        }
+
+        // Recompletion savepoint reached.
+        upgrade_plugin_savepoint(true, 2023040300, 'local', 'recompletion');
+    }
+
+    if ($oldversion < 2023040301) {
+
+        // Define table local_recompletion_ccert_is to be created.
+        $table = new xmldb_table('local_recompletion_ccert_is');
+
+        // Adding fields to table local_recompletion_ccert_is.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        $table->add_field('customcertid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userid');
+        $table->add_field('code', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'customcertid');
+        $table->add_field('emailed', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'code');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'emailed');
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timecreated');
+
+        // Adding keys to table local_recompletion_ccert_is.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('customcert', XMLDB_KEY_FOREIGN, ['customcertid'], 'customcert', ['id']);
+
+        // Adding indexes to table local_recompletion_ccert_is.
+        $table->add_index('course', XMLDB_INDEX_NOTUNIQUE, ['course']);
+
+        // Conditionally launch create table for local_recompletion_ccert_is.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Recompletion savepoint reached.
+        upgrade_plugin_savepoint(true, 2023040301, 'local', 'recompletion');
+    }
+
     return true;
 }

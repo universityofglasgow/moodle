@@ -322,14 +322,14 @@ class content extends content_base {
             $total = 0;
             $complete = 0;
             $cancomplete = isloggedin() && !isguestuser();
-            $asectionisvisible = false;
+            $asectionisavailable = false;
             if ($cancomplete) {
                 $completioninfo = new \completion_info($course);
                 foreach ($modinfo->sections[$section->section] as $cmid) {
                     $thismod = $modinfo->cms[$cmid];
 
-                    if ($thismod->visible) {
-                        $asectionisvisible = true;
+                    if ($thismod->available) {
+                        $asectionisavailable = true;
                         if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
                             $total++;
                             $completiondata = $completioninfo->get_data($thismod, true);
@@ -342,7 +342,7 @@ class content extends content_base {
                 }
             }
 
-            if ((!$asectionisvisible) || (!$cancomplete)) {
+            if ((!$asectionisavailable) || (!$cancomplete)) {
                 // No sections or no completion.
                 $this->sectioncompletioncalculated[$section->section] = true;
                 return;

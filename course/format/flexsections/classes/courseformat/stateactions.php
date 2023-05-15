@@ -20,6 +20,7 @@ use context_course;
 use core_courseformat\stateupdates;
 use stdClass;
 use core_component;
+use moodle_exception;
 
 /**
  * class stateactions
@@ -87,22 +88,20 @@ class stateactions extends  \core_courseformat\stateactions {
     }
 
     /**
-     * Find next section
+     * Find next section within the same parent.
      *
      * @param \course_modinfo $modinfo
      * @param \section_info $thissection
      * @return \section_info|null
      */
     protected function find_next_section(\course_modinfo $modinfo, \section_info $thissection): ?\section_info {
-        $found = false;
-        foreach ($modinfo->get_section_info_all() as $section) {
-            if ($found) {
-                return $section->parent == $thissection->parent ? $section : null;
-            } else if ($section->id == $thissection->id) {
-                $found = true;
-            }
-        }
-        return null;
+        // Build array of same parent sections starting from next to $thissection.
+        $sections = array_filter($modinfo->get_section_info_all(), function($s) use ($thissection) {
+            return ($s->parent == $thissection->parent) && ($s->section > $thissection->section);
+        });
+
+        // Empty array means $thissection is last section, otherwise the first section is the one we need.
+        return empty($sections) ? null : array_shift($sections);
     }
 
     /**
@@ -124,7 +123,7 @@ class stateactions extends  \core_courseformat\stateactions {
     /**
      * Merging a section with its parent
      *
-     * @param stateupdates $updates the affected course elements track
+     * @param \format_flexsections\courseformat\stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids not used
      * @param int $targetsectionid section id to merge up
@@ -155,7 +154,7 @@ class stateactions extends  \core_courseformat\stateactions {
         }
 
         $format->mergeup_section($targetsection);
-        $updates->add_section_delete($targetsectionid);
+        $updates->add_section_remove($targetsectionid);
 
         // Merging a section affects the full course structure.
         $this->course_state($updates, $course);
@@ -179,6 +178,13 @@ class stateactions extends  \core_courseformat\stateactions {
         $format = course_get_format($course);
         $modinfo = $format->get_modinfo();
         $targetsection = $modinfo->get_section_info_by_id($targetsectionid, MUST_EXIST);
+
+        // Validate if we do not exceed depth.
+        $targetsectiondepth = $format->get_section_depth($targetsection);
+        if ($targetsectiondepth >= $format->get_max_section_depth()) {
+            throw new moodle_exception('errorsectiondepthexceeded', 'format_flexsections');
+        }
+
         $format->create_new_section($targetsection);
 
         // Adding subsection affects the full course structure.
@@ -220,11 +226,11 @@ class stateactions extends  \core_courseformat\stateactions {
         [$sectionstodelete, $modulestodelete] = $format->delete_section_with_children($section);
 
         foreach ($modulestodelete as $cmid) {
-            $updates->add_cm_delete($cmid);
+            $updates->add_cm_remove($cmid);
         }
 
         foreach ($sectionstodelete as $sid) {
-            $updates->add_section_delete($sid);
+            $updates->add_section_remove($sid);
         }
 
         // Removing a section affects the full course structure.

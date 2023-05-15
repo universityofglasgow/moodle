@@ -63,7 +63,17 @@ class format_flexsections extends core_courseformat\base {
      * @return bool
      */
     public function uses_indentation(): bool {
-        return false;
+        return (get_config('format_flexsections', 'indentation')) ? true : false;
+    }
+
+    /**
+     * Maximum number of subsections
+     *
+     * @return int
+     */
+    public function get_max_section_depth(): int {
+        $limit = (int)get_config('format_flexsections', 'maxsectiondepth');
+        return max(1, min($limit, 100));
     }
 
     /**
@@ -75,13 +85,29 @@ class format_flexsections extends core_courseformat\base {
      * @return string Display name that the course format prefers, e.g. "Topic 2"
      */
     public function get_section_name($section) {
-        $section = $this->get_section($section);
+        if (!is_object($section)) {
+            $section = $this->get_section($section);
+        }
         if ((string)$section->name !== '') {
             return format_string($section->name, true,
                 ['context' => context_course::instance($this->courseid)]);
         } else {
             return $this->get_default_section_name($section);
         }
+    }
+
+    /**
+     * Returns the depth of the section in hierarchy
+     *
+     * For example, top section has depth 1, subsection of top section has depth 2,
+     * its subsection has depth 3.
+     *
+     * @param section_info $section
+     * @return int Depth of the section in hierarchy.
+     */
+    public function get_section_depth(section_info $section): int {
+        $parent = $this->get_section($section->parent);
+        return $parent && $parent->section ? $this->get_section_depth($parent) + 1 : 1;
     }
 
     /**
@@ -118,7 +144,7 @@ class format_flexsections extends core_courseformat\base {
      * Returns the section relative number regardless whether argument is an object or an int
      *
      * @param int|section_info $section
-     * @return int
+     * @return ?int
      */
     protected function resolve_section_number($section) {
         if ($section === null || $section === '') {
@@ -354,7 +380,7 @@ class format_flexsections extends core_courseformat\base {
      * @param bool $foreditform
      * @return array
      */
-    public function section_format_options($foreditform = false) {
+    public function section_format_options($foreditform = false): array {
         return array(
             'parent' => array(
                 'type' => PARAM_INT,
@@ -613,7 +639,7 @@ class format_flexsections extends core_courseformat\base {
     public function get_viewed_section() {
         if ($this->on_course_view_page()) {
             if ($s = $this->get_caller_page_url()->get_param('section')) {
-                return $s;
+                return (int)$s;
             }
             $sid = $this->get_caller_page_url()->get_param('sectionid');
             if ($sid && ($section = $this->get_modinfo()->get_section_info_by_id($sid))) {
@@ -1017,6 +1043,12 @@ class format_flexsections extends core_courseformat\base {
         if ($section->section == $parent->section || $this->section_has_parent($parent, $section->section)) {
             return false;
         }
+        if ($section->parent != $parent->section) {
+            // When moving to another parent, check the depth.
+            if ($this->get_section_depth($parent) + 1 > $this->get_max_section_depth()) {
+                return false;
+            }
+        }
 
         if ($before) {
             if (is_string($before)) {
@@ -1130,21 +1162,39 @@ class format_flexsections extends core_courseformat\base {
             course_delete_module($cmid);
         }
 
-        foreach ($sectionstodelete as $sid) {
-            // Invalidate the section cache by given section id.
-            course_modinfo::purge_course_section_cache_by_id($course->id, $sid);
-
-            // Delete section summary files.
-            $context = \context_course::instance($course->id);
-            $fs = get_file_storage();
-            $fs->delete_area_files($context->id, 'course', 'section', $sid);
-        }
-
         [$sectionsql, $params] = $DB->get_in_or_equal($sectionstodelete);
+        $sections = $DB->get_records_select('course_sections', "id $sectionsql", $params);
+
+        // Delete section records.
         $transaction = $DB->start_delegated_transaction();
         $DB->execute('DELETE FROM {course_format_options} WHERE sectionid ' . $sectionsql, $params);
         $DB->execute('DELETE FROM {course_sections} WHERE id ' . $sectionsql, $params);
         $transaction->allow_commit();
+
+        foreach ($sections as $section) {
+            // Invalidate the section cache by given section id.
+            course_modinfo::purge_course_section_cache_by_id($course->id, $section->id);
+
+            // Delete section summary files.
+            $context = \context_course::instance($course->id);
+            $fs = get_file_storage();
+            $fs->delete_area_files($context->id, 'course', 'section', $section->id);
+
+            // Trigger an event for course section deletion.
+            $event = \core\event\course_section_deleted::create(
+                array(
+                    'objectid' => $section->id,
+                    'courseid' => $course->id,
+                    'context' => $context,
+                    'other' => [
+                        'sectionnum' => $section->section,
+                        'sectionname' => $this->get_section_name($section),
+                    ]
+                )
+            );
+            $event->add_record_snapshot('course_sections', $section);
+            $event->trigger();
+        }
 
         // Partial rebuild section cache that has been purged.
         rebuild_course_cache($this->courseid, true, true);
@@ -1214,10 +1264,11 @@ class format_flexsections extends core_courseformat\base {
  * @param string $itemtype
  * @param int $itemid
  * @param mixed $newvalue
- * @return inplace_editable
+ * @return ?inplace_editable
  */
 function format_flexsections_inplace_editable($itemtype, $itemid, $newvalue) {
     global $DB, $CFG;
+    require_once($CFG->libdir . '/externallib.php');
     require_once($CFG->dirroot . '/course/lib.php');
     if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
         $section = $DB->get_record_sql(

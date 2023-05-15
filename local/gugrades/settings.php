@@ -30,6 +30,7 @@ if ($hassiteconfig) {
     $settingspage = new admin_settingpage('managelocalgugrades', new lang_string('manage', 'local_gugrades'));
 
     if ($ADMIN->fulltree) {
+        require_once(dirname(__FILE__) . '/locallib.php');
         $settingspage->add(new admin_setting_heading('local_gugrades/headingscales', new lang_string('scalevalues', 'local_gugrades'), new lang_string('scalevaluesinfo', 'local_gugrades')));
 
         // Get current site-wide settings
@@ -39,11 +40,14 @@ if ($hassiteconfig) {
             $items = explode(',', $scale->scale);
             $default = '';
             foreach ($items as $item) {
-                $default .= $item . ' 0' . PHP_EOL;
+                $default .= $item . ', 0' . PHP_EOL;
             }
-            $settingspage->add(new admin_setting_configtextarea($name, $scale->name, new lang_string('scalevalueshelp', 'local_gugrades'), $default, PARAM_RAW, 30, count($items)+1));
+            $scalesetting = new admin_setting_configtextarea($name, $scale->name, new lang_string('scalevalueshelp', 'local_gugrades'), $default, PARAM_RAW, 30, count($items)+1);
+            $scalesetting->set_updatedcallback('scale_setting_updated');
+            $settingspage->add($scalesetting);
         }
     }
 
     $ADMIN->add('localplugins', $settingspage);
 }
+

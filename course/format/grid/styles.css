@@ -141,3 +141,26 @@
     font-size: 0.75rem;
     text-align: center;
 }
+
+/* Single section navigation */
+.course-content .single-section .section-navigation.gd-selection-selector-container {
+    align-items: center;
+    display: flex;
+}
+
+.course-content .single-section .section-navigation .gd-selection-selector-item {
+    display: flex;
+    flex: 1 0 0%;
+}
+
+.gd-selection-selector-item.prevsection {
+    justify-content: flex-start;
+}
+
+.gd-selection-selector-item.jumpto {
+    justify-content: center;
+}
+
+.gd-selection-selector-item.nextsection {
+    justify-content: flex-end;
+}
