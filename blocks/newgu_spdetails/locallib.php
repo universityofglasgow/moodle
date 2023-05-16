@@ -60,7 +60,7 @@ public static function return_enrolledcourses($userid, $coursetype) {
 
         global $DB;
 
-       
+
 
         $fields = "c.id";
         $customfieldjoin = "JOIN {customfield_field} cff
@@ -83,9 +83,9 @@ public static function return_enrolledcourses($userid, $coursetype) {
         if ($coursetype=="past") {
 //          $coursetypewhere = " AND c.enddate<=" . $currentdate . " AND c.enddate!=0";
 
-          //$coursetypewhere = " AND c.enddate<=" . $currentdate ;
+          $coursetypewhere = " AND c.enddate<=" . $currentdate ;
 
-          $coursetypewhere = " AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(c.enddate))) <=" . $currentdate;
+          //$coursetypewhere = " AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(c.enddate))) <=" . $currentdate;
 
         }
         if ($coursetype=="current") {
@@ -124,7 +124,9 @@ public static function return_enrolledcourses($userid, $coursetype) {
                     /* CHECK IF ANY ASSIGNMENT HAS DUEDATE (timeclose) + 1 MONTH IS LESS THAN CURRENTIMESTAMP
                       AND ADD IT IN ARRAY IF CONDITION IS FOR PAST TAB
                     */
-                    /* QUIZ */
+
+                    /*
+                    // QUIZ
                     if ($coursetype=="past") {
 //                        $sql_quizclose = 'SELECT COUNT(*) AS cnt_quizclose FROM {quiz} WHERE course=' . $courseid . ' AND timeclose!=0 AND timeclose>=' . $plusonemonth;
                         $sql_quizclose = 'SELECT COUNT(*) AS cnt_quizclose FROM {quiz} WHERE course=' . $courseid . ' AND timeclose!=0 AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(timeclose))) <=' . $currentdate;
@@ -134,21 +136,21 @@ public static function return_enrolledcourses($userid, $coursetype) {
 
                         $cnt_totalclose += $cnt_quizclose;
 
-                    /* ASSIGN */
+                    // ASSIGN
                         $sql_assignclose = 'SELECT COUNT(*) AS cnt_assignclose FROM {assign} WHERE course=' . $courseid . ' AND duedate!=0 AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(duedate))) <=' . $currentdate;
                         $arr_assignclose = $DB->get_record_sql($sql_assignclose);
                         $cnt_assignclose = $arr_assignclose->cnt_assignclose;
 
                         $cnt_totalclose += $cnt_assignclose;
 
-                    /* FORUM */
+                    // FORUM
                         $sql_forumclose = 'SELECT COUNT(*) AS cnt_forumclose FROM {forum} WHERE course=' . $courseid . ' AND duedate!=0 AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(duedate))) <=' . $currentdate;
                         $arr_forumclose = $DB->get_record_sql($sql_forumclose);
                         $cnt_forumclose = $arr_forumclose->cnt_forumclose;
 
                         $cnt_totalclose += $cnt_forumclose;
 
-                    /* WORKSHOP */
+                    // WORKSHOP
                         $sql_workshopclose = 'SELECT COUNT(*) AS cnt_workshopclose FROM {workshop} WHERE course=' . $courseid . ' AND assessmentend!=0 AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(assessmentend))) <=' . $currentdate;
                         $arr_workshopclose = $DB->get_record_sql($sql_workshopclose);
                         $cnt_workshopclose = $arr_workshopclose->cnt_workshopclose;
@@ -156,13 +158,13 @@ public static function return_enrolledcourses($userid, $coursetype) {
                         $cnt_totalclose += $cnt_workshopclose;
 
                     }
-
+*/
 //echo "<br/>" . $courseid . " / " . $cnt_totalclose . "<br/>";
 
 
-                    if ($cnt_totalclose!=0) {
+                    //if ($cnt_totalclose!=0) {
                       array_push($studentcourses, $courseid);
-                    }
+                    //}
 
                 }
             }

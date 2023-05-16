@@ -27,14 +27,14 @@ class currentassessment_table extends table_sql
         // Define the list of columns to show.
 
 
-        $columns = array('course', 'coursecode', 'assessment', 'assessmenttype', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
+        $columns = array('course', 'assessment', 'assessmenttype', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
         // Define the titles of columns to show in header.
 
         $headers = array(
             get_string('course'),
-            get_string('coursecode', 'block_newgu_spdetails'),
+/*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('assessmenttype', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
@@ -57,7 +57,7 @@ class currentassessment_table extends table_sql
 
         return $coursename;
     }
-
+/*
     function col_coursecode($values){
         global $DB;
         $courseid = $values->courseid;
@@ -69,7 +69,7 @@ class currentassessment_table extends table_sql
 
         return $coursename;
     }
-
+*/
     function col_assessment($values){
       global $DB;
 
@@ -257,19 +257,37 @@ class currentassessment_table extends table_sql
 
     function col_feedback($values){
 
-      global $DB, $USER;
+      global $DB, $USER, $CFG;
 
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
 
+      if ($modulename=="assign") {
+          $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
+          $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
+          $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
+      }
+
+      if ($modulename=="forum") {
+            $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
+            $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
+      }
+
+      if ($modulename=="quiz") {
+            $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
+            $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
+      }
+
       $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$USER->id));
 
       if (!empty($arr_grades)) {
-        return $itemid . " / " . $USER->id . " // " . $arr_grades->feedback;
+        /*return "COURSE ID = " . $courseid . " # ITEM ID = " . $itemid . " / USERID = " . $USER->id . " // " . $arr_grades->feedback
+        . " ### " . '<a href="' . $link . '#intro">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';*/
+        return '<a href="' . $link . '#intro">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';
       } else {
-        return $itemid . " " . $USER->id;
+        //return "COURSE ID = " . $courseid . " # ITEM ID = " . $itemid . " ** item instance = " . $iteminstance . " / USERID = " . $USER->id . " // " . $arr_grades->feedback;
       }
 
     }
@@ -294,14 +312,14 @@ class pastassessment_table extends table_sql
         // Define the list of columns to show.
 
 
-        $columns = array('course', 'coursecode', 'assessment', 'assessmenttype', 'weight', 'startdate', 'enddate', 'viewsubmission', 'yourgrade', 'feedback');
+        $columns = array('course', 'assessment', 'assessmenttype', 'weight', 'startdate', 'enddate', 'viewsubmission', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
         // Define the titles of columns to show in header.
 
         $headers = array(
             get_string('course'),
-            get_string('coursecode', 'block_newgu_spdetails'),
+/*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('assessmenttype', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
