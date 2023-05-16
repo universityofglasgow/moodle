@@ -27,12 +27,14 @@ $string['addgrade'] = 'Add grade';
 $string['all'] = 'All';
 $string['assessmentgradecapture'] = 'Assessment grade capture';
 $string['awaitingcapture'] = 'Awaiting capture';
+$string['cancel'] = 'Cancel';
 $string['captureaggregation'] = 'Grade capture and aggregation';
 $string['coursegradeaggregation'] = 'Course grade aggregation';
 $string['firstname'] = 'First name';
 $string['firstnamelastname'] = 'Firstname / lastname';
 $string['grade'] = 'Grade';
 $string['idnumber'] = 'ID number';
+$string['importgrades'] = 'Import grades';
 $string['lastname'] = 'Last name';
 $string['manage'] = 'UofG Grade Tool Settings';
 $string['notoplevel'] = 'Course has not been properly setup (no top-level Grade categories)';
@@ -46,4 +48,7 @@ $string['scalevaluesinfo'] = 'Define the numeric values for each scale to be ava
 $string['selected'] = 'Selected';
 $string['selectgradecategory'] = 'Select grade category';
 $string['settings'] = 'Settings';
+
+// Capabilities
+$string['gugrades:view'] = 'View gugrades tool';
 

@@ -29,7 +29,15 @@
         <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
 
         <Teleport to="body">
-            <ModalForm :show="showimportmodal" @close="showimportmodal = false"></ModalForm>
+            <ModalForm :show="showimportmodal" @close="showimportmodal = false">
+                <template #header>
+                    <h4>{{ strings.importgrades }}</h4>
+                </template>
+                <template #body>
+                    Form goes here
+                    <p><button class="btn btn-primary" @click="importgrades">Import</button></p>
+                </template>
+            </ModalForm>
         </Teleport>
     </div>   
 </template>
@@ -76,6 +84,9 @@
 
     /**
      * Get filtered/paged data
+     * @param int itemid
+     * @param char first
+     * @param char last
      */
      function get_page_data(itemid, first, last) {
         const GU = window.GU;
@@ -129,6 +140,7 @@
 
     /**
      * Page selected on paging bar
+     * @param int page
      */
     function pagechanged(page) {
         //window.console.log(namefilterref);
@@ -140,14 +152,32 @@
         get_pagedusers();
     }
 
+    /**
+     * Import grades button clicked
+     */
+    function importgrades() {
+        window.console.log('IMPORT GRADES');
+
+        showimportmodal.value = false;
+    }
+
+    /**
+     * Show table if there's anything to show
+     */
     const showtable = computed(() => {
         return users.value.length != 0;
     });
 
+    /**
+     * Watch for displayed grade-item changing
+     */
     watch(() => props.itemid, (itemid) => {
         get_page_data(itemid, firstname, lastname);
     })
 
+    /**
+     * Load strings (mostly for table) and get initial data for table.
+     */
     onMounted(() => {
 
         // Get the moodle strings for this page
@@ -157,7 +187,8 @@
             'firstnamelastname',
             'idnumber',
             'nothingtodisplay',
-            'grade'
+            'grade',
+            'importgrades'
         ];
         getstrings(stringslist)
         .then(results => {

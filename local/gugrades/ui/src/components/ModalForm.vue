@@ -1,5 +1,6 @@
 <script setup>
 import {defineProps} from '@vue/runtime-core';
+import MString from '@/components/MString.vue';
 
 const props = defineProps({
   show: Boolean
@@ -20,11 +21,10 @@ const props = defineProps({
 
         <div class="modal-footer">
           <slot name="footer">
-            default footer
             <button
-              class="modal-default-button btn btn-primary"
+              class="modal-default-button btn btn-warning"
               @click="$emit('close')"
-            >OK</button>
+            ><MString name="cancel"></MString></button>
           </slot>
         </div>
       </div>
