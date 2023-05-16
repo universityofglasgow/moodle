@@ -58,10 +58,29 @@ $returnurl = optional_param('returnurl', '', PARAM_URL);
 
 echo $OUTPUT->header();
 
-$courses = newassessments_statistics::return_enrolledcourses($USER->id);
+$currentcourses = newassessments_statistics::return_enrolledcourses($USER->id, "current");
+$str_currentcourses = implode(",", $currentcourses);
+/*
+echo "<br/>==CURRENT===<br/>";
+echo "<pre>";
+print_r($currentcourses);
+echo "</pre>";
+echo $str_currentcourses;
+echo "<br/>=====<br/>";
+*/
+$pastcourses = newassessments_statistics::return_enrolledcourses($USER->id, "past");
+$str_pastcourses = implode(",", $pastcourses);
 
-$str_courses = implode(",", $courses);
+/*
+echo "<br/>==PAST===<br/>";
+echo "<pre>";
+print_r($pastcourses);
+echo "</pre>";
+echo $str_pastcourses;
+echo "=====";
+*/
 
+$itemmodules = "'assign','forum','quiz','workshop'";
 
 $html = html_writer::start_tag('div', array('id' => 'spdetails'));
 $html .= html_writer::tag('p', '<img src="img/loader.gif">', array('style' => 'text-align:center;'));
@@ -86,6 +105,18 @@ $PAGE->requires->js_amd_inline("
                                     });
                                     ");
 
+                                    $filteroptions = '<div style="width:100%">
+                                    <label>Show
+                                        <select onchange="alert(this.value)" name="grades_length" aria-controls="grades" class="" fdprocessedid="qno">
+                                          <option value="10">10</option>
+                                          <option value="25">25</option>
+                                          <option value="50">50</option>
+                                          <option value="100">100</option>
+                                        </select> entries</label>
+
+                                    <label style="float: right;">Search: <input type="search" class="" placeholder="" aria-controls="grades"></label>
+                                    </div>
+                                    <div style="clear:both;"></div>';
 
 
                                     $tab = optional_param('t', 1, PARAM_INT);
@@ -98,15 +129,12 @@ $PAGE->requires->js_amd_inline("
                                     if ($tab == 1) {
                                         // Show data for tab 1
 
-                                        //plan list table
-                                        $para[] ='id > 0';
-                                        $para[] ="status=1";
-                                        //  $pera[] ='userid = '.$USER->id;
-                                        $table = new assessment_table('uniqueid');
+                                        if ($str_currentcourses!="") {
+                                        $table = new currentassessment_table('tab1');
 
                                         $search = optional_param('search', '', PARAM_ALPHA);
 
-                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_courses.") && courseid>1 && itemtype='mod'");
+                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_currentcourses.") && courseid>1 && itemtype='mod' && itemmodule in (" . $itemmodules . ")");
 
                                         $table->no_sorting('course');
                                         $table->no_sorting('assessment');
@@ -117,28 +145,57 @@ $PAGE->requires->js_amd_inline("
                                         $table->no_sorting('yourgrade');
                                         $table->no_sorting('feedback');
 
-                                        $table->define_baseurl("$CFG->wwwroot/blocks/newgu_spdetails/view.php");
+                                        $table->define_baseurl("$CFG->wwwroot/blocks/newgu_spdetails/view.php?t=1");
 
-
-
-                                        echo '<div style="width:100%">
-                                        <label>Show
-                                            <select onchange="alert(this.value)" name="grades_length" aria-controls="grades" class="" fdprocessedid="qno">
-                                              <option value="10">10</option>
-                                              <option value="25">25</option>
-                                              <option value="50">50</option>
-                                              <option value="100">100</option>
-                                            </select> entries</label>
-
-                                        <label style="float: right;">Search: <input type="search" class="" placeholder="" aria-controls="grades"></label>
-                                        </div>
-                                        <div style="clear:both;"></div>';
+                                        echo $filteroptions;
 
                                         $table->out(20, true);
+                                      } else {
+                                          echo "<p style='text-align: center;'>". get_string('noassessments','block_newgu_spdetails') .".</p>";
+                                      }
 
-                                    } else {
+                                    }
+
+                                    if ($tab == 2) {
+
+                                      /*
+                                        ‘Past courses’ are where the end date of the course has finished
+                                        and the due dates for any assessments
+                                        (plus an additional 30 days) have passed.
+                                        The additional 30 days is to allow for the assessment to be
+                                        marked and feedback returned to the student all in the
+                                        ‘Currently enrolled in’ view.
+                                      */
+
                                         // Show data for tab 2
-                                        echo "<p style='text-align: center;'>". get_string('noassessments','block_newgu_spdetails') .".</p>";
+
+                                        if ($str_pastcourses!="") {
+                                        $table = new pastassessment_table('tab2');
+
+                                        $search = optional_param('search', '', PARAM_ALPHA);
+
+                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_pastcourses.") && courseid>1 && hidden=0 && itemtype='mod' && itemmodule in (" . $itemmodules . ")");
+
+                                        $table->no_sorting('course');
+                                        $table->no_sorting('coursecode');
+                                        $table->no_sorting('assessment');
+                                        $table->no_sorting('assessmenttype');
+                                        $table->no_sorting('weight');
+                                        $table->no_sorting('startdate');
+                                        $table->no_sorting('enddate');
+                                        $table->no_sorting('viewsubmission');
+                                        $table->no_sorting('yourgrade');
+                                        $table->no_sorting('feedback');
+
+                                        $table->define_baseurl("$CFG->wwwroot/blocks/newgu_spdetails/view.php?t=2");
+
+                                        echo $filteroptions;
+
+                                        $table->out(20, true);
+                                      } else {
+                                          echo "<p style='text-align: center;'>". get_string('noassessments','block_newgu_spdetails') .".</p>";
+                                      }
+
                                     }
 
 

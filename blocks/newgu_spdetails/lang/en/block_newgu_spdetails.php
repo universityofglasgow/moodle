@@ -46,3 +46,11 @@ $string['pastcourses'] = 'Past Courses';
 $string['navtitle'] = 'Assessments';
 
 $string['noassessments'] = 'No assessments';
+
+$string['coursecode'] = 'Course Code';
+
+$string['startdate'] = 'Start Date';
+$string['enddate'] = 'End Date';
+$string['viewsubmission'] = 'View Submission';
+
+$string['readfeedback'] = 'Read Feedback';
