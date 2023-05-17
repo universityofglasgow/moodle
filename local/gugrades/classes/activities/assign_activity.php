@@ -120,4 +120,16 @@ class assign_activity implements activity_interface {
         return $assigninstance->blindmarking && !$assigninstance->revealidentities;
     }
 
+    /**
+     * Implement get_first_grade
+     */
+    public function get_first_grade(int $userid) {
+        
+        // This just pulls the grade from assign. Not sure it's that simple
+        // False, means do not create grade if it does not exist
+        $assigngrade = $this->assign->get_user_grade($userid, false);
+
+        return $assigngrade;
+    }
+
 }

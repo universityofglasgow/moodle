@@ -41,13 +41,20 @@ interface activity_interface {
      * Get the list of users for this activity type
      * Filtered by firstname, lastname (if possible)
      * It should also return a field 'displayname' in each record. Whatever you want to show
+     * @return array
      */
     public function get_users(); 
 
     /**
      * Should the student names be hidden to normal users?
      * Probabl mostly applies to Assignment
+     * @return boolean
      */
     public function is_names_hidden();
+
+    /**
+     * Get initial grade for activity/item for user
+     */
+    public function get_first_grade(int $userid);
 
 }

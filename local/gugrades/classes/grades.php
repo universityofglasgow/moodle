@@ -41,6 +41,9 @@ class grades {
     // Grade categories
     private $gradecategories;
 
+    // Grade types
+    private $gradetypes;
+
     /**
      * Class constructor
      * @param int $courseid
@@ -61,6 +64,35 @@ class grades {
             'courseid' => $this->courseid,
             'hidden' => 0,
         ]);
+
+        // Get the list of gradetypes
+        $this->get_gradetypes();
+    }
+
+    /**
+     * Get grade types from database
+     */
+    private function get_gradetypes() {
+        global $DB;
+
+        $gradetypes = $DB->get_records('local_gugrades_gradetypes');
+        $this->gradetypes = [];
+        foreach ($gradetypes as $gradetype) {
+            $this->gradetypes[$gradetype->shortname] = $gradetype->fullname;
+        }
+    }
+
+    /**
+     * Get gradetype record given shortname
+     * @param string $shortname
+     * @return object
+     */
+    private function get_gradetype(string $shortname) {
+        if (!array_key_exists($shortname, $this->gradetypes)) {
+            throw new coding_exception('Gradetype with shortname "' . $shortname . '" does not exist.');
+        }
+        
+        return $this->gradetypes[$shortname];
     }
 
     /**
@@ -130,5 +162,42 @@ class grades {
         $record->categories = array_values($categories);
 
         return $record;
+    }
+
+    /**
+     * Write grade to local_gugrades_grade table
+     *  
+     * @param in $gradeitemid
+     * @param int $userid
+     * @param float $grade
+     * @param float $weightedgrade
+     * @param string $reason  - gradetype shortname
+     * @param string $other
+     * @param bool $iscurrent;
+     */
+    public function write_grade(
+        int $gradeitemid,
+        int $userid,
+        float $grade,
+        float $weightedgrade,
+        int $reason,
+        string $other,
+        bool $iscurrent,
+    ) {
+        global $DB, $USER;
+
+        $g = new stdClass;
+        $g->courseid = $this->courseid;
+        $g->gradeitemid = $gradeitemid;
+        $g->userid = $userid;
+        $g->grade = $grade;
+        $g->weightedgrade = $weightedgrade;
+        $g->reason = $this->get_gradetype($reason)->id;
+        $g->other = $other;
+        $g->iscurrent = true;
+        $g->auditby = $USER->id;
+        $g->audittimecreated = time();
+        $g->auditcomment = '';
+        $DB->insert_record('local_gugrades_grade', $g);
     }
 }

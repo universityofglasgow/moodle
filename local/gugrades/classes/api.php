@@ -109,4 +109,21 @@ class api {
 
         return $results;
     }
+
+    /**
+     * Import grade
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return 
+     */
+    public static function import_grade(int $courseid, int $gradeitemid, int $userid) {
+        $grades = new \local_grades\grades($courseid);
+
+        // Instantiate object for this activity type
+        $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
+
+        // Ask activity for grade
+        $grade = $activity->get_first_grade($userid);
+    }
 }

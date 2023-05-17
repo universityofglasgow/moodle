@@ -33,42 +33,35 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/externallib.php');
 
-class get_capture_page extends \external_api {
+class get_grade_item extends \external_api {
 
     public static function execute_parameters() {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item id number'),
-            'pageno' => new external_value(PARAM_INT, 'Page number (starts at 0)'),
-            'pagelength' => new external_value(PARAM_INT, 'Lines per page'),
-            'firstname' => new external_value(PARAM_ALPHA, 'Firstname filter - first letter or empty for all'),
-            'lastname' => new external_value(PARAM_ALPHA, 'Lastname filter - first letter or empty for all'),
+            'userid' => new external_value(PARAM_INT, 'User ID'),
         ]);
     }
 
-    public static function execute($courseid, $gradeitemid, $pageno, $pagelength, $firstname, $lastname) {
-        
+    public static function execute($courseid, $gradeitemid, $userid) {
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'gradeitemid' => $gradeitemid,
-            'pageno' => $pageno,
-            'pagelength' => $pagelength,
-            'firstname' => $firstname,
-            'lastname' => $lastname,
+            'userid' => $userid,
         ]);
-
-        // Security
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        return \local_gugrades\api::get_capture_page($courseid, $gradeitemid, $pageno, $pagelength, $firstname, $lastname);
+        $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $userid);
+
+        return $success;
     }
 
     public static function execute_returns() {
         return new external_single_structure([
-            'users' => new external_value(PARAM_RAW, 'List of users (plus extras) for activity in JSON format'),
-            'hidden' => new external_value(PARAM_BOOL, 'True if student names are hidden'),
+            'success' => new external_value(PARAM_BOOLEAN, 'If true, import was successful'),
         ]);
     }
 

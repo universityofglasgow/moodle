@@ -47,4 +47,10 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
+    'local_gugrades_import_grade' => [
+        'classname' => 'local_gugrades\external\import_grades',
+        'description' => 'Import 1st grade from activity or grade item for given user',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];    
