@@ -81,7 +81,7 @@ class users {
      * @return array
      */
     public static function get_gradeable_users(\context $context, $firstname = '', $lastname = '') {
-        $fields = 'u.id, u.username, u.idnumber, u.firstname, u.lastname, u.email';
+        $fields = 'u.id, u.username, u.idnumber, u.firstname, u.lastname, u.email, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename';
         $users = get_enrolled_users($context, 'moodle/grade:view', 0, $fields);
 
         // filter

@@ -19,7 +19,7 @@
                 <tbody>
                     <tr v-for="user in pagedusers" :key="user.id">
                         <td v-if="!usershidden">
-                            <UserPicture :userid="user.id" :fullname="user.displayname"></UserPicture>
+                            <UserPicture :userid="parseInt(user.id)" :fullname="user.displayname"></UserPicture>
                         </td>
                         <td>{{ user.displayname }}</td>
                         <td>{{ user.idnumber }}</td>

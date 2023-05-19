@@ -1,5 +1,5 @@
 <template>
-    <img v-if="loaded" :src="url" :alt="fullname" />
+    <img v-if="loaded" :src="url" :alt="fullname" class="userpicture defaultuserpic" width="35" height="35"/>
 </template>
 
 <script setup>
@@ -24,7 +24,7 @@
             }
         }])[0]
         .then((result) => {
-            url.value = result;
+            url.value = result.url;
             loaded.value = true;
         })
         .catch((error) => {
