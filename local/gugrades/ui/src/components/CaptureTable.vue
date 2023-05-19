@@ -10,6 +10,7 @@
         <div class="table-responsive">
             <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
                 <thead class="thead-light">
+                    <th v-if="!usershidden">{{ strings.userpicture }}</th>
                     <th>{{ strings.firstnamelastname }}</th>
                     <th>{{ strings.idnumber }}</th>
                     <th>{{ strings.grade }}</th>
@@ -17,6 +18,9 @@
                 </thead>
                 <tbody>
                     <tr v-for="user in pagedusers" :key="user.id">
+                        <td v-if="!usershidden">
+                            <UserPicture :userid="user.id" :fullname="user.displayname"></UserPicture>
+                        </td>
                         <td>{{ user.displayname }}</td>
                         <td>{{ user.idnumber }}</td>
                         <td>{{ strings.awaitingcapture }}</td>
@@ -47,6 +51,7 @@
     import NameFilter from '@/components/NameFilter.vue';
     import PagingBar from '@/components/PagingBar.vue';
     import ModalForm from '@/components/ModalForm.vue';
+    import UserPicture from '@/components/UserPicture.vue';
     import { getstrings } from '@/js/getstrings.js';
 
     const PAGESIZE = 20;
@@ -188,7 +193,8 @@
             'idnumber',
             'nothingtodisplay',
             'grade',
-            'importgrades'
+            'importgrades',
+            'userpicture',
         ];
         getstrings(stringslist)
         .then(results => {

@@ -48,6 +48,7 @@ $string['scalevaluesinfo'] = 'Define the numeric values for each scale to be ava
 $string['selected'] = 'Selected';
 $string['selectgradecategory'] = 'Select grade category';
 $string['settings'] = 'Settings';
+$string['userpicture'] = 'Pic';
 
 // Capabilities
 $string['gugrades:view'] = 'View gugrades tool';

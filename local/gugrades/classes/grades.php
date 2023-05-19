@@ -75,7 +75,7 @@ class grades {
     private function get_gradetypes() {
         global $DB;
 
-        $gradetypes = $DB->get_records('local_gugrades_gradetypes');
+        $gradetypes = $DB->get_records('local_gugrades_gradetype');
         $this->gradetypes = [];
         foreach ($gradetypes as $gradetype) {
             $this->gradetypes[$gradetype->shortname] = $gradetype->fullname;

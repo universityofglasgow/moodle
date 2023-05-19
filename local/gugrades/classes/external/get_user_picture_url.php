@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_gugrades\external;
+ namespace local_gugrades\external;
 
 use external_function_parameters;
 use external_multiple_structure;
@@ -33,36 +33,30 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/externallib.php');
 
-class import_grade extends \external_api {
+class get_user_picture_url extends \external_api {
 
     public static function execute_parameters() {
         return new external_function_parameters([
-            'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'gradeitemid' => new external_value(PARAM_INT, 'Grade item id number'),
             'userid' => new external_value(PARAM_INT, 'User ID'),
         ]);
     }
-
-    public static function execute($courseid, $gradeitemid, $userid) {
+    public static function execute(int $userid) {
 
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
-            'courseid' => $courseid,
-            'gradeitemid' => $gradeitemid,
             'userid' => $userid,
         ]);
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $userid);
+        $url = \local_gugrades\api::get_user_picture_url($userid);
 
-        return $success;
+        return $url;
     }
 
     public static function execute_returns() {
         return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'If true, import was successful'),
+            'url' => new external_value(PARAM_STRING, 'Picture URL'),
         ]);
     }
-
 }

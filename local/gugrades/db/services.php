@@ -48,8 +48,14 @@ $functions = [
         'ajax' => true,
     ],
     'local_gugrades_import_grade' => [
-        'classname' => 'local_gugrades\external\import_grades',
+        'classname' => 'local_gugrades\external\import_grade',
         'description' => 'Import 1st grade from activity or grade item for given user',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_user_picture_url' => [
+        'classname' => 'local_gugrades\external\get_user_picture_url',
+        'description' => 'Get the URL of the user picture',
         'type' => 'read',
         'ajax' => true,
     ],

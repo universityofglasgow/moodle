@@ -126,4 +126,18 @@ class api {
         // Ask activity for grade
         $grade = $activity->get_first_grade($userid);
     }
+
+    /**
+     * Get user picture url
+     * @param int $userid
+     * @return string
+     */
+    public static function get_user_picture_url(int $userid) {
+        global $DB, $PAGE;
+
+        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
+        $user_picture = new user_picture($user);
+
+        return $user_picture->get_url($PAGE);
+    }
 }
