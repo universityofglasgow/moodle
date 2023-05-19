@@ -177,7 +177,6 @@ $PAGE->requires->js_amd_inline("
                                         $table->set_sql('*', "{grade_items}", "courseid in (".$str_pastcourses.") && courseid>1 && hidden=0 && itemtype='mod' && itemmodule in (" . $itemmodules . ")");
 
                                         $table->no_sorting('course');
-                                        $table->no_sorting('coursecode');
                                         $table->no_sorting('assessment');
                                         $table->no_sorting('assessmenttype');
                                         $table->no_sorting('weight');

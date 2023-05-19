@@ -96,53 +96,45 @@ class currentassessment_table extends table_sql
     function col_weight($values){
 
         global $DB;
-/*
-        $cmid = $values->id;
-        $moduleid = $values->module;
-        $instance = $values->instance;
-        $courseid = $values->course;
 
-        $grademax = 0;
-
-        // GET MODULE
-        $arr = $DB->get_record('modules',array('id'=>$moduleid));
-        $modulename = $arr->name;
-
-        // READ individual TABLE OF ACTIVITY (MODULE)
-        $arr_gradeitem = $DB->get_record('grade_items',array('iteminstance'=>$instance, 'itemmodule'=>$modulename, 'courseid'=>$courseid));
-        if (!empty($arr_gradeitem)) {
-            $grademax = $arr_gradeitem->grademax;
+        if ($values->aggregationcoef!=0) {
+          return number_format((float)$values->aggregationcoef, 2, '.', '');
+        } else {
+          return "-";
         }
-*/
-        return number_format((float)$values->grademax, 2, '.', '');
     }
 
     function col_duedate($values){
 
-      global $DB;
+      global $DB, $USER;
 
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
-
-      $arr_module = $DB->get_record('modules', array('name'=>'quiz'));
-      $moduleid = $arr_module->id;
-
-//      $arr_coursemodule = $DB->get_record('course_modules', array('course'=>$courseid, 'module'=>$moduleid, 'instance'=>$instance));
-
-      //$cmid = $arr_coursemodule->id;
-
-
+      $itemid = $values->id;
 
       $duedate = 0;
+      $extspan = "";
 
       // READ individual TABLE OF ACTIVITY (MODULE)
       if ($modulename!="") {
         $arr_duedate = $DB->get_record($modulename,array('course'=>$courseid, 'id'=>$iteminstance));
 
-
       if (!empty($arr_duedate)) {
-        if ($modulename=="assign" || $modulename=="forum") {
+        if ($modulename=="assign") {
+          $duedate = $arr_duedate->duedate;
+
+          $arr_userflags = $DB->get_record('assign_user_flags', array('userid'=>$USER->id, 'assignment'=>$iteminstance));
+
+          $extensionduedate = $arr_userflags->extensionduedate;
+
+          if ($extensionduedate>0) {
+//            $extspan = '<span class="extended">*<span class="extended-tooltip">Due date extension</span></span>';
+            $extspan = '<a href="javascript:void(0)" title="Due date extension" class="extended">*</a>';
+          }
+
+        }
+        if ($modulename=="forum") {
           $duedate = $arr_duedate->duedate;
         }
         if ($modulename=="quiz") {
@@ -155,10 +147,12 @@ class currentassessment_table extends table_sql
     }
 
       if ($duedate!=0) {
-        return date("d/m/Y", $duedate);
+        return date("d/m/Y", $duedate) . $extspan;
       }
 
     }
+
+
 
     function col_status($values){
 
@@ -166,94 +160,73 @@ class currentassessment_table extends table_sql
 
       global $DB, $USER, $CFG;
 
+      $link = "";
+      $status = "";
+
+
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
-      $link = "";
 
-      $status="";
 
-      if ($modulename=="assign") {
-          $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
+      $gradestatus = newassessments_statistics::return_gradestatus($modulename, $iteminstance, $courseid, $itemid, $USER->id);
 
-          $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
+      $status = $gradestatus["status"];
+      $link = $gradestatus["link"];
+      $allowsubmissionsfromdate = $gradestatus["allowsubmissionsfromdate"];
+      $duedate = $gradestatus["duedate"];
+      $cutoffdate = $gradestatus["cutoffdate"];
 
-          if (!empty($arr_assign)) {
-            $allowsubmissionsfromdate = $arr_assign->allowsubmissionsfromdate;
-            $duedate = $arr_assign->duedate;
-            $cutoffdate = $arr_assign->cutoffdate;
-          }
-          if ($allowsubmissionsfromdate>time()) {
-            $status = 'notopen';
-          }
-          if ($status=="") {
-            $arr_assignsubmission = $DB->get_record('assign_submission', array('assignment'=>$iteminstance, 'userid'=>$USER->id));
-            if (!empty($arr_assignsubmission)) {
-              $status = $arr_assignsubmission->status;
-            } else {
-              $status = 'tosubmit';
-              $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
-            }
-          }
-      }
+      $finalgrade = $gradestatus["finalgrade"];
 
-      if ($modulename=="forum") {
-            $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
-
-            $cmid = newassessments_statistics::get_cmid('forum', $courseid, $iteminstance);
-
-            if ($forumsubmissions>0) {
-                $status = 'submitted';
-            } else {
-                $status = 'tosubmit';
-                $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
-            }
-        }
-
-        if ($modulename=="quiz") {
-
-              $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
-
-              $quizattempts = $DB->count_records('quiz_attempts', array('quiz'=>$iteminstance, 'userid'=>$USER->id, 'state'=>'finished'));
-              if ($quizattempts>0) {
-                  $status = 'submitted';
-              } else {
-                  $status = 'tosubmit';
-                  $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
-              }
-        }
+      $statustodisplay = "";
 
       if($status == 'tosubmit'){
-        return '<a href="' . $link . '"><span class="status-item status-submit">Submit</span></a>';
+        $statustodisplay = '<a href="' . $link . '"><span class="status-item status-submit">Submit</span></a> ';
+      }
+      if($status == 'notsubmitted'){
+        $statustodisplay = '<span class="status-item">Not Submitted</span> ';
       }
       if($status == 'submitted'){
-        return '<span class="status-item status-submitted">Submitted</span>';
+        $statustodisplay = '<span class="status-item status-submitted">Submitted</span> ';
+        if ($finalgrade!=Null) {
+          $statustodisplay = '<span class="status-item status-item status-graded">Graded</span>';
+        }
       }
       if($status == "notopen"){
-        return '<span class="status-item">Submission not open</span>';
+        $statustodisplay = '<span class="status-item">Submission not open</span> ';
       }
       if($status == "TO_BE_ASKED"){
-        return '<span class="status-item status-graded">Individual components</span>';
+        $statustodisplay = '<span class="status-item status-graded">Individual components</span> ';
       }
+      if($status == "overdue"){
+        $statustodisplay = '<span class="status-item status-overdue">Overdue</span> ';
+      }
+
+      return $statustodisplay;
 
     }
 
     function col_yourgrade($values){
 
-      global $DB, $USER;
+      global $DB, $USER, $CFG;
 
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
 
-      $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$USER->id));
+      $link = "";
 
-      if (!empty($arr_grades)) {
-        return number_format((float)$arr_grades->finalgrade, 2, '.', '');
-      }
+      $arr_gradetodisplay = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+      $link = $arr_gradetodisplay["link"];
+      $gradetodisplay = $arr_gradetodisplay["gradetodisplay"];
+
+      return $gradetodisplay;
     }
+
+
 
     function col_feedback($values){
 
@@ -264,30 +237,18 @@ class currentassessment_table extends table_sql
       $courseid = $values->courseid;
       $itemid = $values->id;
 
-      if ($modulename=="assign") {
-          $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
-          $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
-          $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
-      }
+      $link = "";
 
-      if ($modulename=="forum") {
-            $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
-            $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
-      }
+      $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+      $link = $feedback["link"];
+      $gradetodisplay = $feedback["gradetodisplay"];
 
-      if ($modulename=="quiz") {
-            $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
-            $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
-      }
-
-      $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$USER->id));
-
-      if (!empty($arr_grades)) {
-        /*return "COURSE ID = " . $courseid . " # ITEM ID = " . $itemid . " / USERID = " . $USER->id . " // " . $arr_grades->feedback
-        . " ### " . '<a href="' . $link . '#intro">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';*/
-        return '<a href="' . $link . '#intro">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';
+      if ($link!="") {
+        return '<a href="' . $link . '">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';
       } else {
-        //return "COURSE ID = " . $courseid . " # ITEM ID = " . $itemid . " ** item instance = " . $iteminstance . " / USERID = " . $USER->id . " // " . $arr_grades->feedback;
+        if ($modulename!="quiz") {
+          return $gradetodisplay;
+        }
       }
 
     }
@@ -396,6 +357,11 @@ class pastassessment_table extends table_sql
         // return number_format((float)$aggregation, 2, '.', '');
         //return number_format((float)$values->grademax, 2, '.', '');
         // return $sql_wt;
+        if ($values->aggregationcoef!=0) {
+          return number_format((float)$values->aggregationcoef, 2, '.', '');
+        } else {
+          return "-";
+        }
     }
 
 
@@ -474,8 +440,6 @@ class pastassessment_table extends table_sql
 
     function col_viewsubmission($values){
 
-// mdl_assign_submission
-
       global $DB, $USER, $CFG;
 
       $modulename = $values->itemmodule;
@@ -486,64 +450,35 @@ class pastassessment_table extends table_sql
 
       $status="";
 
-      if ($modulename=="assign") {
-          $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
-          $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
-          $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
-      }
+      $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
 
-      if ($modulename=="forum") {
-            $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
-            $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
-      }
+      $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
 
-      if ($modulename=="quiz") {
-            $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
-            $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
-      }
       if (!empty($link)) {
           return '<a href="' . $link . '">' . get_string('viewsubmission', 'block_newgu_spdetails') . '</a>';
       }
     }
 
-    function return_22grademaxpoint($grade, $idnumber) {
-        $values = array('H', 'G2', 'G1', 'F3', 'F2', 'F1', 'E3', 'E2', 'E1', 'D3', 'D2', 'D1',
-                        'C3', 'C2', 'C1', 'B3', 'B2', 'B1', 'A5', 'A4', 'A3', 'A2', 'A1');
-        $value = $values[$grade];
-        if ($idnumber == 2) {
-            $stringarray = str_split($value);
-            if ($stringarray[0] != 'H') {
-                $value = $stringarray[0] . '0';
-            }
-        }
-        return $value;
-    }
-
     function col_yourgrade($values){
 
-      global $DB, $USER;
+            // $gradeletter1 = newassessments_statistics::return_22grademaxpoint(($arr_grades->finalgrade)-1, 1);
+            // $gradeletter2 = newassessments_statistics::return_22grademaxpoint(($arr_grades->finalgrade)-1, 2);
 
-      $modulename = $values->itemmodule;
-      $iteminstance = $values->iteminstance;
-      $courseid = $values->courseid;
-      $itemid = $values->id;
+            global $DB, $USER, $CFG;
 
-      $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$USER->id));
+            $modulename = $values->itemmodule;
+            $iteminstance = $values->iteminstance;
+            $courseid = $values->courseid;
+            $itemid = $values->id;
 
-      if (!empty($arr_grades)) {
+            $link = "";
 
-        $gradeletter1 = newassessments_statistics::return_22grademaxpoint(($arr_grades->finalgrade)-1, 1);
-        $gradeletter2 = newassessments_statistics::return_22grademaxpoint(($arr_grades->finalgrade)-1, 2);
-        if ((float)$arr_grades->finalgrade==0) {
-            return "To be confirmed";
-        } else {
+            $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+            $link = $feedback["link"];
+            $gradetodisplay = $feedback["gradetodisplay"];
 
-            return $gradeletter1 . " (Provisional)";
-        }
+            return $gradetodisplay;
 
-
-        //return $gradeletter2 . " / " . $gradeletter1 . " /// " . number_format((float)$arr_grades->finalgrade, 2, '.', '');
-      }
     }
 
     function col_feedback($values){
@@ -555,30 +490,18 @@ class pastassessment_table extends table_sql
       $courseid = $values->courseid;
       $itemid = $values->id;
 
-      if ($modulename=="assign") {
-          $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
-          $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
-          $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
-      }
+      $link = "";
 
-      if ($modulename=="forum") {
-            $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
-            $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
-      }
+      $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+      $link = $feedback["link"];
+      $gradetodisplay = $feedback["gradetodisplay"];
 
-      if ($modulename=="quiz") {
-            $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
-            $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
-      }
-
-      $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$USER->id));
-
-      if (!empty($arr_grades)) {
-        /*return "COURSE ID = " . $courseid . " # ITEM ID = " . $itemid . " / USERID = " . $USER->id . " // " . $arr_grades->feedback
-        . " ### " . '<a href="' . $link . '#intro">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';*/
-        return '<a href="' . $link . '#intro">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';
+      if ($link!="") {
+        return '<a href="' . $link . '">' . get_string('readfeedback', 'block_newgu_spdetails') . '</a>';
       } else {
-        //return "COURSE ID = " . $courseid . " # ITEM ID = " . $itemid . " ** item instance = " . $iteminstance . " / USERID = " . $USER->id . " // " . $arr_grades->feedback;
+        if ($modulename!="quiz") {
+          return $gradetodisplay;
+        }
       }
 
     }
