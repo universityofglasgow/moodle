@@ -47,7 +47,7 @@ function local_gugcat_extend_navigation($navigation) {
     if (assessments_details::return_enrolledcourses($USER->id)) {
         $nodehome = $navigation->get('home');
         $myassessments = get_string('myassessments', 'block_gu_spdetails');
-        $icon = new pix_icon('hillhead/gcatdashboard', '');
+        $icon = new pix_icon('hillhead40/gcatdashboard', '');
         $nodemymedia = $nodehome->add($myassessments, new moodle_url('/blocks/gu_spdetails/index.php'), navigation_node::NODETYPE_LEAF, $myassessments, 'myassessments', $icon);
         $nodemymedia->showinflatnavigation = true;
     }
@@ -73,7 +73,7 @@ function local_gugcat_extend_navigation($navigation) {
 
     $gugcatlinkname = get_string('navname', 'local_gugcat');
     $linkurl = new moodle_url('/local/gugcat/index.php', array('id' => $coursecontext->instanceid));
-    $icon = new pix_icon('hillhead/gcatdashboard', '');
+    $icon = new pix_icon('hillhead40/gcatdashboard', '');
     $currentcoursenode = $navigation->find('currentcourse', $navigation::TYPE_ROOTNODE);
     if (isNodeNotEmpty($currentcoursenode)) {
         // We have a 'current course' node, add the link to it.
