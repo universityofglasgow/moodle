@@ -23,7 +23,7 @@
                         </td>
                         <td>{{ user.displayname }}</td>
                         <td>{{ user.idnumber }}</td>
-                        <td>{{ strings.awaitingcapture }}</td>
+                        <CaptureGrades :grades="user.grades"></CaptureGrades>
                         <td><button type="button" class="btn btn-outline-primary btn-sm">{{ strings.addgrade }}</button></td>
                     </tr>
                 </tbody>
@@ -52,6 +52,7 @@
     import PagingBar from '@/components/PagingBar.vue';
     import ModalForm from '@/components/ModalForm.vue';
     import UserPicture from '@/components/UserPicture.vue';
+    import CaptureGrades from '@/components/CaptureGrades.vue';
     import { getstrings } from '@/js/getstrings.js';
 
     const PAGESIZE = 20;
@@ -72,6 +73,7 @@
 
     let firstname = '';
     let lastname = '';
+    let userids = [];
 
     /**
      * filter out paged users
@@ -98,8 +100,6 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;      
         
-        window.console.log('GET PAGE DATA');
-
         fetchMany([{
             methodname: 'local_gugrades_get_capture_page',
             args: {
@@ -114,8 +114,9 @@
         .then((result) => {
             usershidden.value = result['hidden'];
             users.value = JSON.parse(result['users']);
+            userids = users.value.map(u => u.id);
             totalrows.value = users.value.length;
-            window.console.log(users.value);
+            //window.console.log(result['users']);
             get_pagedusers();
         })
         .catch((error) => {
@@ -162,6 +163,22 @@
      */
     function importgrades() {
         window.console.log('IMPORT GRADES');
+
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;      
+        
+        fetchMany([{
+            methodname: 'local_gugrades_import_grades_users',
+            args: {
+                courseid: courseid,
+                gradeitemid: props.itemid,
+                userlist: userids.toString(),
+            }
+        }])[0]
+        .catch((error) => {
+            window.console.log(error);
+        });
 
         showimportmodal.value = false;
     }

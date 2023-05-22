@@ -61,7 +61,9 @@ class api {
 
         // Get list of users.
         // Will be everybody for 'manual' grades or filtered list for modules.
+        $grades = new \local_gugrades\grades($courseid);
         $users = $activity->get_users();
+        $users = $grades->add_grades_to_user_records($gradeitemid, $users);
 
         return [
             'users' => json_encode($users),
@@ -118,13 +120,25 @@ class api {
      * @return 
      */
     public static function import_grade(int $courseid, int $gradeitemid, int $userid) {
-        $grades = new \local_grades\grades($courseid);
+        $grades = new \local_gugrades\grades($courseid);
 
         // Instantiate object for this activity type
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
 
         // Ask activity for grade
         $grade = $activity->get_first_grade($userid);
+
+        if ($grade !== false) {
+            $grades->write_grade(
+                $gradeitemid,
+                $userid,
+                $grade,
+                0,
+                'FIRST',
+                '',
+                1
+            );
+        }
     }
 
     /**

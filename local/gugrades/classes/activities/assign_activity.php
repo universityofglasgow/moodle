@@ -127,9 +127,15 @@ class assign_activity implements activity_interface {
         
         // This just pulls the grade from assign. Not sure it's that simple
         // False, means do not create grade if it does not exist
+        // This is the grade object from mdl_assign_grades (check negative values)
         $assigngrade = $this->assign->get_user_grade($userid, false);
 
-        return $assigngrade;
+        if ($assigngrade !== false) {
+
+            return $assigngrade->grade;
+        } 
+
+        return false;
     }
 
 }

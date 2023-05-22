@@ -44,6 +44,9 @@ class grades {
     // Grade types
     private $gradetypes;
 
+    // Gradetypes by id
+    private $gradetypes_id;
+
     /**
      * Class constructor
      * @param int $courseid
@@ -76,23 +79,33 @@ class grades {
         global $DB;
 
         $gradetypes = $DB->get_records('local_gugrades_gradetype');
+        $this->gradetypes_id = $gradetypes;
         $this->gradetypes = [];
         foreach ($gradetypes as $gradetype) {
-            $this->gradetypes[$gradetype->shortname] = $gradetype->fullname;
+            $this->gradetypes[$gradetype->shortname] = $gradetype;
         }
     }
 
     /**
-     * Get gradetype record given shortname
+     * Get gradetype (reason) record given shortname
      * @param string $shortname
      * @return object
      */
     private function get_gradetype(string $shortname) {
         if (!array_key_exists($shortname, $this->gradetypes)) {
-            throw new coding_exception('Gradetype with shortname "' . $shortname . '" does not exist.');
+            throw new \coding_exception('Gradetype with shortname "' . $shortname . '" does not exist.');
         }
         
         return $this->gradetypes[$shortname];
+    }
+
+    /**
+     * Get gradetype (reason) given id
+     * @param int $id
+     * @return object
+     */
+    private function get_gradetype_from_id(int $id) {
+        return $this->gradetypes_id[$id];
     }
 
     /**
@@ -180,24 +193,98 @@ class grades {
         int $userid,
         float $grade,
         float $weightedgrade,
-        int $reason,
+        string $reason,
         string $other,
         bool $iscurrent,
     ) {
         global $DB, $USER;
 
-        $g = new stdClass;
-        $g->courseid = $this->courseid;
-        $g->gradeitemid = $gradeitemid;
-        $g->userid = $userid;
-        $g->grade = $grade;
-        $g->weightedgrade = $weightedgrade;
-        $g->reason = $this->get_gradetype($reason)->id;
-        $g->other = $other;
-        $g->iscurrent = true;
-        $g->auditby = $USER->id;
-        $g->audittimecreated = time();
-        $g->auditcomment = '';
-        $DB->insert_record('local_gugrades_grade', $g);
+        // Get id of reason code
+        $reasonid = $this->get_gradetype($reason)->id;
+
+        // Does this already exist
+        if ($gugrade = $DB->get_record('local_gugrades_grade', [
+            'courseid' => $this->courseid,
+            'gradeitemid' => $this->gradeitemid,
+            'userid' => $userid,
+            'reason' => $reasonid,
+        ])) {
+            // Update grade
+            // TODO: it won't be as simple as this
+            $gugrade->grade = $grade;
+            $gugrade->weightedgrade = $weightedgrade;
+            $gugrade->iscurrent = true;
+            $gugrade->auditby = $USER->id;
+            $gugrade->audittimecreated = time();
+            $gugrade->auditcomment = '';
+            $DB->update_record('local_gugrades_grade', $gugrade);
+        } else {
+            $gugrade = new \stdClass;
+            $gugrade->courseid = $this->courseid;
+            $gugrade->gradeitemid = $gradeitemid;
+            $gugrade->userid = $userid;
+            $gugrade->grade = $grade;
+            $gugrade->weightedgrade = $weightedgrade;
+            $gugrade->reason = $reasonid;
+            $gugrade->other = $other;
+            $gugrade->iscurrent = true;
+            $gugrade->auditby = $USER->id;
+            $gugrade->audittimecreated = time();
+            $gugrade->auditcomment = '';
+            $DB->insert_record('local_gugrades_grade', $gugrade);
+        }
+    }
+
+    /**
+     * Get user grades
+     * @param int $gradeitemid
+     * @param int $userid
+     * @param string $reason (FIRST, SECOND... null = get all)
+     * @param o
+     */
+    public function get_user_grades(int $gradeitemid, int $userid, string $reason = null) {
+        global $DB;
+
+        if ($reason) {
+            $reasonid = $this->get_gradetype($reason)->id;
+            $gugrade = $DB->get_record('local_gugrades_grade', [
+                'courseid' => $this->courseid,
+                'gradeitemid' => $this->gradeitemid,
+                'userid' => $userid,
+                'reason' => $reasonid
+            ]);
+
+            return $gugrade;
+        } else {
+            $gugrades = $DB->get_records('local_gugrades_grade', [
+                'courseid' => $this->courseid,
+                'gradeitemid' => $gradeitemid,
+                'userid' => $userid,
+            ]);
+
+            // Index by reason
+            $reasongrades = [];
+            foreach ($gugrades as $gugrade) {
+                $reasonshortname = $this->get_gradetype_from_id($gugrade->reason)->shortname;
+                $reasongrades[$reasonshortname] = $gugrade;
+            }
+
+            return $reasongrades;
+        }
+    }
+
+    /**
+     * Add grades to user records for capture page
+     * @param int $gradeitemid
+     * @param array $users
+     * @return array
+     */
+    public function add_grades_to_user_records(int $gradeitemid, array $users) {
+        foreach ($users as $user) {
+            $grades = $this->get_user_grades($gradeitemid, $user->id);
+            $user->grades = $grades;
+        }
+
+        return $users;
     }
 }
