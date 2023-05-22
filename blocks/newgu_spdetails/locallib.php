@@ -27,31 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 class newassessments_statistics {
 
 public static function return_enrolledcourses($userid, $coursetype) {
-  /*
-        global $DB;
-        $fields = "c.id";
-
-        $customfieldwhere = "c.visible = 1 AND c.visibleold = 1";
-        $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
-                            JOIN {user_enrolments} ue
-                            ON (ue.enrolid = e.id AND ue.userid = ?)";
-        $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
-
-        $sql = "SELECT $fields FROM {course} c $enrolmentjoin
-                WHERE $customfieldwhere";
-        $param = array($userid);
-        $results = $DB->get_records_sql($sql, $param);
-
-        if ($results) {
-            $studentcourses = array();
-            foreach ($results as $courseid => $courseobject) {
-                    array_push($studentcourses, $courseid);
-            }
-            return $studentcourses;
-        } else {
-            return array();
-        }
-*/
 
         $currentdate = time();
         $plusonemonth = strtotime("+1 month", $currentdate);
@@ -60,8 +35,6 @@ public static function return_enrolledcourses($userid, $coursetype) {
 
         global $DB;
 
-
-
         $fields = "c.id";
         $customfieldjoin = "JOIN {customfield_field} cff
                             ON cff.shortname = 'show_on_studentdashboard'
@@ -69,30 +42,12 @@ public static function return_enrolledcourses($userid, $coursetype) {
                             ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
         $customfieldwhere = "cfd.value = 1 AND c.visible = 1 AND c.visibleold = 1";
 
-
-// // TEMPORARY ->
-// $fields = "c.id";
-//
-// $customfieldwhere = "c.visible = 1 AND c.visibleold = 1";
-// $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
-//                     JOIN {user_enrolments} ue
-//                     ON (ue.enrolid = e.id AND ue.userid = ?)";
-// $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
-// // <- TEMPORARY
-
         if ($coursetype=="past") {
-//          $coursetypewhere = " AND c.enddate<=" . $currentdate . " AND c.enddate!=0";
-
-          $coursetypewhere = " AND c.enddate<=" . $currentdate ;
-
-          //$coursetypewhere = " AND UNIX_TIMESTAMP(TIMESTAMPADD(MONTH, 1, from_unixtime(c.enddate))) <=" . $currentdate;
-
+          $coursetypewhere = " AND ( c.enddate + (86400 * 30) <=" . $currentdate . " AND c.enddate!=0 )";
         }
         if ($coursetype=="current") {
-//          $coursetypewhere = " AND c.enddate>" . $currentdate . " OR c.enddate=0";
-          $coursetypewhere = " AND c.enddate >" . $currentdate;
+          $coursetypewhere = " AND ( c.enddate + (86400 * 30) >" . $currentdate . " OR c.enddate=0 )";
         }
-
 
         $enrolmentselect = "SELECT DISTINCT e.courseid FROM {enrol} e
                             JOIN {user_enrolments} ue
@@ -318,6 +273,174 @@ public static function return_22grademaxpoint($grade, $idnumber) {
     return $value;
 }
 
+
+public static function return_gradestatus($modulename, $iteminstance, $courseid, $itemid, $userid) {
+
+  global $DB, $USER, $CFG;
+
+  if ($modulename=="assign") {
+      $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
+
+      $cmid = newassessments_statistics::get_cmid('assign', $courseid, $iteminstance);
+
+      if (!empty($arr_assign)) {
+        $allowsubmissionsfromdate = $arr_assign->allowsubmissionsfromdate;
+        $duedate = $arr_assign->duedate;
+        $cutoffdate = $arr_assign->cutoffdate;
+        $gradingduedate = $arr_assign->gradingduedate;
+      }
+      if ($allowsubmissionsfromdate>time()) {
+        $status = 'notopen';
+      }
+      if ($status=="") {
+        $arr_assignsubmission = $DB->get_record('assign_submission', array('assignment'=>$iteminstance, 'userid'=>$USER->id));
+          $status2 = $arr_assignsubmission->status;
+        if (!empty($arr_assignsubmission)) {
+          $status = $arr_assignsubmission->status;
+
+          if ($status=="new") {
+            $status = "notsubmitted";
+            if (time()>$duedate + (86400 * 30)) {
+              $status = 'overdue';
+            }
+          }
+
+        } else {
+          $status = 'tosubmit';
+
+          if (time()>$duedate ) {
+            $status = 'notsubmitted';
+          }
+
+          if (time()>$duedate + (86400 * 30) ) {
+            $status = 'overdue';
+          }
+
+          $link = $CFG->wwwroot . '/mod/assign/view.php?id=' . $cmid;
+        }
+      }
+  }
+
+  if ($modulename=="forum") {
+        $forumsubmissions = $DB->count_records('forum_discussion_subs', array('forum'=>$iteminstance, 'userid'=>$USER->id));
+
+        $cmid = newassessments_statistics::get_cmid('forum', $courseid, $iteminstance);
+
+        if ($forumsubmissions>0) {
+            $status = 'submitted';
+        } else {
+            $status = 'tosubmit';
+            $link = $CFG->wwwroot . '/mod/forum/view.php?id=' . $cmid;
+        }
+    }
+
+    if ($modulename=="quiz") {
+
+          $cmid = newassessments_statistics::get_cmid('quiz', $courseid, $iteminstance);
+
+          $quizattempts = $DB->count_records('quiz_attempts', array('quiz'=>$iteminstance, 'userid'=>$USER->id, 'state'=>'finished'));
+          if ($quizattempts>0) {
+              $status = 'submitted';
+          } else {
+              $status = 'tosubmit';
+              $link = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cmid;
+          }
+    }
+
+    if ($modulename=="workshop") {
+
+          $arr_workshop = $DB->get_record('workshop', array('id'=>$iteminstance));
+
+          $cmid = newassessments_statistics::get_cmid('workshop', $courseid, $iteminstance);
+
+          $workshopsubmissions = $DB->count_records('workshop_submissions', array('workshopid'=>$iteminstance, 'authorid'=>$USER->id));
+          if ($workshopsubmissions>0) {
+              $status = 'submitted';
+          } else {
+              $status = 'tosubmit';
+              if ($arr_workshop->submissionstart==0) {
+                $status = 'notopen';
+              }
+              $link = $CFG->wwwroot . '/mod/workshop/view.php?id=' . $cmid;
+          }
+    }
+
+    $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$userid));
+
+    $finalgrade = "";
+    if (!empty($arr_grades)) {
+        $finalgrade = $arr_grades->finalgrade;
+    }
+
+    $gradestatus = array("status"=>$status, "link"=>$link, "allowsubmissionfromdate"=>$allowsubmissionsfromdate, "duedate"=>$duedate, "cutoffdate"=>$cutoffdate, "finalgrade"=>$finalgrade, "gradingduedate"=>$gradingduedate);
+
+    return $gradestatus;
+
+}
+
+
+
+}
+
+
+
+function get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $userid, $grademax) {
+global $CFG, $DB, $USER;
+
+$link = "";
+$gradetodisplay = "";
+
+$gradestatus = newassessments_statistics::return_gradestatus($modulename, $iteminstance, $courseid, $itemid, $userid);
+
+$status = $gradestatus["status"];
+$link = $gradestatus["link"];
+$allowsubmissionsfromdate = $gradestatus["allowsubmissionsfromdate"];
+$duedate = $gradestatus["duedate"];
+$cutoffdate = $gradestatus["cutoffdate"];
+$gradingduedate = $gradestatus["gradingduedate"];
+
+$rawgrade = $gradestatus["rawgrade"];
+$finalgrade = $gradestatus["finalgrade"];
+
+$cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
+
+// if ($modulename=="assign" || $modulename=="forum") {
+//     $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
+// }
+
+
+if ($finalgrade!=Null) {
+    $gradetodisplay = '<span class="graded">' . number_format((float)$finalgrade) . " / " . number_format((float)$grademax) . '</span>' . ' (Provisional)';
+    //if ($modulename=="assign" || $modulename=="forum") {
+      $link = $CFG->wwwroot . '/mod/'.$modulename.'/view.php?id=' . $cmid . '#page-footer';
+    //}
+}
+
+if ($finalgrade==Null  && $duedate<time()) {
+  if ($status=="notopen" || $status=="notsubmitted") {
+      $gradetodisplay = 'To be confirmed';
+      $link = "";
+  }
+  if ($status=="overdue") {
+      $gradetodisplay = 'Overdue';
+      $link = "";
+  }
+  if ($status=="notsubmitted") {
+      $gradetodisplay = 'Not submitted';
+      if ($gradingduedate>time()) {
+          $gradetodisplay = "Due " . date("d/m/Y",$gradingduedate);
+      }
+  }
+
+}
+
+if ($status=="tosubmit") {
+    $gradetodisplay = 'To be confirmed';
+    $link = "";
+}
+
+return array("gradetodisplay"=>$gradetodisplay, "link"=>$link);
+//return array("gradetodisplay"=>$gradetodisplay, "link"=>$link);
 
 }
 
