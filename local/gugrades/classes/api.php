@@ -172,6 +172,7 @@ class api {
         $courses = [];
 
         // Iterate over grades adding additional information
+        $newgrades = [];
         foreach ($grades as $grade) {
             $courseid = $grade->courseid;
 
@@ -179,7 +180,7 @@ class api {
             if (array_key_exists($courseid, $courses)) {
                 $course = $courses[$courseid];
             } else {
-                if ($course = $DB->get_record('course', ['id' => $courseid])) {
+                if (!$course = $DB->get_record('course', ['id' => $courseid])) {
                     continue;
                 }
                 $courses[$courseid] = $course;
@@ -190,14 +191,16 @@ class api {
             $grade->courseshortname = $course->shortname;
 
             // Additional grade data
-            $gradeobject = new local_gugrades\grade($courseid);
+            $gradeobject = new \local_gugrades\grades($courseid);
             $grade->reasonname = $gradeobject->get_reason_from_id($grade->reason);
 
             // Item into
-            $grade->itemname = $gradeobject->get_item_name_from_item_id($grade->gradeitemid);
+            $grade->itemname = $gradeobject->get_item_name_from_itemid($grade->gradeitemid);
+
+            $newgrades[] = $grade;
         }
 
-        return $grades;
+        return $newgrades;
     }
 
 }
