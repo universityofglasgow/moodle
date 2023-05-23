@@ -289,8 +289,6 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
 
   $provisionalgrade = 0;
   $convertedgrade = 0;
-  $provisional_22grademaxpoint = 0;
-  $converted_22grademaxpoint = 0;
 
   $sql_grade = "SELECT rawgrade,finalgrade FROM {grade_grades} where itemid=" . $itemid . " AND userid=" . $userid;
   // . " AND rawgrade IS NOT NULL AND finalgrade IS NULL";
@@ -304,43 +302,6 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
           $provisionalgrade = $arr_grade->rawgrade;
       }
   }
-
-  $sql_provisionalgrade = 'SELECT DISTINCT CONCAT(gg.id," ",gg.userid) as unikid, gi.itemname, gi.iteminfo, gg.itemid,gg.userid, gg.rawgrade, gg.finalgrade
-          FROM {grade_items} gi
-          LEFT JOIN {grade_grades} gg ON (gi.iteminfo = gg.id AND gi.itemname = "Provisional Grade")
-          WHERE gi.iteminfo IS NOT NULL && gi.iteminfo!="" AND gg.itemid IS NOT NULL AND gg.userid=' . $userid;
-
-  $arr_provisionalgrade = $DB->get_record_sql($sql_provisionalgrade);
-
-  if (!empty($arr_provisionalgrade)) {
-    if (!is_null($arr_provisionalgrade->rawgrade) && is_null($arr_provisionalgrade->finalgrade)) {
-        $provisionalgrade = $arr_provisionalgrade->rawgrade;
-    }
-    if (is_null($arr_provisionalgrade->rawgrade) && !is_null($arr_provisionalgrade->finalgrade)) {
-        $provisionalgrade = $arr_provisionalgrade->finalgrade;
-    }
-    $provisional_22grademaxpoint = return_22grademaxpoint($provisionalgrade, 1);
-  }
-
-  $sql_convertedgrade = 'SELECT DISTINCT CONCAT(gg.id," ",gg.userid) as unikid, gi.itemname, gi.iteminfo, gg.itemid,gg.userid, gg.rawgrade, gg.finalgrade
-                  FROM {grade_items} gi
-                  LEFT JOIN {grade_grades} gg ON (gi.iteminfo = gg.id AND gi.itemname = "Converted Grade")
-                  WHERE gi.iteminfo IS NOT NULL && gi.iteminfo!="" AND gg.itemid IS NOT NULL AND gg.userid=' . $userid;
-
-  $arr_convertedgrade = $DB->get_record_sql($sql_convertedgrade);
-
-                  if (!empty($arr_convertedgrade)) {
-                    if (!is_null($arr_convertedgrade->rawgrade) && is_null($arr_convertedgrade->finalgrade)) {
-                        $convertedgrade = $arr_convertedgrade->rawgrade;
-                    }
-                    if (is_null($arr_convertedgrade->rawgrade) && !is_null($arr_convertedgrade->finalgrade)) {
-                        $convertedgrade = $arr_convertedgrade->finalgrade;
-                    }
-
-                    $converted_22grademaxpoint = return_22grademaxpoint($convertedgrade, 2);
-
-                  }
-
 
 
   $status = "";
@@ -372,7 +333,7 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
 
           if ($status=="new") {
             $status = "notsubmitted";
-            if (time()>$duedate + (86400 * 30)) {
+            if (time()>$duedate + (86400 * 30) && $duedate!=0) {
               $status = 'overdue';
             }
           }
@@ -452,9 +413,7 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
                           "finalgrade"=>$finalgrade,
                           "gradingduedate"=>$gradingduedate,
                           "provisionalgrade"=>$provisionalgrade,
-                          "convertedgrade"=>$convertedgrade,
-                          "provisional_22grademaxpoint"=>$provisional_22grademaxpoint,
-                          "converted_22grademaxpoint"=>$converted_22grademaxpoint,
+                          "convertedgrade"=>$convertedgrade
                         );
 
     return $gradestatus;
