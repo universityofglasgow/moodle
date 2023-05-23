@@ -34,7 +34,7 @@
     import { getstrings } from '@/js/getstrings.js';
 
     const props = defineProps({
-        grades: Array
+        grades: Object
     });
 
     const strings = ref({});

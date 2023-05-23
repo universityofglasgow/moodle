@@ -22,6 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+ $services = array(
+    'local_gugrades' => array(
+        'functions' => ['local_gugrades_get_user_grades'],
+        'requiredcapability' => '',
+        'restrictedusers' => 1,
+        'enabled' => 1,
+    ),
+);
+
 $functions = [
     'local_gugrades_get_levelonecategories' => [
         'classname' => 'local_gugrades\external\get_levelonecategories',
@@ -62,6 +71,12 @@ $functions = [
     'local_gugrades_get_user_picture_url' => [
         'classname' => 'local_gugrades\external\get_user_picture_url',
         'description' => 'Get the URL of the user picture',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_user_grades' => [
+        'classname' => 'local_gugrades\external\get_user_grades',
+        'description' => 'Get all user grades for given user (site-wide)',
         'type' => 'read',
         'ajax' => true,
     ],

@@ -154,4 +154,50 @@ class api {
 
         return $user_picture->get_url($PAGE);
     }
+
+    /**
+     * Get user grades
+     * Get site-wide grades for dashboard / Glasgow life / testing / etc. 
+     * @param int $userid
+     * @return array
+     */
+    public static function get_user_grades(int $userid) {
+        global $DB;
+
+        if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid])) {
+            return [];
+        }
+
+        // "cache" course objects so we don't keep looking them up
+        $courses = [];
+
+        // Iterate over grades adding additional information
+        foreach ($grades as $grade) {
+            $courseid = $grade->courseid;
+
+            // Find course or just skip if it doesn't exist (deleted?)
+            if (array_key_exists($courseid, $courses)) {
+                $course = $courses[$courseid];
+            } else {
+                if ($course = $DB->get_record('course', ['id' => $courseid])) {
+                    continue;
+                }
+                $courses[$courseid] = $course;
+            }
+
+            // Add course data
+            $grade->coursefullname = $course->fullname;
+            $grade->courseshortname = $course->shortname;
+
+            // Additional grade data
+            $gradeobject = new local_gugrades\grade($courseid);
+            $grade->reasonname = $gradeobject->get_reason_from_id($grade->reason);
+
+            // Item into
+            $grade->itemname = $gradeobject->get_item_name_from_item_id($grade->gradeitemid);
+        }
+
+        return $grades;
+    }
+
 }

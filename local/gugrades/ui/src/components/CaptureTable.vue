@@ -176,6 +176,11 @@
                 userlist: userids.toString(),
             }
         }])[0]
+        .then(() => {
+
+            // Get the data for the table
+            get_page_data(props.itemid, firstname, lastname);
+        })
         .catch((error) => {
             window.console.log(error);
         });

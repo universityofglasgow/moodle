@@ -82,4 +82,22 @@ class default_activity implements activity_interface {
         return false;
     }
 
+    /**
+     * Implement get_first_grade
+     * This is currently just the same as a manual grade
+     * (this is pulling 'finalgrade' instead of 'rawgrade'. Not sure if this is correct/complete)
+     */
+    public function get_first_grade(int $userid) {
+        global $DB;
+        
+        if ($grade = $DB->get_record('grade_grades', ['itemid' => $this->gradeitemid, 'userid' => $userid])) {
+            if ($grade->finalgrade) {
+                return $grade->finalgrade;
+            }
+        }
+
+        return false;
+    }
+
+
 }

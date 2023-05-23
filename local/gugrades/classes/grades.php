@@ -109,6 +109,30 @@ class grades {
     }
 
     /**
+     * Utility function to get reason name
+     * @param int $id
+     * @return string
+     */
+    public function get_reason_from_id(int $id) {
+        return $this->get_gradetype_from_id($id)->fullname;
+    }
+
+    /**
+     * Get item name from gradeitemid
+     * @param int $gradeitemid
+     * @return string
+     */
+    public function get_item_name_from_itemid(int $itemid) {
+        global $DB;
+
+        if ($grade_item = $DB->get_record('grade_items', ['id' => $gradeitemid])) {
+            return $grade_item->itemname;
+        }
+
+        return '';
+    }
+
+    /**
      * Get first level categories (should be summative / formative and so on)
      * Actually depth==2 in the database (1 == top level)
      */
