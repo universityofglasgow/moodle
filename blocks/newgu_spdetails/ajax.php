@@ -1,57 +1,104 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+require_once(dirname(dirname(__FILE__)) . '../../config.php');
 
-/**
- * View
- *
- * @package   block_newgu_spdetails
- * @copyright
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-require_once('../../config.php');
+defined('MOODLE_INTERNAL') || die();
 
 require_login();
-
-require_once('locallib.php');
-
 $context = \context_system::instance();
 
 global $USER, $SESSION;
 
+require_once('locallib.php');
+
+$sub_assess = 0;
+$tobe_sub = 0;
+$overdue = 0;
+$assess_marked = 0;
+
+$total_overdue = 0;
+$total_submissions = 0;
+$total_tosubmit = 0;
+$marked = 0;
+
     $currenttime = time();
+//    $twohours = $currenttime - 2*60*60;
     $twohours = $currenttime - 2*60*60;
 
     if (!isset($SESSION->statscount) || $SESSION->statscount["timeupdated"]<$twohours) {
-    $get_stats_counts = newassessments_statistics::get_stats_counts($USER->id);
+    //$get_stats_counts = newassessments_statistics::get_stats_counts($USER->id);
 
-    $sub_assess = $get_stats_counts->submitted;
-    $tobe_sub = $get_stats_counts->tobesubmit;
-    $overdue = $get_stats_counts->overdue;
-    $assess_marked = $get_stats_counts->marked;
+    $currentcourses = newassessments_statistics::return_enrolledcourses($USER->id, "current");
+
+    if (!empty($currentcourses)) {
+    $str_currentcourses = implode(",", $currentcourses);
+
+    $itemmodules = "'assign','forum','quiz','workshop'";
+
+    $courseids = implode(', ', $currentcourses);
+    $currentdate = time();
+
+    $sql_gi = "SELECT * FROM {grade_items} WHERE courseid in (".$str_currentcourses.") && courseid>1 && itemtype='mod' && itemmodule in (" . $itemmodules . ")";
+
+    $arr_gi = $DB->get_records_sql($sql_gi);
+
+    foreach($arr_gi as $key_gi) {
+      $modulename = $key_gi->itemmodule;
+      $iteminstance = $key_gi->iteminstance;
+      $courseid = $key_gi->courseid;
+      $itemid = $key_gi->id;
+
+      $gradestatus = newassessments_statistics::return_gradestatus($modulename, $iteminstance, $courseid, $itemid, $USER->id);
+
+      $status = $gradestatus["status"];
+      $link = $gradestatus["link"];
+      $allowsubmissionsfromdate = $gradestatus["allowsubmissionsfromdate"];
+      $duedate = $gradestatus["duedate"];
+      $cutoffdate = $gradestatus["cutoffdate"];
+
+      $finalgrade = $gradestatus["finalgrade"];
+
+
+      $statustodisplay = "";
+
+      if($status == 'tosubmit'){
+        $total_tosubmit++;
+      }
+      if($status == 'notsubmitted'){
+        $total_tosubmit++;
+      }
+      if($status == 'submitted'){
+        $total_submissions++;
+        if ($finalgrade!=Null) {
+          $marked++;
+        }
+      }
+      if($status == "notopen"){
+        $statustodisplay = '<span class="status-item">Submission not open</span> ';
+      }
+      if($status == "TO_BE_ASKED"){
+        $statustodisplay = '<span class="status-item status-graded">Individual components</span> ';
+      }
+      if($status == "overdue"){
+        $total_overdue++;
+      }
+
+    }
+
+    $sub_assess = $total_submissions;
+    $tobe_sub = $total_tosubmit;
+    $overdue = $total_overdue;
+    $assess_marked = $marked;
 
     $statscount = array(
                         "timeupdated"=>time(),
-                        "sub_assess"=>$sub_assess,
-                        "tobe_sub"=>$tobe_sub,
-                        "overdue"=>$overdue,
-                        "assess_marked"=>$assess_marked
+                        "sub_assess"=>$total_submissions,
+                        "tobe_sub"=>$total_tosubmit,
+                        "overdue"=>$total_overdue,
+                        "assess_marked"=>$marked
                       );
 
                       $SESSION->statscount = $statscount;
+                    }
     } else {
       $sub_assess = $SESSION->statscount["sub_assess"];
       $tobe_sub = $SESSION->statscount["tobe_sub"];

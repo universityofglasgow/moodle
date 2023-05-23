@@ -115,6 +115,7 @@ class currentassessment_table extends table_sql
 
       $duedate = 0;
       $extspan = "";
+      $extensionduedate = 0;
 
       // READ individual TABLE OF ACTIVITY (MODULE)
       if ($modulename!="") {
@@ -126,11 +127,12 @@ class currentassessment_table extends table_sql
 
           $arr_userflags = $DB->get_record('assign_user_flags', array('userid'=>$USER->id, 'assignment'=>$iteminstance));
 
+          if ($arr_userflags) {
           $extensionduedate = $arr_userflags->extensionduedate;
-
           if ($extensionduedate>0) {
 //            $extspan = '<span class="extended">*<span class="extended-tooltip">Due date extension</span></span>';
             $extspan = '<a href="javascript:void(0)" title="Due date extension" class="extended">*</a>';
+          }
           }
 
         }
