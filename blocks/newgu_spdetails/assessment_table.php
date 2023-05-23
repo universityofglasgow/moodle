@@ -335,8 +335,8 @@ class pastassessment_table extends table_sql
         global $DB, $USER;
 
         $cmid = $values->id;
-        $moduleid = $values->module;
-        $instance = $values->instance;
+        $modulename = $values->itemmodule;
+        $iteminstance = $values->iteminstance;
         $courseid = $values->courseid;
         $iteminstance = $values->iteminstance;
 /*
@@ -376,17 +376,18 @@ class pastassessment_table extends table_sql
       $courseid = $values->courseid;
       $itemid = $values->id;
 
-
       $submissionstartdate = 0;
 
       // READ individual TABLE OF ACTIVITY (MODULE)
       if ($modulename!="") {
         $arr_submissionstartdate = $DB->get_record($modulename,array('course'=>$courseid, 'id'=>$iteminstance));
 
-
       if (!empty($arr_submissionstartdate)) {
-        if ($modulename=="assign" || $modulename=="forum") {
+        if ($modulename=="assign") {
           $submissionstartdate = $arr_submissionstartdate->allowsubmissionsfromdate;
+        }
+        if ($modulename=="forum") {
+          $submissionstartdate = $arr_submissionstartdate->assesstimestart;
         }
         if ($modulename=="quiz") {
           $submissionstartdate = $arr_submissionstartdate->timeopen;
