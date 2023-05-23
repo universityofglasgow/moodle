@@ -54,12 +54,15 @@
     import UserPicture from '@/components/UserPicture.vue';
     import CaptureGrades from '@/components/CaptureGrades.vue';
     import { getstrings } from '@/js/getstrings.js';
+    import { useNotification } from '@kyvg/vue3-notification';
 
     const PAGESIZE = 20;
 
     const props = defineProps({
         itemid: Number,
     });
+
+    const { notify } = useNotification();
 
     const users = ref([]);
     const pagedusers = ref([]);
@@ -180,6 +183,13 @@
 
             // Get the data for the table
             get_page_data(props.itemid, firstname, lastname);
+
+            // Done it
+            notify({
+                title: 'Import complete',
+                text: 'Data has been imported',
+                position: 'bottom left',
+            })
         })
         .catch((error) => {
             window.console.log(error);

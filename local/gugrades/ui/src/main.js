@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import Notifications from '@kyvg/vue3-notification';
 
 // This stuff makes sure that the window.GU variable
 // exists.
@@ -27,7 +28,7 @@ function ensureGUIsSet(timeout) {
 
 ensureGUIsSet(timeout)
 .then(() => {
-    createApp(App).use(router).mount('#app');
+    createApp(App).use(router).use(Notifications).mount('#app');
 });
 
 
