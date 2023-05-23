@@ -146,7 +146,7 @@ public static function get_stats_counts($userid)
 {
     global $DB;
 
-    $courses = newassessments_statistics::return_enrolledcourses($userid, "");
+    $courses = newassessments_statistics::return_enrolledcourses($userid, "current");
 
     $courseids = implode(', ', $courses);
 
@@ -157,10 +157,10 @@ public static function get_stats_counts($userid)
     $marked = 0;
 
 
-
     //Submissions
 
     $sql_assign_submissions = "SELECT count(*) as assignsubmissions FROM {assign_submission} WHERE assignment in (SELECT id FROM {assign} WHERE course IN ('$courseids')) AND userid=" . $userid;
+
     $arr_assign_submissions = $DB->get_record_sql($sql_assign_submissions);
     $assign_submissions = $arr_assign_submissions->assignsubmissions;
 
@@ -195,24 +195,33 @@ public static function get_stats_counts($userid)
     //Overdue
     $current_time = time();
 
-    $sql_assign_due1 = 'SELECT id FROM {assign} WHERE duedate < ?';
-    $assign_due1_param = array($current_time);
-    $arr_assign_due1 = $DB->get_records_sql($sql_assign_due1, $assign_due1_param);
+    $sql_assign_due1 = 'SELECT id,duedate,course FROM {assign} WHERE duedate < ' . $current_time . ' AND course IN (' . $courseids . ') AND duedate!=0';
 
+
+    //$assign_due1_param = array("duedate"=>$current_time + (86400*30));
+    //$arr_assign_due1 = $DB->get_records_sql($sql_assign_due1, $assign_due1_param);
+    $arr_assign_due1 = $DB->get_records_sql($sql_assign_due1);
+// echo $sql_assign_due1 ;
+// echo "<pre>";
+// print_r($arr_assign_due1);
+// exit;
     foreach ($arr_assign_due1 as $key_assign_due1) {
+      $extensiondate = $key_assign_due1->duedate;
+       $sql_assign_grantext = 'SELECT * FROM {assign_user_flags} WHERE assignment=' . $key_assign_due1->id . ' AND userid=' . $userid;
+// echo "<br/>";
+//       $param_grantext = array("assignment"=>$key_assign_due1->id, "userid"=>$userid);
 
-       $sql_assign_grantext = 'SELECT * FROM {assign_user_flags} WHERE assignment=? AND userid=?';
-       $param_grantext = array($key_assign_due1->id, $userid);
-       $arr_assign_grantext = $DB->get_record_sql($sql_assign_grantext, $param_grantext);
+       $arr_assign_grantext = $DB->get_record_sql($sql_assign_grantext);
 
        if (!empty($arr_assign_grantext)) {
           $extensiondate = $arr_assign_grantext->extensionduedate;
        }
 
-       if (isset($extensiondate) && $current_time<$extensiondate) {
+//echo "<br/>" . $key_assign_due1->id . " / " . $userid . " // " . $extensiondate . " /// " . $current_time . "<br/>";
+       if ($extensiondate!=0 && $extensiondate < $current_time) {
          $sql_assign_due2 = 'SELECT * FROM {assign_submission} WHERE status!="submitted" AND userid=' . $userid . ' AND assignment=' . $key_assign_due1->id;
          $arr_assign_due2 = $DB->get_records_sql($sql_assign_due2);
-           if (empty($arr_assign_due2)) {
+           if (!empty($arr_assign_due2)) {
               $total_overdue++;
            }
        }
@@ -278,6 +287,14 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
 
   global $DB, $USER, $CFG;
 
+  $status = "";
+  $link = "";
+  $duedate = 0;
+  $allowsubmissionsfromdate = 0;
+  $cutoffdate = 0;
+  $gradingduedate = 0;
+
+
   if ($modulename=="assign") {
       $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
 
@@ -294,7 +311,7 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
       }
       if ($status=="") {
         $arr_assignsubmission = $DB->get_record('assign_submission', array('assignment'=>$iteminstance, 'userid'=>$USER->id));
-          $status2 = $arr_assignsubmission->status;
+          
         if (!empty($arr_assignsubmission)) {
           $status = $arr_assignsubmission->status;
 
@@ -372,7 +389,7 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
         $finalgrade = $arr_grades->finalgrade;
     }
 
-    $gradestatus = array("status"=>$status, "link"=>$link, "allowsubmissionfromdate"=>$allowsubmissionsfromdate, "duedate"=>$duedate, "cutoffdate"=>$cutoffdate, "finalgrade"=>$finalgrade, "gradingduedate"=>$gradingduedate);
+    $gradestatus = array("status"=>$status, "link"=>$link, "allowsubmissionsfromdate"=>$allowsubmissionsfromdate, "duedate"=>$duedate, "cutoffdate"=>$cutoffdate, "finalgrade"=>$finalgrade, "gradingduedate"=>$gradingduedate);
 
     return $gradestatus;
 
@@ -399,7 +416,6 @@ $duedate = $gradestatus["duedate"];
 $cutoffdate = $gradestatus["cutoffdate"];
 $gradingduedate = $gradestatus["gradingduedate"];
 
-$rawgrade = $gradestatus["rawgrade"];
 $finalgrade = $gradestatus["finalgrade"];
 
 $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
