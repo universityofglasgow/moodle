@@ -135,7 +135,7 @@ function local_template_extend_settings_navigation(settings_navigation $navigati
 
     if (has_capability('local/template:usetemplate', $context)) {
         global $CFG;
-        $url = new moodle_url($CFG->wwwroot . '/local/local_template/index.php', array('category' => $context->instanceid));
+        $url = new moodle_url($CFG->wwwroot . '/local/template/index.php', array('category' => $context->instanceid));
 
         //public function add($text, $action=null, $type=self::TYPE_CUSTOM, $shorttext=null, $key=null, pix_icon $icon=null) {
         $categorynode->add(get_string('pluginname', 'local_template'), $url, navigation_node::TYPE_SETTING, null, 'local_template', new pix_icon('i/return', ''));
