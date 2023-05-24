@@ -67,8 +67,8 @@ utils::enforce_security();
 if (!empty($categoryid)) {
     global $DB;
     $categoryname = $DB->get_field('course_categories', 'name', array('id' => $categoryid));
-    $templateselector = $PAGE->navigation->add(get_string('pluginname', 'local_template'), new moodle_url('/local/local_template/index.php'), navigation_node::TYPE_CONTAINER);
-    $category = $templateselector->add(format_string($categoryname), new moodle_url('/local/local_template/index.php', ['category' => $categoryid]));
+    $templateselector = $PAGE->navigation->add(get_string('pluginname', 'local_template'), new moodle_url('/local/template/index.php'), navigation_node::TYPE_CONTAINER);
+    $category = $templateselector->add(format_string($categoryname), new moodle_url('/local/template/index.php', ['category' => $categoryid]));
     $category->make_active();
 }
 
