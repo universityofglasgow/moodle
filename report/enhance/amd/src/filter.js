@@ -41,7 +41,11 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                 return false;
             }
 
-            // Display updated voting buttons
+            /**
+             * @param {HTMLElement} container
+             * @param {int} requestid
+             * @param {int} votes
+             */
             function render_voting(container, requestid, votes) {
                 var context = {
                     votecount: votes.count,
