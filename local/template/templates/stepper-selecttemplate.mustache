@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_template/stepper-footer
+    @template local_template/stepper-selecttemplate
 
     Moodle notification template.
 
@@ -35,10 +35,18 @@
     * level Which level this notification is (e.g. warning, success).
 
     Example context (json):
-    {}
+    { introduction, addnewcourselink }
 }}
-    {{#buttons}}
-        <button class="btn btn-primary" onclick="templatestepper.previous()">Previous</button>
-        <button class="btn btn-primary float-right" onclick="templatestepper.next()">Next</button>
-    {{/buttons}}
+<div id="test-nl-1" role="tabpanel" class="bs-stepper-pane" aria-labelledby="templatesteppertrigger1">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            {{{introduction}}}
+        </div>
+    </div>
+
+    <hr>
+    <div class="container">
+        <button id="addnewcourse" type="button" class="btn btn-success" onclick="templatestepper.next();">{{#str}} addnewcourse, local_template {{/str}} &nbsp;<i class="fa fa-plus"></i></button>
+        <a href="{{addnewcourselink}}" type="button" class="btn btn-danger float-right">{{#str}} usedefaultmoodlefunctions, local_template {{/str}} &nbsp;<i class="fa fa-cog"></i></a>
+    </div>
 </div>

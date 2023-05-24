@@ -42,7 +42,7 @@ class template {
 
     public static function path() {
         global $CFG;
-        if (utils::is_admin()) {
+        if (utils::is_admin_page()) {
             return $CFG->wwwroot . '/local/template/admin/templates.php';
         } else {
             return $CFG->wwwroot . '/local/template/index.php';
@@ -121,10 +121,12 @@ class template {
         $template = new models\template($id);
         $record = $template->read();
 
+        $categoryid = optional_param('category', 0, PARAM_INT);
         $customdata = [
             'id' => $id,
             'persistent' => $template,
             'action' => 'viewtemplate',
+            'category' => $categoryid
         ];
 
         $name = shorten_text(format_string($record->get('name')));
@@ -160,11 +162,13 @@ class template {
         // Initialise a form object if we haven't been provided with one.
         if ($form == null) {
 
+            $categoryid = optional_param('category', 0, PARAM_INT);
             $customdata = [
                 'id' => $id,
                 'persistent' => $template,
                 'action' => 'edittemplate',
-                'admin' => $admin
+                'admin' => $admin,
+                'category' => $categoryid
             ];
 
             // Constructor calls set_data.
@@ -178,39 +182,25 @@ class template {
 
         global $CFG;
         // Include CSS.
-        $PAGE->requires->css(new moodle_url("https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css"));
+        $PAGE->requires->css(new moodle_url($CFG->wwwroot . "/local/template/style/bs-stepper.min.css"));
         $PAGE->requires->css(new moodle_url($CFG->wwwroot . "/local/template/slick/slick.css"));
         $PAGE->requires->css(new moodle_url($CFG->wwwroot . "/local/template/slick/slick-theme.css"));
         $PAGE->requires->css(new moodle_url($CFG->wwwroot . '/local/template/styles.css'));
         $PAGE->requires->jquery();
 
-        // <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
-        //$PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/template/slick/slick.js'));
-        //$PAGE->requires->js(new moodle_url('https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js'));
-        //$PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/template/js/main.js'));
-
-        // $PAGE->requires->js('/mod/namemodule/socket.io.js',true);
-
-
         // Print the page.
         echo $OUTPUT->header();
         echo $OUTPUT->heading($strheading);
 
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('local_template');
-
         $form->display();
 
-        // echo $renderer->render_stepper(\local_template\forms\template::STEPPER_JAVASCRIPT, []);
+        echo $OUTPUT->heading(get_string('log', 'local_template'));
+        echo $OUTPUT->box(self::rendertemplates($id, true));
 
-        echo '<script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js" type="text/javascript" charset="utf-8"></script>';
+        echo '<script src="' . $CFG->wwwroot . '/local/template/js/bs-stepper.min.js" type="text/javascript" charset="utf-8"></script>';
         echo '<script src="' . $CFG->wwwroot . '/local/template/js/main.js" type="text/javascript" charset="utf-8"></script>';
         echo '<script src="' . $CFG->wwwroot . '/local/template/slick/slick.js" type="text/javascript" charset="utf-8"></script>';
         echo $OUTPUT->footer();
-
-
-
-        //
 
         die;
     }
@@ -249,7 +239,6 @@ class template {
                 unset($data->createcourse);
             }
             unset($data->savetemplate);
-
 
             try {
                 $data->usercreated = $USER->id;
@@ -331,14 +320,12 @@ class template {
 
     public static function runtemplate($id) {
 
-        global $OUTPUT;
         if (!empty($id)) {
 
             $template = new models\template($id);
             $result = $template->process();
             if (!$result) {
-                // TODO for notifications
-                // $template->notifications->output(true);
+                // TODO for notifications. $template->notifications->output(true).
             } else {
                 if ($template->get('recordsinfo') > 0) {
                     notification::info($template->get('recordsinfo') . ' rows generated information');
@@ -355,9 +342,6 @@ class template {
             }
         }
         self::do_redirect();
-        //$template->redirect_coursepage();
-        //redirect(self::path());
-
     }
 
     public static function show($id) {
@@ -378,7 +362,8 @@ class template {
             $template = new models\template($id);
             $template->set('hidden', models\template::HIDDEN_TRUE);
             if ($template->update()) {
-                notification::success('Course template selector log ' . $template->get('shortname') . ' is now hidden. Now only admin can see this record.');
+                notification::success('Course template selector log ' . $template->get('shortname') .
+                    ' is now hidden. Now only admin can see this record.');
             } else {
                 notification::error('Could not hide course template selector log ' . $template->get('shortname'));
             }
@@ -389,7 +374,7 @@ class template {
 
     public static function delete($id) {
         $template = new models\template($id);
-        $name = get_string('missingtemplatename','local_template');
+        $name = get_string('missingtemplatename', 'local_template');
         if (models\template::has_property('name')) {
             $name = $template->get('name');
         }
@@ -425,9 +410,9 @@ class template {
 
         // Create a new template link.
         $buttons .= utils::icon_link('add', self::path(), ['action' => 'createtemplate', 'id' => '0']);
-        // $buttons .= $OUTPUT->single_button(new \moodle_url(self::path(), array('action' => 'createtemplate')), get_string('createtemplate', 'local_template'));
         if (utils::is_admin()) {
-            $buttons .= \html_writer::link(new \moodle_url(self::path()), '<i class="fa fa-user-secret" title="Admin" role="img" aria-label="Admin"></i>', ['title' => 'Admin']);
+            $buttons .= \html_writer::link(new \moodle_url(self::path()),
+                '<i class="fa fa-user-secret" title="Admin" role="img" aria-label="Admin"></i>', ['title' => 'Admin']);
         }
 
         // Print the header.
@@ -437,7 +422,6 @@ class template {
         }
         echo $OUTPUT->heading(get_string('template', 'local_template'));
         echo $confirm;
-        // echo '<pre>' . var_export($SESSION->local_template_paging, true) . '</pre>';
         echo $buttons;
         echo get_string('templateintro', 'local_template');
         echo '<hr />';

@@ -47,7 +47,8 @@ utils::enforce_security(true);
 $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/index.php'));
 $PAGE->navbar->add(get_string('templateadmin', 'local_template'), new moodle_url('/local/template/admin/index.php'));
 $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/admin/templates.php'));
-$PAGE->navbar->add(get_string('backupcontrollers', 'local_template'), new moodle_url('/local/template/admin/backupcontrollers.php'));
+$PAGE->navbar->add(get_string('backupcontrollers', 'local_template'),
+    new moodle_url('/local/template/admin/backupcontrollers.php'));
 
 $action = optional_param('action', '', PARAM_ALPHANUMEXT );
 $PAGE->set_context(context_system::instance());
@@ -56,7 +57,6 @@ $PAGE->set_title(get_string('pluginname', 'local_template'));
 
 switch ($action) {
     case 'createbackupcontroller':
-        //notification::info('Should be zero: ' . optional_param('id', 0, PARAM_INT));
         $backupcontrollerid = optional_param('backupcontrollerid', 0, PARAM_INT);
         $templateid = optional_param('templateid', 0, PARAM_INT);
         backupcontroller::display($backupcontrollerid, $templateid);

@@ -25,13 +25,14 @@
 $string['pluginname'] = 'Course template selector';
 
 $string['addnewcourse'] = 'Add new course with template';
-$string['usedefaultmoodlefunctions'] = 'Use default moodle course functions';
+$string['usedefaultmoodlefunctions'] = 'Create Course Manually';
 
 $string['addnewcoursehook'] = 'Add new course hook';
 $string['addnewcoursehook_desc'] = 'Enable add new course redirection to course template selector';
 
-$string['addnewcoursebutton'] = 'Add new course button';
-$string['addnewcoursebutton_desc'] = 'Add addtional Add new course via template button alongside Add new course buttons (performed by theme)';
+$string['addnewcoursenavigation'] = 'Add new course to category navigation';
+$string['addnewcoursenavigation_desc'] = 'Add additional Course Template Selector option to category navigation menu';
+
 
 $string['addnewcoursecategoryactionbar'] = 'Add new course to category action bar';
 $string['addnewcoursecategoryactionbar_desc'] = 'Add additional Add new course via template option to category page options dropdown (performed by theme)';
@@ -61,6 +62,8 @@ $string['dashboard'] = 'Dashboard';
 
 $string['managetemplate'] = 'Your user has the <strong>Manage Template capability <i class="fa fa-user-secret"></i></strong>.';
 
+$string['template:usetemplate'] = 'Use Template';
+$string['template:managetemplate'] = 'Manage Template';
 
 $string['createnewtemplate'] = 'Create new course via template';
 $string['templatecourse'] = 'Template Course';
@@ -81,6 +84,8 @@ $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';
 $string['edit'] = 'Edit';
 
+$string['shortname'] = 'Short Name';
+
 $string['edittemplate'] = 'Edit template';
 
 $string['gudbenrolment'] = 'Automated Database Enrolment';
@@ -94,11 +99,17 @@ $string['addnewbackupcontroller'] = 'Add New Backup Controller';
 $string['editbackupcontroller'] = 'Edit Backup Controller';
 
 $string['admin'] = 'Admin';
+
+$string['selecttemplate'] = 'Select Template';
 $string['coursedetails'] = 'Course Details';
 $string['createdcourse'] = 'Created course';
 $string['description'] = 'Description';
 $string['enrolment'] = 'Enrolment';
 $string['import'] = 'Import';
+$string['process'] = 'Process';
+
+
+
 $string['controllers'] = 'Controllers';
 
 $string['category'] = 'Category';
@@ -161,6 +172,7 @@ $string['progress'] = 'Progress';
 $string['checksum'] = 'Interactive';
 $string['controller'] = 'Controller';
 
+$string['externallink'] = 'New window';
 
 $string['createandredirect'] = 'Create and go to course';
 $string['createcourse'] = 'Create course';

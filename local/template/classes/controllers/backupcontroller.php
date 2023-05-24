@@ -41,7 +41,7 @@ class backupcontroller {
 
     public static function path() {
         global $CFG;
-        if (utils::is_admin()) {
+        if (utils::is_admin_page()) {
             return $CFG->wwwroot . '/local/template/admin/backupcontrollers.php';
         } else {
             return $CFG->wwwroot . '/local/template/index.php';
@@ -71,7 +71,8 @@ class backupcontroller {
         echo $OUTPUT->heading(get_string('viewbackupcontroller', 'local_template', $name));
         $form->display();
         echo \html_writer::start_tag('div', ['class' => 'container text-center align-center']);
-        echo \html_writer::link(new \moodle_url(self::path(), ['action' => 'editbackupcontroller', 'backupcontrollerid' => $id]), get_string('editbackupcontroller', 'local_template', $name),['class' => 'btn btn-primary']);
+        echo \html_writer::link(new \moodle_url(self::path(), ['action' => 'editbackupcontroller', 'backupcontrollerid' => $id]),
+            get_string('editbackupcontroller', 'local_template', $name),['class' => 'btn btn-primary']);
         echo $OUTPUT->spacer();
         echo \html_writer::link(new \moodle_url(self::path()), get_string('cancel'), ['class' => 'btn btn-secondary']);
         echo \html_writer::end_tag('div');
@@ -202,9 +203,7 @@ class backupcontroller {
     public static function delete($id) {
         $backupcontroller = new models\backupcontroller($id);
         $name = get_string('missingbackupcontrollername', 'local_template');
-        //if (models\backupcontroller::has_property('name')) {
-            $name = $backupcontroller->get_name();
-        //}
+        $name = $backupcontroller->get_name();
 
         if (!empty($id)) {
             if (confirm_sesskey()) {
@@ -265,7 +264,6 @@ class backupcontroller {
         return $backupcontrollers->render() . $backupcontrollers->render_paging_bar(self::path());
     }
 
-    // TODO: Use static bootstrap progress bar for status field
     public static function progress(models\backupcontroller $backupcontroller) {
 
         $numrecords = $backupcontroller->get_template()->get('numrecords');
@@ -279,26 +277,8 @@ class backupcontroller {
         $content .= self::progresslevel($backupcontroller->get('recordswarning'), $numrecords, 'warning');
         $content .= self::progresslevel($backupcontroller->get('recordserror'), $numrecords, 'danger');
         $content .= \html_writer::end_tag('div');
-
-        /*
-        $content .= \html_writer::start_tag('dl');
-        $content .= \html_writer::tag('dt', 'Info') . \html_writer::tag('dd', $backupcontroller->get('recordsinfo'));
-        $content .= \html_writer::tag('dt', 'Success') . \html_writer::tag('dd', $backupcontroller->get('recordssuccess'));
-        $content .= \html_writer::tag('dt', 'Warning') . \html_writer::tag('dd', $backupcontroller->get('recordswarning'));
-        $content .= \html_writer::tag('dt', 'Error') . \html_writer::tag('dd', $backupcontroller->get('recordserror'));
-        $content .= \html_writer::end_tag('dl');
-        $content .= \html_writer::start_tag('div', array('class' => 'd-flex justify-content-between'));
-        */
-
-        //$content .= \html_writer::tag('span', 'Info: ' . $backupcontroller->get('recordsinfo'));
-        //$content .= \html_writer::tag('span', 'Success: ' . $backupcontroller->get('recordssuccess'));
-        //$content .= \html_writer::tag('span', 'Warning: ' . $backupcontroller->get('recordswarning'));
-        //$content .= \html_writer::tag('span', 'Error: ' . $backupcontroller->get('recordserror'));
         $content .= \html_writer::tag('span', $recordsprocessed . ' of ' . $numrecords);
-        //$content .= \html_writer::end_tag('div');
         $content .= \html_writer::end_tag('div');
-
-        //.progress .progress-bar
 
         return $content;
     }
@@ -314,12 +294,8 @@ class backupcontroller {
 
         return \html_writer::tag('div', '<span>' . $number . '</span>', [
             'class' => 'progress-bar bg-' . $class . ' position-relative',
-            //'class' => 'progress-bar progress-bar-' . $class,
             'role' => 'progressbar',
             'style' => 'width:' . $percentage .'%',
-            //'aria-valuenow' => $percentage,
-            //'aria-valuemin' => 0,
-            //'aria-valuemax' => 100
         ]);
     }
 

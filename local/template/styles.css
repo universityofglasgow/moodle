@@ -42,6 +42,26 @@
     overflow: visible;
 }
 
+.slider-heading::before {
+    border-style: solid;
+    border-width: 0.15em 0.15em 0 0;
+    content: '';
+    display: inline-block;
+    height: 0.6em;
+    left: 0;
+    position: relative;
+    top: 0.3em;
+    transform: rotate(-45deg);
+    vertical-align: top;
+    width: 0.6em;
+}
+
+.slider-heading.collapsed:before {
+    top: 0;
+    transform: rotate(135deg);
+}
+
+
 /* gap size: x, padding-right: x, padding-left: x */
 .slider-container {
     position: relative;

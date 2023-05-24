@@ -53,18 +53,19 @@ class template extends \core\form\persistent {
 
 
     public const STEPPER_HEADER = 1;
-    public const STEPPER_INTRODUCTION = 2;
-    public const STEPPER_TEMPLATE = 3;
-    public const STEPPER_COURSE_START = 4;
-    public const STEPPER_COURSE_END = 5;
-    public const STEPPER_DESCRIPTION_START = 6;
-    public const STEPPER_DESCRIPTION_END = 7;
-    public const STEPPER_ENROLMENT_START = 8;
-    public const STEPPER_ENROLMENT_END = 9;
-    public const STEPPER_IMPORT_START = 10;
-    public const STEPPER_IMPORT_END = 11;
-    public const STEPPER_FOOTER = 12;
-    public const STEPPER_JAVASCRIPT = 13;
+    public const STEPPER_SELECTTEMPLATE = 2;
+    public const STEPPER_COURSE_START = 3;
+    public const STEPPER_COURSE_END = 4;
+    public const STEPPER_DESCRIPTION_START = 5;
+    public const STEPPER_DESCRIPTION_END = 6;
+    public const STEPPER_ENROLMENT_START = 7;
+    public const STEPPER_ENROLMENT_END = 8;
+    public const STEPPER_IMPORT_START = 9;
+    public const STEPPER_IMPORT_END = 10;
+    public const STEPPER_PROCESS_START = 11;
+    public const STEPPER_PROCESS_END = 12;
+    public const STEPPER_FOOTER = 13;
+    public const STEPPER_JAVASCRIPT = 14;
 
     /**
      * Define the form.
@@ -109,9 +110,7 @@ class template extends \core\form\persistent {
 
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_HEADER, []));
 
-            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_INTRODUCTION, []));
-
-            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_TEMPLATE, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_SELECTTEMPLATE, []));
 
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_START, []));
         } else {
@@ -121,13 +120,18 @@ class template extends \core\form\persistent {
         global $DB;
 
         // Get plugin config setting list of template course categories.
-        $templatecategories = get_config('local_template', 'categories');
+        $templatecategorysettings = get_config('local_template', 'categories');
 
         $categories = [];
-        // Reduce set of template categories based on user capability in each category.
-        foreach (explode(',', $templatecategories) as $categoryid) {
-            if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
-                $categories[] = $categoryid;
+        if (!empty($templatecategorysettings)) {
+            // Reduce set of template categories based on user capability in each category.
+            $templatecategories = explode(',', $templatecategorysettings);
+            if (!empty($templatecategories)) {
+                foreach ($templatecategories as $categoryid) {
+                    if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
+                        $categories[] = $categoryid;
+                    }
+                }
             }
         }
 
@@ -184,7 +188,17 @@ class template extends \core\form\persistent {
         $mform->addRule('shortname', get_string('missingshortname'), 'required', null, 'client');
         $mform->setType('shortname', PARAM_TEXT);
 
-        $mform->addElement('autocomplete', 'category', get_string('coursecategory'), $importcategories);
+        $defaultcategory = [];
+        $defaultcategoryid = 0;
+        if (!empty($this->_customdata['category'])) {
+            $defaultcategoryid = $this->_customdata['category'];
+            if (isset($importcategories[$defaultcategoryid])) {
+                $defaultcategory[$defaultcategoryid] = $importcategories[$defaultcategoryid];
+            }
+        }
+        $autocomplete = $mform->addElement('autocomplete', 'category', get_string('coursecategory'), $defaultcategory + $importcategories, ['multiple' => false]);
+        $mform->setDefault('category', $defaultcategoryid);
+        $autocomplete->setValue($defaultcategoryid);
         $mform->addRule('category', null, 'required', null, 'client');
         $mform->addHelpButton('category', 'coursecategory');
 
@@ -448,8 +462,8 @@ class template extends \core\form\persistent {
 
 
 
-
-        //$mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
+        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));
+        $mform->addElement('html', $renderer->render_stepper(self::STEPPER_PROCESS_START, []));
 
         $mform->addElement('html', '<br><hr>');
 
@@ -466,7 +480,7 @@ class template extends \core\form\persistent {
         if (empty($this->_customdata['admin'])) {
 
 
-            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));
+            $mform->addElement('html', $renderer->render_stepper(self::STEPPER_PROCESS_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
         } else {
             $mform->addElement('header', 'createdcourse', get_string('createdcourse', 'local_template'));
@@ -492,8 +506,8 @@ class template extends \core\form\persistent {
             }
         }
 
-        $mform->addElement('header', 'log', get_string('log', 'local_template'));
-        $mform->addElement('html', $OUTPUT->box(controllers\template::rendertemplates($record->id, true)));
+        //$mform->addElement('header', 'log', get_string('log', 'local_template'));
+        //$mform->addElement('html', $OUTPUT->box(controllers\template::rendertemplates($record->id, true)));
 
 
 

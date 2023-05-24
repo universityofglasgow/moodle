@@ -30,8 +30,6 @@ use templatable;
 use local_template\models;
 use paging_bar;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Base class for persistence collection.
  *
@@ -74,7 +72,18 @@ class persistentcollection implements Countable, renderable, templatable {
      * @param int $perpage The number of entries that should be shown per page
      * @throws coding_exception
      */
-    public function __construct($persistentclass = '', $parentid = 0, $view = 'table', $displayheadings = true, $select = '', $params = null, $sort = 'timemodified', $order = 'DESC', $page = 0, $perpage = 10, $addnew = false) {
+    public function __construct($persistentclass = '',
+                                $parentid = 0,
+                                $view = 'table',
+                                $displayheadings = true,
+                                $select = '',
+                                $params = null,
+                                $sort = 'timemodified',
+                                $order = 'DESC',
+                                $page = 0,
+                                $perpage = 10,
+                                $addnew = false) {
+
         if (empty($persistentclass)) {
             throw new coding_exception('Static property $persistentclass must be set.');
         }
@@ -89,7 +98,6 @@ class persistentcollection implements Countable, renderable, templatable {
         $this->view = $view;
         $this->displayheadings = $displayheadings;
 
-        //$this->totalcount = $persistentclass::count_records($params);
         $this->totalcount = $persistentclass::count_records_select($select, $params);
 
         $this->page = $page;
@@ -117,7 +125,7 @@ class persistentcollection implements Countable, renderable, templatable {
         $this->persistentproperties = $persistentclass::properties_definition($parentid);
         $this->collectionproperties = $persistentclass::collection_properties();
 
-/*
+        /*
         if ($persistentclass != 'local_template\\models\\template') {
             echo '<pre>' . var_export($persistentclass, true) . '</pre>';
             echo '<pre>' . var_export($params, true) . '</pre>';
@@ -128,18 +136,6 @@ class persistentcollection implements Countable, renderable, templatable {
             echo '<pre>' . var_export($this->totalcount, true) . '</pre>';
             echo '<pre>' . var_export($this->collection, true) . '</pre>';
         }
-*/
-/*
-persistent rendering and persistent collection
-
-actions
-
-add
-view
-edit
-delete
-
-
         */
 
         $this->define_fields();
@@ -168,12 +164,17 @@ delete
                     $callback = $propertyname;
                 } else {
                     if (!array_key_exists('callback', $property)) {
-                        throw new coding_exception('Function argument $field (' . $propertyname . ') must be present in persistent define properties or via callback.');
+                        throw new coding_exception(
+                            'Function argument $field (' . $propertyname .
+                            ') must be present in persistent define properties or via callback.'
+                        );
                     } else {
                         $isproperty = false;
                         $callback = $property['callback'];
                         if (!method_exists($this->persistentclass, $property['callback'])) {
-                            throw new coding_exception('Property (' . $propertyname . ') does not contain callback ('. $callback .').');
+                            throw new coding_exception(
+                                'Property (' . $propertyname . ') does not contain callback ('. $callback .').'
+                            );
                         }
                     }
                 }
@@ -190,8 +191,8 @@ delete
             $alignment = $property['alignment'];
 
             $count = count($this->fields);
-            if (array_key_exists($count-1, $this->fields)) {
-                $this->fields[$count-1]['lastcol'] = 'lastcol';
+            if (array_key_exists($count - 1, $this->fields)) {
+                $this->fields[$count - 1]['lastcol'] = 'lastcol';
             }
             $this->fields[] = [
                 'columnindex' => $count,
@@ -215,13 +216,11 @@ delete
             $lastcolumn = array_key_last($this->fields);
             $children = null;
 
-
             foreach ($this->fields as $columnindex => $heading) {
                 $cell = [];
                 $cell['columnindex'] = $columnindex;
                 $cell['heading'] = $heading['text'];
                 $cell['alignment'] = $heading['alignment'];
-
 
                 $callback = $heading['callback'];
                 if ($heading['isproperty']) {
@@ -233,8 +232,6 @@ delete
                         $callbackvalue = $persistent->{$callback}();
                     }
                 }
-                // echo '<pre>' . var_export($callback, true) . '</pre>';
-                // echo '<pre>' . var_export($callbackvalue, true) . '</pre>';
 
                 $cell['text'] = $callbackvalue;
 
@@ -248,12 +245,12 @@ delete
 
             $row['rowid'] = $persistent->get('id');
             $row['identifier'] = $persistent->get_identifier();
-            $row['lastrow'] = ($rowindex == $lastrow) ? 'lastrow': '';
+            $row['lastrow'] = ($rowindex == $lastrow) ? 'lastrow' : '';
 
             $rows[] = $row;
         }
         $data = [
-            'class' => str_replace('\\','-', $this->persistentclass),
+            'class' => str_replace('\\', '-', $this->persistentclass),
             'table' => ($this->view == 'table'),
             'collapse' => ($this->view == 'header'),
             'list' => ($this->view == 'list'),
@@ -263,8 +260,6 @@ delete
             'addnew' => $this->addnew,
             'addnewurl' => $this->persistentclass::add_new($this->parentid, true),
         ];
-
-        // echo '<pre>' . var_export($data, true) . '</pre>';sssss
 
         return $data;
     }

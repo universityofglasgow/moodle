@@ -39,7 +39,13 @@
 }}
 <div class="card" data-toggle="modal" data-target="#course-modal-{{courseid}}">
     <div class="card-header">
-        <img class="card-img-top w-100" alt="{{fullname}}" data-lazy="{{image}}">
+        <!-- <img class="card-img-top w-100" alt="{{fullname}}" data-lazy="{{image}}"> -->
+        <img class="card-img-top w-100" alt="{{fullname}}" src="{{image}}">
+        <div class="card-img-overlay card-img-overlay-slick">
+            <div class="overlaypadding">
+                <h5 class="card-title bg-light">{{fullname}}</h5>
+            </div>
+        </div>
     </div>
 
     <div class="card-body">
@@ -47,10 +53,16 @@
         <p class="card-text">{{{summary}}}</p>
     </div>
     <div class="card-footer">
-        <a type="button" href="{{url}}" class="btn btn-success">Preview &nbsp;<i class="fa fa-search-plus"></i></a>
-        <button type="button" class="btn btn-success add-template" data-id="{{courseid}}">Use template &nbsp;<i class="fa fa-plus"></i></button><br>
+        <button type="button" class="btn btn-success add-template" data-id="{{courseid}}">Use template &nbsp;<i class="fa fa-plus"></i></button>
+        <a type="button" href="{{url}}" class="btn btn-success" target="_blank">Open Course &nbsp;<i class="fa fa-search-plus"></i></a><br>
         <small class="text-muted">
-            <i class="fa fa-list"></i> {{format}}
+            {{# format}}<i class="fa fa-cog" title="format"></i> {{format}}{{/ format}}
+            <i class="fa fa-list" title="format"></i> sections
+            {{# hiddensections}}<i class="fa fa-eye-slash" title="hidden sections"></i> {{hiddensections}}{{/ hiddensections}}
+            {{# visiblesections}}<i class="fa fa-eye" title="sections"></i> {{visiblesections}}{{/ visiblesections}}
+            <br/>
+            {{# author}}<i class="fa fa-user" title="author"></i> {{author}}{{/ author}}
+            {{# timemodified}}<i class="fa fa-clock-o" title="recently modified"></i> {{#userdate}} {{timemodified}}, {{#str}} strftimedate, core_langconfig {{/str}} {{/userdate}}{{/ timemodified}}
         </small>
     </div>
 </div>

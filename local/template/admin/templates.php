@@ -60,7 +60,6 @@ switch ($action) {
         template::set_view($view);
         break;
     case 'createtemplate':
-        //notification::info('Should be zero: ' . optional_param('id', 0, PARAM_INT));
         $templateid = optional_param('templateid', 0, PARAM_INT);
         template::display($templateid, null, true);
         break;
@@ -123,7 +122,6 @@ switch ($action) {
         break;
 
     case 'createbackupcontroller':
-        //notification::info('Should be zero: ' . optional_param('id', 0, PARAM_INT));
         $backupcontrollerid = optional_param('backupcontrollerid', 0, PARAM_INT);
         $templateid = optional_param('templateid', 0, PARAM_INT);
         backupcontroller::display($backupcontrollerid, $templateid);

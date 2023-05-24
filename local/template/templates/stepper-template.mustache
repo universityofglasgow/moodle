@@ -30,6 +30,18 @@
     }
 }}
 <div id="test-nl-{{step}}" role="tabpanel" class="bs-stepper-pane" aria-labelledby="templatesteppertrigger{{step}}">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            {{{introduction}}}
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <a href="{{addnewcourselink}}" type="button" class="btn btn-danger float">{{#str}} usedefaultmoodlefunctions, local_template {{/str}} &nbsp;<i class="fa fa-external-link"></i></a>
+    </div>
+
+    <br />
+
     <div class="section-container">
         {{#categories}}
             {{> local_template/slider }}

@@ -91,16 +91,12 @@ class renderer extends plugin_renderer_base {
             case \local_template\forms\template::STEPPER_HEADER:
                 $template = 'local_template/stepper-header';
                 break;
-            case \local_template\forms\template::STEPPER_INTRODUCTION:
-                $template = 'local_template/stepper-introduction';
-                $data = $this->get_data_introduction();
-                break;
-            case \local_template\forms\template::STEPPER_TEMPLATE:
+            case \local_template\forms\template::STEPPER_SELECTTEMPLATE:
                 $template = 'local_template/stepper-template';
                 $data = $this->get_data_template($template);
                 break;
             case \local_template\forms\template::STEPPER_COURSE_START:
-                $data = (object)['step' => 3];
+                $data = (object)['step' => 2];
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_COURSE_END:
@@ -108,7 +104,7 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_DESCRIPTION_START:
-                $data = (object)['step' => 4];
+                $data = (object)['step' => 3];
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_DESCRIPTION_END:
@@ -116,7 +112,7 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_ENROLMENT_START:
-                $data = (object)['step' => 5];
+                $data = (object)['step' => 4];
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_ENROLMENT_END:
@@ -124,10 +120,18 @@ class renderer extends plugin_renderer_base {
                 $template = 'local_template/stepper-step-footer';
                 break;
             case \local_template\forms\template::STEPPER_IMPORT_START:
-                $data = (object)['step' => 6];
+                $data = (object)['step' => 5];
                 $template = 'local_template/stepper-step-header';
                 break;
             case \local_template\forms\template::STEPPER_IMPORT_END:
+                $data = (object)['buttons' => true];
+                $template = 'local_template/stepper-step-footer';
+                break;
+            case \local_template\forms\template::STEPPER_PROCESS_START:
+                $data = (object)['step' => 6];
+                $template = 'local_template/stepper-step-header';
+                break;
+            case \local_template\forms\template::STEPPER_PROCESS_END:
                 $data = (object)['buttons' => false];
                 $template = 'local_template/stepper-step-footer';
                 break;
@@ -142,9 +146,9 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template($template, $data);
     }
 
-    private function get_data_introduction() {
-        global $CFG;
+    private function get_data_template() {
 
+        global $CFG;
         $introduction = get_config('local_template', 'introduction');
         $categoryid = optional_param('category', 0, PARAM_INT);
         $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
@@ -160,28 +164,22 @@ class renderer extends plugin_renderer_base {
         if (!empty($returnurl)) {
             $params['returnurl'] = $returnurl;
         }
-
         $addnewcourselink = (new \moodle_url($CFG->wwwroot . '/local/template/index.php', $params))->out(false);
 
-        return [
-            'step' => 1,
-            'introduction' => $introduction,
-            'addnewcourselink' =>  $addnewcourselink
-        ];
-    }
-
-    private function get_data_template() {
-
-        global $DB, $USER, $CFG;
         $templatecategories = [];
         $templatecoursecount = 0;
         $settingscategories = get_config('local_template', 'categories');
         $settingscategoryids = [];
 
-        // Reduce set of template categories based on user capability in each category.
-        foreach (explode(',', $settingscategories) as $categoryid) {
-            if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
-                $settingscategoryids[] = $categoryid;
+        if (!empty($settingscategories)) {
+            // Reduce set of template categories based on user capability in each category.
+            $categories = explode(',', $settingscategories);
+            if (!empty($categories)) {
+                foreach ($categories as $categoryid) {
+                    if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
+                        $settingscategoryids[] = $categoryid;
+                    }
+                }
             }
         }
 
@@ -193,6 +191,24 @@ class renderer extends plugin_renderer_base {
             $courses = $category->get_courses(['summary']); //  'sort' => ['timecreated' => -1]
             $templatecourses = [];
             foreach ($courses as $course) {
+
+                $hiddensections = 0;
+                $visiblesections = 0;
+
+                $courseformat = course_get_format($course);
+                $usessections = $courseformat->uses_sections();
+
+                if ($usessections) {
+                    $sections = $courseformat->get_sections();
+                    foreach ($sections as $section) {
+                        if ($section->visible) {
+                            $visiblesections ++;
+                        } else {
+                            $hiddensections ++;
+                        }
+                    }
+                }
+
                 $templatecourse = (object)[
                     'courseid' => $course->id,
                     'fullname' => $course->get_formatted_fullname(),
@@ -200,11 +216,12 @@ class renderer extends plugin_renderer_base {
                     'summary' => $course->summary,
                     'url' => (new \moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $course->id]))->out(),
                     'format' => $course->format,
-
+                    'author' => $this->get_course_user($course->id),
+                    'timemodified' => $course->timemodified,
+                    'visiblesections' => $visiblesections,
+                    'hiddensections' => $hiddensections,
                 ];
 
-                // TODO: Mute text
-                // course_get_format($course)->uses_sections()
 
                 $templatecourses[] = $templatecourse;
                 $templatecoursecount++;
@@ -229,10 +246,28 @@ class renderer extends plugin_renderer_base {
         }
 
         return (object) [
-            'step' => 2,
+            'step' => 1,
+            'introduction' => $introduction,
+            'addnewcourselink' =>  $addnewcourselink,
             'categories' => $templatecategories,
             'message' => $message
         ];
+    }
+
+    private function get_course_user($courseid) {
+        global $DB;
+        $where = "
+            eventname IN ('\\\\core\\\\event\\\\course_created', '\\\\core\\\\event\\\\course_updated', '\\\\core\\\\event\\\\course_restored')
+            AND courseid = ?
+        ";
+
+        $logitems = $DB->get_records_select('logstore_standard_log', $where, [$courseid], 'timecreated DESC', 'id, userid', 0, 1);
+        if (empty($logitems)) return null;
+        foreach ($logitems as $logitem) {
+            return fullname(\core_user::get_user($logitem->userid));
+        }
+
+        return null;
     }
 
 }

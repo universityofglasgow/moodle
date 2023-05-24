@@ -1,536 +1,160 @@
-  debugger;
-  var templatestepper;
+debugger;
+var templatestepper;
 
-  $(document).ready(function() {
-  debugger;
-  initStepper();
-  initSliders();
+$(document).ready(function() {
+    debugger;
+    initStepper();
+    initSliders();
 
-  $("#templatesteppertrigger2").on('click', function() {
-  $('.slider').each(function () {
-  debugger;
-  var slider = $(this);
-  slider[0].slick.refresh();
-  resizeFixes(slider);
-});
-});
-  $("#addnewcourse").on('click', function() {
-  $('.slider').each(function () {
-  debugger;
-  var slider = $(this);
-  slider[0].slick.refresh();
-  resizeFixes(slider);
-});
-});
-
-  $(document).on('click', '.add-template', function() {
-  // $('.add-template').bind('click', function() {
-  debugger;
-  $("#templatecourseid").val = $(this).attr("data-id");
-
-  var value = $(this).attr("data-id");
-  var inputselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions li[data-value="' + value + '"]';
-    templatestepper.next();
-  $(inputselector).trigger('click');
-
-  //$(inputselector).val(value).trigger('change');
-  //$('#fitem_id_templatecourseid input').trigger('click');
-
-    //var sortBySelect = document.querySelector(inputselector);
-    //sortBySelect.value = value;
-    //sortBySelect.dispatchEvent(new Event("change"));
-
-
-  //$('#myautocomplete').val('targetvalue');
-  //$('#thing_that_needs_clicking').trigger('click');
-    return false;
-
-});
+    $(document).on('click', '.add-template', function() {
+        debugger;
+        $("#templatecourseid").val = $(this).attr("data-id");
+        var value = $(this).attr("data-id");
+        var inputselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions li[data-value="' + value + '"]';
+        templatestepper.next();
+        $(inputselector).trigger('click');
+        return false;
+    });
 
 });
 
 
 
-  function initStepper() {
-  templatestepper = new Stepper(document.querySelector('#templatestepper'), {
-    linear: false,
-    animation: true
-  });
-}
-  function initSliders() {
-  // wrapper.js
-
-  debugger;
-
-  // Initialise all the sliders.
-  $('.slider').each(function () {
-
-  debugger;
-
-  var slider = $(this);
-  // Hide the sliders and show the loading spinner.
-  slider.css('opacity', 0.01).slideUp();
-  // slider.slick().then(
-  debugger;
-  $.when(slider.not('.slick-initialized').slick()).then(
-  waitForFinalEvent(function() {
-  debugger;
-  showSlider(slider)
-}, 1000, "showSlider" + slider.attr("id"))
-  );
-});
+function initStepper() {
+    templatestepper = new Stepper(document.querySelector('#templatestepper'), {
+        linear: false,
+        animation: true
+    });
 }
 
-  function showSlider(slider) {
-  var spinner = slider.parent().find(".spinner");
+function initSliders() {
+    // wrapper.js
 
-  slider.show();
-  resizeFixes(slider, false);
+    debugger;
 
-  spinner.hide();
-  slider.css('opacity', 1).hide();
-  slider.slideDown({queue: false, duration: 'slow'});
+    // Initialise all the sliders.
+    $('.slider').each(function() {
 
-  // For each card in the slider, hide the body and footer, and animate the progress bar.
-  slider.find('.card').each(function () {
-  var card = $(this);
-  var cardbody = card.find('div.card-body');
-  var cardfooter = card.find('div.card-footer');
-  cardbody.hide();
-  cardfooter.hide();
+        debugger;
 
-  var bar = card.find('div.bar');
-  // animateProgress(bar);
-});
+        var slider = $(this);
+        // Hide the sliders and show the loading spinner.
+        slider.css('opacity', 0.01).slideUp();
+        debugger;
+        $.when(slider.not('.slick-initialized').slick()).then(
+            waitForFinalEvent(function() {
+                debugger;
+                showSlider(slider);
+            }, 1000, "showSlider" + slider.attr("id"))
+        );
+    });
+}
 
+function showSlider(slider) {
+    var spinner = slider.parent().find(".spinner");
+
+    slider.show();
+    slider[0].slick.refresh();
+    resizeFixes(slider, false);
+
+    spinner.hide();
+    slider.css('opacity', 1).hide();
+    slider.slideDown({
+        queue: false,
+        duration: 'slow'
+    });
+
+    // For each card in the slider, hide the body and footer, and animate the progress bar.
+    slider.find('.card').each(function() {
+        var card = $(this);
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
+        cardbody.hide();
+        cardoverlay.fadeIn();
+    });
 }
 
 
-  // Add listeners to document for slick slide mouseenter.
-  $(document).on('mouseenter', '.slick-slide', function() {
+// Add listeners to document for slick slide mouseenter.
+$(document).on('mouseenter', '.slick-slide', function() {
 
-  var slide = $(this);
-  var card = slide.find('div.card');
-  var cardbody = card.find('div.card-body');
-  var cardfooter = card.find('div.card-footer');
+    var slide = $(this);
+    var card = slide.find('div.card');
+    var cardbody = card.find('div.card-body');
+    var cardoverlay = card.find('div.card-img-overlay');
 
-  // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
-  slide.css('animation-name', 'fadein-scaleup');
+    // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
+    slide.css('animation-name', 'fadein-scaleup');
 
-  // Use jquery transitions for revealing cardbody and cardfooter.
-  cardbody.stop().slideDown();
-  cardfooter.stop().slideDown();
-
-  // playMedia(this);
+    // Use jquery transitions for revealing cardbody and cardfooter.
+    cardbody.stop().slideDown();
+    cardoverlay.stop().fadeOut();
 });
 
-  // Add listeners for slick slide mouseleave.
-  $(document).on('mouseleave', '.slick-slide', function(){
+// Add listeners for slick slide mouseleave.
+$(document).on('mouseleave', '.slick-slide', function() {
 
-  var slide = $(this);
-  var card = slide.find('div.card');
-  var cardbody = card.find('div.card-body');
-  var cardfooter = card.find('div.card-footer');
+    var slide = $(this);
+    var card = slide.find('div.card');
+    var cardbody = card.find('div.card-body');
+    var cardoverlay = card.find('div.card-img-overlay');
 
-  // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
-  slide.css('animation-name', 'fadeout-scaledown');
+    // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
+    slide.css('animation-name', 'fadeout-scaledown');
 
-  // Use jquery transitions for hiding cardbody and cardfooter.
-  cardbody.stop().slideUp();
-  cardfooter.stop().slideUp();
-
-  // pauseMedia(this)
+    // Use jquery transitions for hiding cardbody.
+    cardbody.stop().slideUp();
+    cardoverlay.stop().fadeIn();
 });
 
-  function playMedia(slide) {
-  var cardheader = $(slide).find('div.card-header');
-  if (!cardheader.length) {
-  return;
-}
-
-  debugger;
-  var cardimage = cardheader.find('img.card-img-top');
-  var preview = cardheader.find('div.card-img-overlay-preview');
-  var overlay = cardheader.find('div.card-img-overlay-slick');
-
-  var video = preview.find('video');
-  var audio = preview.find('audio');
-  var audioimage = preview.find('img');
-
-  if (audio.length == 0 && video.length == 0) {
-  return;
-}
-
-  if (audio.length) {
-  try {
-  audio.get(0).play();
-} catch(error) {
-  console.log(error);
-  return;
-}
-  audio.css('transform', 'translateY(0px)');
-}
-
-  if (video.length) {
-  try {
-  /*
-  Restart
-  video.pause();
-  video.currentTime = 0;
-  video.load();
-  */
-
-  video.get(0).play();
-
-  // On mouseleave, the video pause event is delayed. This declaration ensures the pause event is cancelled on mouseenter.
-  video.attr("data-pausing", false);
-
-} catch (error) {
-  console.log(error);
-  return;
-}
-}
-
-
-  // Only do video transition on success on play.
-
-  // Save current height / width against the element so it can be reverted.
-  cardimage.attr("data-width", cardimage.width());
-  cardimage.attr("data-height", cardimage.height());
-  cardimage.css("--thumb-width", cardimage.width() + 'px');
-  cardimage.css("--thumb-height", cardimage.height() + 'px');
-
-  // Get video height / width for transition/
-  if (video.length) {
-  cardimage.css("--cutscene-width", video.width() + 'px');
-  cardimage.css("--cutscene-height", video.height() + 'px');
-}
-  if (audioimage.length) {
-  cardimage.css("--cutscene-width", audioimage.width() + 'px');
-  cardimage.css("--cutscene-height", audioimage.height() + 'px');
-}
-
-
-  //Animate
-  cardimage.css('animation-name', 'cutscene-in');
-  cardimage.css('animation-duration', '2s');
-  cardimage.css('-webkit-animation-fill-mode', 'forwards');
-
-  /*
-          cardimage.css('transition-property', 'height width opacity');
-          cardimage.css('transition-duration', '12s');
-          cardimage.css('opacity', '0.01');
-          cardimage.css("height", video.height() + 'px');
-          cardimage.css("width", video.width() + 'px');
-          */
-  if (video.length) {
-  video.css('transition-property', 'opacity');
-  video.css('transition-duration', '2s');
-  video.css('opacity', '1');
-}
-
-  if (audioimage.length) {
-  audioimage.css('transition-property', 'opacity');
-  audioimage.css('transition-duration', '2s');
-  audioimage.css('opacity', '1');
-}
-
-
-
-  overlay.css("--overlay-top", overlay.css('top'));
-  overlay.css("--overlay-right", overlay.css('right'));
-  overlay.css("--overlay-bottom", overlay.css('bottom'));
-  overlay.css("--overlay-left", overlay.css('left'));
-  overlay.css('transition-property', 'top right bottom');
-  overlay.css('transition-duration', '1s');
-  overlay.css('top', '80%');
-  overlay.css('right', '0%');
-  overlay.css('bottom', '0%');
-
-  waitForFinalEvent(function () {
-  fixOverlay(overlay, true);
-}, 1000, "fixoverlay-id");
-
-
-  /*
-  cardimage.animate({queue: false, 'height' : video.height() + 'px'}, 4000);
-
-  cardimage.css('opacity', 1);
-  cardimage.animate({queue: false, 'opacity': 0.01}, 4000);
-
-  video.css('opacity', 0.01);
-  video.animate({queue: false, 'opacity': 1}, 4000);
-*/
-  /*.catch(error => {
-  // Autoplay was blocked.
-  return;
-}).finally(
-  waitForFinalEvent(function () {
-      // Save image width into data value
-      cardimage.css("data-width", cardimage.width());
-      cardimage.css("height", video.height());
-      cardimage.css("width", "auto");
-      cardimage.fadeTo(400, 0.1);
-      video.fadeTo(400, 1);
-  }, 100, "play")
-);*/
-
-  //
-
-}
-  function pauseMedia(slide) {
-  var cardheader = $(slide).find('div.card-header');
-  if (!cardheader.length) {
-  return;
-}
-  var cardimage = cardheader.find('img.card-img-top');
-  var preview = cardheader.find('div.card-img-overlay-preview');
-  var overlay = cardheader.find('div.card-img-overlay-slick');
-
-  var video = preview.find('video');
-  var audio = preview.find('audio');
-  var audioimage = preview.find('img');
-
-  if (audio.length == 0 && video.length == 0) {
-  return;
-}
-
-
-  if (audio.length) {
-  try {
-  audio.get(0).pause()
-} catch(error) {
-  console.log(error);
-  return;
-}
-
-  audio.css('transform', 'translateY(-20px)');
-}
-  if (video.length) {
-  video.attr("data-pausing", true);
-  waitForFinalEvent(function () {
-  cardimage.css('animation-name', 'unset');
-  cardimage.css("height", "auto");
-  try {
-  if (video.attr("data-pausing") === 'true') {
-  video.get(0).pause();
-}
-} catch(error) {
-  console.log(error);
-  return;
-}
-
-}, 1000, "pausevideo-id");
-}
-
-  cardimage.css("--cutscene-width", cardimage.attr("data-width") + 'px');
-  cardimage.css("--cutscene-height", cardimage.attr("data-height") + 'px');
-  cardimage.css('animation-name', 'cutscene-out');
-  cardimage.css('animation-duration', '2s');
-  cardimage.css('-webkit-animation-fill-mode', 'forwards');
-
-  /*
-  waitForFinalEvent(function () {
-      debugger;
-      //cardimage.css('animation-name', 'unset');
-  }, 2000, "unset-animation-" + $(slide).id());
-*/
-  /*
-              cardimage.css('transition-property', 'height width opacity');
-              cardimage.css('transition-duration', '12s');
-              cardimage.css('opacity', '1');
-              cardimage.css("height", cardimage.attr("data-height") + 'px');
-              cardimage.css("width", cardimage.attr("data-width") + 'px');
-  */
-  if (video.length) {
-  video.css('transition-property', 'opacity');
-  video.css('transition-duration', '2s');
-  video.css('opacity', '0');
-}
-  if (audioimage.length) {
-  audioimage.css('transition-property', 'opacity');
-  audioimage.css('transition-duration', '2s');
-  audioimage.css('opacity', '0');
-}
-
-  /*
-  overlay.css('transition-property', 'opacity');
-  overlay.css('transition-duration', '2s');
-  overlay.css('opacity', '1');
-  */
-
-  overlay.css('transition-property', 'top right bottom');
-  overlay.css('transition-duration', '1s');
-  overlay.css('top', overlay.css("--overlay-top"));
-  overlay.css('right', overlay.css("--overlay-right"));
-  overlay.css('bottom', overlay.css("--overlay-bottom"));
-  overlay.css('left', overlay.css("--overlay-left"));
-
-  overlay.css('top', '45%');
-  overlay.css('right', '50%');
-  overlay.css('bottom', '20%');
-  overlay.css('left', '0px');
-
-  // cardimage.animate({queue: false, 'height' : cardimage.attr("data-height")}, 4000);
-  // cardimage.animate({'width' : cardimage.attr("data-width")}, 400);
-
-  // cardimage.css('opacity', 0.01);
-  // cardimage.animate({queue: false, 'opacity': 1}, 4000);
-
-  // video.css('opacity', 1);
-  // video.animate({queue: false, 'opacity': 0.01}, 4000);
-
-
-  //video.fadeTo(400, 0.1);
-  //cardimage.fadeTo(400, 1);
-
-}
-
-
-  function init() {
-
-  //test for touch events support and if not supported, attach .no-touch class to the HTML tag.
-  //if (!("ontouchstart" in document.documentElement)) {
-  //document.documentElement.className += " no-touch";
-  //}
-  // Answer for http://stackoverflow.com/a/13112731/592125
-
-
-}
-
-  var waitForFinalEvent = (function () {
-  var timers = {};
-  return function (callback, ms, uniqueId) {
-  if (!uniqueId) {
-  uniqueId = "Don't call this twice without a uniqueId";
-}
-  if (timers[uniqueId]) {
-  clearTimeout (timers[uniqueId]);
-}
-  timers[uniqueId] = setTimeout(callback, ms);
-};
+var waitForFinalEvent = (function() {
+    var timers = {};
+    return function(callback, ms, uniqueId) {
+        if (!uniqueId) {
+            uniqueId = "Don't call this twice without a uniqueId";
+        }
+        if (timers[uniqueId]) {
+            clearTimeout(timers[uniqueId]);
+        }
+        timers[uniqueId] = setTimeout(callback, ms);
+    };
 })();
 
-  function resizeFixes(slider, animate) {
-  slider.find('.slick-track').each(function () {
-    fixTrackHeight(this, animate);
-  });
-
-  slider.find('.card-img-overlay-slick > .overlaypadding > .card-title').each(function () {
-  //fixOverlay(this, animate);
-});
+function resizeFixes(slider, animate) {
+    slider.find('.slick-track').each(function() {
+        fixTrackHeight(this, animate);
+    });
 }
 
-  function fixTrackHeight(track, animate) {
-  var list = $(track).parent();
-  var prev = list.parent().find(".slick-prev");
-  var next = list.parent().find(".slick-next");
-  var trackheight = $(track).find(".slick-active").find(".card-img-top").height() + 60;
-  var arrowheight = (trackheight - 60) / 2;
+function fixTrackHeight(track, animate) {
+    var list = $(track).parent();
+    var prev = list.parent().find(".slick-prev");
+    var next = list.parent().find(".slick-next");
+    var trackheight = $(track).find(".slick-active").find(".card-img-top").height() + 60;
+    var arrowheight = (trackheight - 60) / 2;
 
-  $(track).css("overflow-y", 'unset');
+    $(track).css("overflow-y", 'unset');
 
-  if (animate) {
-  $(track).animate({queue: false, duration: 'slow', 'height' : trackheight + 'px'}, 100);
-  prev.animate({queue: false, duration: 'slow', 'top' : arrowheight + 'px'}, 100);
-  next.animate({queue: false, duration: 'slow', 'top' : arrowheight + 'px'}, 100);
-} else {
-  $(track).height(trackheight);
-  prev.css("top", arrowheight + 'px');
-  next.css("top", arrowheight + 'px');
-}
+    if (animate) {
+        $(track).animate({
+            queue: false,
+            duration: 'slow',
+            'height': trackheight + 'px'
+        }, 100);
+        prev.animate({
+            queue: false,
+            duration: 'slow',
+            'top': arrowheight + 'px'
+        }, 100);
+        next.animate({
+            queue: false,
+            duration: 'slow',
+            'top': arrowheight + 'px'
+        }, 100);
+    } else {
+        $(track).height(trackheight);
+        prev.css("top", arrowheight + 'px');
+        next.css("top", arrowheight + 'px');
+    }
 
-}
-
-  function fixOverlay(text, animate) {
-  var myHeight =  parseFloat($(text).parent()[0].scrollHeight);
-  var myWidth = parseFloat($(text).parent()[0].scrollWidth);
-  var containerHeight = Math.ceil(parseFloat($(text).parent().parent().innerHeight()));
-  var containerWidth = Math.ceil(parseFloat($(text).parent().innerWidth()));
-  var fontsize = parseFloat($(text).css('font-size'));
-  var unit = $(text).css('font-size').slice(-2);
-
-  //console.log("0 height: " + myHeight + "/" + containerHeight + ", width: " + myWidth + "/" + containerWidth + "[" + fontsize + unit + "]")
-
-  if (containerHeight < 10 || containerWidth < 10) {
-  return;
-}
-
-  var sign = 1;
-  if (myHeight <= containerHeight && myWidth <= containerWidth) {
-  // Increase
-  sign = 1;
-} else {
-  // Decrease
-  sign = -1;
-}
-
-  var idealfoundflag = false;
-
-  var newfontsize = fontsize;
-
-  var fontstep = 1;
-  for (var size = 1; !idealfoundflag && size < 40 && newfontsize > 0; size += fontstep) {
-
-  newfontsize = fontsize + size * sign;
-  // Set new iteration fontsize
-  $(text).css('font-size', newfontsize + unit);
-  // Set line height to font size too.
-  $(text).css('line-height', newfontsize + unit);
-
-
-  myHeight = parseFloat($(text).parent()[0].scrollHeight);
-  myWidth = parseFloat($(text).parent()[0].scrollWidth);
-  containerHeight = Math.ceil(parseFloat($(text).parent().parent().innerHeight()));
-  containerWidth = Math.ceil(parseFloat($(text).parent().innerWidth()));
-  //console.log(size + " height: " + myHeight + "/" + containerHeight + ", width: " + myWidth + "/" + containerWidth + "[" + newfontsize + unit + "]")
-
-
-  // Increasing until too big, then going back one step.
-  if (sign === 1) {
-  if (myHeight <= containerHeight && myWidth <= containerWidth) {
-  // Continue increasing.
-} else {
-  // Gone too far!
-  idealfoundflag = true;
-  newfontsize = fontsize + (size - fontstep) * sign;
-}
-} else {
-  if (myHeight <= containerHeight && myWidth <= containerWidth) {
-  // Gone just right!
-  idealfoundflag = true;
-  /* Already set correctly */
-  newfontsize = fontsize + (size) * sign;
-} else {
-  // Continue decreasing.
-}
-}
-}
-
-  $(text).css('line-height', newfontsize + unit);
-  if (animate) {
-  // Set to original, then animate to new..
-  $(text).css('font-size', fontsize + unit);
-  $(text).animate({queue: true, duration: 'slow', 'font-size': newfontsize + unit}, 100);
-} else {
-  // Abruptly change to new.
-  $(text).css('font-size', newfontsize + unit);
-}
-
-  //console.log("* height: " + "[" + newfontsize + unit + "]")
-}
-
-  function animateProgress(bar) {
-  var bar_value = bar.attr('aria-valuenow') + '%';
-  bar.css({"width": bar_value, "transition": "2s"});
-  bar.prop('Counter', 0).animate({
-  queue: true,
-  Counter: bar.attr('aria-valuetext')
-}, {
-  duration: 2000,
-  easing: 'swing',
-  step: function (now) {
-  bar.html('<span>' + Math.ceil(now) + '%</span>');
-}
-});
 }

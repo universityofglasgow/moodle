@@ -40,7 +40,7 @@ defined('MOODLE_INTERNAL') || die();
 class utils  {
 
     static function is_admin() {
-        // return false;
+        return false;
         return has_capability('local/template:managetemplate', \context_system::instance());
     }
 
@@ -68,6 +68,8 @@ class utils  {
     }
 
     static function enforce_security($requiremanagement = false) {
+        global $CFG, $OUTPUT;
+
         require_login(null, false);
         if (isguestuser()) {
             redirect('/login/index.php');
@@ -78,16 +80,24 @@ class utils  {
             require_capability('local/template:managetemplate', \context_system::instance());
         }
 
-        $canusetemplates = self::user_can_use_templates();
         $managetemplate = has_capability('local/template:managetemplate', \context_system::instance());
+        if ($managetemplate) {
+            // User can manage templates, it supercedes whether they can use them.
+            return;
+        }
 
-        // If we cannot use template.
-        if (!$canusetemplates && !$managetemplate) {
-            global $OUTPUT;
+        $categoryid = optional_param('category', 0, PARAM_INT);
+        if (!empty($categoryid)) {
+            $categorycontext = \context_coursecat::instance($categoryid);
+            $canusetemplates = has_capability('local/template:usetemplate', $categorycontext);
+        } else {
+            // Not category is defined. Check all categories.
+            $canusetemplates = self::user_can_use_templates();
+        }
+        if (!$canusetemplates) {
             echo $OUTPUT->header();
-            echo get_string('noaccess', 'local_template');
-
-            //set session variable and redirect.
+            echo $OUTPUT->box(get_string('noaccess', 'local_template'));
+            echo $OUTPUT->single_button(new moodle_url($CFG->wwwroot), 'Return to home page');
             echo $OUTPUT->footer();
             die();
         }
@@ -213,8 +223,15 @@ class utils  {
             $url = new moodle_url($url, $urlparams);
         }
 
-        $label = get_string($type);
-        $iconcode = 't/' . $type;
+        if ($type == 'externallink') {
+            $label = get_string('externallink', 'local_template');
+            $iconcode = 'i/' . $type;
+        } else {
+            $label = get_string($type);
+            $iconcode = 't/' . $type;
+        }
+
+
         $pixicon = $OUTPUT->pix_icon($iconcode, $label);
 
         $class = '';
@@ -225,192 +242,12 @@ class utils  {
             $class .= 'text-success';
         }
 
-        return \html_writer::link($url, $pixicon, ['title' => $label, 'class' => $class]);
+        $params = ['title' => $label, 'class' => $class];
+        if ($type == 'externallink') {
+            $params += ['target' => '_blank'];
+        }
+
+        return \html_writer::link($url, $pixicon, $params);
     }
-
-    /**
-     * @param array $records records for display
-     * @param array $headings heading language string codes
-     * @param array $headingalignments e.g. left left left left right
-     * @param string $norecordslangstring language string code when no records exist
-     * @param string $addnewiconlink template icon link or ''
-     * @param bool $containsactions whether records contain actions
-     * @return string generated table or error notification if norecordslangstring is present
-     * @throws coding_exception
-     */
-    static function local_template_create_action_table(array $records, array $headings, array $headingalignments, string $norecordslangstring = '', string $addrecordlangstring = '', string $addnewiconlink = '', bool $containsactions = false) {
-        global $OUTPUT;
-
-        $table = new \html_table();
-
-        $headerrow = [];
-        foreach ($headings as $heading) {
-            $headerrow[] = get_string($heading, 'local_template');
-        }
-
-        if (!empty($addnewiconlink) || !empty($containsactions)) {
-            $actionheading = get_string('edit');
-
-            if (!empty($addnewiconlink)) {
-                $actionheading .= $OUTPUT->spacer() . $addnewiconlink;
-            }
-
-            // Add the actions column to the headings.
-            if (!empty($headings)) {
-                $headings[] = 'edit';
-                $headerrow[] = $actionheading;
-            }
-        }
-
-        $table->head = $headerrow;
-        $table->align = $headingalignments;
-        $table->attributes['class'] = 'generaltable';
-        $table->data = $records;
-
-        $add = '';
-        if (!empty($addnewiconlink)) {
-            $add = $OUTPUT->spacer() . get_string($addrecordlangstring, 'local_template') . $addnewiconlink;
-        }
-
-        if (count($table->data)) {
-            return \html_writer::table($table) . $add;
-        } else {
-            if (!empty($norecordslangstring)) {
-                return $OUTPUT->notification(get_string($norecordslangstring, 'local_template') . $add);
-            }
-        }
-
-        return '';
-    }
-
-    /**
-     * @param array $records records for display
-     * @param array $headings heading language string codes
-     * @param array $headingalignments e.g. left left left left right
-     * @param string $norecordslangstring language string code when no records exist
-     * @param string $addnewiconlink template icon link or ''
-     * @param bool $containsactions whether records contain actions
-     * @return string generated table or error notification if norecordslangstring is present
-     * @throws coding_exception
-     */
-    static function local_template_create_action_collapse(array $records, array $headings, array $headingalignments, string $norecordslangstring = '', string $addrecordlangstring = '', string $addnewiconlink = '', bool $containsactions = false) {
-        global $OUTPUT;
-
-        if (!empty($addnewiconlink) || !empty($containsactions)) {
-            $actionheading = get_string('edit');
-
-            if (!empty($addnewiconlink)) {
-                $actionheading .= $OUTPUT->spacer() . $addnewiconlink;
-            }
-
-            // Add the actions column to the headings.
-            if (!empty($headings)) {
-                $headings[] = 'edit';
-                $headingalignments[] = 'left';
-            }
-        }
-
-        $accordion = 'accordion-job-1';
-        $output = \html_writer::start_tag('div', ['id' => $accordion]);
-        foreach ($records as $row => $record) {
-            $headingid = $accordion . '-heading-' . $row;
-            $collapseid = $accordion . '-collapse-' . $row;
-            $output .= '
-            <div class="card">
-                <div class="card-header" id="' . $headingid . '">
-                  <h5 class="mb-0">
-                    <button class="btn btn-link" data-toggle="collapse" data-target="#' . $collapseid . '" aria-expanded="true" aria-controls="' . $collapseid . '">
-                        ' . $collapseid . '
-                    </button>
-                  </h5>
-                </div>
-                <div id="' . $collapseid . '" class="collapse show" aria-labelledby="' . $headingid . '" data-parent="#' . $accordion . '">
-                <div class="card-body">
-      ';
-
-            foreach ($record as $index => $cell) {
-                $heading = get_string($headings[$index], 'local_template');
-
-                $output .= \html_writer::tag('dt', $heading, ['class' => 'text-' . $headingalignments[$index]]);
-                $output .= \html_writer::tag('dd', $cell, ['class' => 'text-' . $headingalignments[$index]]);
-            }
-            $output .= '
-                </div>
-            </div>
-        </div>';
-        }
-        $output .= \html_writer::end_tag('div');
-
-        $add = '';
-        if (!empty($addnewiconlink)) {
-            $add = $OUTPUT->spacer() . get_string($addrecordlangstring, 'local_template') . $addnewiconlink;
-        }
-
-        if (count($records)) {
-            return $output . $add;
-        } else {
-            if (!empty($norecordslangstring)) {
-                return $OUTPUT->notification(get_string($norecordslangstring, 'local_template') . $add);
-            }
-        }
-
-        return '';
-    }
-
-    /**
-     * @param array $records records for display
-     * @param array $headings heading language string codes
-     * @param array $headingalignments e.g. left left left left right
-     * @param string $norecordslangstring language string code when no records exist
-     * @param string $addnewiconlink template icon link or ''
-     * @param bool $containsactions whether records contain actions
-     * @return string generated table or error notification if norecordslangstring is present
-     * @throws coding_exception
-     */
-    static function local_template_create_action_list(array $records, array $headings, array $headingalignments, string $norecordslangstring = '', string $addrecordlangstring = '', string $addnewiconlink = '', bool $containsactions = false) {
-        global $OUTPUT;
-
-        // https://getbootstrap.com/docs/4.0/components/collapse/
-
-        if (!empty($addnewiconlink) || !empty($containsactions)) {
-            $actionheading = get_string('edit');
-
-            if (!empty($addnewiconlink)) {
-                $actionheading .= $OUTPUT->spacer() . $addnewiconlink;
-            }
-
-            // Add the actions column to the headings.
-            if (!empty($headings)) {
-                $headings[] = 'edit';
-                $headingalignments[] = 'left';
-            }
-        }
-
-        $output = \html_writer::start_tag('dl');
-        foreach ($records as $row => $record) {
-            foreach ($record as $index => $cell) {
-                $heading = get_string($headings[$index], 'local_template');
-                $output .= \html_writer::tag('dt', $heading, ['class' => 'text-' . $headingalignments[$index]]);
-                $output .= \html_writer::tag('dd', $cell, ['class' => 'text-' . $headingalignments[$index]]);
-            }
-        }
-        $output .= \html_writer::end_tag('dl');
-
-        $add = '';
-        if (!empty($addnewiconlink)) {
-            $add = $OUTPUT->spacer() . get_string($addrecordlangstring, 'local_template') . $addnewiconlink;
-        }
-
-        if (count($records)) {
-            return $output . $add;
-        } else {
-            if (!empty($norecordslangstring)) {
-                return $OUTPUT->notification(get_string($norecordslangstring, 'local_template') . $add);
-            }
-        }
-
-        return '';
-    }
-
 }
 

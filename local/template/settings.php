@@ -47,9 +47,9 @@ if ($hassiteconfig) {
         1, [0 => get_string('no'), 1 => get_string('yes')]
     ));
 
-    $settings->add(new admin_setting_configselect('local_template/addnewcoursebutton',
-        get_string('addnewcoursebutton', 'local_template'),
-        get_string('addnewcoursebutton_desc', 'local_template'),
+    $settings->add(new admin_setting_configselect('local_template/addnewcoursenavigation',
+        get_string('addnewcoursenavigation', 'local_template'),
+        get_string('addnewcoursenavigation_desc', 'local_template'),
         1, [0 => get_string('no'), 1 => get_string('yes')]
     ));
 

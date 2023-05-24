@@ -263,12 +263,16 @@ class template extends \core\persistent implements renderable, templatable {
         if (!utils::is_admin()) {
             global $USER;
             // Only show records for current user, and not hidden records.
+            $select = 'usercreated = :usercreated AND hidden = :hidden';
             $params['usercreated'] = $USER->id;
             $params['hidden'] = self::HIDDEN_FALSE;
+        }
+
+        if (!utils::is_admin_page()) {
             $addnew = true;
         }
 
-        return new persistentcollection(get_called_class(), $parentid, $view, $displayheadings, $select = '', $params, $sort, $order, $templatepage, $templateperpage, $addnew);
+        return new persistentcollection(get_called_class(), $parentid, $view, $displayheadings, $select, $params, $sort, $order, $templatepage, $templateperpage, $addnew);
     }
 
     public static function title() {
@@ -280,6 +284,10 @@ class template extends \core\persistent implements renderable, templatable {
         $properties = [
             'timemodified' => [
                 'label' => get_string('timemodified', 'local_template'),
+                'alignment' => 'left',
+            ],
+            'shortname' => [
+                'label' => get_string('shortname', 'local_template'),
                 'alignment' => 'left',
             ],
             'category' => [
@@ -320,8 +328,14 @@ class template extends \core\persistent implements renderable, templatable {
                 'alignment' => 'left',
             ];
         }
+
+        $editlabel = get_string('edit', 'local_template');
+        if (utils::is_admin_page()) {
+            $editlabel .= $OUTPUT->spacer() . self::add_new_icon($parentid);
+        }
+
         $properties['edit'] = [
-            'label' => get_string('edit', 'local_template') . $OUTPUT->spacer() . self::add_new_icon($parentid),
+            'label' =>  $editlabel,
             'alignment' => 'left',
             'callback' => "get_actions",
         ];
@@ -410,7 +424,7 @@ class template extends \core\persistent implements renderable, templatable {
             }
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/index.php';
-            return format_string($category->name) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['categoryid' => $categoryid]);
+            return format_string($category->name) . $OUTPUT->spacer() . utils::icon_link('externallink', $url, ['categoryid' => $categoryid]);
         }
         return get_string('missingcategory','local_template');
     }
@@ -423,7 +437,7 @@ class template extends \core\persistent implements renderable, templatable {
         } else {
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/view.php';
-            $templatecourse = format_string($templatecourse->fullname) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['id' => $templatecourse->id]);
+            $templatecourse = format_string($templatecourse->fullname) . $OUTPUT->spacer() . utils::icon_link('externallink', $url, ['id' => $templatecourse->id]);
         }
         return $templatecourse;
     }
@@ -459,7 +473,7 @@ class template extends \core\persistent implements renderable, templatable {
         } else {
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/view.php';
-            $importcourse = format_string($importcourse->fullname) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['id' => $importcourse->id]);
+            $importcourse = format_string($importcourse->fullname) . $OUTPUT->spacer() . utils::icon_link('externallink', $url, ['id' => $importcourse->id]);
         }
         return $importcourse;
     }
@@ -495,7 +509,7 @@ class template extends \core\persistent implements renderable, templatable {
         } else {
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/view.php';
-            $createdcourse = format_string($createdcourse->fullname) . $OUTPUT->spacer() . utils::icon_link('preview', $url, ['id' => $createdcourse->id]);
+            $createdcourse = format_string($createdcourse->fullname) . $OUTPUT->spacer() . utils::icon_link('externallink', $url, ['id' => $createdcourse->id]);
         }
         return $createdcourse;
     }
@@ -582,16 +596,17 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function no_records($parentid) {
         global $OUTPUT;
-        return $OUTPUT->notification(get_string('notemplatedefined', 'local_template') . $OUTPUT->spacer() . self::add_new($parentid));
+        return $OUTPUT->notification(get_string('notemplatedefined', 'local_template')); // . $OUTPUT->spacer() . self::add_new($parentid));
     }
 
     public function get_actions($count = 0) {
         $path = controllers\template::path();
         $actions = '';
         // preview, add, edit, hide, show, moveup, movedown, delete
-        $actions .= utils::icon_link('preview', $path, ['action' => 'viewtemplate', 'templateid' => $this->raw_get('id')]);
-        $actions .= utils::icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
-
+        $status = $this->get_status();
+        if ($status != 'Complete') {
+            $actions .= utils::icon_link('edit', $path, ['action' => 'edittemplate', 'templateid' => $this->raw_get('id')]);
+        }
 
         if (utils::is_admin()) {
             if ($this->raw_get('hidden')) {
@@ -604,7 +619,9 @@ class template extends \core\persistent implements renderable, templatable {
             $actions .= utils::icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
         }
 
-        $actions .= utils::icon_link('go', $path, ['action' => 'runtemplate', 'templateid' => $this->raw_get('id')]);
+        if (utils::is_admin()) {
+            $actions .= utils::icon_link('go', $path, ['action' => 'runtemplate', 'templateid' => $this->raw_get('id')]);
+        }
         return $actions;
     }
 
@@ -772,21 +789,39 @@ class template extends \core\persistent implements renderable, templatable {
     }
 
     public function get_status() {
-        $status = 'Saved';
-        if (!empty($this->raw_get('copybackupid'))) {
-            $status .= ' - Template';
-            if (empty($this->raw_get('copyrestoreid'))) {
-                $status .= ' - Not restored';
-            } else {
-                $status .= ' - Restored';
+
+        if (utils::is_admin()) {
+            //Draft. Complete. Error.
+
+            $status = 'Saved';
+            if (!empty($this->raw_get('copybackupid'))) {
+                $status .= ' - Template';
+                if (empty($this->raw_get('copyrestoreid'))) {
+                    $status .= ' - Not restored';
+                } else {
+                    $status .= ' - Restored';
+                }
             }
-        }
-        if (!empty($this->raw_get('importbackupid'))) {
-            $status .= ' - Import';
-            if (empty($this->raw_get('importrestoreid'))) {
-                $status .= ' - Not restored';
+            if (!empty($this->raw_get('importbackupid'))) {
+                $status .= ' - Import';
+                if (empty($this->raw_get('importrestoreid'))) {
+                    $status .= ' - Not restored';
+                } else {
+                    $status .= ' - Restored';
+                }
+            }
+        } else {
+            $status = 'Draft';
+            if (!empty($this->raw_get('createdcourseid'))) {
+                $status = 'Complete';
             } else {
-                $status .= ' - Restored';
+
+                // If any controllers are present, without a createdcourse, error.
+                // (Will miss errors on import restore). Good enough for now
+                // TODO: Check individual controllers
+                if (!empty($this->raw_get('copybackupid'))) {
+                    $status = 'Error';
+                }
             }
         }
 

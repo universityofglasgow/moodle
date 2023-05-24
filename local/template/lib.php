@@ -107,3 +107,38 @@ function local_template_pluginfile($course, $cm, $context, $filearea, $args, $fo
     // We can now send the file back to the browser - in this case with a cache lifetime of 1 day and no filtering.
     send_stored_file($file, 86400, 0, $forcedownload, $options);
 }
+
+
+/**
+ * Hook to insert a link in settings navigation menu block
+ *
+ * @param settings_navigation $settings
+ * @param context $context
+ * @return void
+ */
+function local_template_extend_settings_navigation(settings_navigation $navigation, context $context) {
+
+    // Only extend navigation for category contexts.
+    if ($context == null) {
+        return;
+    }
+
+    $addnewcoursenavigation = get_config('local_template', 'addnewcoursenavigation');
+    if (!$addnewcoursenavigation) {
+        return false;
+    }
+
+    $categorynode = $navigation->get('categorysettings');
+    if ($categorynode == null) {
+        return;
+    }
+
+    if (has_capability('local/template:usetemplate', $context)) {
+        global $CFG;
+        $url = new moodle_url($CFG->wwwroot . '/local/local_template/index.php', array('category' => $context->instanceid));
+
+        //public function add($text, $action=null, $type=self::TYPE_CUSTOM, $shorttext=null, $key=null, pix_icon $icon=null) {
+        $categorynode->add(get_string('pluginname', 'local_template'), $url, navigation_node::TYPE_SETTING, null, 'local_template', new pix_icon('i/return', ''));
+    }
+
+}

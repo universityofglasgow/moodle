@@ -89,38 +89,6 @@ class theme_hillhead40_core_course_renderer extends core_course_renderer {
      * Override core course renderer function to add additional button (if /local/template is present)
      * The original function should be monitored for changes.
      *
-     * Returns HTML to the "add new course" button for the page
-     *
-     * @return string
-     */
-    public function add_new_course_button() {
-        if (!theme_hillhead40_exists_template_plugin()) {
-            return parent::add_new_course_button();
-        }
-        $addnewcoursebutton = get_config('local_template', 'addnewcoursebutton');
-        if (!$addnewcoursebutton) {
-            return parent::add_new_course_button();
-        }
-
-
-        global $CFG;
-        // Print link to create a new course, for the 1st available category.
-        $output = $this->container_start('buttons');
-        $url = new moodle_url('/course/edit.php', array('category' => $CFG->defaultrequestcategory, 'returnto' => 'topcat'));
-        $output .= $this->single_button($url, get_string('addnewcourse'), 'get');
-
-        $url = new moodle_url('/local/template/index.php', array('category' => $CFG->defaultrequestcategory, 'returnto' => 'topcat'));
-        $output .= $this->single_button($url, get_string('addnewcourseviatemplate', 'local_template'), 'get');
-
-        $output .= $this->container_end('buttons');
-        return $output;
-    }
-
-    /**
-     *
-     * Override core course renderer function to add additional button (if /local/template is present)
-     * The original function should be monitored for changes.
-     *
      * Renders HTML to display particular course category - list of it's subcategories and courses
      *
      * Invoked from /course/index.php

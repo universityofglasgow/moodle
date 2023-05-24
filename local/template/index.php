@@ -43,16 +43,34 @@ require_once $CFG->libdir . '/adminlib.php';
 // @codingStandardsIgnoreLine
 require_once $CFG->dirroot . '/local/template/lib.php';
 
-utils::enforce_security();
-
 // $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/index.php'));
 // $PAGE->navbar->add(get_string('templateadmin', 'local_template'), new moodle_url('/local/template/admin/index.php'));
 // $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/local/template/admin/templates.php'));
 
+$categoryid = optional_param('category', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHANUMEXT );
-$PAGE->set_context(context_system::instance());
-$PAGE->set_url(new moodle_url('/local/template/admin/templates.php', ['action' => $action]));
+
+if (!empty($categoryid)) {
+    $context = context_coursecat::instance($categoryid, IGNORE_MISSING);
+} else {
+    $context = context_system::instance();
+}
+
+$PAGE->set_context($context);
+$PAGE->set_url(new moodle_url('/local/template/index.php', ['action' => $action, 'category' => $categoryid]));
 $PAGE->set_title(get_string('pluginname', 'local_template'));
+$PAGE->set_pagelayout('admin');
+$PAGE->set_heading(get_string('pluginname', 'local_template'));
+
+utils::enforce_security();
+
+if (!empty($categoryid)) {
+    global $DB;
+    $categoryname = $DB->get_field('course_categories', 'name', array('id' => $categoryid));
+    $templateselector = $PAGE->navigation->add(get_string('pluginname', 'local_template'), new moodle_url('/local/local_template/index.php'), navigation_node::TYPE_CONTAINER);
+    $category = $templateselector->add(format_string($categoryname), new moodle_url('/local/local_template/index.php', ['category' => $categoryid]));
+    $category->make_active();
+}
 
 switch ($action) {
     case 'setview':
@@ -161,7 +179,6 @@ switch ($action) {
         global $SESSION;
         $SESSION->reject_local_template = true;
 
-        $categoryid = optional_param('category', 0, PARAM_INT);
         $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
         $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
