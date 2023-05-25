@@ -15,19 +15,35 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * Language EN
  *
  * @package    local_gugrades
- * @copyright  2022
+ * @copyright  2023
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_gugrades\event;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2023052501;
-$plugin->requires     = 2022041900; // Moodle 4.0
-$plugin->component    = 'local_gugrades';
+class view_gugrades extends \core\event\base {
 
-$plugin->maturity     = MATURITY_STABLE;
+    protected function init() {
+        $this->data['crud'] = 'r';
+        $this->data['edulevel'] = self::LEVEL_TEACHING;
+        $this->data['objecttable'] = 'course';
+    }
 
+    public static function get_name() {
+        return get_string('eventviewgugrades', 'local_gugrades');
+    }
+
+    public function get_description() {
+        return "The user with id '$this->userid' viewed the grading tool for course with id '$this->objectid'.";
+    }
+
+    public function get_url() {
+        return new \moodle_url('/local/gugrades/ui/dist/index.php', ['id' => $this->objectid]);
+    }
+}

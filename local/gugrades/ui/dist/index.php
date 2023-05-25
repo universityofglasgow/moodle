@@ -45,6 +45,13 @@ require_login($course);
 $context = context_course::instance($courseid);
 require_capability('local/gugcat:view', $context);
 
+// Log
+$event = \local_gugrades\event\view_gugrades::create([
+    'objectid' => $courseid,
+    'context' => context_course::instance($courseid),
+]);
+$event->trigger();
+
 // VueJS stuff gets injected here
 echo $OUTPUT->header();
 echo "<div id=\"app\"></div>";
