@@ -164,7 +164,8 @@ class api {
     public static function get_user_grades(int $userid) {
         global $DB;
 
-        if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid])) {
+        // Load *current* grades for this user
+        if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid, 'iscurrent' => 1])) {
             return [];
         }
 
@@ -196,6 +197,33 @@ class api {
 
             // Item into
             $grade->itemname = $gradeobject->get_item_name_from_itemid($grade->gradeitemid);
+
+            $newgrades[] = $grade;
+        }
+
+        return $newgrades;
+    }
+
+    /**
+     * Get grade history for given user / grade item
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_history(int $gradeitemid, int $userid) {
+        global $DB;
+
+        if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid, 'gradeitemid' => $gradeitemid], 'audittimecreated ASC')) {
+            return [];
+        }
+
+        // Additional info
+        $newgrades = [];
+        foreach ($grades as $grade) {
+            $gradeobject = new \local_gugrades\grades($courseid);
+            $grade->reasonname = $gradeobject->get_reason_from_id($grade->reason);
+            $grade->time = userdate($grade->audittimecreated);
+            $grade->current = $grade->iscurrent ? get_string('yes') : get_string('no');
 
             $newgrades[] = $grade;
         }

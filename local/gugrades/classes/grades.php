@@ -229,36 +229,30 @@ class grades {
         $reasonid = $this->get_gradetype($reason)->id;
 
         // Does this already exist
-        if ($gugrade = $DB->get_record('local_gugrades_grade', [
+        if ($oldgrade = $DB->get_record('local_gugrades_grade', [
             'courseid' => $this->courseid,
             'gradeitemid' => $this->gradeitemid,
             'userid' => $userid,
             'reason' => $reasonid,
         ])) {
-            // Update grade
-            // TODO: it won't be as simple as this
-            $gugrade->grade = $grade;
-            $gugrade->weightedgrade = $weightedgrade;
-            $gugrade->iscurrent = true;
-            $gugrade->auditby = $USER->id;
-            $gugrade->audittimecreated = time();
-            $gugrade->auditcomment = '';
-            $DB->update_record('local_gugrades_grade', $gugrade);
-        } else {
-            $gugrade = new \stdClass;
-            $gugrade->courseid = $this->courseid;
-            $gugrade->gradeitemid = $gradeitemid;
-            $gugrade->userid = $userid;
-            $gugrade->grade = $grade;
-            $gugrade->weightedgrade = $weightedgrade;
-            $gugrade->reason = $reasonid;
-            $gugrade->other = $other;
-            $gugrade->iscurrent = true;
-            $gugrade->auditby = $USER->id;
-            $gugrade->audittimecreated = time();
-            $gugrade->auditcomment = '';
-            $DB->insert_record('local_gugrades_grade', $gugrade);
+            // It's not current any more
+            $oldgrade->iscurrent = false;
+            $DB->update_record('local_gugrades_grade', $oldgrade);
         }
+
+        $gugrade = new \stdClass;
+        $gugrade->courseid = $this->courseid;
+        $gugrade->gradeitemid = $gradeitemid;
+        $gugrade->userid = $userid;
+        $gugrade->grade = $grade;
+        $gugrade->weightedgrade = $weightedgrade;
+        $gugrade->reason = $reasonid;
+        $gugrade->other = $other;
+        $gugrade->iscurrent = true;
+        $gugrade->auditby = $USER->id;
+        $gugrade->audittimecreated = time();
+        $gugrade->auditcomment = '';
+        $DB->insert_record('local_gugrades_grade', $gugrade);
     }
 
     /**

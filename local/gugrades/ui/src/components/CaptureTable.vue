@@ -24,7 +24,10 @@
                         <td>{{ user.displayname }}</td>
                         <td>{{ user.idnumber }}</td>
                         <CaptureGrades :grades="user.grades"></CaptureGrades>
-                        <td><button type="button" class="btn btn-outline-primary btn-sm">{{ strings.addgrade }}</button></td>
+                        <td>
+                            <button type="button" class="btn btn-outline-primary btn-sm mr-1">{{ strings.addgrade }}</button>
+                            <HistoryButton :userid="parseInt(user.id)" :itemid="itemid"></HistoryButton>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -53,6 +56,7 @@
     import ModalForm from '@/components/ModalForm.vue';
     import UserPicture from '@/components/UserPicture.vue';
     import CaptureGrades from '@/components/CaptureGrades.vue';
+    import HistoryButton from '@/components/HistoryButton.vue';
     import { getstrings } from '@/js/getstrings.js';
     import { useNotification } from '@kyvg/vue3-notification';
 
