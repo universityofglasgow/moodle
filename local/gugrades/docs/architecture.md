@@ -102,3 +102,12 @@ The current Components are as follows:
 | [PagingBar](../ui/src/components/PagingBar.vue) | Allows page to be selected when sufficient students to paginate table |
 | [TabsNav](../ui/src/components/TabsNav.vue) | Shows tabs to select Grade capture, Aggregation and Settings |
 | [UserPicture](../ui/src/components/UserPicture.vue) | Displays user avatar |
+
+# Logging
+
+Standard Moodle event logging is used for critical functions. This records "Person X did Y" type events. 
+
+| Event               | Description
+|---------------------|--------------------|
+| [import_grades_users](../classes/event/import_grades_users.php) | Grade import button has been pressed |
+| [view_gugrades](../classes/event/view_gugrades.php) | Tool has been viewed |

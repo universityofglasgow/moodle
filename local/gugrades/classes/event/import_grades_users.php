@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 class import_grades_users extends \core\event\base {
 
     protected function init() {
-        $this->data['crud'] = 'r';
+        $this->data['crud'] = 'w';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
         $this->data['objecttable'] = 'grade_items';
     }
