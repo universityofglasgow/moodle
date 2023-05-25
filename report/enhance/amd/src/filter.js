@@ -36,6 +36,7 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                 }
                 // $('.active') removed *all* active classes on the page, breaking "user menu" along the way
                 $('.filter-list .nav-link.active').removeClass("active");
+                console.log('Removed the active classes for .filter-list and .nav-link.active');
                 $("[data-filter='" + filter + "']").addClass("active");
             } catch (error) {
                 return false;
