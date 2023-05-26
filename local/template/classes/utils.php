@@ -219,6 +219,10 @@ class utils  {
      */
     static function icon_link(string $type, $url, array $urlparams = null) {
         global $OUTPUT;
+
+        if ($url instanceof moodle_url) {
+            $url->params($urlparams);
+        }
         if (is_string($url)) {
             $url = new moodle_url($url, $urlparams);
         }

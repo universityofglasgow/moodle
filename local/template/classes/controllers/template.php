@@ -42,10 +42,11 @@ class template {
 
     public static function path() {
         global $CFG;
+        $categoryid = optional_param('category', 0, PARAM_INT);
         if (utils::is_admin_page()) {
-            return $CFG->wwwroot . '/local/template/admin/templates.php';
+            return new moodle_url($CFG->wwwroot . '/local/template/admin/templates.php', ['categoryid' => $categoryid]);
         } else {
-            return $CFG->wwwroot . '/local/template/index.php';
+            return new moodle_url($CFG->wwwroot . '/local/template/index.php', ['categoryid' => $categoryid]);
         }
     }
 
@@ -162,13 +163,11 @@ class template {
         // Initialise a form object if we haven't been provided with one.
         if ($form == null) {
 
-            $categoryid = optional_param('category', 0, PARAM_INT);
             $customdata = [
                 'id' => $id,
                 'persistent' => $template,
                 'action' => 'edittemplate',
                 'admin' => $admin,
-                'category' => $categoryid
             ];
 
             // Constructor calls set_data.
