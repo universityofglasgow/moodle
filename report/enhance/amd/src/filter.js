@@ -34,13 +34,19 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification'], function(
                 } else {
                     $(".bottom-button").show();
                 }
-                $('.active').removeClass("active");
+                // $('.active') removed *all* active classes on the page, breaking "user menu" along the way
+                $('.filter-list .nav-link.active').removeClass("active");
+                console.log('Removed the active classes for .filter-list and .nav-link.active');
                 $("[data-filter='" + filter + "']").addClass("active");
             } catch (error) {
                 return false;
             }
 
-            // Display updated voting buttons
+            /**
+             * @param {HTMLElement} container
+             * @param {int} requestid
+             * @param {int} votes
+             */
             function render_voting(container, requestid, votes) {
                 var context = {
                     votecount: votes.count,

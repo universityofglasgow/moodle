@@ -50,7 +50,7 @@ The plugin uses Moodle standard navigation APIs to add the link to 'UofG Grades'
 
 The backend / business logic is written as PHP classes and is primarily exposed through normal Moodle external APIs (web services). These are supported by utility classes for commonly/repeatedly used functions. 
 
-Each API function is accessible in two places. The parameters etc. are the same. They can all be accessed either as a static method in classes/api.php or by a Moodle web service. 
+Each API function is accessible in two places. The parameters etc. are the same. They can all be accessed either as a static method in classes/api.php or by a Moodle web service. Note that Moodle web services are self-documenting (see developer docs)
 
 The current web service functions are as follows:
 
@@ -59,7 +59,23 @@ The current web service functions are as follows:
 | [get_activities](../classes/external/get_activities.php) | Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item. |
 | [get_capture_page](../classes/external/get_capture_page.php)| Given the ID of the selected activity this returns all the data needed to display the current table of the grade capture page. This includes all the students who can access the selected activity. |
 | [get_grade_item](../classes/external/get_grade_item.php)| Returns full details of the selected grad item. 
-| [get_levelonecategories](../classes/external/get_levelonecategories.php) | Lists the top level grade categories for the initial selection (e.g. Summative / Formative)
+| [get_levelonecategories](../classes/external/get_levelonecategories.php) | Lists the top level grade categories for the initial selection (e.g. Summative / Formative) |
+| [get_user_grades](../classes/external/get_user_grades.php) | Returns all the grades for a given user id - site wide |
+| [get_user_picture_url](../classes/external/get_user_picture_url.php) | Return URL of user avatar/image |
+| [import_grade](../classes/external/import_grade.php) | Import first grade for given itemid and userid |
+| [import_grades_users](../classes/external/import_grades_users.php) | Import grade for list of userids given itemid |
+
+## Activity classes
+
+In order to interface with different activies (and grade) types, a set of classes have been created. These are implemented such that if a class exists for a specific activity (e.g. Assignment) then that class will be instantiated. If no class exists then a 'default' class is instantiated giving "lowest common demoninator" functionality. A special case is manual grades which have their own class. The classes implement an interface, [activity_interface](../classes/activities/activity_interface.php)
+
+Current implemented classes are as follows
+
+| Class name              | Description
+|-------------------------|--------------------------------------|
+| [assign_activity](../classes/activities/assign_activity.php) | Assign activity class |
+| [manual](../classes/activities/manual.php) | Special case for handling manual grade items |
+| [default_activity](../classes/activities/default_activity.php) | Used if no other class exists |
 
 
 ## User interface
@@ -74,11 +90,24 @@ The current Components are as follows:
 | Component            | Description
 |----------------------|--------------------------------------------------------------|
 | [App](../ui/src/App.vue) | Top level of UI. Called from the plugin's index.php |
-| [CaptureAggregation](../ui/src/views/CaptureAggregation.vue) | Container for the capture and aggregation screens |
-| [TabsNav](../ui/src/components/TabsNav.vue) | Shows tabs to select Grade capture, Aggregation and Settings |
-| [LevelOneSelect](../ui/src/components/LevelOneSelect.vue) | Shows a drop down to select the top level grade category (Note that if there are none an error is displayed) |
 | [ActivityTree](../ui/src/components/ActivityTree.vue) | Constructs a tree structure of grade categories and grade-items. User selects current item. View changes to the selected item until clicked again |
+| [CaptureAggregation](../ui/src/views/CaptureAggregation.vue) | Container for the capture and aggregation screens |
+| [CaptureGrades](../ui/src/components/CaptureGrades.vue) | Displays the first grade cell in the capture table |
 | [CaptureTable](../ui/src/components/CaptureTable.vue) | Paginated table of users and grades during capture |
-| [NameFilter](../ui/src/components/NameFilter.vue) | Replicates Moodle's standard initial letter name filter in Vue |
 | [InitialBar](../ui/src/components/InitialBar.vue) | Used by NameFilter - shows one line of letters |
+| [LevelOneSelect](../ui/src/components/LevelOneSelect.vue) | Shows a drop down to select the top level grade category (Note that if there are none an error is displayed) |
+| [ModalForm](../ui/src/components/ModalForm.vue) | Displays a general purpose modal popup |
+| [MString](../ui/src/components/MString.vue) | Looks up a string in Moodle |
+| [NameFilter](../ui/src/components/NameFilter.vue) | Replicates Moodle's standard initial letter name filter in Vue |
 | [PagingBar](../ui/src/components/PagingBar.vue) | Allows page to be selected when sufficient students to paginate table |
+| [TabsNav](../ui/src/components/TabsNav.vue) | Shows tabs to select Grade capture, Aggregation and Settings |
+| [UserPicture](../ui/src/components/UserPicture.vue) | Displays user avatar |
+
+# Logging
+
+Standard Moodle event logging is used for critical functions. This records "Person X did Y" type events. 
+
+| Event               | Description
+|---------------------|--------------------|
+| [import_grades_users](../classes/event/import_grades_users.php) | Grade import button has been pressed |
+| [view_gugrades](../classes/event/view_gugrades.php) | Tool has been viewed |

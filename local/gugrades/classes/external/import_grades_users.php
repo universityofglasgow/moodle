@@ -59,6 +59,13 @@ class import_grades_users extends \external_api {
             $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $userid);
         }
 
+        // Log
+        $event = \local_gugrades\event\import_grades_users::create([
+            'objectid' => $gradeitemid,
+            'context' => \context_course::instance($courseid),
+        ]);
+        $event->trigger();
+
         return ['success' => true];
     }
 

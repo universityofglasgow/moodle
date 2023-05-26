@@ -15,19 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * Language EN
  *
  * @package    local_gugrades
- * @copyright  2022
+ * @copyright  2023
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_gugrades\event;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2023052502;
-$plugin->requires     = 2022041900; // Moodle 4.0
-$plugin->component    = 'local_gugrades';
+class import_grades_users extends \core\event\base {
 
-$plugin->maturity     = MATURITY_STABLE;
+    protected function init() {
+        $this->data['crud'] = 'w';
+        $this->data['edulevel'] = self::LEVEL_TEACHING;
+        $this->data['objecttable'] = 'grade_items';
+    }
 
+    public static function get_name() {
+        return get_string('eventimportgradesusers', 'local_gugrades');
+    }
+
+    public function get_description() {
+        return "The user with id '$this->userid' imported grades for grade item '$this->objectid'.";
+    }
+}

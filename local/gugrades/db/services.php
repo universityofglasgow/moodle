@@ -65,7 +65,7 @@ $functions = [
     'local_gugrades_import_grades_users' => [
         'classname' => 'local_gugrades\external\import_grades_users',
         'description' => 'Import 1st grade from activity or grade item for list of users',
-        'type' => 'read',
+        'type' => 'write',
         'ajax' => true,
     ],
     'local_gugrades_get_user_picture_url' => [
@@ -77,6 +77,12 @@ $functions = [
     'local_gugrades_get_user_grades' => [
         'classname' => 'local_gugrades\external\get_user_grades',
         'description' => 'Get all user grades for given user (site-wide)',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_history' => [
+        'classname' => 'local_gugrades\external\get_history',
+        'description' => 'Get the grade history for given user / grade item.',
         'type' => 'read',
         'ajax' => true,
     ],
