@@ -134,7 +134,10 @@ $PAGE->requires->js_amd_inline("
 
                                         $search = optional_param('search', '', PARAM_ALPHA);
 
-                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_currentcourses.") && courseid>1 && itemtype='mod' && itemmodule in (" . $itemmodules . ")");
+
+                                        $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
+
+                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_currentcourses.") && courseid>1 && itemtype='mod' && id not in (".$str_itemsnotvisibletouser.") && itemmodule in (" . $itemmodules . ")");
 
                                         $table->no_sorting('course');
                                         $table->no_sorting('assessment');
@@ -174,7 +177,9 @@ $PAGE->requires->js_amd_inline("
 
                                         $search = optional_param('search', '', PARAM_ALPHA);
 
-                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_pastcourses.") && courseid>1 && hidden=0 && itemtype='mod' && itemmodule in (" . $itemmodules . ")");
+                                        $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_pastcourses);
+
+                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_pastcourses.") && courseid>1 && itemtype='mod' && id not in (".$str_itemsnotvisibletouser.") && itemmodule in (" . $itemmodules . ")");
 
                                         $table->no_sorting('course');
                                         $table->no_sorting('assessment');

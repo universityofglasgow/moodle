@@ -35,6 +35,13 @@ $string['submitted'] = ' submitted';
 $string['overdue'] = 'Overdue';
 $string['marked'] = ' marked';
 
+$string['notsubmitted'] = 'Not Submitted';
+$string['graded'] = 'Graded';
+$string['submissionnotopen'] = 'Submission not open';
+$string['individualcomponents'] = 'Individual components';
+
+
+
 $string['assessmenttype'] = 'Assessment Type';
 $string['weight'] = 'Weight';
 $string['duedate'] = 'Due Date';
@@ -54,3 +61,8 @@ $string['enddate'] = 'End Date';
 $string['viewsubmission'] = 'View Submission';
 
 $string['readfeedback'] = 'Read Feedback';
+
+$string['summative'] = 'Summative';
+$string['formative'] = 'Formative';
+$string['emptyvalue'] = '—';
+$string['extended'] = 'Due date extension';
