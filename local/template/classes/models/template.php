@@ -424,7 +424,7 @@ class template extends \core\persistent implements renderable, templatable {
             }
             global $CFG, $OUTPUT;
             $url = $CFG->wwwroot . '/course/index.php';
-            return format_string($category->name) . $OUTPUT->spacer() . utils::icon_link('externallink', $url, ['categoryid' => $categoryid]);
+            return format_string($category->name);
         }
         return get_string('missingcategory','local_template');
     }
@@ -616,7 +616,9 @@ class template extends \core\persistent implements renderable, templatable {
             }
             $actions .= utils::icon_link('delete', $path, ['action' => 'deletetemplate', 'templateid' => $this->raw_get('id'), 'sesskey' => sesskey()]);
         } else {
-            $actions .= utils::icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
+            if ($status == 'Complete') {
+                $actions .= utils::icon_link('hide', $path, ['action' => 'hidetemplate', 'templateid' => $this->raw_get('id')]);
+            }
         }
 
         if (utils::is_admin()) {
@@ -954,7 +956,7 @@ class template extends \core\persistent implements renderable, templatable {
                 }
                 $actions .= utils::icon_link('delete', $path, ['action' => 'deletetemplate', 'templateid' => $template->get('id'), 'sesskey' => sesskey()]);
             } else {
-                $actions .= utils::icon_link('delete', $path, ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
+                $actions .= utils::icon_link('hide', $path, ['action' => 'hidetemplate', 'templateid' => $template->get('id')]);
             }
 
             $record[] = $actions;

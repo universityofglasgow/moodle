@@ -16,8 +16,28 @@ $(document).ready(function() {
         return false;
     });
 
-});
+    $("#templatesteppertrigger1").on('click', function() {
+        $('.slider').each(function () {
+            var slider = $(this);
+            slider[0].slick.refresh();
+            resizeFixes(slider);
+        });
+    });
 
+    $("h1.slider-heading").on('click', function() {
+        debugger;
+        var sliderheading = $(this);
+        var slider = sliderheading.nextAll('.slider:first');
+        if (sliderheading.hasClass('collapsed')) {
+            sliderheading.removeClass('collapsed');
+            showSlider(slider);
+        } else {
+            sliderheading.addClass('collapsed');
+            slider.slideUp();
+            slider.hide();
+        }
+    });
+});
 
 
 function initStepper() {
@@ -25,6 +45,11 @@ function initStepper() {
         linear: false,
         animation: true
     });
+
+    debugger;
+    if ($("#id_shortname").val()) {
+        templatestepper.to(2);
+    }
 }
 
 function initSliders() {
@@ -45,6 +70,7 @@ function initSliders() {
             waitForFinalEvent(function() {
                 debugger;
                 showSlider(slider);
+                slider.slideUp();
             }, 1000, "showSlider" + slider.attr("id"))
         );
     });
@@ -131,6 +157,10 @@ function fixTrackHeight(track, animate) {
     var prev = list.parent().find(".slick-prev");
     var next = list.parent().find(".slick-next");
     var trackheight = $(track).find(".slick-active").find(".card-img-top").height() + 60;
+    debugger;
+    if (trackheight < 260) {
+        trackheight = 260;
+    }
     var arrowheight = (trackheight - 60) / 2;
 
     $(track).css("overflow-y", 'unset');

@@ -68,6 +68,9 @@ $string['template:managetemplate'] = 'Manage Template';
 $string['createnewtemplate'] = 'Create new course via template';
 $string['templatecourse'] = 'Template Course';
 $string['importcourse'] = 'Import Course';
+
+$string['importcourse_desc'] = 'Optionally select a course below to reuse/import activities from another course.';
+
 $string['summary'] = 'Course Summary';
 
 
@@ -78,7 +81,7 @@ $string['copyrestore'] = 'Copy Restore';
 $string['importbackup'] = 'Import Backup';
 $string['importrestore'] = 'Import Restore';
 
-$string['addtemplate'] = 'Add template';
+$string['addtemplate'] = 'Reset Wizard';
 $string['timemodified'] = 'Time Modified';
 $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';
@@ -115,9 +118,9 @@ $string['controllers'] = 'Controllers';
 $string['category'] = 'Category';
 $string['missingcategory'] = 'Missing Category';
 
-$string['missingcreatedcourse'] = 'No Created Course';
+$string['missingcreatedcourse'] = 'No Created Course for this record.';
 $string['missingtemplatecourse'] = 'Missing Template Course';
-$string['missingimportcourse'] = 'No Import Course';
+$string['missingimportcourse'] = 'No Import Course Selected.';
 
 $string['notemplatesfound'] = 'No templates found.';
 

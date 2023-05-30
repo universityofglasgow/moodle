@@ -142,110 +142,7 @@ public static function return_enrolledcourses($userid, $coursetype) {
         return has_capability('moodle/grade:view', $context, $userid, false);
     }
 
-public static function get_stats_counts($userid)
-{
-    global $DB;
 
-    $courses = newassessments_statistics::return_enrolledcourses($userid, "current");
-
-    $courseids = implode(', ', $courses);
-
-    $currentdate = time();
-    $total_overdue = 0;
-    $total_submissions = 0;
-    $total_tosubmit = 0;
-    $marked = 0;
-
-
-    //Submissions
-
-    $sql_assign_submissions = "SELECT count(*) as assignsubmissions FROM {assign_submission} WHERE assignment in (SELECT id FROM {assign} WHERE course IN ('$courseids')) AND userid=" . $userid;
-
-    $arr_assign_submissions = $DB->get_record_sql($sql_assign_submissions);
-    $assign_submissions = $arr_assign_submissions->assignsubmissions;
-
-    $sql_forum_submissions = "SELECT count(*) as forumsubmissions FROM {forum_discussions} WHERE forum in (SELECT id FROM {forum} WHERE type!='news' AND course IN ('$courseids')) AND userid=" . $userid;
-    $arr_forum_submissions = $DB->get_record_sql($sql_forum_submissions);
-    $forum_submissions = $arr_forum_submissions->forumsubmissions;
-
-    $sql_quiz_submissions = "SELECT count(*) as quizsubmissions FROM {quiz_attempts} WHERE quiz in (SELECT id FROM {quiz} WHERE course IN ('$courseids')) AND userid=" . $userid;
-    $arr_quiz_submissions = $DB->get_record_sql($sql_quiz_submissions);
-    $quiz_submissions = $arr_quiz_submissions->quizsubmissions;
-
-    $sql_workshop_submissions = "SELECT count(*) as workshopsubmissions FROM {workshop_submissions} WHERE workshopid in (SELECT id FROM {workshop} WHERE course IN ('$courseids')) AND authorid=" . $userid;
-    $arr_workshop_submissions = $DB->get_record_sql($sql_workshop_submissions);
-    $workshop_submissions = $arr_workshop_submissions->workshopsubmissions;
-
-    $total_submissions = $assign_submissions + $forum_submissions + $quiz_submissions + $workshop_submissions;
-
-    //To be submitted
-    $assigns = $DB->count_records_sql("SELECT count(*) as assigns FROM {assign} WHERE course IN ('$courseids')");
-    $forums = $DB->count_records_sql("SELECT count(*) as forums FROM {forum} WHERE course IN ('$courseids') AND type!='news'");
-    $quizzes = $DB->count_records_sql("SELECT count(*) as quizzes FROM {quiz} WHERE course IN ('$courseids')");
-    $workshops = $DB->count_records_sql("SELECT count(*) as workshops FROM {workshop} WHERE course IN ('$courseids')");
-
-    // To Submit
-    $assign_tosubmit = $assigns - $assign_submissions;
-    $forum_tosubmit = $forums - $forum_submissions;
-    $quiz_tosubmit = $quizzes - $quiz_submissions;
-    $workshop_tosubmit = $workshops - $workshop_submissions;
-    $total_tosubmit = $assign_tosubmit + $forum_tosubmit + $quiz_tosubmit + $workshop_tosubmit;
-
-
-    //Overdue
-    $current_time = time();
-
-    $sql_assign_due1 = 'SELECT id,duedate,course FROM {assign} WHERE duedate < ' . $current_time . ' AND course IN (' . $courseids . ') AND duedate!=0';
-
-
-    //$assign_due1_param = array("duedate"=>$current_time + (86400*30));
-    //$arr_assign_due1 = $DB->get_records_sql($sql_assign_due1, $assign_due1_param);
-    $arr_assign_due1 = $DB->get_records_sql($sql_assign_due1);
-// echo $sql_assign_due1 ;
-// echo "<pre>";
-// print_r($arr_assign_due1);
-// exit;
-    foreach ($arr_assign_due1 as $key_assign_due1) {
-      $extensiondate = $key_assign_due1->duedate;
-       $sql_assign_grantext = 'SELECT * FROM {assign_user_flags} WHERE assignment=' . $key_assign_due1->id . ' AND userid=' . $userid;
-// echo "<br/>";
-//       $param_grantext = array("assignment"=>$key_assign_due1->id, "userid"=>$userid);
-
-       $arr_assign_grantext = $DB->get_record_sql($sql_assign_grantext);
-
-       if (!empty($arr_assign_grantext)) {
-          $extensiondate = $arr_assign_grantext->extensionduedate;
-       }
-
-//echo "<br/>" . $key_assign_due1->id . " / " . $userid . " // " . $extensiondate . " /// " . $current_time . "<br/>";
-       if ($extensiondate!=0 && $extensiondate < $current_time) {
-         $sql_assign_due2 = 'SELECT * FROM {assign_submission} WHERE status!="submitted" AND userid=' . $userid . ' AND assignment=' . $key_assign_due1->id;
-         $arr_assign_due2 = $DB->get_records_sql($sql_assign_due2);
-           if (!empty($arr_assign_due2)) {
-              $total_overdue++;
-           }
-       }
-
-     }
-
-     // WRITE CODES HERE TO FETCH overdue FOR forum, quiz and workshop
-
-
-
-
-     // ASSESSMENTS MARKED
-     $marked = $DB->count_records_select('grade_grades', 'finalgrade != "Null" AND usermodified != "Null" AND userid=:userid', ['userid' => $userid]);
-
-     // FINAL STATISTICS TO BE RETURNED
-     $counts = new stdClass;
-     $counts->submitted = $total_submissions;
-     $counts->tobesubmit = $total_tosubmit;
-     $counts->overdue = $total_overdue;
-     $counts->marked = $marked;
-
-     return $counts;
-
-}
 
 public static function get_cmid($cmodule, $courseid, $instance) {
   // cmodule is module name e.g. quiz, forums etc.
@@ -283,16 +180,123 @@ public static function return_22grademaxpoint($grade, $idnumber) {
 }
 
 
+/**
+ * Returns the 'assessment type'
+ *
+ * @param string $gradecategoryname
+ * @param int $aggregationcoef
+ * @return string 'Formative', 'Summative', or '—'
+ */
+public static function return_assessmenttype($gradecategoryname, $aggregationcoef) {
+    $type = strtolower($gradecategoryname);
+    $hasweight = !empty((float)$aggregationcoef);
+
+    if (strpos($type, 'summative') !== false || $hasweight) {
+        $assessmenttype = get_string('summative', 'block_newgu_spdetails');
+    } else if (strpos($type, 'formative') !== false) {
+        $assessmenttype = get_string('formative', 'block_newgu_spdetails');
+    } else {
+        $assessmenttype = get_string('emptyvalue', 'block_newgu_spdetails');
+    }
+
+    return $assessmenttype;
+}
+
+/**
+ * Returns the 'weight' in percentage
+ *
+ * @param string $assessmenttype
+ * @param string $aggregation
+ * @param string $aggregationcoef
+ * @param string $aggregationcoef2
+ * @param string $subcategoryparentfullname
+ * @return string Weight (in percentage), or '—' if empty
+ */
+public static function return_weight($assessmenttype, $aggregation, $aggregationcoef,
+                                     $aggregationcoef2, $subcategoryparentfullname) {
+    $summative = get_string('summative', 'block_newgu_spdetails');
+
+    // If $aggregation == '10', meaning 'Weighted mean of grades' is used.
+    $weight = ($aggregation == '10') ?
+                (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
+                (($assessmenttype === $summative || $subcategoryparentfullname === $summative) ?
+                    $aggregationcoef2 * 100 : 0);
+
+    $finalweight = ($weight > 0) ? round($weight, 2).'%' : get_string('emptyvalue', 'block_newgu_spdetails');
+
+    return $finalweight;
+}
+
+
+public static function fetch_itemsnotvisibletouser($userid, $strcourses) {
+
+  global $DB;
+
+  $courses = explode(",", $strcourses);
+
+  $itemsnotvisibletouser = array();
+
+  $itemsnotvisibletouser[] = 0;
+
+  foreach ($courses as $courseid) {
+
+    $modinfo = get_fast_modinfo($courseid);
+    $cms = $modinfo->get_cms();
+
+    foreach($cms as $cm) {
+// Check if course module is visible to the user.
+      $iscmvisible = $cm->uservisible;
+
+                if (!$iscmvisible) {
+                  $sql_modinstance = 'SELECT cm.id, cm.instance, cm.module, m.name FROM {modules} m, {course_modules} cm WHERE cm.id=' . $cm->id . ' AND cm.module=m.id';
+                  $arr_modinstance = $DB->get_record_sql($sql_modinstance);
+                  $instance = $arr_modinstance->instance;
+                  $module = $arr_modinstance->module;
+                  $cmid = $arr_modinstance->id;
+                  $modname = $arr_modinstance->name;
+
+                  $sql_gradeitemtoexclude = "SELECT id FROM {grade_items} WHERE courseid = " . $courseid . " AND itemmodule='". $modname ."' AND iteminstance=" . $instance;
+                  $arr_gradeitemtoexclude = $DB->get_record_sql($sql_gradeitemtoexclude);
+                  if (!empty($arr_gradeitemtoexclude)) {
+                    $itemsnotvisibletouser[] = $arr_gradeitemtoexclude->id;
+                  }
+                }
+
+      }
+  }
+  $str_itemsnotvisibletouser = implode(",",$itemsnotvisibletouser);
+
+  return $str_itemsnotvisibletouser;
+
+}
+
+
 public static function return_gradestatus($modulename, $iteminstance, $courseid, $itemid, $userid) {
 
   global $DB, $USER, $CFG;
 
+  $status = "";
+  $link = "";
+  $duedate = 0;
+  $allowsubmissionsfromdate = 0;
+  $cutoffdate = 0;
+  $gradingduedate = 0;
   $provisionalgrade = 0;
   $convertedgrade = 0;
+  $provisional_22grademaxpoint = 0;
+  $converted_22grademaxpoint = 0;
+
+  $rawgrade = 0;
+  $finalgrade = 0;
 
   $sql_grade = "SELECT rawgrade,finalgrade FROM {grade_grades} where itemid=" . $itemid . " AND userid=" . $userid;
   // . " AND rawgrade IS NOT NULL AND finalgrade IS NULL";
   $arr_grade = $DB->get_record_sql($sql_grade);
+
+  if (!empty($arr_grade)) {
+    $rawgrade = $arr_grade->rawgrade;
+    $finalgrade = $arr_grade->finalgrade;
+  }
 
   if (!empty($arr_grade)) {
       if (is_null($arr_grade->rawgrade) && !is_null($arr_grade->finalgrade)) {
@@ -302,14 +306,6 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
           $provisionalgrade = $arr_grade->rawgrade;
       }
   }
-
-
-  $status = "";
-  $link = "";
-  $duedate = 0;
-  $allowsubmissionsfromdate = 0;
-  $cutoffdate = 0;
-  $gradingduedate = 0;
 
   if ($modulename=="assign") {
       $arr_assign = $DB->get_record('assign', array('id'=>$iteminstance));
@@ -405,15 +401,27 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
         $finalgrade = $arr_grades->finalgrade;
     }
 
+    if (floor($rawgrade)>0 && floor($finalgrade)==0) {
+      $provisional_22grademaxpoint = newassessments_statistics::return_22grademaxpoint((floor($rawgrade))-1, 1);
+    }
+    if (floor($finalgrade)>0) {
+      $converted_22grademaxpoint = newassessments_statistics::return_22grademaxpoint((floor($finalgrade))-1, 1);
+    }
+
+//    echo "<br/>XXXX<br/>" . floor($rawgrade) . " / " . floor($finalgrade) . " // " . $converted_22grademaxpoint . "<br/>XXXX<br/>";
+
     $gradestatus = array( "status"=>$status,
                           "link"=>$link,
                           "allowsubmissionsfromdate"=>$allowsubmissionsfromdate,
                           "duedate"=>$duedate,
                           "cutoffdate"=>$cutoffdate,
+                          "rawgrade"=>$rawgrade,
                           "finalgrade"=>$finalgrade,
                           "gradingduedate"=>$gradingduedate,
                           "provisionalgrade"=>$provisionalgrade,
-                          "convertedgrade"=>$convertedgrade
+                          "convertedgrade"=>$convertedgrade,
+                          "provisional_22grademaxpoint"=>$provisional_22grademaxpoint,
+                          "converted_22grademaxpoint"=>$converted_22grademaxpoint,
                         );
 
     return $gradestatus;
@@ -426,7 +434,7 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
 
 
 
-function get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $userid, $grademax) {
+function get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $userid, $grademax, $gradetype) {
 global $CFG, $DB, $USER;
 
 $link = "";
@@ -441,20 +449,23 @@ $duedate = $gradestatus["duedate"];
 $cutoffdate = $gradestatus["cutoffdate"];
 $gradingduedate = $gradestatus["gradingduedate"];
 
+$rawgrade = $gradestatus["rawgrade"];
 $finalgrade = $gradestatus["finalgrade"];
+
+$provisional_22grademaxpoint = $gradestatus["provisional_22grademaxpoint"];
+$converted_22grademaxpoint = $gradestatus["converted_22grademaxpoint"];
 
 $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
 
-// if ($modulename=="assign" || $modulename=="forum") {
-//     $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
-// }
-
-
 if ($finalgrade!=Null) {
-    $gradetodisplay = '<span class="graded">' . number_format((float)$finalgrade) . " / " . number_format((float)$grademax) . '</span>' . ' (Provisional)';
-    //if ($modulename=="assign" || $modulename=="forum") {
-      $link = $CFG->wwwroot . '/mod/'.$modulename.'/view.php?id=' . $cmid . '#page-footer';
-    //}
+    if ($gradetype==1) {
+      $gradetodisplay = '<span class="graded">' . number_format((float)$finalgrade) . " / " . number_format((float)$grademax) . '</span>' . ' (Provisional)';
+    }
+    if ($gradetype==2) {
+      $gradetodisplay = '<span class="graded">' . $converted_22grademaxpoint . '</span>' . ' (Provisional)';
+    }
+    $link = $CFG->wwwroot . '/mod/'.$modulename.'/view.php?id=' . $cmid . '#page-footer';
+
 }
 
 if ($finalgrade==Null  && $duedate<time()) {
@@ -480,9 +491,36 @@ if ($status=="tosubmit") {
     $link = "";
 }
 
-return array("gradetodisplay"=>$gradetodisplay, "link"=>$link);
+return array("gradetodisplay"=>$gradetodisplay, "link"=>$link, "provisional_22grademaxpoint"=>$provisional_22grademaxpoint, "converted_22grademaxpoint"=>$converted_22grademaxpoint, "finalgrade"=>floor($finalgrade), "rawgrade"=>floor($rawgrade));
 //return array("gradetodisplay"=>$gradetodisplay, "link"=>$link);
 
+}
+
+
+function get_weight($courseid,$categoryid,$aggregationcoef,$aggregationcoef2) {
+  global $DB;
+
+  $arr_gradecategory = $DB->get_record('grade_categories',array('courseid'=>$courseid, 'id'=>$categoryid));
+  if (!empty($arr_gradecategory)) {
+    $gradecategoryname = $arr_gradecategory->fullname;
+    $aggregation = $arr_gradecategory->aggregation;
+  }
+
+  $finalweight = "—";
+
+  $assessmenttype = newassessments_statistics::return_assessmenttype($gradecategoryname, $aggregationcoef);
+
+  $summative = get_string('summative', 'block_newgu_spdetails');
+
+  $weight = ($aggregation == '10') ?
+              (($aggregationcoef > 1) ? $aggregationcoef : $aggregationcoef * 100) :
+              (($assessmenttype === $summative) ?
+                  $aggregationcoef2 * 100 : 0);
+
+  $finalweight = ($weight > 0) ? round($weight, 2).'%' : get_string('emptyvalue', 'block_newgu_spdetails');
+
+
+return $finalweight;
 }
 
 ?>

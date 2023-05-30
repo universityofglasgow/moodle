@@ -1,9 +1,4 @@
 <?php
-/**
- * Test table class to be put in test_table.php of root of Moodle installation.
- *  for defining some custom column names and proccessing
- * Username and Password feilds using custom and other column methods.
- */
 
 require_once(dirname(dirname(__FILE__)).'../../config.php');
 global $CFG,$USER, $DB;
@@ -47,61 +42,74 @@ class currentassessment_table extends table_sql
     }
 
     function col_course($values){
-        global $DB;
+        global $DB,$CFG;
         $courseid = $values->courseid;
+        $link = $CFG->wwwroot . "/course/view.php?id=" . $courseid;
 
         $arr_course = $DB->get_record('course',array('id'=>$courseid));
         if (!empty($arr_course)) {
             $coursename = $arr_course->fullname;
         }
 
-        return $coursename;
+        return "<a href='".$link."'>" . $coursename . "</a>";
     }
-/*
-    function col_coursecode($values){
-        global $DB;
-        $courseid = $values->courseid;
 
-        $arr_course = $DB->get_record('course',array('id'=>$courseid));
-        if (!empty($arr_course)) {
-            $coursename = $arr_course->fullname;
-        }
-
-        return $coursename;
-    }
-*/
     function col_assessment($values){
-      global $DB;
+      global $DB, $CFG;
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+      $itemid = $values->id;
 
       $itemname = $values->itemname;
 
-      return $itemname;
+      $link = $CFG->wwwroot . "/" . $modulename . "/view.php?id=" . $itemid;
+
+      return "<a href='".$link."'>" . $itemname . "</a>";
     }
 
     function col_assessmenttype($values){
 
-        $assessmenttype = "";
-        if (strpos(mb_strtoupper($values->itemname), "SUMMATIVE")>0) {
-            $assessmenttype = "Summative";
-        }
-        if (strpos(mb_strtoupper($values->itemname), "FORMATIVE")>0) {
-            $assessmenttype = "Formative";
-        }
+      global $DB;
 
-        return $assessmenttype;
-        //return json_encode($values);
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+      $itemid = $values->id;
+
+      $arr_gradecategory = $DB->get_record('grade_categories',array('courseid'=>$courseid, 'id'=>$categoryid));
+      if (!empty($arr_gradecategory)) {
+        $gradecategoryname = $arr_gradecategory->fullname;
+      }
+
+      $aggregationcoef = $values->aggregationcoef;
+
+      $assessmenttype = newassessments_statistics::return_assessmenttype($gradecategoryname, $aggregationcoef);
+
+      return $assessmenttype;
 
     }
 
     function col_weight($values){
 
-        global $DB;
+      global $DB;
 
-        if ($values->aggregationcoef!=0) {
-          return number_format((float)$values->aggregationcoef, 2, '.', '');
-        } else {
-          return "-";
-        }
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+
+      $aggregationcoef = $values->aggregationcoef;
+      $aggregationcoef2 = $values->aggregationcoef2;
+
+      $finalweight = get_weight($courseid,$categoryid,$aggregationcoef,$aggregationcoef2);
+      return $finalweight;
+
     }
 
     function col_duedate($values){
@@ -112,6 +120,7 @@ class currentassessment_table extends table_sql
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
+
 
       $duedate = 0;
       $extspan = "";
@@ -130,8 +139,7 @@ class currentassessment_table extends table_sql
           if ($arr_userflags) {
           $extensionduedate = $arr_userflags->extensionduedate;
           if ($extensionduedate>0) {
-//            $extspan = '<span class="extended">*<span class="extended-tooltip">Due date extension</span></span>';
-            $extspan = '<a href="javascript:void(0)" title="Due date extension" class="extended">*</a>';
+            $extspan = '<a href="javascript:void(0)" title="' . get_string('extended', 'block_newgu_spdetails') . '" class="extended">*</a>';
           }
           }
 
@@ -150,7 +158,10 @@ class currentassessment_table extends table_sql
 
       if ($duedate!=0) {
         return date("d/m/Y", $duedate) . $extspan;
+      } else {
+        return "—";
       }
+
 
     }
 
@@ -185,25 +196,25 @@ class currentassessment_table extends table_sql
       $statustodisplay = "";
 
       if($status == 'tosubmit'){
-        $statustodisplay = '<a href="' . $link . '"><span class="status-item status-submit">Submit</span></a> ';
+        $statustodisplay = '<a href="' . $link . '"><span class="status-item status-submit">'.get_string('submit').'</span></a> ';
       }
       if($status == 'notsubmitted'){
-        $statustodisplay = '<span class="status-item">Not Submitted</span> ';
+        $statustodisplay = '<span class="status-item">'.get_string('notsubmitted', 'block_newgu_spdetails').'</span> ';
       }
       if($status == 'submitted'){
-        $statustodisplay = '<span class="status-item status-submitted">Submitted</span> ';
+        $statustodisplay = '<span class="status-item status-submitted">'. ucwords(trim(get_string('submitted', 'block_newgu_spdetails'))) . '</span> ';
         if ($finalgrade!=Null) {
-          $statustodisplay = '<span class="status-item status-item status-graded">Graded</span>';
+          $statustodisplay = '<span class="status-item status-item status-graded">'.get_string('graded', 'block_newgu_spdetails').'</span>';
         }
       }
       if($status == "notopen"){
-        $statustodisplay = '<span class="status-item">Submission not open</span> ';
+        $statustodisplay = '<span class="status-item">' . get_string('submissionnotopen', 'block_newgu_spdetails') . '</span> ';
       }
       if($status == "TO_BE_ASKED"){
-        $statustodisplay = '<span class="status-item status-graded">Individual components</span> ';
+        $statustodisplay = '<span class="status-item status-graded">' . get_string('individualcomponents', 'block_newgu_spdetails') . '</span> ';
       }
       if($status == "overdue"){
-        $statustodisplay = '<span class="status-item status-overdue">Overdue</span> ';
+        $statustodisplay = '<span class="status-item status-overdue">' . get_string('overdue', 'block_newgu_spdetails') . '</span> ';
       }
 
       return $statustodisplay;
@@ -218,10 +229,11 @@ class currentassessment_table extends table_sql
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
+      $gradetype = $values->gradetype;
 
       $link = "";
 
-      $arr_gradetodisplay = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+      $arr_gradetodisplay = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax, $gradetype);
       $link = $arr_gradetodisplay["link"];
       $gradetodisplay = $arr_gradetodisplay["gradetodisplay"];
 
@@ -238,10 +250,11 @@ class currentassessment_table extends table_sql
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
+      $gradetype = $values->gradetype;
 
       $link = "";
 
-      $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+      $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax, $gradetype);
       $link = $feedback["link"];
       $gradetodisplay = $feedback["gradetodisplay"];
 
@@ -296,15 +309,16 @@ class pastassessment_table extends table_sql
     }
 
     function col_course($values){
-        global $DB;
-        $courseid = $values->courseid;
+      global $DB,$CFG;
+      $courseid = $values->courseid;
+      $link = $CFG->wwwroot . "/course/view.php?id=" . $courseid;
 
-        $arr_course = $DB->get_record('course',array('id'=>$courseid));
-        if (!empty($arr_course)) {
-            $coursename = $arr_course->fullname;
-        }
+      $arr_course = $DB->get_record('course',array('id'=>$courseid));
+      if (!empty($arr_course)) {
+          $coursename = $arr_course->fullname;
+      }
 
-        return $coursename;
+      return "<a href='".$link."'>" . $coursename . "</a>";
     }
 
     function col_assessment($values){
@@ -317,53 +331,43 @@ class pastassessment_table extends table_sql
 
     function col_assessmenttype($values){
 
-        $assessmenttype = "";
-        if (strpos(mb_strtoupper($values->itemname), "SUMMATIVE")>0) {
-            $assessmenttype = "Summative";
-        }
-        if (strpos(mb_strtoupper($values->itemname), "FORMATIVE")>0) {
-            $assessmenttype = "Formative";
-        }
+      global $DB;
 
-        return $assessmenttype;
-        //return json_encode($values);
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+
+      $arr_gradecategory = $DB->get_record('grade_categories',array('courseid'=>$courseid, 'id'=>$categoryid));
+      if (!empty($arr_gradecategory)) {
+        $gradecategoryname = $arr_gradecategory->fullname;
+      }
+
+      $aggregationcoef = $values->aggregationcoef;
+
+      $assessmenttype = newassessments_statistics::return_assessmenttype($gradecategoryname, $aggregationcoef);
+
+
+      return $assessmenttype ;
 
     }
 
     function col_weight($values){
 
-        global $DB, $USER;
+      global $DB;
 
-        $cmid = $values->id;
-        $modulename = $values->itemmodule;
-        $iteminstance = $values->iteminstance;
-        $courseid = $values->courseid;
-        $iteminstance = $values->iteminstance;
-/*
-        $grademax = 0;
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+      $aggregationcoef = $values->aggregationcoef;
+      $aggregationcoef2 = $values->aggregationcoef2;
 
-        // GET MODULE
-        $arr = $DB->get_record('modules',array('id'=>$moduleid));
-        $modulename = $arr->name;
+      $finalweight = get_weight($courseid,$categoryid,$aggregationcoef,$aggregationcoef2);
+      return $finalweight;
 
-        // READ individual TABLE OF ACTIVITY (MODULE)
-        $arr_gradeitem = $DB->get_record('grade_items',array('iteminstance'=>$instance, 'itemmodule'=>$modulename, 'courseid'=>$courseid));
-        if (!empty($arr_gradeitem)) {
-            $grademax = $arr_gradeitem->grademax;
-        }
-*/
-
-        // $sql_wt = 'SELECT u.id AS userid, u.username AS studentid, gi.id AS itemid, c.shortname AS courseshortname, gi.itemname AS itemname, gi.grademax AS itemgrademax, gi.aggregationcoef AS itemaggregation, g.finalgrade AS finalgrade FROM mdl_user u JOIN mdl_grade_grades g ON g.userid = u.id JOIN mdl_grade_items gi ON g.itemid = gi.id JOIN mdl_course c ON c.id = gi.courseid WHERE gi.id=' . $iteminstance . ' AND u.id = ' . $USER->id . ' AND c.id=' . $courseid;
-        // $arr_wt = $DB->get_record_sql($sql_wt);
-        // $aggregation = $arr_wt->itemaggregation;
-        // return number_format((float)$aggregation, 2, '.', '');
-        //return number_format((float)$values->grademax, 2, '.', '');
-        // return $sql_wt;
-        if ($values->aggregationcoef!=0) {
-          return number_format((float)$values->aggregationcoef, 2, '.', '');
-        } else {
-          return "-";
-        }
     }
 
 
@@ -464,21 +468,25 @@ class pastassessment_table extends table_sql
 
     function col_yourgrade($values){
 
-            // $gradeletter1 = newassessments_statistics::return_22grademaxpoint(($arr_grades->finalgrade)-1, 1);
-            // $gradeletter2 = newassessments_statistics::return_22grademaxpoint(($arr_grades->finalgrade)-1, 2);
-
             global $DB, $USER, $CFG;
 
             $modulename = $values->itemmodule;
             $iteminstance = $values->iteminstance;
             $courseid = $values->courseid;
             $itemid = $values->id;
+            $gradetype = $values->gradetype;
 
             $link = "";
 
-            $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+            $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax, $gradetype);
             $link = $feedback["link"];
+
+            $rawgrade = $feedback["rawgrade"];
+            $finalgrade = $feedback["finalgrade"];
+
             $gradetodisplay = $feedback["gradetodisplay"];
+            $provisional_22grademaxpoint = $feedback["provisional_22grademaxpoint"];
+            $converted_22grademaxpoint = $feedback["converted_22grademaxpoint"];
 
             return $gradetodisplay;
 
@@ -492,10 +500,11 @@ class pastassessment_table extends table_sql
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
       $itemid = $values->id;
+      $gradetype = $values->gradetype;
 
       $link = "";
 
-      $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax);
+      $feedback = get_gradefeedback($modulename, $iteminstance, $courseid, $itemid, $USER->id, $values->grademax, $gradetype);
       $link = $feedback["link"];
       $gradetodisplay = $feedback["gradetodisplay"];
 

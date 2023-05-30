@@ -83,6 +83,10 @@ class template extends \core\form\persistent {
         $mform->setType('action', PARAM_ALPHANUMEXT);
         $mform->setConstant('action', $this->_customdata['action']);
 
+        //$mform->addElement('hidden', 'categoryid', $this->_customdata['categoryid']);
+        //$mform->setType('categoryid', PARAM_INT);
+        //$mform->setConstant('categoryid', $this->_customdata['categoryid']);
+
         $record = $this->get_persistent()->to_record();
         if (utils::is_admin()) {
             if (!empty($record->id)) {
@@ -119,6 +123,9 @@ class template extends \core\form\persistent {
 
         global $DB;
 
+        // Course category.
+        $importcategories = \core_course_category::make_categories_list(\core_course\management\helper::get_course_copy_capabilities());
+
         // Get plugin config setting list of template course categories.
         $templatecategorysettings = get_config('local_template', 'categories');
 
@@ -131,6 +138,9 @@ class template extends \core\form\persistent {
                     if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
                         $categories[] = $categoryid;
                     }
+
+                    // Remove template category from categories listing.
+                    unset($importcategories[$categoryid]);
                 }
             }
         }
@@ -148,10 +158,8 @@ class template extends \core\form\persistent {
         //$mform->addHelpButton('category', 'coursecategory');
 
 
-        // Course category.
-        $importcategories = \core_course_category::make_categories_list(\core_course\management\helper::get_course_copy_capabilities());
 
-        //$importcategories = get_config('local_template', 'categories');
+
 
 
         // Return to type.
@@ -444,9 +452,16 @@ class template extends \core\form\persistent {
         }
 
 
-        list($insql, $params) = $DB->get_in_or_equal($importcategories, SQL_PARAMS_QM, 'param', false);
-        $importcourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
-        $importcourses = [0 => ''] + $importcourses;
+        if (empty($importcategories)) {
+            $importcourses = [0 => ''];
+        } else {
+            list($insql, $params) = $DB->get_in_or_equal($importcategories, SQL_PARAMS_QM, 'param', false);
+            $importcourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
+            $importcourses = [0 => ''] + $importcourses;
+        }
+
+
+        $mform->addElement('static', 'createdcoursename', get_string('importcourse', 'local_template'),  get_string('importcourse_desc', 'local_template'));
 
         $mform->addElement('autocomplete', 'importcourseid', get_string('importcourse', 'local_template'), $importcourses);
         //$mform->addRule('importcourseid', null, 'required', null, 'client');
