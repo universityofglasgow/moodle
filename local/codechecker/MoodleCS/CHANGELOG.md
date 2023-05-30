@@ -7,6 +7,21 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
 ## [Unreleased]
 
+## [v3.3.4] - 2023-05-28
+### Changed
+- Update composer dependencies to current versions, notably PHPCompatibility (70e4ca24).
+
+### Added
+- Various internal, code coverage related, improvements.
+    - Add GHA PHP 8.2 support.
+    - Upload and integrate the repository with [Codecov](https://about.codecov.io), for better tracking of changes.
+    - Completely cover the MoodleUtil class, in charge of providing important
+      information about Moodle (versions, branches, components...)
+
+## [v3.3.3] - 2023-03-14
+### Removed
+- Revert the check for the only one-space rule before the assignment operator @ `Squiz.WhiteSpace.OperatorSpacing` as an interim solution while we revisit [MDLSITE-6594](https://tracker.moodle.org/browse/MDLSITE-6594).
+
 ## [v3.3.2] - 2023-02-13
 ### Added
 - Check for one (and only one) space before assignment operator @ `Squiz.WhiteSpace.OperatorSpacing`
@@ -36,7 +51,9 @@ All features are maintained and no new features have been introduced to either t
 
 All the details about [previous releases] can be found in [local_codechecker](https://github.com/moodlehq/moodle-local_codechecker) own change log.
 
-[Unreleased]: https://github.com/moodlehq/moodle-cs/compare/v3.3.2...main
+[Unreleased]: https://github.com/moodlehq/moodle-cs/compare/v3.3.4...main
+[v3.3.4]: https://github.com/moodlehq/moodle-cs/compare/v3.3.3...v3.3.4
+[v3.3.3]: https://github.com/moodlehq/moodle-cs/compare/v3.3.2...v3.3.3
 [v3.3.2]: https://github.com/moodlehq/moodle-cs/compare/v3.3.1...v3.3.2
 [v3.3.1]: https://github.com/moodlehq/moodle-cs/compare/v3.3.0...v3.3.1
 [v3.3.0]: https://github.com/moodlehq/moodle-cs/compare/v3.2.0...v3.3.0

@@ -76,7 +76,7 @@ class element_helper {
         $actualwidth = $pdf->GetStringWidth($content);
         $alignment = $element->get_alignment();
 
-        if ($w and $w < $actualwidth) {
+        if ($w && $w < $actualwidth) {
             $actualwidth = $w;
         }
 
@@ -190,6 +190,18 @@ class element_helper {
     }
 
     /**
+     * Helper function to render the height element.
+     *
+     * @param \MoodleQuickForm $mform the edit_form instance.
+     */
+    public static function render_form_element_height($mform) {
+        $mform->addElement('text', 'height', get_string('elementheight', 'customcert'), array('size' => 10));
+        $mform->setType('height', PARAM_INT);
+        $mform->setDefault('height', 0);
+        $mform->addHelpButton('height', 'elementheight', 'customcert');
+    }
+
+    /**
      * Helper function to render the refpoint element.
      *
      * @param \MoodleQuickForm $mform the edit_form instance.
@@ -263,14 +275,63 @@ class element_helper {
      * Helper function to perform validation on the width element.
      *
      * @param array $data the submitted data
+     * @param bool $allowzero allow zero as a valid value
      * @return array the validation errors
      */
-    public static function validate_form_element_width($data) {
-        $errors = array();
+    public static function validate_form_element_width($data, bool $allowzero = true) {
+        $errors = [];
+
+        // If there is no width element no validation is needed.
+        if (!isset($data['width'])) {
+            return [];
+        }
 
         // Check if width is less than 0.
-        if (isset($data['width']) && $data['width'] < 0) {
-            $errors['width'] = get_string('invalidelementwidth', 'customcert');
+        if (!is_numeric($data['width'])) {
+            $errors['width'] = get_string('invalidelementwidthorheightnotnumber', 'customcert');
+        } else {
+            if ($allowzero) {
+                if ($data['width'] < 0) {
+                    $errors['width'] = get_string('invalidelementwidthorheightzeroallowed', 'customcert');
+                }
+            } else {
+                if ($data['width'] <= 0) {
+                    $errors['width'] = get_string('invalidelementwidthorheightzeronotallowed', 'customcert');
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Helper function to perform validation on the height element.
+     *
+     * @param array $data the submitted data
+     * @param bool $allowzero allow zero as a valid value
+     * @return array the validation errors
+     */
+    public static function validate_form_element_height($data, bool $allowzero = true) {
+        $errors = [];
+
+        // If there is no height element no validation is needed.
+        if (!isset($data['height'])) {
+            return [];
+        }
+
+        // Check if height is less than 0.
+        if (!is_numeric($data['height'])) {
+            $errors['height'] = get_string('invalidelementwidthorheightnotnumber', 'customcert');
+        } else {
+            if ($allowzero) {
+                if ($data['height'] < 0) {
+                    $errors['height'] = get_string('invalidelementwidthorheightzeroallowed', 'customcert');
+                }
+            } else {
+                if ($data['height'] <= 0) {
+                    $errors['height'] = get_string('invalidelementwidthorheightzeronotallowed', 'customcert');
+                }
+            }
         }
 
         return $errors;

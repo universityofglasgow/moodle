@@ -29,8 +29,6 @@ use context_module;
 use context_system;
 use mod_customcert\privacy\provider;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy provider tests class.
  *
@@ -42,6 +40,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::get_contexts_for_userid().
+     *
+     * @covers \provider::get_contexts_for_userid
      */
     public function test_get_contexts_for_userid() {
         $this->resetAfterTest();
@@ -71,6 +71,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::get_users_in_context().
+     *
+     * @covers \provider::get_users_in_context()
      */
     public function test_get_users_in_context() {
         $this->resetAfterTest();
@@ -110,6 +112,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::get_users_in_context() with invalid context type.
+     *
+     * @covers \provider::get_users_in_context()
      */
     public function test_get_users_in_context_invalid_context_type() {
         $systemcontext = context_system::instance();
@@ -122,6 +126,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::export_user_data().
+     *
+     * @covers \provider::export_user_data()
      */
     public function test_export_for_context() {
         $this->resetAfterTest();
@@ -158,6 +164,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::delete_data_for_all_users_in_context().
+     *
+     * @covers \provider::delete_data_for_all_users_in_context()
      */
     public function test_delete_data_for_all_users_in_context() {
         global $DB;
@@ -198,6 +206,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::delete_data_for_user().
+     *
+     * @covers \provider::delete_data_for_user()
      */
     public function test_delete_data_for_user() {
         global $DB;
@@ -237,6 +247,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     /**
      * Test for provider::delete_data_for_users().
+     *
+     * @covers \provider::delete_data_for_users()
      */
     public function test_delete_data_for_users() {
         global $DB;

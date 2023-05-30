@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
-
 /**
  * Add customcert instance.
  *
@@ -235,7 +233,7 @@ function customcert_pluginfile($course, $cm, $context, $filearea, $args, $forced
         $fullpath = '/' . $context->id . '/mod_customcert/image/' . $relativepath;
 
         $fs = get_file_storage();
-        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
             return false;
         }
 
@@ -258,17 +256,12 @@ function customcert_pluginfile($course, $cm, $context, $filearea, $args, $forced
  */
 function customcert_supports($feature) {
     switch ($feature) {
-        case FEATURE_GROUPS:
-            return true;
         case FEATURE_GROUPINGS:
-            return true;
         case FEATURE_MOD_INTRO:
-            return true;
         case FEATURE_SHOW_DESCRIPTION:
-            return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
-            return true;
         case FEATURE_BACKUP_MOODLE2:
+        case FEATURE_GROUPS:
             return true;
         default:
             return null;
@@ -333,15 +326,15 @@ function customcert_extend_settings_navigation(settings_navigation $settings, na
     $keys = $customcertnode->get_children_key_list();
     $beforekey = null;
     $i = array_search('modedit', $keys);
-    if ($i === false and array_key_exists(0, $keys)) {
+    if ($i === false && array_key_exists(0, $keys)) {
         $beforekey = $keys[0];
     } else if (array_key_exists($i + 1, $keys)) {
         $beforekey = $keys[$i + 1];
     }
 
-    if (has_capability('mod/customcert:manage', $PAGE->cm->context)) {
+    if (has_capability('mod/customcert:manage', $settings->get_page()->cm->context)) {
         // Get the template id.
-        $templateid = $DB->get_field('customcert', 'templateid', array('id' => $PAGE->cm->instance));
+        $templateid = $DB->get_field('customcert', 'templateid', array('id' => $settings->get_page()->cm->instance));
         $node = navigation_node::create(get_string('editcustomcert', 'customcert'),
                 new moodle_url('/mod/customcert/edit.php', array('tid' => $templateid)),
                 navigation_node::TYPE_SETTING, null, 'mod_customcert_edit',
@@ -349,9 +342,9 @@ function customcert_extend_settings_navigation(settings_navigation $settings, na
         $customcertnode->add_node($node, $beforekey);
     }
 
-    if (has_capability('mod/customcert:verifycertificate', $PAGE->cm->context)) {
+    if (has_capability('mod/customcert:verifycertificate', $settings->get_page()->cm->context)) {
         $node = navigation_node::create(get_string('verifycertificate', 'customcert'),
-            new moodle_url('/mod/customcert/verify_certificate.php', array('contextid' => $PAGE->cm->context->id)),
+            new moodle_url('/mod/customcert/verify_certificate.php', array('contextid' => $settings->get_page()->cm->context->id)),
             navigation_node::TYPE_SETTING, null, 'mod_customcert_verify_certificate',
             new pix_icon('t/check', ''));
         $customcertnode->add_node($node, $beforekey);
@@ -432,7 +425,8 @@ function mod_customcert_get_fontawesome_icon_map() {
 
 /**
  * Force custom language for current session.
- * @param $language
+ *
+ * @param string $language
  * @return bool
  */
 function mod_customcert_force_current_language($language): bool {
@@ -444,7 +438,7 @@ function mod_customcert_force_current_language($language): bool {
     }
 
     $activelangs = get_string_manager()->get_list_of_translations();
-    $userlang = $USER->lang;
+    $userlang = $USER->lang ?? current_language();
 
     if (array_key_exists($language, $activelangs) && $language != $userlang) {
         force_current_language($language);

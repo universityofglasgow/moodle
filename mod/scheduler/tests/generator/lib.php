@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Scheduler module PHPUnit data generator class
  *
@@ -90,7 +88,8 @@ class mod_scheduler_generator extends testing_module_generator {
                 $slot->schedulerid = $id;
                 $slot->starttime = $time;
                 $slot->duration = 10;
-                $slot->teacherid = isset($options['slotteachers'][$slotkey]) ? $options['slotteachers'][$slotkey] : 2; // Admin user as default.
+                $slot->teacherid = isset($options['slotteachers'][$slotkey]) ?
+                    $options['slotteachers'][$slotkey] : 2; // Admin user as default.
                 $slot->appointmentlocation = 'Test Loc';
                 $slot->timemodified = time();
                 $slot->notes = '';
@@ -120,4 +119,32 @@ class mod_scheduler_generator extends testing_module_generator {
 
         return $modinst;
     }
+
+    /**
+     * Create a scheduler slot, optionally with appointment for one student`.
+     *
+     * @param array $data
+     */
+    public function create_slot(array $data): void {
+
+        $scheduler = \mod_scheduler\model\scheduler::load_by_coursemodule_id($data['schedulerid']);
+
+        $slot = new \mod_scheduler\model\slot($scheduler);
+        $slot->teacherid = $data['teacherid'];
+        $slot->starttime = $data['starttime'];
+        $slot->duration = $data['duration'];
+        $slot->appointmentlocation = isset($data['location']) ? $data['location'] : '';
+        $slot->exclusivity = isset($data['exclusivity']) ? $data['exclusivity'] : 1;
+        $slot->hideuntil = isset($data['hideuntil']) ? $data['hideuntil'] : 0;
+
+        if (isset($data['studentid']) && $data['studentid'] > 0) {
+            $app = $slot->create_appointment();
+            $app->studentid = $data['studentid'];
+            $app->seen = isset($data['seen']) ? $data['seen'] : 0;
+            $app->grade = isset($data['grade']) ? $data['grade'] : -1;
+        }
+
+        $slot->save();
+    }
+
 }

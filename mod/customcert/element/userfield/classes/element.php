@@ -26,8 +26,6 @@ namespace customcertelement_userfield;
 
 use core_user\fields;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The customcert element userfield's core interaction API.
  *
@@ -52,7 +50,6 @@ class element extends \mod_customcert\element {
             'city' => fields::get_display_name('city'),
             'country' => fields::get_display_name('country'),
             'url' => fields::get_display_name('url'),
-            'skype' => fields::get_display_name('skype'),
             'idnumber' => fields::get_display_name('idnumber'),
             'institution' => fields::get_display_name('institution'),
             'department' => fields::get_display_name('department'),

@@ -30,8 +30,6 @@ use context_course;
 use advanced_testcase;
 use mod_customcert\task\email_certificate_task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Unit tests for the email certificate task.
  *
@@ -39,6 +37,7 @@ defined('MOODLE_INTERNAL') || die();
  * @category   test
  * @copyright  2017 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \mod_customcert\task\email_certificate_task
  */
 class email_certificate_task_test extends advanced_testcase {
 
@@ -51,6 +50,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task when there are no elements.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_no_elements() {
         // Create a course.
@@ -77,6 +78,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task for users without a capability to receive a certificate.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_no_cap() {
         global $DB;
@@ -126,6 +129,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task for students.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_students() {
         global $CFG, $DB;
@@ -211,6 +216,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task for teachers.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_teachers() {
         global $CFG, $DB;
@@ -269,6 +276,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task for others.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_others() {
         global $CFG, $DB;
@@ -322,6 +331,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task when the certificate is not visible.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_students_not_visible() {
         global $DB;
@@ -374,6 +385,8 @@ class email_certificate_task_test extends advanced_testcase {
 
     /**
      * Tests the email certificate task when the student has not met the required time for the course.
+     *
+     * @covers \mod_customcert\task\email_certificate_task
      */
     public function test_email_certificates_students_havent_met_required_time() {
         global $DB;

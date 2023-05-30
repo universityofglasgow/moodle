@@ -477,6 +477,7 @@ class scheduler_editslot_form extends scheduler_slotform_base {
                 } else {
                     $app = $slot->create_appointment();
                     $app->studentid = $data->studentid[$i];
+                    $app->timecreated = time();
                     $app->save();
                 }
                 $app->attended = isset($data->attended[$i]);
@@ -557,12 +558,21 @@ class scheduler_addsession_form extends scheduler_slotform_base {
             $minutes[$i] = sprintf("%02d", $i);
         }
         $timegroup = array();
-        $timegroup[] = $mform->createElement('static', 'timefrom', '', get_string('timefrom', 'scheduler'));
-        $timegroup[] = $mform->createElement('select', 'starthour', get_string('hour', 'form'), $hours);
-        $timegroup[] = $mform->createElement('select', 'startminute', get_string('minute', 'form'), $minutes);
-        $timegroup[] = $mform->createElement('static', 'timeto', '', get_string('timeto', 'scheduler'));
-        $timegroup[] = $mform->createElement('select', 'endhour', get_string('hour', 'form'), $hours);
-        $timegroup[] = $mform->createElement('select', 'endminute', get_string('minute', 'form'), $minutes);
+        if (right_to_left()) {
+            $timegroup[] = $mform->createElement('static', 'timefrom', '', get_string('timefrom', 'scheduler'));
+            $timegroup[] = $mform->createElement('select', 'startminute', get_string('minute', 'form'), $minutes);
+            $timegroup[] = $mform->createElement('select', 'starthour', get_string('hour', 'form'), $hours);
+            $timegroup[] = $mform->createElement('static', 'timeto', '', get_string('timeto', 'scheduler'));
+            $timegroup[] = $mform->createElement('select', 'endminute', get_string('minute', 'form'), $minutes);
+            $timegroup[] = $mform->createElement('select', 'endhour', get_string('hour', 'form'), $hours);
+        } else {
+            $timegroup[] = $mform->createElement('static', 'timefrom', '', get_string('timefrom', 'scheduler'));
+            $timegroup[] = $mform->createElement('select', 'starthour', get_string('hour', 'form'), $hours);
+            $timegroup[] = $mform->createElement('select', 'startminute', get_string('minute', 'form'), $minutes);
+            $timegroup[] = $mform->createElement('static', 'timeto', '', get_string('timeto', 'scheduler'));
+            $timegroup[] = $mform->createElement('select', 'endhour', get_string('hour', 'form'), $hours);
+            $timegroup[] = $mform->createElement('select', 'endminute', get_string('minute', 'form'), $minutes);
+        }
         $mform->addGroup($timegroup, 'timerange', get_string('timerange', 'scheduler'), null, false);
 
         // Divide into slots?
@@ -638,11 +648,11 @@ class scheduler_addsession_form extends scheduler_slotform_base {
             }
         }
 
-        // Time range is negative.
+        // Time range is not positive.
         $starttime = $data['starthour'] * 60 + $data['startminute'];
         $endtime = $data['endhour'] * 60 + $data['endminute'];
-        if ($starttime > $endtime) {
-            $errors['timerange'] = get_string('negativerange', 'scheduler');
+        if ($starttime >= $endtime) {
+            $errors['timerange'] = get_string('negativetimerange', 'scheduler');
         }
 
         // First slot is in the past.

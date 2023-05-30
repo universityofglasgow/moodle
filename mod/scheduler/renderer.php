@@ -320,23 +320,6 @@ class mod_scheduler_renderer extends plugin_renderer_base {
 
 
     /**
-     * Render the module introduction of a scheduler.
-     *
-     * @param scheduler $scheduler the scheduler in question
-     * @return string rendered module info
-     */
-    public function mod_intro($scheduler) {
-        $o = $this->heading(format_string($scheduler->name), 2);
-
-        if (trim(strip_tags($scheduler->intro))) {
-            $o .= $this->box_start('mod_introbox');
-            $o .= format_module_intro('scheduler', $scheduler->get_data(), $scheduler->cmid);
-            $o .= $this->box_end();
-        }
-        return $o;
-    }
-
-    /**
      * Construct a tab header in the teacher view.
      *
      * @param moodle_url $baseurl
@@ -1060,7 +1043,7 @@ class mod_scheduler_renderer extends plugin_renderer_base {
         if ($ai->showresult) {
             if ($ai->scheduler->uses_appointmentnotes() && $ai->appointment->appointmentnote) {
                 $row = new html_table_row();
-                $cell1 = new html_table_cell(get_string('appointmentnotes', 'scheduler'));
+                $cell1 = new html_table_cell(get_string('appointmentnote', 'scheduler'));
                 $note = $this->format_notes($ai->appointment->appointmentnote, $ai->appointment->appointmentnoteformat,
                                             $ai->scheduler->get_context(), 'appointmentnote', $ai->appointment->id);
                 $cell2 = new html_table_cell($note);
