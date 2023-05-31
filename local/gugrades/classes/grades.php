@@ -231,7 +231,7 @@ class grades {
         // Does this already exist
         if ($oldgrade = $DB->get_record('local_gugrades_grade', [
             'courseid' => $this->courseid,
-            'gradeitemid' => $this->gradeitemid,
+            'gradeitemid' => $gradeitemid,
             'userid' => $userid,
             'reason' => $reasonid,
         ])) {

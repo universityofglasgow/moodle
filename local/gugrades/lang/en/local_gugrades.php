@@ -40,6 +40,7 @@ $string['idnumber'] = 'ID number';
 $string['importgrades'] = 'Import grades';
 $string['lastname'] = 'Last name';
 $string['manage'] = 'UofG Grade Tool Settings';
+$string['nohistory'] = 'No history';
 $string['notoplevel'] = 'Course has not been properly setup (no top-level Grade categories)';
 $string['nothingtodisplay'] = 'Nothing to display';
 $string['participantnumber'] = 'Participant {$a}';

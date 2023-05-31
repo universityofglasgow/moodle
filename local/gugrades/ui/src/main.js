@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import Notifications from '@kyvg/vue3-notification';
+import Toast  from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 // This stuff makes sure that the window.GU variable
 // exists.
@@ -25,10 +26,16 @@ function ensureGUIsSet(timeout) {
     }
 }
 
+// Toast defaults
+const options = {
+    position: 'top-center',
+    timeout: 5000,
+};
+
 
 ensureGUIsSet(timeout)
 .then(() => {
-    createApp(App).use(router).use(Notifications).mount('#app');
+    createApp(App).use(router).use(Toast, options).mount('#app');
 });
 
 

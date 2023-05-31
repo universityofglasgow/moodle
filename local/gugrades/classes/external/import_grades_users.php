@@ -56,7 +56,7 @@ class import_grades_users extends \external_api {
 
         $userids = explode(',', $userlist);
         foreach ($userids as $userid) {
-            $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $userid);
+            $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, intval($userid));
         }
 
         // Log

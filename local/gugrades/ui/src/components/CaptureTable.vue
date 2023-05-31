@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="border rounded p-2 py-4 mt-2">
-            <button class="btn btn-primary" @click="showimportmodal = true">Import grades</button>
+            <ImportButton :itemid="itemid" :userids="userids" @imported="gradesimported"></ImportButton>
         </div>
 
         <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
@@ -25,7 +25,7 @@
                         <td>{{ user.idnumber }}</td>
                         <CaptureGrades :grades="user.grades"></CaptureGrades>
                         <td>
-                            <button type="button" class="btn btn-outline-primary btn-sm mr-1">{{ strings.addgrade }}</button>
+                            <AddGradeButton :itemid="itemid" :userid="parseInt(user.id)"></AddGradeButton>&nbsp;
                             <HistoryButton :userid="parseInt(user.id)" :itemid="itemid"></HistoryButton>
                         </td>
                     </tr>
@@ -34,18 +34,6 @@
         </div>
 
         <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
-
-        <Teleport to="body">
-            <ModalForm :show="showimportmodal" @close="showimportmodal = false">
-                <template #header>
-                    <h4>{{ strings.importgrades }}</h4>
-                </template>
-                <template #body>
-                    Form goes here
-                    <p><button class="btn btn-primary" @click="importgrades">Import</button></p>
-                </template>
-            </ModalForm>
-        </Teleport>
     </div>   
 </template>
 
@@ -53,12 +41,13 @@
     import {ref, defineProps, computed, watch, onMounted} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
     import PagingBar from '@/components/PagingBar.vue';
-    import ModalForm from '@/components/ModalForm.vue';
     import UserPicture from '@/components/UserPicture.vue';
     import CaptureGrades from '@/components/CaptureGrades.vue';
     import HistoryButton from '@/components/HistoryButton.vue';
+    import ImportButton from '@/components/ImportButton.vue';
+    import AddGradeButton from '@/components/AddGradeButton.vue';
     import { getstrings } from '@/js/getstrings.js';
-    import { useNotification } from '@kyvg/vue3-notification';
+    import { useToast } from "vue-toastification";
 
     const PAGESIZE = 20;
 
@@ -66,9 +55,8 @@
         itemid: Number,
     });
 
-    const { notify } = useNotification();
-
     const users = ref([]);
+    const userids = ref([]);
     const pagedusers = ref([]);
     const strings = ref({});
     const totalrows = ref(0);
@@ -76,11 +64,11 @@
     const currentpage = ref(1);
     const usershidden = ref(false);
     const namefilterref = ref(null);
-    const showimportmodal = ref(false);
+
+    const toast = useToast();
 
     let firstname = '';
     let lastname = '';
-    let userids = [];
 
     /**
      * filter out paged users
@@ -121,13 +109,14 @@
         .then((result) => {
             usershidden.value = result['hidden'];
             users.value = JSON.parse(result['users']);
-            userids = users.value.map(u => u.id);
+            userids.value = users.value.map(u => u.id);
             totalrows.value = users.value.length;
-            //window.console.log(result['users']);
+            //window.console.log(userids);
             get_pagedusers();
         })
         .catch((error) => {
             window.console.log(error);
+            toast.error('Error communicating with server (see console)');
         });        
     }
 
@@ -166,40 +155,16 @@
     }
 
     /**
-     * Import grades button clicked
+     * Import grades function is complete
      */
-    function importgrades() {
-        window.console.log('IMPORT GRADES');
+    function gradesimported() {
 
-        const GU = window.GU;
-        const courseid = GU.courseid;
-        const fetchMany = GU.fetchMany;      
-        
-        fetchMany([{
-            methodname: 'local_gugrades_import_grades_users',
-            args: {
-                courseid: courseid,
-                gradeitemid: props.itemid,
-                userlist: userids.toString(),
-            }
-        }])[0]
-        .then(() => {
+        // Get the data for the table
+        get_page_data(props.itemid, firstname, lastname);
 
-            // Get the data for the table
-            get_page_data(props.itemid, firstname, lastname);
-
-            // Done it
-            notify({
-                title: 'Import complete',
-                text: 'Data has been imported',
-                position: 'bottom left',
-            })
-        })
-        .catch((error) => {
-            window.console.log(error);
+        // Done it
+        toast.success("Import complete", {
         });
-
-        showimportmodal.value = false;
     }
 
     /**
@@ -238,6 +203,7 @@
         })
         .catch((error) => {
             window.console.log(error);
+            toast.error('Error communicating with server (see console)');
         });
 
         // Get the data for the table
