@@ -396,7 +396,6 @@ public static function return_gradestatus($modulename, $iteminstance, $courseid,
 
     $arr_grades = $DB->get_record('grade_grades',array('itemid'=>$itemid, 'userid'=>$userid));
 
-    $finalgrade = "";
     if (!empty($arr_grades)) {
         $finalgrade = $arr_grades->finalgrade;
     }
