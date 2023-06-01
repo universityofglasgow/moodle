@@ -22,7 +22,7 @@ class currentassessment_table extends table_sql
         // Define the list of columns to show.
 
 
-        $columns = array('course', 'assessment', 'assessmenttype', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
+        $columns = array('course', 'assessment', 'assessmenttype', 'includedingcat', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
         // Define the titles of columns to show in header.
@@ -32,6 +32,7 @@ class currentassessment_table extends table_sql
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('assessmenttype', 'block_newgu_spdetails'),
+            get_string('includedingcat', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
             get_string('duedate','block_newgu_spdetails'),
             get_string('status'),
@@ -68,6 +69,35 @@ class currentassessment_table extends table_sql
       $link = $CFG->wwwroot . "/" . $modulename . "/view.php?id=" . $itemid;
 
       return "<a href='".$link."'>" . $itemname . "</a>";
+    }
+
+    function col_includedingcat($values){
+      global $DB, $CFG;
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+      $itemid = $values->id;
+
+      $itemname = $values->itemname;
+
+      $cfdvalue = 0;
+
+      $arr_customfield = $DB->get_record('customfield_field', array('shortname'=>'show_on_studentdashboard'));
+      $cffid = $arr_customfield->id;
+
+     $arr_customfielddata = $DB->get_record('customfield_data', array('fieldid'=>$cffid, 'instanceid'=>$courseid));
+
+     if (!empty($arr_customfielddata)) {
+          $cfdvalue = $arr_customfielddata->value;
+     }
+
+      if ($cfdvalue==1) {
+          return "Yes";
+      } else {
+          return "No";
+      }
     }
 
     function col_assessmenttype($values){
@@ -288,7 +318,7 @@ class pastassessment_table extends table_sql
         // Define the list of columns to show.
 
 
-        $columns = array('course', 'assessment', 'assessmenttype', 'weight', 'startdate', 'enddate', 'viewsubmission', 'yourgrade', 'feedback');
+        $columns = array('course', 'assessment', 'assessmenttype', 'includedingcat', 'weight', 'startdate', 'enddate', 'viewsubmission', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
         // Define the titles of columns to show in header.
@@ -298,6 +328,7 @@ class pastassessment_table extends table_sql
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('assessmenttype', 'block_newgu_spdetails'),
+            get_string('includedingcat', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
             get_string('startdate','block_newgu_spdetails'),
             get_string('enddate','block_newgu_spdetails'),
@@ -351,6 +382,35 @@ class pastassessment_table extends table_sql
 
       return $assessmenttype ;
 
+    }
+
+    function col_includedingcat($values){
+      global $DB, $CFG;
+      $cmid = $values->id;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+      $categoryid = $values->categoryid;
+      $itemid = $values->id;
+
+      $itemname = $values->itemname;
+
+      $cfdvalue = 0;
+
+      $arr_customfield = $DB->get_record('customfield_field', array('shortname'=>'show_on_studentdashboard'));
+      $cffid = $arr_customfield->id;
+
+     $arr_customfielddata = $DB->get_record('customfield_data', array('fieldid'=>$cffid, 'instanceid'=>$courseid));
+
+     if (!empty($arr_customfielddata)) {
+          $cfdvalue = $arr_customfielddata->value;
+     }
+
+      if ($cfdvalue==1) {
+          return "Yes";
+      } else {
+          return "No";
+      }
     }
 
     function col_weight($values){

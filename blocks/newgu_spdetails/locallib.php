@@ -29,18 +29,19 @@ class newassessments_statistics {
 public static function return_enrolledcourses($userid, $coursetype) {
 
         $currentdate = time();
-        $plusonemonth = strtotime("+1 month", $currentdate);
+//        $plusonemonth = strtotime("+1 month", $currentdate);
 
         $coursetypewhere = "";
 
         global $DB;
 
         $fields = "c.id";
-        $customfieldjoin = "JOIN {customfield_field} cff
+/*        $customfieldjoin = "JOIN {customfield_field} cff
                             ON cff.shortname = 'show_on_studentdashboard'
                             JOIN {customfield_data} cfd
-                            ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)";
-        $customfieldwhere = "cfd.value = 1 AND c.visible = 1 AND c.visibleold = 1";
+                            ON (cfd.fieldid = cff.id AND cfd.instanceid = c.id)"; */
+//        $customfieldwhere = "cfd.value = 1 AND c.visible = 1 AND c.visibleold = 1";
+        $fieldwhere = "c.visible = 1 AND c.visibleold = 1";
 
         if ($coursetype=="past") {
           $coursetypewhere = " AND ( c.enddate + (86400 * 30) <=" . $currentdate . " AND c.enddate!=0 )";
@@ -53,8 +54,12 @@ public static function return_enrolledcourses($userid, $coursetype) {
                             JOIN {user_enrolments} ue
                             ON (ue.enrolid = e.id AND ue.userid = ?)";
         $enrolmentjoin = "JOIN ($enrolmentselect) en ON (en.courseid = c.id)";
+        /*
         $sql = "SELECT $fields FROM {course} c $customfieldjoin $enrolmentjoin
                 WHERE $customfieldwhere $coursetypewhere";
+        */
+        $sql = "SELECT $fields FROM {course} c $enrolmentjoin
+                WHERE $fieldwhere $coursetypewhere";
 //echo $coursetype . " " . $sql . "<br/><br>";
 
         $param = array($userid);

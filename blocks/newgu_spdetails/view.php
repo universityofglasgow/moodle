@@ -142,6 +142,7 @@ $PAGE->requires->js_amd_inline("
                                         $table->no_sorting('course');
                                         $table->no_sorting('assessment');
                                         $table->no_sorting('assessmenttype');
+                                        $table->no_sorting('includedingcat');
                                         $table->no_sorting('weight');
                                         $table->no_sorting('duedate');
                                         $table->no_sorting('status');
@@ -184,6 +185,7 @@ $PAGE->requires->js_amd_inline("
                                         $table->no_sorting('course');
                                         $table->no_sorting('assessment');
                                         $table->no_sorting('assessmenttype');
+                                        $table->no_sorting('includedingcat');
                                         $table->no_sorting('weight');
                                         $table->no_sorting('startdate');
                                         $table->no_sorting('enddate');

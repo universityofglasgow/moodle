@@ -41,7 +41,6 @@ $string['submissionnotopen'] = 'Submission not open';
 $string['individualcomponents'] = 'Individual components';
 
 
-
 $string['assessmenttype'] = 'Assessment Type';
 $string['weight'] = 'Weight';
 $string['duedate'] = 'Due Date';
@@ -66,3 +65,5 @@ $string['summative'] = 'Summative';
 $string['formative'] = 'Formative';
 $string['emptyvalue'] = '—';
 $string['extended'] = 'Due date extension';
+
+$string['includedingcat'] = 'Included in GCAT';
