@@ -13,6 +13,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" :class="{active: activetab == 'audit'}" @click="clickTab('audit')">
+                <i class="fa fa-history" aria-hidden="true"></i>&nbsp;
+                <MString name="auditlog"></MString>
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" :class="{active: activetab == 'settings'}" @click="clickTab('settings')">
                 <i class="fa fa-cog" aria-hidden="true"></i>&nbsp;
                 <MString name="settings"></MString>

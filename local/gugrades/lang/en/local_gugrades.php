@@ -26,6 +26,7 @@
 $string['addgrade'] = 'Add grade';
 $string['all'] = 'All';
 $string['assessmentgradecapture'] = 'Assessment grade capture';
+$string['auditlog'] = 'Audit log';
 $string['awaitingcapture'] = 'Awaiting capture';
 $string['cancel'] = 'Cancel';
 $string['captureaggregation'] = 'Grade capture and aggregation';

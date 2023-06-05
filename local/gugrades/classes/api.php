@@ -109,6 +109,12 @@ class api {
             ];
         }
 
+        // If there are no results then the course is not configured
+        if (!$results) {
+            $audit = new \local_gugrades\audit\notoplevel($courseid);
+            $audit->save();
+        }
+
         return $results;
     }
 
