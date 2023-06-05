@@ -22,7 +22,7 @@ class currentassessment_table extends table_sql
         // Define the list of columns to show.
 
 
-        $columns = array('course', 'assessment', 'assessmenttype', 'includedingcat', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
+        $columns = array('coursename', 'assessment', 'itemmodule', 'assessmenttype', 'includedingcat', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
         // Define the titles of columns to show in header.
@@ -31,6 +31,7 @@ class currentassessment_table extends table_sql
             get_string('course'),
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
+            get_string('activity') . ' type',
             get_string('assessmenttype', 'block_newgu_spdetails'),
             get_string('includedingcat', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
@@ -40,8 +41,9 @@ class currentassessment_table extends table_sql
             get_string('feedback')
         );
         $this->define_headers($headers);
-    }
 
+    }
+/*
     function col_course($values){
         global $DB,$CFG;
         $courseid = $values->courseid;
@@ -53,6 +55,15 @@ class currentassessment_table extends table_sql
         }
 
         return "<a href='".$link."'>" . $coursename . "</a>";
+    }
+*/
+    function col_coursename($values){
+      global $CFG;
+      $courseid = $values->courseid;
+      $link = $CFG->wwwroot . "/course/view.php?id=" . $courseid;
+
+      return "<a href='".$link."'>" . $values->coursename . "</a>";
+
     }
 
     function col_assessment($values){
@@ -94,10 +105,14 @@ class currentassessment_table extends table_sql
      }
 
       if ($cfdvalue==1) {
-          return "Yes";
+          return "Old";
       } else {
-          return "No";
+          return "";
       }
+    }
+
+    function col_itemmodule($values){
+        return $values->itemmodule;
     }
 
     function col_assessmenttype($values){
@@ -318,7 +333,7 @@ class pastassessment_table extends table_sql
         // Define the list of columns to show.
 
 
-        $columns = array('course', 'assessment', 'assessmenttype', 'includedingcat', 'weight', 'startdate', 'enddate', 'viewsubmission', 'yourgrade', 'feedback');
+        $columns = array('coursename', 'assessment', 'itemmodule', 'assessmenttype', 'includedingcat', 'weight', 'startdate', 'enddate', 'viewsubmission', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
         // Define the titles of columns to show in header.
@@ -327,6 +342,7 @@ class pastassessment_table extends table_sql
             get_string('course'),
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
+            get_string('activity') . ' type',
             get_string('assessmenttype', 'block_newgu_spdetails'),
             get_string('includedingcat', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
@@ -339,17 +355,13 @@ class pastassessment_table extends table_sql
         $this->define_headers($headers);
     }
 
-    function col_course($values){
-      global $DB,$CFG;
+    function col_coursename($values){
+      global $CFG;
       $courseid = $values->courseid;
       $link = $CFG->wwwroot . "/course/view.php?id=" . $courseid;
 
-      $arr_course = $DB->get_record('course',array('id'=>$courseid));
-      if (!empty($arr_course)) {
-          $coursename = $arr_course->fullname;
-      }
+      return "<a href='".$link."'>" . $values->coursename . "</a>";
 
-      return "<a href='".$link."'>" . $coursename . "</a>";
     }
 
     function col_assessment($values){
@@ -358,6 +370,10 @@ class pastassessment_table extends table_sql
       $itemname = $values->itemname;
 
       return $itemname;
+    }
+
+    function col_itemmodule($values){
+        return $values->itemmodule;
     }
 
     function col_assessmenttype($values){
@@ -407,9 +423,9 @@ class pastassessment_table extends table_sql
      }
 
       if ($cfdvalue==1) {
-          return "Yes";
+          return "Old";
       } else {
-          return "No";
+          return "";
       }
     }
 
