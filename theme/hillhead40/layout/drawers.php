@@ -58,6 +58,23 @@ if (!$courseindex) {
     $courseindexopen = false;
 }
 
+// MOOD-229 - Collapse all course indexes by default.
+// Pass through to the template a boolean value for whether the course indexes
+// should initially be collapsed or not. Based on how the user prefs mechanism
+// works, check if a record for 'coursesectionspreferences_[x]' exists or not.
+// If one doesn't, then the user hasn't visited *this* course page before, and
+// it is therefore safe to collapse everything. If a record does exist, then let
+// the existing mechanism deal with expanding only those selected course indexes.
+$courseindexcollapsed = false;
+if ($COURSE->id > 1) {
+    $sectionpreferences = (array)json_decode(
+        get_user_preferences("coursesectionspreferences_{$COURSE->id}", '', $USER->id)
+    );
+    if (empty($sectionpreferences)) {
+        $courseindexcollapsed = true;
+    }
+}
+
 // Append any additional css classes to the $extraclasses array...
 require_once('extraclasses.php');
 
@@ -131,6 +148,7 @@ $templatecontext = [
     'courseindexopen' => $courseindexopen,
     'blockdraweropen' => $blockdraweropen,
     'courseindex' => $courseindex,
+    'courseindexcollapsed' => $courseindexcollapsed,
     'primarymoremenu' => $primarymenu['moremenu'],
     'secondarymoremenu' => $secondarynavigation ?: false,
     'mobileprimarynav' => $primarymenu['mobileprimarynav'],
