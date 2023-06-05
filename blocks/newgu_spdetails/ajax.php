@@ -39,7 +39,8 @@ $marked = 0;
 
     $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
 
-    $sql_gi = "SELECT * FROM {grade_items} WHERE courseid in (".$str_currentcourses.") && id not in (".$str_itemsnotvisibletouser.") && courseid>1 && itemtype='mod' && itemmodule in (" . $itemmodules . ")";
+//    $sql_gi = "SELECT * FROM {grade_items} WHERE courseid in (".$str_currentcourses.") && id not in (".$str_itemsnotvisibletouser.") && courseid>1 && itemtype='mod' && itemmodule in (" . $itemmodules . ")";
+    $sql_gi = "SELECT * FROM {grade_items} WHERE courseid in (".$str_currentcourses.") && id not in (".$str_itemsnotvisibletouser.") && courseid>1 && itemtype='mod'";
 
     $arr_gi = $DB->get_records_sql($sql_gi);
 

@@ -71,6 +71,7 @@ echo "<br/>=====<br/>";
 $pastcourses = newassessments_statistics::return_enrolledcourses($USER->id, "past");
 $str_pastcourses = implode(",", $pastcourses);
 
+//$str_currentcourses = $str_pastcourses;
 /*
 echo "<br/>==PAST===<br/>";
 echo "<pre>";
@@ -105,29 +106,48 @@ $PAGE->requires->js_amd_inline("
                                     });
                                     ");
 
-                                    $filteroptions = '<div style="width:100%">
-                                    <label>Show
-                                        <select onchange="alert(this.value)" name="grades_length" aria-controls="grades" class="" fdprocessedid="qno">
-                                          <option value="10">10</option>
-                                          <option value="25">25</option>
-                                          <option value="50">50</option>
-                                          <option value="100">100</option>
-                                        </select> entries</label>
-
-                                    <label style="float: right;">Search: <input type="search" class="" placeholder="" aria-controls="grades"></label>
-                                    </div>
-                                    <div style="clear:both;"></div>';
-
-
                                     $tab = optional_param('t', 1, PARAM_INT);
+
+                                    $tsort = optional_param('tsort', "", PARAM_ALPHA);
+                                    $tdir = optional_param('tdir', 1, PARAM_INT);
+
+                                    $td = 4;
+                                    if ($tdir==4) {
+                                        $td=3;
+                                    }
+                                    if ($tdir==3) {
+                                        $td=4;
+                                    }
+                                    $courseselected = "";
+                                    if ($tsort=="coursename") {
+                                        $courseselected = "selected";
+                                    }
+
+
                                     $tabs = [];
                                     $tab1_title = get_string('currentlyenrolledin', 'block_newgu_spdetails');
                                     $tab2_title = get_string('pastcourses', 'block_newgu_spdetails');
                                     $tabs[] = new tabobject(1, new moodle_url($url, ['t'=>1]), $tab1_title);
                                     $tabs[] = new tabobject(2, new moodle_url($url, ['t'=>2]), $tab2_title);
                                     echo $OUTPUT->tabtree($tabs, $tab);
+
+                                    $filteroptions = '
+                                    <div id="forborder" style="border:1px solid #ccc; padding-top:8px; margin-top:-17px;">
+                                    <div style="width:97%; margin:0 12px;">
+                                    <label>Sort by:
+                                        <select onchange="document.location.href=this.value" name="grades_sortby" aria-controls="grades" class="" fdprocessedid="qno">
+                                          <option value="view.php?t=1">Select</option>
+                                          <option ' . $courseselected . ' value="view.php?t=' . $tab . '&tsort=coursename&tdir=' . $td . '">Course</option>
+                                        </select> </label>
+
+                                    </div>
+                                    <div style="clear:both;"></div>';
+
+
                                     if ($tab == 1) {
                                         // Show data for tab 1
+// ' . $baseurl . '&tsort=coursename&tdir=' . $ts . '
+
 
                                         if ($str_currentcourses!="") {
                                         $table = new currentassessment_table('tab1');
@@ -137,16 +157,22 @@ $PAGE->requires->js_amd_inline("
 
                                         $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
 
-                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_currentcourses.") && courseid>1 && itemtype='mod' && id not in (".$str_itemsnotvisibletouser.") && itemmodule in (" . $itemmodules . ")");
+//                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id && gi.itemmodule in (" . $itemmodules . ")");
+                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id");
 
-                                        $table->no_sorting('course');
+
+//                                        $table->no_sorting('course');
                                         $table->no_sorting('assessment');
+                                        $table->no_sorting('itemmodule');
                                         $table->no_sorting('assessmenttype');
+                                        $table->no_sorting('includedingcat');
                                         $table->no_sorting('weight');
                                         $table->no_sorting('duedate');
                                         $table->no_sorting('status');
                                         $table->no_sorting('yourgrade');
                                         $table->no_sorting('feedback');
+
+
 
                                         $table->define_baseurl("$CFG->wwwroot/blocks/newgu_spdetails/view.php?t=1");
 
@@ -179,11 +205,14 @@ $PAGE->requires->js_amd_inline("
 
                                         $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_pastcourses);
 
-                                        $table->set_sql('*', "{grade_items}", "courseid in (".$str_pastcourses.") && courseid>1 && itemtype='mod' && id not in (".$str_itemsnotvisibletouser.") && itemmodule in (" . $itemmodules . ")");
+//                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id && gi.itemmodule in (" . $itemmodules . ")");
+                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id");
 
-                                        $table->no_sorting('course');
+//                                        $table->no_sorting('course');
                                         $table->no_sorting('assessment');
+                                        $table->no_sorting('itemmodule');
                                         $table->no_sorting('assessmenttype');
+                                        $table->no_sorting('includedingcat');
                                         $table->no_sorting('weight');
                                         $table->no_sorting('startdate');
                                         $table->no_sorting('enddate');
@@ -197,10 +226,34 @@ $PAGE->requires->js_amd_inline("
 
                                         $table->out(20, true);
                                       } else {
-                                          echo "<p style='text-align: center;'>". get_string('noassessments','block_newgu_spdetails') .".</p>";
+                                          echo "<p style='text-align: center; margin-left:20px;'>". get_string('noassessments','block_newgu_spdetails') .".</p>";
                                       }
 
                                     }
 
+                                    echo "</div>";
+
+
+                                    $pdflink = "";
+                                    $excellink = "";
+
+                                    if ($tab==1 && $str_currentcourses!="") {
+                                      $pdflink = "downloadspdetails.php?spdetailstype=pdf&coursestype=current";
+                                      $excellink = "downloadspdetails.php?spdetailstype=excel&coursestype=current";
+                                    }
+                                    if ($tab==2 && $str_pastcourses!="") {
+                                      $pdflink = "downloadspdetails.php?spdetailstype=pdf&coursestype=past";
+                                      $excellink = "downloadspdetails.php?spdetailstype=excel&coursestype=past";
+                                    }
+
+                                    echo "<p></p>";
+                                    echo "<p style='text-align:right;'>";
+                                    if ($pdflink!="") {
+                                    echo "<a target='_blank' href='".$pdflink."'><i style='color:red;' class='fa fa-file-pdf-o fa-2x' aria-hidden='true'></i></a>";
+                                    }
+                                    if ($excellink!="") {
+                                      echo "<a target='_blank' href='".$excellink."'><i style='padding-left:20px; color:green;' class='fa fa-file-excel-o fa-2x' aria-hidden='true'></i></a>";
+                                    }
+                                    echo "</p>";
 
                                     echo $OUTPUT->footer();

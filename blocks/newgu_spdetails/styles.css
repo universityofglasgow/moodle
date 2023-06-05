@@ -48,6 +48,10 @@
     border: none;
 }
 
+.generaltable .commands {
+    border: none;
+}
+
 .assessments-details-table.table th {
     vertical-align: middle;
 }
@@ -236,4 +240,17 @@
 
 .assessments-overview-container .assessments-item-label {
     color: #058;
+}
+
+
+.generaltable .commands {
+    display:none!important;
+}
+
+.forborder h2 {
+    margin-left:15px!important;
+}
+
+#region-main {
+    margin-top: 0px!important;
 }
