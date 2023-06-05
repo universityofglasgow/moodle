@@ -219,7 +219,7 @@ class api {
     public static function get_history(int $gradeitemid, int $userid) {
         global $DB;
 
-        if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid, 'gradeitemid' => $gradeitemid], 'audittimecreated ASC')) {
+        if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid, 'gradeitemid' => $gradeitemid], 'audittimecreated DESC')) {
             return [];
         }
 
@@ -235,6 +235,43 @@ class api {
         }
 
         return $newgrades;
+    }
+
+    /**
+     * Get audit history
+     * @param int $courseid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_audit(int $courseid, int $userid) {
+        global $USER, $DB;
+
+        // Must have capability to view somebody else's history
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+        if ($USER->id != $userid) {
+            $context = \context_course::instance($courseid);
+            require_cabability('local/gugrades:readotheraudit', $context);
+        }
+
+        $items = $DB->get_records('local_gugrades_audit', ['courseid' => $courseid, 'userid' => $userid], 'timecreated DESC');
+
+        // Additional info
+        $newitems = [];
+        foreach ($items as $item) {
+            $item->time = userdate($item->timecreated);
+            $newitems[] = $item;
+            if ($item->type = 'error') {
+                $item->bgcolor = 'bg-danger text-white';
+            } else if ($item->type == 'warning') {
+                $item->bgcolor = 'bg-warning text-white';
+            } else {
+                $item->bgcolor = 'bg-info text-white';
+            }
+        }
+
+        return $newitems;
     }
 
 }

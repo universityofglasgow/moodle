@@ -33,4 +33,11 @@ $capabilities = array(
         'archetypes' => array(
         )
     ),
+    'local/gugrades:readotheraudit' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+        )
+    ),
 );

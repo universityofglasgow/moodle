@@ -1,6 +1,7 @@
 import { createRouter, createMemoryHistory} from 'vue-router'
 import CaptureAggregation from '../views/CaptureAggregation.vue';
 import SettingsPage from '@/views/SettingsPage.vue';
+import AuditPage from '@/views/AuditPage.vue';
 
 const routes = [
   {
@@ -12,6 +13,11 @@ const routes = [
     path: '/settings',
     name: 'settings',
     component: SettingsPage,
+  },
+  {
+    path: '/audit',
+    name: 'audit',
+    component: AuditPage,
   },
   {
     path: '/about',

@@ -4,7 +4,7 @@
 
         <TabsNav @tabchange="tabChange"></TabsNav>
 
-        <div class="row">
+        <div v-if="currenttab == 'capture' || currenttab == 'aggregate'" class="row">
             <div class="col-12 col-lg-6">
                 <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
                 <div v-if="currenttab == 'capture'">
@@ -14,6 +14,14 @@
             <div class="col-12 col-lg-6">
                 &nbsp;
             </div>
+        </div>
+
+        <div v-if="currenttab == 'settings'">
+            <SettingsPage></SettingsPage>
+        </div>
+
+        <div v-if="currenttab == 'audit'">
+            <AuditPage></AuditPage>
         </div>
 
         <CaptureTable v-if="itemid && (currenttab == 'capture')" :itemid="itemid"></CaptureTable>
@@ -27,6 +35,8 @@
     import TabsNav from '@/components/TabsNav.vue';
     import ActivitySelect from '@/components/ActivitySelect.vue';
     import CaptureTable from '@/components/CaptureTable.vue';
+    import SettingsPage from '@/views/SettingsPage.vue';
+    import AuditPage from '@/views/AuditPage.vue';
 
     const currenttab = ref('capture');
     const level1category = ref(0);

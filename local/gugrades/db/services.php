@@ -86,4 +86,10 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
+    'local_gugrades_get_audit' => [
+        'classname' => 'local_gugrades\external\get_audit',
+        'description' => 'Get the audit trail for given or current user.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];    

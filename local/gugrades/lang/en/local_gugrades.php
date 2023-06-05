@@ -56,5 +56,6 @@ $string['settings'] = 'Settings';
 $string['userpicture'] = 'Pic';
 
 // Capabilities
+$string['gugrades:readotheraudit'] = 'Read another user\'s audit trail';
 $string['gugrades:view'] = 'View gugrades tool';
 
