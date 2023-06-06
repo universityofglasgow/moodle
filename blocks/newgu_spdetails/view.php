@@ -60,26 +60,9 @@ echo $OUTPUT->header();
 
 $currentcourses = newassessments_statistics::return_enrolledcourses($USER->id, "current");
 $str_currentcourses = implode(",", $currentcourses);
-/*
-echo "<br/>==CURRENT===<br/>";
-echo "<pre>";
-print_r($currentcourses);
-echo "</pre>";
-echo $str_currentcourses;
-echo "<br/>=====<br/>";
-*/
+
 $pastcourses = newassessments_statistics::return_enrolledcourses($USER->id, "past");
 $str_pastcourses = implode(",", $pastcourses);
-
-//$str_currentcourses = $str_pastcourses;
-/*
-echo "<br/>==PAST===<br/>";
-echo "<pre>";
-print_r($pastcourses);
-echo "</pre>";
-echo $str_pastcourses;
-echo "=====";
-*/
 
 $itemmodules = "'assign','forum','quiz','workshop'";
 
@@ -108,21 +91,25 @@ $PAGE->requires->js_amd_inline("
 
                                     $tab = optional_param('t', 1, PARAM_INT);
 
-                                    $tsort = optional_param('tsort', "", PARAM_ALPHA);
+                                    $ts = optional_param('ts', "", PARAM_ALPHA);
                                     $tdir = optional_param('tdir', 1, PARAM_INT);
 
-                                    $td = 4;
-                                    if ($tdir==4) {
-                                        $td=3;
-                                    }
-                                    if ($tdir==3) {
-                                        $td=4;
-                                    }
                                     $courseselected = "";
-                                    if ($tsort=="coursename") {
+                                    if ($ts=="coursename") {
                                         $courseselected = "selected";
                                     }
-
+                                    $startdateselected = "";
+                                    if ($ts=="startdate") {
+                                        $startdateselected = "selected";
+                                    }
+                                    $enddateselected = "";
+                                    if ($ts=="enddate") {
+                                        $enddateselected = "selected";
+                                    }
+                                    $duedateselected = "";
+                                    if ($ts=="duedate") {
+                                        $duedateselected = "selected";
+                                    }
 
                                     $tabs = [];
                                     $tab1_title = get_string('currentlyenrolledin', 'block_newgu_spdetails');
@@ -131,22 +118,36 @@ $PAGE->requires->js_amd_inline("
                                     $tabs[] = new tabobject(2, new moodle_url($url, ['t'=>2]), $tab2_title);
                                     echo $OUTPUT->tabtree($tabs, $tab);
 
+                                    if ($tab == 1) {
+
+                                    // Show data for tab 1
+
+                                    $addsort = "";
+                                    if ($ts=="coursename") {
+                                        $addsort = " ORDER BY c.fullname";
+                                    }
+                                    $duedateorder = array();
+                                    if ($ts=="duedate") {
+                                        $duedateorder = get_duedateorder();
+                                        if ($duedateorder!="") {
+                                          $addsort = " ORDER BY FIELD(gi.id, $duedateorder)";
+                                        }
+                                    }
+
+
+
                                     $filteroptions = '
                                     <div id="forborder" style="border:1px solid #ccc; padding-top:8px; margin-top:-17px;">
                                     <div style="width:97%; margin:0 12px;">
                                     <label>Sort by:
                                         <select onchange="document.location.href=this.value" name="grades_sortby" aria-controls="grades" class="" fdprocessedid="qno">
                                           <option value="view.php?t=1">Select</option>
-                                          <option ' . $courseselected . ' value="view.php?t=' . $tab . '&tsort=coursename&tdir=' . $td . '">Course</option>
+                                          <option ' . $courseselected . ' value="view.php?t=' . $tab . '&ts=coursename&tdir=' . $tdir . '">Course</option>
+                                          <option ' . $duedateselected . ' value="view.php?t=' . $tab . '&ts=duedate&tdir=' . $tdir . '">Due date</option>
                                         </select> </label>
 
                                     </div>
                                     <div style="clear:both;"></div>';
-
-
-                                    if ($tab == 1) {
-                                        // Show data for tab 1
-// ' . $baseurl . '&tsort=coursename&tdir=' . $ts . '
 
 
                                         if ($str_currentcourses!="") {
@@ -157,11 +158,9 @@ $PAGE->requires->js_amd_inline("
 
                                         $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
 
-//                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id && gi.itemmodule in (" . $itemmodules . ")");
-                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id");
+                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
 
-
-//                                        $table->no_sorting('course');
+                                        $table->no_sorting('coursename');
                                         $table->no_sorting('assessment');
                                         $table->no_sorting('itemmodule');
                                         $table->no_sorting('assessmenttype');
@@ -171,8 +170,6 @@ $PAGE->requires->js_amd_inline("
                                         $table->no_sorting('status');
                                         $table->no_sorting('yourgrade');
                                         $table->no_sorting('feedback');
-
-
 
                                         $table->define_baseurl("$CFG->wwwroot/blocks/newgu_spdetails/view.php?t=1");
 
@@ -186,7 +183,6 @@ $PAGE->requires->js_amd_inline("
                                     }
 
                                     if ($tab == 2) {
-
                                       /*
                                         ‘Past courses’ are where the end date of the course has finished
                                         and the due dates for any assessments
@@ -198,6 +194,39 @@ $PAGE->requires->js_amd_inline("
 
                                         // Show data for tab 2
 
+                                        $addsort = "";
+                                        if ($ts=="coursename") {
+                                            $addsort = " ORDER BY c.fullname";
+                                        }
+
+                                        if ($ts=="startdate" || $ts=="enddate") {
+                                            $startenddateorder = get_startenddateorder();
+
+                                            $startdateorder = $startenddateorder["startdateorder"];
+                                            $enddateorder = $startenddateorder["enddateorder"];
+
+                                            if ($ts=="startdate") {
+                                                $addsort = " ORDER BY FIELD(gi.id, $startdateorder)";
+                                            }
+                                            if ($ts=="enddate") {
+                                                $addsort = " ORDER BY FIELD(gi.id, $enddateorder)";
+                                            }
+                                        }
+
+                                        $filteroptions = '
+                                        <div id="forborder" style="border:1px solid #ccc; padding-top:8px; margin-top:-17px;">
+                                        <div style="width:97%; margin:0 12px;">
+                                        <label>Sort by:
+                                            <select onchange="document.location.href=this.value" name="grades_sortby" aria-controls="grades" class="" fdprocessedid="qno">
+                                              <option value="view.php?t=2">Select</option>
+                                              <option ' . $courseselected . ' value="view.php?t=' . $tab . '&ts=coursename&tdir=' . $tdir . '">Course</option>
+                                              <option ' . $startdateselected . ' value="view.php?t=' . $tab . '&ts=startdate&tdir=' . $tdir . '">Start date</option>
+                                              <option ' . $enddateselected . ' value="view.php?t=' . $tab . '&ts=enddate&tdir=' . $tdir . '">End date</option>
+                                            </select> </label>
+
+                                        </div>
+                                        <div style="clear:both;"></div>';
+
                                         if ($str_pastcourses!="") {
                                         $table = new pastassessment_table('tab2');
 
@@ -205,10 +234,9 @@ $PAGE->requires->js_amd_inline("
 
                                         $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_pastcourses);
 
-//                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id && gi.itemmodule in (" . $itemmodules . ")");
-                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id");
+                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
 
-//                                        $table->no_sorting('course');
+                                        $table->no_sorting('coursename');
                                         $table->no_sorting('assessment');
                                         $table->no_sorting('itemmodule');
                                         $table->no_sorting('assessmenttype');

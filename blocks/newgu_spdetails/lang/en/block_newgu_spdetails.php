@@ -66,4 +66,7 @@ $string['formative'] = 'Formative';
 $string['emptyvalue'] = '—';
 $string['extended'] = 'Due date extension';
 
-$string['includedingcat'] = 'Included in GCAT';
+$string['source'] = 'Source';
+
+$string['oldgcat'] = 'Old GCAT';
+$string['newgcat'] = 'New GCAT';

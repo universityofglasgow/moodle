@@ -33,7 +33,7 @@ class currentassessment_table extends table_sql
             get_string('assessment'),
             get_string('activity') . ' type',
             get_string('assessmenttype', 'block_newgu_spdetails'),
-            get_string('includedingcat', 'block_newgu_spdetails'),
+            get_string('source', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
             get_string('duedate','block_newgu_spdetails'),
             get_string('status'),
@@ -68,18 +68,19 @@ class currentassessment_table extends table_sql
 
     function col_assessment($values){
       global $DB, $CFG;
-      $cmid = $values->id;
+      $itemname = $values->itemname;
+
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
-      $categoryid = $values->categoryid;
-      $itemid = $values->id;
 
-      $itemname = $values->itemname;
+      $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
 
-      $link = $CFG->wwwroot . "/" . $modulename . "/view.php?id=" . $itemid;
+      $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
 
-      return "<a href='".$link."'>" . $itemname . "</a>";
+      if (!empty($link)) {
+          return '<a href="' . $link . '">' . $itemname . '</a>';
+      }
     }
 
     function col_includedingcat($values){
@@ -105,7 +106,7 @@ class currentassessment_table extends table_sql
      }
 
       if ($cfdvalue==1) {
-          return "Old";
+          return "Old GCAT";
       } else {
           return "";
       }
@@ -344,7 +345,7 @@ class pastassessment_table extends table_sql
             get_string('assessment'),
             get_string('activity') . ' type',
             get_string('assessmenttype', 'block_newgu_spdetails'),
-            get_string('includedingcat', 'block_newgu_spdetails'),
+            get_string('source', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
             get_string('startdate','block_newgu_spdetails'),
             get_string('enddate','block_newgu_spdetails'),
@@ -365,11 +366,22 @@ class pastassessment_table extends table_sql
     }
 
     function col_assessment($values){
-      global $DB;
+      global $DB, $CFG;
 
       $itemname = $values->itemname;
 
-      return $itemname;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+
+      $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
+
+      $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
+
+      if (!empty($link)) {
+          return '<a href="' . $link . '">' . $itemname . '</a>';
+      }
+
     }
 
     function col_itemmodule($values){
@@ -423,7 +435,7 @@ class pastassessment_table extends table_sql
      }
 
       if ($cfdvalue==1) {
-          return "Old";
+          return "Old GCAT";
       } else {
           return "";
       }
@@ -450,6 +462,9 @@ class pastassessment_table extends table_sql
     function col_startdate($values){
 
       global $DB;
+
+//      return $values->startdate;
+
 
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
