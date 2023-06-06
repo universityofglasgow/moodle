@@ -79,7 +79,7 @@ const setCourseIndexState = (element, courseId) => {
     Log.debug(`setCourseIndexState was called with element ${element} and courseId ${courseId}.`);
 
     if (document.querySelectorAll(element).length == 0) {
-        Log.debug('Page is missing the course index section.');
+        Log.debug('Page is missing the course index section, no need to continue.');
         return false;
     }
 
