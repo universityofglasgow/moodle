@@ -262,12 +262,12 @@ class api {
         foreach ($items as $item) {
             $item->time = userdate($item->timecreated);
             $newitems[] = $item;
-            if ($item->type = 'error') {
-                $item->bgcolor = 'bg-danger text-white';
+            if ($item->type == 'error') {
+                $item->bgcolor = 'danger';
             } else if ($item->type == 'warning') {
-                $item->bgcolor = 'bg-warning text-white';
+                $item->bgcolor = 'warning';
             } else {
-                $item->bgcolor = 'bg-info text-white';
+                $item->bgcolor = 'info';
             }
         }
 

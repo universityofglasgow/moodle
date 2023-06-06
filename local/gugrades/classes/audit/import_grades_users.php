@@ -27,51 +27,18 @@ namespace local_gugrades\audit;
 
 defined('MOODLE_INTERNAL') || die();
 
-// Audit types
-define('LOCAL_GUGRADES_AUDIT_ERROR', 'error');
-define('LOCAL_GUGRADES_AUDIT_WARNING', 'warning');
-define('LOCAL_GUGRADES_AUDIT_INFO', 'info');
-
-abstract class base {
-
-    private int $courseid;
-
-    private int $userid;
-
-    private int $timecreated;
-
-    protected string $type;
-
-    protected string $level;
-
-    protected string $message;
+class import_grades_users extends base {
 
     /**
      * Constructor
      * @param int $courseid
      */
-    public function __construct(int $courseid) {
-        global $USER;
+    public function __construct(int $courseid, $gradeitemid) {
+        parent::__construct($courseid);
 
-        $this->courseid = $courseid;
-        $this->userid = $USER->id;
-        $this->timecreated = time();
+        $this->type = LOCAL_GUGRADES_AUDIT_INFO;
+        $this->level = 0;
+        $this->message = get_string('importgradesusers', 'local_gugrades', $gradeitemid);
     }
-
-    /**
-     * Save the audit information to database
-     */
-    public function save() {
-        global $DB;
-
-        $audit = new \stdClass;
-        $audit->courseid = $this->courseid;
-        $audit->userid = $this->userid;
-        $audit->timecreated = $this->timecreated;
-        $audit->type = $this->type;
-        $audit->level = $this->level;
-        $audit->message = $this->message;
-        $DB->insert_record('local_gugrades_audit', $audit);
-    }
-
+    
 }

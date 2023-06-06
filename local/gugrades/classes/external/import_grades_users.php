@@ -66,6 +66,10 @@ class import_grades_users extends \external_api {
         ]);
         $event->trigger();
 
+        // Audit
+        $audit = new \local_gugrades\audit\import_grades_users($courseid, $gradeitemid);
+        $audit->save();
+
         return ['success' => true];
     }
 

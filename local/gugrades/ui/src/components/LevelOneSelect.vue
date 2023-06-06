@@ -40,10 +40,9 @@
             if (result.length == 0) {
                 notsetup.value = true;
             }
-            window.console.log(result);
         })
         .catch((error) => {
-            window.console.log(error);
+            window.console.error(error);
         })
     }
 
