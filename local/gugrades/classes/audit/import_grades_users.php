@@ -34,7 +34,7 @@ class import_grades_users extends base {
      * @param int $courseid
      */
     public function __construct(int $courseid, $gradeitemid) {
-        parent::__construct($courseid);
+        parent::__construct($courseid, $gradeitemid);
 
         $this->type = LOCAL_GUGRADES_AUDIT_INFO;
         $this->level = 0;

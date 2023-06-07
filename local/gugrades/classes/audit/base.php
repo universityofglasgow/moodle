@@ -38,6 +38,8 @@ abstract class base {
 
     private int $userid;
 
+    private int $gradeitemid;
+
     private int $timecreated;
 
     protected string $type;
@@ -49,12 +51,14 @@ abstract class base {
     /**
      * Constructor
      * @param int $courseid
+     * @param int $gradeitemid (if 0 then it's just null in db)
      */
-    public function __construct(int $courseid) {
+    public function __construct(int $courseid, int $gradeitemid) {
         global $USER;
 
         $this->courseid = $courseid;
         $this->userid = $USER->id;
+        $this->gradeitemid = $gradeitemid;
         $this->timecreated = time();
     }
 
@@ -67,6 +71,7 @@ abstract class base {
         $audit = new \stdClass;
         $audit->courseid = $this->courseid;
         $audit->userid = $this->userid;
+        $audit->gradeitemid = empty($this->gradeitemid) ? null : $this->gradeitemid;
         $audit->timecreated = $this->timecreated;
         $audit->type = $this->type;
         $audit->level = $this->level;

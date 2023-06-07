@@ -38,6 +38,7 @@ $string['eventimportgradesusers'] = 'Import grades for user list';
 $string['firstname'] = 'First name';
 $string['firstnamelastname'] = 'Firstname / lastname';
 $string['grade'] = 'Grade';
+$string['gradeitem'] = 'Grade item';
 $string['history'] = 'History';
 $string['idnumber'] = 'ID number';
 $string['importgrades'] = 'Import grades';

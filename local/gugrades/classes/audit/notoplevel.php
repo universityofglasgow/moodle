@@ -33,8 +33,8 @@ class notoplevel extends base {
      * Constructor
      * @param int $courseid
      */
-    public function __construct(int $courseid) {
-        parent::__construct($courseid);
+    public function __construct(int $courseid, $gradeitemid) {
+        parent::__construct($courseid, $gradeitemid);
 
         $this->type = LOCAL_GUGRADES_AUDIT_WARNING;
         $this->level = 0;

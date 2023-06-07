@@ -9,12 +9,14 @@
                 <thead class="thead-light">
                     <th><MString name="date"></MString></th>
                     <th><MString name="type"></MString></th>
+                    <th><MString name="gradeitem"></MString></th>
                     <th><MString name="description"></MString></th>
                 </thead>
                 <tbody>
                     <tr v-for="item in pageditems" :key="item.id">
                         <td>{{ item.time }}</td>
                         <td><span class="badge" :class="'badge-' + item.bgcolor">{{ item.type }}</span></td>
+                        <td>{{ item.gradeitem }}</td>
                         <td>{{ item.message }}</td>
                     </tr>
                 </tbody>

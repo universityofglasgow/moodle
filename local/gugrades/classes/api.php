@@ -111,7 +111,7 @@ class api {
 
         // If there are no results then the course is not configured
         if (!$results) {
-            $audit = new \local_gugrades\audit\notoplevel($courseid);
+            $audit = new \local_gugrades\audit\notoplevel($courseid, 0  );
             $audit->save();
         }
 
@@ -259,9 +259,9 @@ class api {
 
         // Additional info
         $newitems = [];
+        $gradeitemcache = [];
         foreach ($items as $item) {
             $item->time = userdate($item->timecreated);
-            $newitems[] = $item;
             if ($item->type == 'error') {
                 $item->bgcolor = 'danger';
             } else if ($item->type == 'warning') {
@@ -269,6 +269,23 @@ class api {
             } else {
                 $item->bgcolor = 'info';
             }
+
+            // Get (if possible) name of grade item.
+            $gradeitem = null;
+            if (array_key_exists($item->gradeitemid, $gradeitemcache)) {
+                $gradeitem = $gradeitemcache[$item->gradeitemid];
+            } else {
+                if ($gradeitem = $DB->get_record('grade_items', ['id' => $item->gradeitemid])) {
+                    $gradeitemcache[$item->gradeitemid] = $gradeitem;
+                }
+            }
+            if ($gradeitem) {
+                $item->gradeitem = $gradeitem->itemname;
+            } else {
+                $item->gradeitem = '';
+            }
+
+            $newitems[] = $item;
         }
 
         return $newitems;

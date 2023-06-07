@@ -63,6 +63,8 @@ class get_audit extends \external_api {
                 'id' => new external_value(PARAM_INT, 'Mystery id'),
                 'courseid' => new external_value(PARAM_INT, 'Course ID'),
                 'userid' => new external_value(PARAM_INT, 'User ID'),
+                'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID'),
+                'gradeitem' => new external_value(PARAM_TEXT, 'Grade item name'),
                 'timecreated' => new external_value(PARAM_INT, 'Time created (unix time stamp)'),
                 'time' => new external_value(PARAM_TEXT, 'Time, formatted'),
                 'type' => new external_value(PARAM_TEXT, 'Item type - error, warning, info'),
