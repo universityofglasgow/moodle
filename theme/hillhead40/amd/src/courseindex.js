@@ -26,11 +26,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import $ from 'jquery';
+//import $ from 'jquery';
 import * as Log from 'core/log';
 
 const Selectors = {
-    COURSE_INDEX: '[aria-controls*="courseindexcollapse"]'
+    COURSE_INDEX: '[aria-controls^="courseindexcollapse"]:not([aria-controls="courseindexcollapse0"])'
 };
 
 const CourseIndex = (coursindexcollapsed) => {
@@ -86,7 +86,7 @@ const setCourseIndexState = (element, courseId) => {
     const courseIndexSectionItems = document.querySelectorAll(Selectors.COURSE_INDEX);
     Log.debug('Collapsing all course indexes...');
     courseIndexSectionItems.forEach((indexSectionItem) => {
-        $(indexSectionItem.click());
+        indexSectionItem.click();
     });
 };
 
