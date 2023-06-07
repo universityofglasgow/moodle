@@ -84,7 +84,7 @@ const setCourseIndexState = (element, courseId) => {
     }
 
     const courseIndexSectionItems = document.querySelectorAll(Selectors.COURSE_INDEX);
-    Log.debug('Collapsing all course indexes...');
+    Log.debug('Collapsing all course indexes except index 0...');
     courseIndexSectionItems.forEach((indexSectionItem) => {
         indexSectionItem.click();
     });
