@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['advancedsettings'] = 'Advanced settings';
+$string['advancedwarning'] = '<b><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> You do not normally need to change settings in this section</b><p>Only change settings in this section if you are absolutely sure you know what they do and have a specific reason for doing so. Mistakes may lead to students being ejected from the course and possible loss of data that cannot be recovered.';
 $string['allowhidden'] = 'Allow hidden course';
 $string['allowhidden_help'] = 'If enabled, automatic enrolment will function even if the course is hidden. By default hidden courses are ignored';
 $string['allowunenrol'] = 'Allow unenrol features';

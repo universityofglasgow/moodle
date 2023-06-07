@@ -1820,34 +1820,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $mform->addElement('select', 'roleid', get_string('defaultrole', 'role'), $roles);
         $mform->setDefault('roleid', 5);
 
-        $mform->addElement('duration', 'enrolperiod', get_string('defaultperiod', 'enrol_gudatabase'),
-            array('optional' => true, 'defaultunit' => 86400));
-        $mform->setDefault('enrolperiod', $this->get_config('enrolperiod'));
-        $mform->addHelpButton('enrolperiod', 'defaultperiod', 'enrol_gudatabase');
-
-        $mform->addElement('date_time_selector', 'enrolenddate', get_string('enrolenddate', 'enrol_gudatabase'),
-            array('optional' => true));
-        $mform->setDefault('enrolenddate', 0);
-        $mform->addHelpButton('enrolenddate', 'enrolenddate', 'enrol_gudatabase');
-
-        $roles = array(0 => get_string('unenrol', 'enrol_gudatabase')) + $roles;
-        $mform->addElement('select', 'expireroleid', get_string('expirerole', 'enrol_gudatabase'), $roles);
-        $mform->setDefault('expireroleid', $this->get_config('expireroleid'));
-        $mform->addHelpButton('expireroleid', 'expirerole', 'enrol_gudatabase');
-
-        if (has_capability('enrol/gudatabase:enableunenrol', $context)) {
-	    $mform->addElement('html','<div class="alert alert-danger">' . get_string('removewarning', 'enrol_gudatabase') . '</div>');
-
-            $mform->addElement('select', 'customint4', get_string('enableunenrol', 'enrol_gudatabase'), $yesno);
-            $mform->setDefault('customint4', 0);
-            $mform->addHelpButton('customint4', 'enableunenrol', 'enrol_gudatabase');
-
-            $mform->addElement('select', 'customint5', get_string('enablegroupremove', 'enrol_gudatabase'), $yesno);
-            $mform->setDefault('customint5', 0);
-            $mform->addHelpButton('customint5', 'enablegroupremove', 'enrol_gudatabase');
-        }
-
         // Automatic enrolment (codes) settings.
+        // ======================================================================
         $mform->addElement('header', 'codesettings', get_string('codesettings', 'enrol_gudatabase'));
 
         $codes = $this->get_codes($course, $instance);
@@ -1862,6 +1836,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $mform->addHelpButton('customtext1', 'codelist', 'enrol_gudatabase');
         $mform->setType('customtext1', PARAM_TEXT);
 
+        // ======================================================================
         // Automatic groups settings.
         $mform->addElement('header', 'groupsettings', get_string('groupsettings', 'enrol_gudatabase'));
 
@@ -1891,6 +1866,38 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         $mform->closeHeaderBefore('groupsettings');
+
+        // Advanced Settings (Danger lies here)
+        // ======================================================================
+
+        $mform->addElement('header', 'dangersettings', get_string('advancedsettings', 'enrol_gudatabase'));
+
+        $mform->addElement('html','<div class="alert alert-danger">' . get_string('advancedwarning', 'enrol_gudatabase') . '</div>');
+
+        $mform->addElement('duration', 'enrolperiod', get_string('defaultperiod', 'enrol_gudatabase'),
+            array('optional' => true, 'defaultunit' => 86400));
+        $mform->setDefault('enrolperiod', $this->get_config('enrolperiod'));
+        $mform->addHelpButton('enrolperiod', 'defaultperiod', 'enrol_gudatabase');
+
+        $mform->addElement('date_time_selector', 'enrolenddate', get_string('enrolenddate', 'enrol_gudatabase'),
+            array('optional' => true));
+        $mform->setDefault('enrolenddate', 0);
+        $mform->addHelpButton('enrolenddate', 'enrolenddate', 'enrol_gudatabase');
+
+        $roles = array(0 => get_string('unenrol', 'enrol_gudatabase')) + $roles;
+        $mform->addElement('select', 'expireroleid', get_string('expirerole', 'enrol_gudatabase'), $roles);
+        $mform->setDefault('expireroleid', $this->get_config('expireroleid'));
+        $mform->addHelpButton('expireroleid', 'expirerole', 'enrol_gudatabase');
+
+        if (has_capability('enrol/gudatabase:enableunenrol', $context)) {
+            $mform->addElement('select', 'customint4', get_string('enableunenrol', 'enrol_gudatabase'), $yesno);
+            $mform->setDefault('customint4', 0);
+            $mform->addHelpButton('customint4', 'enableunenrol', 'enrol_gudatabase');
+
+            $mform->addElement('select', 'customint5', get_string('enablegroupremove', 'enrol_gudatabase'), $yesno);
+            $mform->setDefault('customint5', 0);
+            $mform->addHelpButton('customint5', 'enablegroupremove', 'enrol_gudatabase');
+        }
     }
 
     /**
