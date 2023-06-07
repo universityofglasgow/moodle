@@ -25,17 +25,41 @@ class currentassessment_table extends table_sql
         $columns = array('coursename', 'assessment', 'itemmodule', 'assessmenttype', 'includedingcat', 'weight', 'duedate', 'status', 'yourgrade', 'feedback');
         $this->define_columns($columns);
 
-        // Define the titles of columns to show in header.
+        $tdr = optional_param('tdr', '', PARAM_INT);
+        $ts = optional_param('ts', '', PARAM_ALPHA);
+
+        $tdrnew = 4;
+
+        $tdircn_icon = '';
+        if ($tdr==4 && $ts=="coursename") {
+            $tdircn_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="coursename") {
+            $tdircn_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
+        $tdirdd_icon = '';
+        if ($tdr==4 && $ts=="duedate") {
+            $tdirdd_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="duedate") {
+            $tdirdd_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
 
         $headers = array(
-            get_string('course'),
+            '<a href="view.php?t=1&ts=coursename&tdr=' . $tdrnew . '">' . get_string('course') . $tdircn_icon . '</a>',
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('activity') . ' type',
             get_string('assessmenttype', 'block_newgu_spdetails'),
-            get_string('includedingcat', 'block_newgu_spdetails'),
+            get_string('source', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
-            get_string('duedate','block_newgu_spdetails'),
+            '<a href="view.php?t=1&ts=duedate&tdr=' . $tdrnew . '">' . get_string('duedate','block_newgu_spdetails') . $tdirdd_icon . '</a>',
             get_string('status'),
             get_string('yourgrade', 'block_newgu_spdetails'),
             get_string('feedback')
@@ -68,18 +92,19 @@ class currentassessment_table extends table_sql
 
     function col_assessment($values){
       global $DB, $CFG;
-      $cmid = $values->id;
+      $itemname = $values->itemname;
+
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;
       $courseid = $values->courseid;
-      $categoryid = $values->categoryid;
-      $itemid = $values->id;
 
-      $itemname = $values->itemname;
+      $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
 
-      $link = $CFG->wwwroot . "/" . $modulename . "/view.php?id=" . $itemid;
+      $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
 
-      return "<a href='".$link."'>" . $itemname . "</a>";
+      if (!empty($link)) {
+          return '<a href="' . $link . '">' . $itemname . '</a>';
+      }
     }
 
     function col_includedingcat($values){
@@ -105,7 +130,7 @@ class currentassessment_table extends table_sql
      }
 
       if ($cfdvalue==1) {
-          return "Old";
+          return "Old GCAT";
       } else {
           return "";
       }
@@ -338,16 +363,51 @@ class pastassessment_table extends table_sql
 
         // Define the titles of columns to show in header.
 
+        $tdr = optional_param('tdr', '', PARAM_INT);
+        $ts = optional_param('ts', '', PARAM_ALPHA);
+
+        $tdrnew = 4;
+
+        $tdircn_icon = '';
+        if ($tdr==4 && $ts=="coursename") {
+            $tdircn_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="coursename") {
+            $tdircn_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
+        $tdirsd_icon = '';
+        if ($tdr==4 && $ts=="startdate") {
+            $tdirsd_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="startdate") {
+            $tdirsd_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
+        $tdired_icon = '';
+        if ($tdr==4 && $ts=="enddate") {
+            $tdired_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="enddate") {
+            $tdired_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
         $headers = array(
-            get_string('course'),
+            '<a href="view.php?t=2&ts=coursename&tdr=' . $tdrnew . '">' . get_string('course') . $tdircn_icon . '</a>',
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('activity') . ' type',
             get_string('assessmenttype', 'block_newgu_spdetails'),
-            get_string('includedingcat', 'block_newgu_spdetails'),
+            get_string('source', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
-            get_string('startdate','block_newgu_spdetails'),
-            get_string('enddate','block_newgu_spdetails'),
+            '<a href="view.php?t=2&ts=startdate&tdr=' . $tdrnew . '">' . get_string('startdate','block_newgu_spdetails') . $tdirsd_icon . '</a>',
+            '<a href="view.php?t=2&ts=enddate&tdr=' . $tdrnew . '">' . get_string('enddate','block_newgu_spdetails') . $tdired_icon . '</a>',
             get_string('viewsubmission','block_newgu_spdetails'),
             get_string('yourgrade', 'block_newgu_spdetails'),
             get_string('feedback')
@@ -365,11 +425,22 @@ class pastassessment_table extends table_sql
     }
 
     function col_assessment($values){
-      global $DB;
+      global $DB, $CFG;
 
       $itemname = $values->itemname;
 
-      return $itemname;
+      $modulename = $values->itemmodule;
+      $iteminstance = $values->iteminstance;
+      $courseid = $values->courseid;
+
+      $cmid = newassessments_statistics::get_cmid($modulename, $courseid, $iteminstance);
+
+      $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
+
+      if (!empty($link)) {
+          return '<a href="' . $link . '">' . $itemname . '</a>';
+      }
+
     }
 
     function col_itemmodule($values){
@@ -423,7 +494,7 @@ class pastassessment_table extends table_sql
      }
 
       if ($cfdvalue==1) {
-          return "Old";
+          return "Old GCAT";
       } else {
           return "";
       }
@@ -450,6 +521,9 @@ class pastassessment_table extends table_sql
     function col_startdate($values){
 
       global $DB;
+
+//      return $values->startdate;
+
 
       $modulename = $values->itemmodule;
       $iteminstance = $values->iteminstance;

@@ -527,4 +527,185 @@ function get_weight($courseid,$categoryid,$aggregationcoef,$aggregationcoef2) {
 return $finalweight;
 }
 
+
+function get_duedateorder() {
+
+global $USER, $DB, $CFG;
+
+$currentcourses = newassessments_statistics::return_enrolledcourses($USER->id, "current");
+$str_currentcourses = implode(",", $currentcourses);
+
+$currentxl = array();
+
+$str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
+
+$sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+
+$arr_cc = $DB->get_records_sql($sql_cc);
+
+$arr_order = array();
+
+foreach ($arr_cc as $key_cc) {
+  $cmid = $key_cc->id;
+  $modulename = $key_cc->itemmodule;
+  $iteminstance = $key_cc->iteminstance;
+  $courseid = $key_cc->courseid;
+  $itemid = $key_cc->id;
+
+  // DUE DATE
+  $duedate = 0;
+  $extspan = "";
+  $extensionduedate = 0;
+  $str_duedate = "—";
+
+  // READ individual TABLE OF ACTIVITY (MODULE)
+  if ($modulename!="") {
+    $arr_duedate = $DB->get_record($modulename,array('course'=>$courseid, 'id'=>$iteminstance));
+
+  if (!empty($arr_duedate)) {
+    if ($modulename=="assign") {
+      $duedate = $arr_duedate->duedate;
+
+      $arr_userflags = $DB->get_record('assign_user_flags', array('userid'=>$USER->id, 'assignment'=>$iteminstance));
+
+      if ($arr_userflags) {
+      $extensionduedate = $arr_userflags->extensionduedate;
+      if ($extensionduedate>0) {
+        $extspan = '<a href="javascript:void(0)" title="' . get_string('extended', 'block_newgu_spdetails') . '" class="extended">*</a>';
+      }
+      }
+
+    }
+    if ($modulename=="forum") {
+      $duedate = $arr_duedate->duedate;
+    }
+    if ($modulename=="quiz") {
+      $duedate = $arr_duedate->timeclose;
+    }
+    if ($modulename=="workshop") {
+      $duedate = $arr_duedate->submissionend;
+    }
+  }
+}
+
+  if ($duedate!=0) {
+    $str_duedate = date("d/m/Y", $duedate) . $extspan;
+  }
+
+  $arr_order[$itemid] = $duedate;
+//    $arr_order2[$duedate] = $itemid;
+}
+
+asort($arr_order);
+
+$str_order = "";
+foreach ($arr_order as $key_order=>$value) {
+$str_order .= $key_order . ",";
+}
+$str_order = rtrim($str_order,",");
+return $str_order;
+}
+
+
+function get_startenddateorder() {
+
+      global $USER, $DB, $CFG;
+
+      $pastcourses = newassessments_statistics::return_enrolledcourses($USER->id, "past");
+      $str_pastcourses = implode(",", $pastcourses);
+
+      $pastxl = array();
+
+      if ($str_pastcourses!="") {
+
+      $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_pastcourses);
+
+      $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+
+      $arr_cc = $DB->get_records_sql($sql_cc);
+
+
+      $arr_sdorder = array();
+      $arr_edorder = array();
+
+      foreach ($arr_cc as $key_cc) {
+          $cmid = $key_cc->id;
+          $modulename = $key_cc->itemmodule;
+          $iteminstance = $key_cc->iteminstance;
+          $courseid = $key_cc->courseid;
+          $categoryid = $key_cc->categoryid;
+          $itemid = $key_cc->id;
+          $aggregationcoef = $key_cc->aggregationcoef;
+          $aggregationcoef2 = $key_cc->aggregationcoef2;
+
+          // FETCH ASSESSMENT TYPE
+          $arr_gradecategory = $DB->get_record('grade_categories',array('courseid'=>$courseid, 'id'=>$categoryid));
+          if (!empty($arr_gradecategory)) {
+            $gradecategoryname = $arr_gradecategory->fullname;
+          }
+
+          $assessmenttype = newassessments_statistics::return_assessmenttype($gradecategoryname, $aggregationcoef);
+
+
+          // START DATE
+          $submissionstartdate = 0;
+          $startdate = "";
+          $duedate = 0;
+          $enddate = "";
+
+          // READ individual TABLE OF ACTIVITY (MODULE)
+          if ($modulename!="") {
+            $arr_submissionstartdate = $DB->get_record($modulename,array('course'=>$courseid, 'id'=>$iteminstance));
+
+          if (!empty($arr_submissionstartdate)) {
+            if ($modulename=="assign") {
+              $submissionstartdate = $arr_submissionstartdate->allowsubmissionsfromdate;
+              $duedate = $arr_submissionstartdate->duedate;
+            }
+            if ($modulename=="forum") {
+              $submissionstartdate = $arr_submissionstartdate->assesstimestart;
+              $duedate = $arr_submissionstartdate->duedate;
+            }
+            if ($modulename=="quiz") {
+              $submissionstartdate = $arr_submissionstartdate->timeopen;
+              $duedate = $arr_submissionstartdate->timeclose;
+            }
+            if ($modulename=="workshop") {
+              $submissionstartdate = $arr_submissionstartdate->submissionstart;
+              $duedate = $arr_submissionstartdate->submissionend;
+            }
+          }
+        }
+
+
+            $startdate = date("d/m/Y", $submissionstartdate);
+            $arr_sdorder[$itemid] = $submissionstartdate;
+            $enddate = date("d/m/Y", $duedate);
+            $arr_edorder[$itemid] = $duedate;
+
+
+      }
+
+    }
+
+  asort($arr_sdorder);
+  $str_sdorder = "";
+  foreach ($arr_sdorder as $key_order=>$value) {
+    $str_sdorder .= $key_order . ",";
+  }
+  $str_sdorder = rtrim($str_sdorder,",");
+
+  asort($arr_edorder);
+  $str_edorder = "";
+  foreach ($arr_edorder as $key_order=>$value) {
+    $str_edorder .= $key_order . ",";
+  }
+  $str_edorder = rtrim($str_edorder,",");
+
+  $array_order = array("startdateorder"=>$str_sdorder, "enddateorder"=>$str_edorder);
+
+  return $array_order;
+
+}
+
 ?>

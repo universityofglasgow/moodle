@@ -76,7 +76,7 @@ if ($str_currentcourses!="" && $coursestype=="current") {
     $spdetailspdf .= '<th width="15%"' . $thhd . '>' . get_string('assessment') . '</th>';
     $spdetailspdf .= '<th width="8%" ' . $thhd . '>' . get_string('activity') . ' type' . "</th>";
     $spdetailspdf .= '<th width="8%" ' . $thhd . '>' . get_string('assessmenttype', 'block_newgu_spdetails') . "</th>";
-    $spdetailspdf .= '<th width="6%" ' . $thhd . '>' . get_string('includedingcat', 'block_newgu_spdetails') . "</th>";
+    $spdetailspdf .= '<th width="6%" ' . $thhd . '>' . get_string('source', 'block_newgu_spdetails') . "</th>";
     $spdetailspdf .= '<th width="5%" ' . $thhd . '>' . get_string('weight', 'block_newgu_spdetails') . "</th>";
     $spdetailspdf .= '<th width="7%" ' . $thhd . '>' . get_string('duedate','block_newgu_spdetails') . "</th>";
     $spdetailspdf .= '<th width="10%" ' . $thhd . '>' . get_string('status') . "</th>";
@@ -293,7 +293,7 @@ if ($coursestype=="past") {
     $spdetailspdf .= '<th width="15%"' . $thhd . '>' . get_string('assessment') . '</th>';
     $spdetailspdf .= '<th width="6%" ' . $thhd . '>' . get_string('activity') . ' type' . "</th>";
     $spdetailspdf .= '<th width="8%" ' . $thhd . '>' . get_string('assessmenttype', 'block_newgu_spdetails') . "</th>";
-    $spdetailspdf .= '<th width="6%" ' . $thhd . '>' . get_string('includedingcat', 'block_newgu_spdetails') . "</th>";
+    $spdetailspdf .= '<th width="6%" ' . $thhd . '>' . get_string('source', 'block_newgu_spdetails') . "</th>";
     $spdetailspdf .= '<th width="5%" ' . $thhd . '>' . get_string('weight', 'block_newgu_spdetails') . "</th>";
     $spdetailspdf .= '<th width="7%" ' . $thhd . '>' . get_string('startdate','block_newgu_spdetails') . "</th>";
     $spdetailspdf .= '<th width="7%" ' . $thhd . '>' . get_string('enddate','block_newgu_spdetails') . "</th>";
@@ -607,7 +607,7 @@ if ($spdetailstype=="excel" && $spdetailspdf!="" && $str_coursestype!="") {
     $col++;
     $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string("assessmenttype", "block_newgu_spdetails"));
     $col++;
-    $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string("includedingcat", "block_newgu_spdetails"));
+    $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string("source", "block_newgu_spdetails"));
     $col++;
     $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string('weight', 'block_newgu_spdetails'));
     $col++;
@@ -637,7 +637,7 @@ if ($spdetailstype=="excel" && $spdetailspdf!="" && $str_coursestype!="") {
     $col++;
     $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string("assessmenttype", "block_newgu_spdetails"));
     $col++;
-    $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string("includedingcat", "block_newgu_spdetails"));
+    $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string("source", "block_newgu_spdetails"));
     $col++;
     $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string('weight', 'block_newgu_spdetails'));
     $col++;
