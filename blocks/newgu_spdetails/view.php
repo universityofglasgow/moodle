@@ -92,7 +92,7 @@ $PAGE->requires->js_amd_inline("
                                     $tab = optional_param('t', 1, PARAM_INT);
 
                                     $ts = optional_param('ts', "", PARAM_ALPHA);
-                                    $tdir = optional_param('tdir', 1, PARAM_INT);
+                                    $tdr = optional_param('tdr', 1, PARAM_INT);
 
                                     $courseselected = "";
                                     if ($ts=="coursename") {
@@ -128,13 +128,23 @@ $PAGE->requires->js_amd_inline("
                                     }
                                     $duedateorder = array();
                                     if ($ts=="duedate") {
-                                        $duedateorder = get_duedateorder();
+                                        $duedateorder = get_duedateorder($tdr);
+
                                         if ($duedateorder!="") {
                                           $addsort = " ORDER BY FIELD(gi.id, $duedateorder)";
                                         }
                                     }
 
-
+                                    if ($tdr==4) {
+                                        if ($addsort!="") {
+                                          $addsort .= " DESC";
+                                        }
+                                    }
+                                    if ($tdr==3) {
+                                        if ($addsort!="") {
+                                          $addsort .= " ASC";
+                                        }
+                                    }
 
                                     $filteroptions = '
                                     <div id="forborder" style="border:1px solid #ccc; padding-top:8px; margin-top:-17px;">
@@ -142,8 +152,8 @@ $PAGE->requires->js_amd_inline("
                                     <label>Sort by:
                                         <select onchange="document.location.href=this.value" name="grades_sortby" aria-controls="grades" class="" fdprocessedid="qno">
                                           <option value="view.php?t=1">Select</option>
-                                          <option ' . $courseselected . ' value="view.php?t=' . $tab . '&ts=coursename&tdir=' . $tdir . '">Course</option>
-                                          <option ' . $duedateselected . ' value="view.php?t=' . $tab . '&ts=duedate&tdir=' . $tdir . '">Due date</option>
+                                          <option ' . $courseselected . ' value="view.php?t=' . $tab . '&ts=coursename&tdr=' . $tdr . '">Course</option>
+                                          <option ' . $duedateselected . ' value="view.php?t=' . $tab . '&ts=duedate&tdr=' . $tdr . '">Due date</option>
                                         </select> </label>
 
                                     </div>
@@ -198,9 +208,19 @@ $PAGE->requires->js_amd_inline("
                                         if ($ts=="coursename") {
                                             $addsort = " ORDER BY c.fullname";
                                         }
+                                        if ($tdr==4) {
+                                            if ($addsort!="") {
+                                              $addsort .= " DESC";
+                                            }
+                                        }
+                                        if ($tdr==3) {
+                                            if ($addsort!="") {
+                                              $addsort .= " ASC";
+                                            }
+                                        }
 
                                         if ($ts=="startdate" || $ts=="enddate") {
-                                            $startenddateorder = get_startenddateorder();
+                                            $startenddateorder = get_startenddateorder($tdr);
 
                                             $startdateorder = $startenddateorder["startdateorder"];
                                             $enddateorder = $startenddateorder["enddateorder"];
@@ -219,9 +239,9 @@ $PAGE->requires->js_amd_inline("
                                         <label>Sort by:
                                             <select onchange="document.location.href=this.value" name="grades_sortby" aria-controls="grades" class="" fdprocessedid="qno">
                                               <option value="view.php?t=2">Select</option>
-                                              <option ' . $courseselected . ' value="view.php?t=' . $tab . '&ts=coursename&tdir=' . $tdir . '">Course</option>
-                                              <option ' . $startdateselected . ' value="view.php?t=' . $tab . '&ts=startdate&tdir=' . $tdir . '">Start date</option>
-                                              <option ' . $enddateselected . ' value="view.php?t=' . $tab . '&ts=enddate&tdir=' . $tdir . '">End date</option>
+                                              <option ' . $courseselected . ' value="view.php?t=' . $tab . '&ts=coursename&tdr=' . $tdr . '">Course</option>
+                                              <option ' . $startdateselected . ' value="view.php?t=' . $tab . '&ts=startdate&tdr=' . $tdr . '">Start date</option>
+                                              <option ' . $enddateselected . ' value="view.php?t=' . $tab . '&ts=enddate&tdr=' . $tdr . '">End date</option>
                                             </select> </label>
 
                                         </div>

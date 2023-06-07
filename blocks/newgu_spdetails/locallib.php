@@ -528,7 +528,7 @@ return $finalweight;
 }
 
 
-function get_duedateorder() {
+function get_duedateorder($tdr) {
 
 global $USER, $DB, $CFG;
 
@@ -596,18 +596,24 @@ foreach ($arr_cc as $key_cc) {
 //    $arr_order2[$duedate] = $itemid;
 }
 
-asort($arr_order);
+if ($tdr==3) {
+  asort($arr_order);
+}
+if ($tdr==4) {
+  arsort($arr_order);
+}
 
 $str_order = "";
 foreach ($arr_order as $key_order=>$value) {
 $str_order .= $key_order . ",";
 }
 $str_order = rtrim($str_order,",");
+
 return $str_order;
 }
 
 
-function get_startenddateorder() {
+function get_startenddateorder($tdr) {
 
       global $USER, $DB, $CFG;
 
@@ -688,14 +694,24 @@ function get_startenddateorder() {
 
     }
 
-  asort($arr_sdorder);
+  if ($tdr==3) {
+    asort($arr_sdorder);
+  }
+  if ($tdr==4) {
+    arsort($arr_sdorder);
+  }
   $str_sdorder = "";
   foreach ($arr_sdorder as $key_order=>$value) {
     $str_sdorder .= $key_order . ",";
   }
   $str_sdorder = rtrim($str_sdorder,",");
 
-  asort($arr_edorder);
+  if ($tdr==3) {
+    asort($arr_edorder);
+  }
+  if ($tdr==4) {
+    arsort($arr_edorder);
+  }
   $str_edorder = "";
   foreach ($arr_edorder as $key_order=>$value) {
     $str_edorder .= $key_order . ",";
