@@ -33,11 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2017 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Overriding block_xp tasks is not advised.
  */
 class tasks_definition_maker extends \block_xp\local\task\default_tasks_definition_maker {
-
-    public function get_tasks_definition() {
-        return parent::get_tasks_definition();
-    }
-
 }

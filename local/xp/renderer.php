@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/blocks/xp/renderer.php');
 
+use block_xp\local\xp\state;
 use local_xp\local\factory\course_currency_factory;
 use local_xp\local\drop\drop;
 use local_xp\local\currency\currency;
@@ -86,6 +87,20 @@ class local_xp_renderer extends block_xp_renderer {
             $this->currencyfactory = \block_xp\di::get('course_currency_factory');
         }
         return $this->currencyfactory;
+    }
+
+    /**
+     * Get the progress bar mustache context.
+     *
+     * @param state $state The renderable object.
+     * @param bool $showpercentagetogo Show the percentage to go.
+     * @return array
+     */
+    protected function get_progress_bar_context(state $state, $percentagetogo = false) {
+        $context = parent::get_progress_bar_context($state, $percentagetogo);
+        $context['islevelless'] = $state instanceof \local_xp\local\xp\levelless_state
+            || $state instanceof \local_xp\local\xp\user_global_state;
+        return $context;
     }
 
     /**
@@ -213,19 +228,10 @@ class local_xp_renderer extends block_xp_renderer {
         }
         $o = '';
         $o .= html_writer::start_tag('span', ['class' => 'block_xp-xp']);
-        $o .= html_writer::tag('span', $this->xp_amount($points), ['class' => 'pts']);
+        $o .= html_writer::tag('span', $this->xp_human($points), ['class' => 'pts']);
         $o .= $this->currency($currency);
         $o .= html_writer::end_tag('span');
         return $o;
-    }
-
-    private function xp_amount($points) {
-        $xp = (int) $points;
-        if ($xp > 999) {
-            $thousandssep = get_string('thousandssep', 'langconfig');
-            $xp = number_format($xp, 0, '.', $thousandssep);
-        }
-        return $xp;
     }
 
     public function xp_preview($points, $courseid = null) {

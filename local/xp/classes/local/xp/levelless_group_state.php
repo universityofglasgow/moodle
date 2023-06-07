@@ -26,6 +26,7 @@
 namespace local_xp\local\xp;
 defined('MOODLE_INTERNAL') || die();
 
+use block_xp\local\utils\external_utils;
 use context_course;
 use moodle_url;
 use renderable;
@@ -62,10 +63,8 @@ class levelless_group_state extends levelless_state implements renderable  {
     }
 
     public function get_name() {
-        global $CFG;
-        require_once($CFG->libdir . '/externallib.php');
         $group = $this->get_group();
-        return external_format_string($group->name, context_course::instance($group->courseid)->id);
+        return external_utils::format_string($group->name, context_course::instance($group->courseid)->id);
     }
 
     public function get_picture() {
@@ -97,7 +96,6 @@ class levelless_group_state extends levelless_state implements renderable  {
         if (function_exists('get_group_picture_url')) {
             return get_group_picture_url($group, $group->courseid, true);
         }
-
 
         // The following code is adapted from get_group_picture_url.
         $context = context_course::instance($group->courseid);

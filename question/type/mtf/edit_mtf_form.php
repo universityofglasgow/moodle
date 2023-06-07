@@ -8,26 +8,27 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * qtype_mtf editing form.
+ * qtype_mtf lib.
  *
- * @package qtype_mtf
- * @author Amr Hourani (amr.hourani@id.ethz.ch)
- * @author Martin Hanusch (martin.hanusch@let.ethz.ch)
- * @copyright 2016 ETHZ {@link http://ethz.ch/}
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     qtype_mtf
+ * @author      Amr Hourani (amr.hourani@id.ethz.ch)
+ * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
+ * @copyright   2016 ETHZ {@link http://ethz.ch/}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot . '/question/type/edit_question_form.php');
-require_once ($CFG->dirroot . '/question/type/mtf/lib.php');
-require_once ($CFG->dirroot . '/question/engine/bank.php');
+require_once($CFG->dirroot . '/question/type/edit_question_form.php');
+require_once($CFG->dirroot . '/question/type/mtf/lib.php');
+require_once($CFG->dirroot . '/question/engine/bank.php');
 
 /**
  * qtype_mtf editing form definition.
@@ -244,6 +245,10 @@ class qtype_mtf_edit_form extends question_edit_form {
 
         $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringsubpoints', 'qtype_mtf'),
                                                 'subpoints', $attributes);
+        if (get_config('qtype_mtf')->allowdeduction) {
+            $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringsubpointdeduction', 'qtype_mtf'),
+                'subpointdeduction', $attributes);
+        }
         $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '', get_string('scoringmtfonezero', 'qtype_mtf'),
                                                 'mtfonezero', $attributes);
 
@@ -252,6 +257,19 @@ class qtype_mtf_edit_form extends question_edit_form {
         $mform->setDefault('scoringmethod', 'subpoints');
         $mform->addElement('advcheckbox', 'shuffleanswers', get_string('shuffleanswers', 'qtype_mtf'), null, null, array(0, 1));
         $mform->addHelpButton('shuffleanswers', 'shuffleanswers', 'qtype_mtf');
+
+        if (get_config('qtype_mtf')->allowdeduction) {
+            $mform->addElement('text', 'deduction', get_string('deduction', 'qtype_mtf'), array('size' => 6));
+            $mform->addHelpButton('deduction', 'deduction', 'qtype_mtf');
+            $mform->setDefault('deduction', '0.5');
+            $mform->setType('deduction', PARAM_FLOAT);
+            $mform->hideIf('deduction', 'scoringmethod', 'neq', 'subpointdeduction');
+        } else {
+            $mform->addElement('hidden', 'deduction');
+            $mform->setType('deduction', PARAM_FLOAT);
+            $mform->setDefault('deduction', '0');
+        }
+
         $mform->addElement('header', 'answerhdr', get_string('optionsandfeedback', 'qtype_mtf'), '');
         $mform->setExpanded('answerhdr', 1);
 
@@ -454,6 +472,7 @@ class qtype_mtf_edit_form extends question_edit_form {
         if (isset($question->options)) {
             $question->shuffleanswers = $question->options->shuffleanswers;
             $question->scoringmethod = $question->options->scoringmethod;
+            $question->deduction = $question->options->deduction;
             $question->rows = $question->options->rows;
             $question->columns = $question->options->columns;
             $question->numberofrows = $question->options->numberofrows;
@@ -500,7 +519,58 @@ class qtype_mtf_edit_form extends question_edit_form {
         global $DB;
 
         $errors = parent::validation($data, $files);
+        // Make sure that the user can edit the question.
+        if (empty($data['makecopy']) && isset($this->question->id)
+            && !$this->question->formoptions->canedit) {
+            $errors['currentgrp'] = get_string('nopermissionedit', 'question');
+        }
 
+        // Category.
+        if (empty($data['category'])) {
+            // User has provided an invalid category.
+            $errors['category'] = get_string('required');
+        }
+
+        // Default mark.
+        if (array_key_exists('defaultmark', $data) && $data['defaultmark'] < 0) {
+            $errors['defaultmark'] = get_string('defaultmarkmustbepositive', 'question');
+        }
+
+        // Can only have one idnumber per category.
+        if (strpos($data['category'], ',') !== false) {
+            list($category, $categorycontextid) = explode(',', $data['category']);
+        } else {
+            $category = $data['category'];
+        }
+        if (isset($data['idnumber']) && ((string) $data['idnumber'] !== '')) {
+            if (empty($data['usecurrentcat']) && !empty($data['categorymoveto'])) {
+                $categoryinfo = $data['categorymoveto'];
+            } else {
+                $categoryinfo = $data['category'];
+            }
+            list($categoryid, $notused) = explode(',', $categoryinfo);
+            $conditions = 'questioncategoryid = ? AND idnumber = ?';
+            $params = [$categoryid, $data['idnumber']];
+            if (!empty($this->question->id)) {
+                // Get the question bank entry id to not check the idnumber for the same bank entry.
+                $sql = "SELECT DISTINCT qbe.id
+                          FROM {question_versions} qv
+                          JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+                         WHERE qv.questionid = ?";
+                $bankentry = $DB->get_record_sql($sql, ['id' => $this->question->id]);
+                $conditions .= ' AND id <> ?';
+                $params[] = $bankentry->id;
+            }
+
+            if ($DB->record_exists_select('question_bank_entries', $conditions, $params)) {
+                $errors['idnumber'] = get_string('idnumbertaken', 'error');
+            }
+        }
+
+        if ($this->customfieldpluginenabled) {
+            // Add the custom field validation.
+            $errors  = array_merge($errors, $this->customfieldhandler->instance_form_validation($data, $files));
+        }
         // Check for empty option texts.
         $countfulloption = 0;
         for ($i = 1; $i <= count($data["option"]); ++$i) {
@@ -519,6 +589,21 @@ class qtype_mtf_edit_form extends question_edit_form {
             }
         }
 
+        // If deduction is set, it must be >= 0 and <= 1
+        if (isset($data['deduction'])) {
+            $deduction = $data['deduction'];
+            if ($deduction < 0 || $deduction > 1) {
+                $errors['deduction'] = get_string('invaliddeduction', 'qtype_mtf');
+            }
+        }
+
+        // If admin has disallowed deductions, scoring method cannot be subpoints with deductions
+        if (get_config('qtype_mtf', 'allowdeduction') === '0') {
+            if (!isset($data['scoringmethod'])) {
+                $errors['radiogroupscoring'] = get_string('cannotusedeductions', 'qtype_mtf');
+            }
+        }
+
         if ($countfulloption == 0) {
             $errors["option[0]"] = get_string('notenoughanswers', 'qtype_mtf', 1);
         }
@@ -527,34 +612,6 @@ class qtype_mtf_edit_form extends question_edit_form {
         for ($j = 1; $j <= $data['numberofcolumns']; ++$j) {
             if (trim(strip_tags($data["responsetext_" . $j])) == false) {
                 $errors["responsetext_" . $j] = get_string('mustsupplyvalue', 'qtype_mtf');
-            }
-        }
-
-        // Can only have one idnumber per category.
-        if (strpos($data['category'], ',') !== false) {
-            list($category, $categorycontextid) = explode(',', $data['category']);
-        } else {
-            $category = $data['category'];
-        }
-
-        if (isset($data['idnumber']) && ((string)$data['idnumber'] !== '')) {
-            if (empty($data['usecurrentcat']) && !empty($data['categorymoveto'])) {
-                $categoryinfo = $data['categorymoveto'];
-            } else {
-                $categoryinfo = $data['category'];
-            }
-
-            list($categoryid, $notused) = explode(',', $categoryinfo);
-            $conditions = 'category = ? AND idnumber = ?';
-            $params = [$categoryid, $data['idnumber']];
-
-            if (!empty($this->question->id)) {
-                $conditions .= ' AND id <> ?';
-                $params[] = $this->question->id;
-            }
-
-            if ($DB->record_exists_select('question', $conditions, $params)) {
-                $errors['idnumber'] = get_string('idnumbertaken', 'error');
             }
         }
 

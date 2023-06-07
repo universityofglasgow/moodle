@@ -96,11 +96,12 @@ class course_world_navigation_factory implements course_world_navigation_factory
 
         if ($world->get_config()->get('enablegroupladder') != default_course_world_config::GROUP_LADDER_NONE) {
             $toadd[] = [
-                'after' => ['ladder', 'infos'],
+                'in' => ['ladder'],
+                'after' => [],
                 'link' => [
                     'id' => 'group_ladder',
                     'url' => $urlresolver->reverse('group_ladder', ['courseid' => $courseid]),
-                    'text' => get_string('navgroupladder', 'local_xp')
+                    'text' => get_string('teams', 'local_xp'),
                 ]
             ];
         }

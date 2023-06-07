@@ -86,4 +86,73 @@
     </weight>
   </question>
 
+  <!-- question with deduction -->
+  <question type="mtf">
+    <name>
+      <text>MTF-Question-002</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[Enter the stem or question prompt here.]]></text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text></text>
+    </generalfeedback>
+    <defaultgrade>1.0000000</defaultgrade>
+    <penalty>0.3333333</penalty>
+    <hidden>0</hidden>
+    <scoringmethod><text>subpointdeduction</text>
+</scoringmethod>
+    <shuffleanswers>false</shuffleanswers>
+    <numberofrows>2</numberofrows>
+    <numberofcolumns>2</numberofcolumns>
+    <answernumbering>123</answernumbering>
+    <deduction>0.5</deduction>
+    <row number="1">
+      <optiontext format="html">
+        <text><![CDATA[option text 1]]></text>
+      </optiontext>
+      <feedbacktext format="html">
+        <text>feedback to option 1</text>
+      </feedbacktext>
+    </row>
+    <row number="2">
+      <optiontext format="html">
+        <text>option text 2</text>
+      </optiontext>
+      <feedbacktext format="html">
+        <text>feedback to option 2</text>
+      </feedbacktext>
+    </row>
+    <column number="1">
+      <responsetext format="moodle_auto_format">
+        <text>True</text>
+      </responsetext>
+    </column>
+    <column number="2">
+      <responsetext format="moodle_auto_format">
+        <text>False</text>
+      </responsetext>
+    </column>
+    <weight rownumber="1" columnnumber="1">
+      <value>
+         1.000
+      </value>
+    </weight>
+    <weight rownumber="1" columnnumber="2">
+      <value>
+         0.000
+      </value>
+    </weight>
+    <weight rownumber="2" columnnumber="1">
+      <value>
+         0.000
+      </value>
+    </weight>
+    <weight rownumber="2" columnnumber="2">
+      <value>
+         1.000
+      </value>
+    </weight>
+  </question>
+
 </quiz>

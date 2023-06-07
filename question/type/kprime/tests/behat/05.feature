@@ -28,7 +28,7 @@ Feature: Step 5
       | question          | page |
       | Kprime Question 2 | 1    |
 
-  @javascript
+  @javascript @qtype_kprime_tc22a
   Scenario: Testcase 22 a
   # Check manual grading override
 
@@ -43,7 +43,7 @@ Feature: Step 5
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student2: 50% correct options
@@ -57,7 +57,7 @@ Feature: Step 5
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Login as teacher1 and grade manually
@@ -76,7 +76,7 @@ Feature: Step 5
     And "input[value='0.5']" "css_element" should exist
     And I set the field with xpath "//*[@value='0.75']" to "0.66"
     And I set the field with xpath "//*[@value='0.5']" to "0.33"
-    And I press "Save and go to next page"
+    And I press "Save and show next"
 
   # Check regraded attempts
     When I click on "nav a:contains('Quiz 1')" "css_element"
@@ -100,7 +100,7 @@ Feature: Step 5
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student2: 50% correct options
@@ -114,7 +114,7 @@ Feature: Step 5
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Login as teacher1 and grade student1 manually
@@ -161,7 +161,7 @@ Feature: Step 5
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student2: 50% (Post 100%) correct options
@@ -175,7 +175,7 @@ Feature: Step 5
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Changing the correct answer from 1 1 0 0 to 1 1 1 1

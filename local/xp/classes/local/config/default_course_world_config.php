@@ -42,7 +42,7 @@ class default_course_world_config extends immutable_config {
 
     /** The currency is not customised and uses the defaults from admin. */
     const CURRENCY_USE_DEFAULT = 0;
-    /** The currency is custommised uses whatever is set in the course. */
+    /** The currency is customised uses whatever is set in the course. */
     const CURRENCY_IS_CUSTOMIED = 1;
 
     /** The progress bar progresses towards the next level. */
@@ -78,8 +78,9 @@ class default_course_world_config extends immutable_config {
         parent::__construct(new static_config([
             'maxpointspertime' => 0,
             'timeformaxpoints' => 0,
-            'currencystate' => self::CURRENCY_USE_DEFAULT,
             'badgetheme' => '',
+            'currencystate' => self::CURRENCY_USE_DEFAULT,
+            'currencytheme' => '',
 
             // This is the legacy name that we've kept to simpligy upgrades and restores, however now it
             // no longer only represents whether the group ladder is enabled, it also determines the source

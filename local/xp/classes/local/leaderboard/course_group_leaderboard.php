@@ -26,14 +26,13 @@
 namespace local_xp\local\leaderboard;
 defined('MOODLE_INTERNAL') || die();
 
-use moodle_database;
-use stdClass;
+use block_xp\local\utils\external_utils;
 use block_xp\local\xp\levels_info;
 use context_course;
 use local_xp\local\team\static_team;
 use local_xp\local\xp\levelless_group_state;
-
-require_once($CFG->libdir . '/externallib.php');
+use moodle_database;
+use stdClass;
 
 /**
  * Course group leaderboard.
@@ -171,7 +170,7 @@ class course_group_leaderboard extends grouped_leaderboard {
 
         return array_map(function($group) {
             $context = context_course::instance($group->courseid);
-            return new static_team($group->id, external_format_string($group->name, $context->id));
+            return new static_team($group->id, external_utils::format_string($group->name, $context->id));
         }, $this->db->get_records_sql($sql, $params));
     }
 

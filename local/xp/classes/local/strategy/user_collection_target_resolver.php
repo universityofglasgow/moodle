@@ -56,6 +56,8 @@ class user_collection_target_resolver implements collection_target_resolver_from
             return $event->relateduserid;
         } else if ($event instanceof \core\event\course_module_completion_updated) {
             return $event->relateduserid;
+        } else if ($event instanceof \local_xp\event\section_completed) {
+            return $event->relateduserid;
         }
 
         return $event->userid;

@@ -128,7 +128,7 @@ class course_block extends \block_xp\local\block\course_block {
         $canshow = $world->get_config()->get('enableladder')
             && $world->get_config()->get('identitymode') != course_world_config::IDENTITY_OFF;
 
-        // Do not display the block when it's not set as
+        // Do not display the block when it's not set as.
         $ispercourse = \block_xp\di::get('config')->get('context') == CONTEXT_COURSE;
 
         // Detect whether we are on the system profile page, or the course profile page.
@@ -207,6 +207,25 @@ class course_block extends \block_xp\local\block\course_block {
 
         }
         return $actions;
+    }
+
+    /**
+     * Get the widget.
+     *
+     * @param \block_xp\local\course_world $world The world.
+     * @param \block_xp\local\xp\state $state The user's state.
+     * @return \block_xp\local\output\xp_widget The widget.
+     */
+    protected function get_widget($world, $state) {
+        $widget = parent::get_widget($world, $state);
+        $config = $world->get_config();
+
+        // Hide the next level when the progress bar does not refer to the next level.
+        if ($config->get('progressbarmode') != default_course_world_config::PROGRESS_BAR_MODE_LEVEL) {
+            $widget->set_show_next_level(false);
+        }
+
+        return $widget;
     }
 
 }

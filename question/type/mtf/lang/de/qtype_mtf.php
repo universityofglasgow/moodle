@@ -24,6 +24,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allowdeduction'] = 'Punktabzug erlauben';
+$string['allowdeduction_help'] = 'Wenn aktiviert, kann die Lehrperson bei Fragen negative Punkte (also einen Abzug) für falsche Antworten aktivieren.
+        Wenn deaktivert, wird die Einstellung nicht angezeigt, z. B. weil die Institution aus didaktischen Gründen keine Strafpunkte bei diesem Fragetypen erlauben möchte. Diese Option kann nicht deaktiviert werden, wenn "Teilpunkte mit Abzug" die Standard-Bewertungsmethode ist.';
 $string['answernumbering'] = 'Wahlantworten nummerieren?';
 $string['answernumbering123'] = '1., 2., 3., ...';
 $string['answernumberingabc'] = 'a., b., c., ...';
@@ -33,9 +36,13 @@ $string['answernumberingIIII'] = 'I., II., III., ...';
 $string['answernumberingnone'] = 'Keine Nummerierung';
 $string['answersingleno'] = 'Mehrere Antworten erlauben';
 $string['answersingleyes'] = 'Nur eine Antwort erlauben';
+$string['cannotusedeductions'] = 'Bitte eine gültige Bewertungsmethode auswählen.';
+$string['clearrow'] = 'Antwort für Zeile {$a} löschen';
 $string['configintro'] = 'Standardeinstellungen für Mehrfach Wahr/Falsch-Fragen.';
 $string['configscoringmethod'] = 'Standard Bewertung für Mehrfach Wahr/Falsch-Fragen.';
 $string['configshuffleanswers'] = 'Standardeinstellung für das Mischen der Wahlantworten.';
+$string['deduction'] = 'Abzug wenn falsch';
+$string['deduction_help'] = 'Abzug für falsche Antworten, als Anteil der Punktzahl, welche das Item geben würde. Nur nützlich für die Bewertungsmethode Teilpunkte.';
 $string['deletedchoice'] = 'Diese Antwort wurde gelöscht, nachdem der Test gestartet worden ist.';
 $string['enterfeedbackhere'] = 'Feedback hinzufügen.';
 $string['entergeneralfeedbackhere'] = 'Allgemeines Feedback hinzufügen.';
@@ -45,6 +52,7 @@ $string['false'] = 'Falsch';
 $string['feedbackforoption'] = 'Feedback für';
 $string['generalfeedback'] = 'Allgemeines Feedback.';
 $string['generalfeedback_help'] = 'Allgemeines Feedback wird unabhängig von der gegebenen Antwort angezeigt. <br />Allgemeines Feedback kann eingesetzt werden, um korrekte Antworten zu erläutern oder Links zu weiteren Informationen zu geben.';
+$string['invaliddeduction'] = 'Der Abzug muss eine Zahl zwischen 0 und 1 (inklusive) sein';
 $string['maxpoints'] = 'Max. Punkte';
 $string['mustsupplyresponses'] = 'Sie müssen für alle Texte einen Wert eingeben.';
 $string['mustsupplyvalue'] = 'Sie müssen hier einen Wert eingeben.';
@@ -66,12 +74,14 @@ $string['responsetexts'] = 'Bewertungsoptionen';
 $string['save'] = 'Speichern';
 $string['scoringmtfonezero'] = 'MTF1/0';
 $string['scoringmtfonezero_help'] = 'Bei der Auswahl „MTF1/0“ erhalten Kandidat/innen die volle Punktzahl, wenn alle Wahlantworten richtig bewertet wurden und sonst null Punkte.';
+$string['scoringsubpointdeduction'] = 'Teilpunkte mit Abzug';
+$string['scoringsubpointdeduction_help'] = 'Bei der Auswahl „Teilpunkte mit Abzug“ erhalten Kandidat/innen Teilpunkte für jede richtige Bewertung einer Wahlantwort, aber auch Abzug für falsche Antworten.';
 $string['scoringsubpoints'] = 'Teilpunkte';
 $string['scoringsubpoints_help'] = 'Bei der Auswahl „Teilpunkte“ erhalten Kandidat/innen Teilpunkte für jede richtige Bewertung einer Wahlantwort.';
 $string['showscoringmethod'] = 'Bewertungsmethode anzeigen';
 $string['showscoringmethod_help'] = 'Wenn diese Option aktiviert ist, wird Studenten die Bewertungsmethode in Tests angezeigt.';
 $string['scoringmethod'] = 'Bewertungsmethode';
-$string['scoringmethod_help'] = 'Es gibt zwei alternative Bewertungsmethoden. <br /><strong>Teilpunkte</strong> (empfohlen): Bei der Auswahl „Teilpunkte“ erhalten Kandidat/innen Teilpunkte für jede richtige Bewertung einer Wahlantwort.<br /><strong>MTF1/0</strong>: Bei der Auswahl „MTF1/0“ erhalten Kandidat/innen die volle Punktzahl, wenn alle Wahlantworten richtig bewertet wurden und sonst null Punkte.';
+$string['scoringmethod_help'] = 'Es gibt drei alternative Bewertungsmethoden. <br /><strong>Teilpunkte</strong> (empfohlen): Bei der Auswahl „Teilpunkte“ erhalten Kandidat/innen Teilpunkte für jede richtige Bewertung einer Wahlantwort.<br /><strong>Teilpunkte mit Abzug</strong>: Bei der Auswahl „Teilpunkte mit Abzug“ erhalten Kandidat/innen Teilpunkte für jede richtige Bewertung einer Wahlantwort, aber auch Abzug für falsche Antworten. Diese Methode muss vorgängig durch den Administrator aktiviert worden sein.<br /><strong>MTF1/0</strong>: Bei der Auswahl „MTF1/0“ erhalten Kandidat/innen die volle Punktzahl, wenn alle Wahlantworten richtig bewertet wurden und sonst null Punkte.';
 $string['shuffleanswers'] = 'Wahlantworten mischen';
 $string['shuffleanswers_help'] = 'Wenn aktiviert, ist die Reihenfolge der Wahlantworten bei jedem Versuch zufällig, sofern die Option „In Fragen zufällig mischen“ aktiviert ist.';
 $string['stem'] = 'Stamm';

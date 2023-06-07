@@ -271,15 +271,10 @@ body#page-question-type-mtf div[id^=fgroup_id_weightsarray] {
     border-top: 0;
 }
 
-.que.mtf table .c0,
-.que.mtf table .c1 {
+.que.mtf table .reset,
+.que.mtf table .radio {
     width: 1%;
     min-width: 70px;
-}
-
-#page-mod-quiz-review .que.mtf table .c2,
-#page-mod-quiz-review .que.mtf table .c4 {
-    width: 40%;
 }
 
 @supports (display:-ms-grid) {

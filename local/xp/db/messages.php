@@ -25,10 +25,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$enabledflag = defined('MESSAGE_DEFAULT_ENABLED') ? MESSAGE_DEFAULT_ENABLED : MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF;
+
 $messageproviders = [
     'manualaward' => array (
         'defaults' => array(
-            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF
+            'popup' => MESSAGE_PERMITTED + $enabledflag
         ),
     ),
 ];

@@ -88,7 +88,7 @@ class handler {
         $secret = null;
         if (!empty($args['secret'])) {
             $secret = $args['secret'];
-        } else if (count($args) === 1)  {
+        } else if (count($args) === 1) {
             $candidate = array_keys($args)[0];
             if ($args[$candidate] === true) {
                 $secret = $candidate;

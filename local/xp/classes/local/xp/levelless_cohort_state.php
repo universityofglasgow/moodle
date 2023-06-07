@@ -26,13 +26,8 @@
 namespace local_xp\local\xp;
 defined('MOODLE_INTERNAL') || die();
 
-use renderable;
+use block_xp\local\utils\external_utils;
 use stdClass;
-use block_xp\local\xp\described_level;
-use block_xp\local\xp\state;
-use block_xp\local\xp\state_with_subject;
-
-require_once($CFG->libdir . '/externallib.php');
 
 /**
  * Level-less cohort state.
@@ -71,9 +66,7 @@ class levelless_cohort_state extends levelless_state {
     }
 
     public function get_name() {
-        global $CFG;
-        require_once($CFG->libdir . '/externallib.php');
-        return external_format_string($this->cohort->name, $this->cohort->contextid);
+        return external_utils::format_string($this->cohort->name, $this->cohort->contextid);
     }
 
 }

@@ -26,10 +26,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['activitycompleted'] = 'Activité achevée';
+$string['adddrop'] = 'Ajouter un drop';
 $string['afterimport'] = 'Après l\'importation';
 $string['anonymousgroup'] = 'Une autre équipe';
 $string['anonymousiomadcompany'] = 'Une autre société';
 $string['anonymousiomaddepartment'] = 'Un autre département';
+$string['anysection'] = 'N\'importe quelle section';
+$string['awardpoints'] = 'Donner des points';
 $string['badgetheme'] = 'Thème des badges';
 $string['badgetheme_help'] = 'Un thème de badge défini l\'apparence par défaut des badges de niveau.';
 $string['categoryn'] = 'Catégorie : {$a}';
@@ -47,17 +50,48 @@ $string['currencysign_help'] = 'Ce paramètre permet de changer la signification
 
 Par exemple, vous pouvez utiliser l\'image d\'une carotte de manière à ce que les utilisateurs reçoivent des carottes comme récompense pour leurs actions.';
 $string['currencysignformhelp'] = 'L\'image déposée ici sera affichée à côté des points à la place de la référence aux points d\'expérience. La taille recommandée est de 18 pixels.';
+$string['currencysignoverride'] = 'Remplacement du symbole de points';
+$string['currencysignxp'] = 'XP (Points d\'expérience)';
 $string['currentpoints'] = 'Points actuels';
+$string['custom'] = 'Personnalisé';
+$string['displayfirstnameinitiallastname'] = 'Afficher le prénom et la première lettre du nom (exemple : Sam H.)';
 $string['displaygroupidentity'] = 'Afficher l\'identité des équipes';
+$string['dropcollected'] = 'Drop récolté';
+$string['dropenabled'] = 'Activé';
+$string['dropenabled_help'] = 'Un drop ne donnera aucun point sauf s\'il est activé.';
+$string['dropherea'] = 'Drop: {$a}';
+$string['dropname'] = 'Nom';
+$string['dropname_help'] = 'Le nom du drop pour votre référence. Ceci n\'est pas affiché aux utilisateurs.';
+$string['droppoints'] = 'Points';
+$string['droppoints_help'] = 'Le nombre de points à donner quand ce drop est trouvé.';
+$string['drops'] = 'Drops';
+$string['drops_help'] = '"Dans les jeux vidéo, certains personnages peuvent _lâcher_ (""drop"" en anglais) des objets ou des points d\'expérience sur le sol pour que le joueur les ramasse. Ces objets et points sont communément appelés ""drops"".
+
+Dans Level Up XP, les drops sont des codes courts (par exemple `[xpdrop abcdef]`) que un instructeur peut placer dans le contenu Moodle régulier. Lorsqu\'ils sont rencontrés par un utilisateur, ces drops seront ramassés et un certain nombre de points seront attribués.
+
+Pour l\'instant, les drops sont invisibles pour l\'utilisateur et attribuent passivement des points la première fois qu\'ils sont rencontrés.
+
+Les drops peuvent être utilisés pour attribuer astucieusement des points lorsque certains types de contenu sont consommés par un étudiant. Voici quelques idées :
+
+- Placer un drop dans les commentaires d\'un quiz uniquement visible pour les scores parfaits
+- Placer un drop dans un contenu approfondi pour récompenser sa consommation
+- Placer un drop dans une discussion de forum intéressante
+- Placer un drop dans une page difficile à atteindre dans un module de cours
+
+[Plus d\'informations](https://docs.levelup.plus/xp/docs/how-to/use-drops?ref=localxp_help)"';
+$string['dropsintro'] = 'Les drops sont des morceaux de code directement placés dans le contenu qui attribuent des points lorsqu\'ils sont rencontrés par un utilisateur.';
+$string['editdrop'] = 'Modifier le drop';
 $string['enablecheatguard'] = 'Activer la mise en garde sur la triche';
 $string['enablecheatguard_help'] = 'La mise en garde sur la triche empêche les étudiants d\'être récompensés une fois qu\'ils atteignent une certaine limite.
 
-[Plus d\'information (anglais)](https://levelup.plus/docs/article/level-up-cheat-guard?ref=localxp_help)';
+[Plus d\'information (anglais)](https://docs.levelup.plus/xp/docs/getting-started/cheat-guard?ref=localxp_help)';
 $string['enablegroupladder'] = 'Activer l\'échelle de groupe';
 $string['enablegroupladder_help'] = 'Une fois activée, les étudiants peuvent accéder à un classement des groupes. Les points des groupes sont calculés à partir des points accumulés par leurs membres. Pour l\'instant cette fonctionnalité n\'est disponible que lorsque le plugin est utilisé par cours, et non pas pour tout le site.';
 $string['errorunknowncourse'] = 'Erreur : cours inconnu';
 $string['errorunknowngradeitem'] = 'Erreur : élément d\'évaluation inconnu';
+$string['event_section_completed'] = 'Section complétée';
 $string['filtergradeitems'] = 'Filtrer les éléments d\'évaluation';
+$string['filtershortcodesrequiredfordrops'] = 'Le plugin [Shortcodes]({$a->url}) doit être installé et activé pour utiliser les drops, il est disponible gratuitement sur [moodle.org]({$a->url}). Ce plugin débloquera également les [codes courts de Level Up XP]({$a->shortcodesdocsurl}).';
 $string['for2weeks'] = 'Pour 2 semaines';
 $string['for3months'] = 'Pour 3 mois';
 $string['gradeitemselector'] = 'Sélecteur d\'éléments d\'évaluation';
@@ -75,7 +109,7 @@ Exemple : Alice soumet un devoir et reçoit une note de 40/100. Dans _Level Up X
 Alice soumet une autre version de son devoir, mais cette fois sa note est diminuée à 25/100. Les points d\'Alice dans _Level Up XP_ ne changent pas.
 Pour sa dernière tentative, Alice reçoit une note de 60/100, elle gagne 20 points additionels dans _Level Up XP_, le total de points qu\'elle a obtenu est de 60.
 
-[Plus sur la documentation de _Level Up XP_ (anglais)](https://levelup.plus/docs/article/grade-based-rewards?ref=localxp_help)';
+[Plus sur la documentation de _Level Up XP_ (anglais)](https://docs.levelup.plus/xp/docs/how-to/grade-based-rewards?ref=localxp_help)';
 $string['groupanonymity'] = 'Anonymat';
 $string['groupanonymity_help'] = 'Ce paramètre contrôle si les participants peuvent voir le nom des équipes dont ils ne font pas partie.';
 $string['groupladder'] = 'Echelle d\'équipe';
@@ -149,6 +183,7 @@ $string['maxpointspertime_help'] = 'Le nombre maximum de points qui peuvent êtr
 $string['messageprovider:manualaward'] = 'Level Up XP points manuellement récompensés';
 $string['missingpermssionsmessage'] = 'Vous n\'avez pas les permissions requises pour accéder à ce contenu.';
 $string['mylevel'] = 'Mon niveau';
+$string['navdrops'] = 'Drops';
 $string['navgroupladder'] = 'Echelle d\'équipe';
 $string['pluginname'] = 'Level Up XP+';
 $string['points'] = 'Points';
@@ -167,6 +202,10 @@ Avec _Le niveau ultime_, la barre de progression affiche le pourcentage de progr
 Dans les deux cas, la barre de progression restera pleine lorsque le dernier niveau est atteint.';
 $string['progressbarmodelevel'] = 'Le niveau suivant';
 $string['progressbarmodeoverall'] = 'Le niveau ultime';
+$string['reallyedeletedrop'] = 'Etes-vous sûr de vouloir supprimer ce drop? Cette action est irréversible.';
+$string['reason'] = 'Raison';
+$string['reasonlocation'] = 'Endroit';
+$string['reasonlocationurl'] = 'URL de l\'endroit';
 $string['ruleactivitycompletion'] = 'Achèvement d\'activité';
 $string['ruleactivitycompletion_help'] = 'Cette règle est remplie lorsqu\'une activité est marquée comme étant achevée, pour autant qu\'elle ne soit pas indiquée comme étant échouée.
 
@@ -207,12 +246,15 @@ $string['rulegradeitem'] = 'Elément d\'évaluation spécifique';
 $string['rulegradeitem_help'] = 'La condition est remplie lorsque la note est donnée pour l\'élément d\'évaluation spécifié.';
 $string['rulegradeitemdesc'] = 'L\'élément d\'évaluation est \'{$a->gradeitemname}\'';
 $string['rulegradeitemdescwithcourse'] = 'L\'élément d\'évaluation est : \'{$a->gradeitemname}\' dans \'{$a->coursename}\'';
-$string['rulegradeiteminfo'] = 'La condition est remplie pour les notes reçues pour un élément d\'évaluation particulier.
-';
+$string['rulegradeiteminfo'] = 'La condition est remplie pour les notes reçues pour un élément d\'évaluation particulier.';
 $string['rulegradeitemtype'] = 'Type d\'élément d\'évaluation';
 $string['rulegradeitemtype_help'] = 'La condition est remplie quand l\'élément d\'évaluation est du type requis. Quand un type d\'activité est sélectionné, toute note provenant de cette activité remplira la condition.';
 $string['rulegradeitemtypedesc'] = 'L\'élément d\'évaluation est de type \'{$a}\'';
 $string['rulegradeitemtypeinfo'] = 'Cette condition est remplie lorsque l\'élément d\'évaluation est du type requis.';
+$string['rulesectioncompletion'] = 'Achèvement de section';
+$string['rulesectioncompletion_help'] = 'Cette condition est remplie quand une activité est achevée et que cette activité est la dernière activité à achever dans une section.';
+$string['rulesectioncompletiondesc'] = 'La section à achever est \'{$a->sectionname}\'';
+$string['rulesectioncompletioninfo'] = 'Cette condition est remplie quand un étudiant achève toutes les activités d\'une section.';
 $string['ruleusergraded'] = 'Note reçue';
 $string['ruleusergraded_help'] = 'Cette condition est remplie lorsque:
 
@@ -224,6 +266,8 @@ $string['ruleusergraded_help'] = 'Cette condition est remplie lorsque:
 
 Cette règle ne récompensera l\'étudiant qu\'une seule fois.';
 $string['ruleusergradeddesc'] = 'L\'étudiant a reçu une note atteignant la note pour passer';
+$string['sectioncompleted'] = 'Section achevée';
+$string['sectiontocompleteis'] = 'La section à achever est {$a}';
 $string['sendawardnotification'] = 'Envoyer une notification de récompense';
 $string['sendawardnotification_help'] = 'Quand activé, l\'étudiant recevra une notification qu\'il a obtenu des points. Le message contiendra votre nom, le nombre de points et le nom du cours le cas échéant.';
 $string['shortcode:xpteamladder'] = 'Afficher une partie de l\'échelle d\'équipe';
@@ -254,11 +298,14 @@ Par défaut, la table n\'inclus pas la colonne de progrès qui affiche la barre 
 
 Notez que lorsque l\'utilisateur courant est membre de plusieurs équipes, le plugin utilisateur celle avec le meilleur rang comme référence.';
 $string['studentsearnpointsforgradeswhen'] = 'Les étudiants reçoivent des points pour leurs notes quand :';
+$string['team'] = 'Équipe';
+$string['teams'] = 'Équipes';
 $string['themestandard'] = 'Standard';
 $string['theyleftthefollowingmessage'] = 'Il/elle ont laissé le message suivant :';
 $string['timeformaxpoints'] = 'Temps pour un nombre max de points';
 $string['timeformaxpoints_help'] = 'Le laps de temps pendant lequel un utilisateur ne peut pas recevoir plus qu\'un certain nombre de points.';
 $string['unabletoidentifyuser'] = 'Impossible d\'identifier l\'utilisateur.';
 $string['unknowngradeitemtype'] = 'Type inconnu ({$a})';
+$string['unknownsectiona'] = 'Section inconnue ({$a})';
 $string['uptoleveln'] = 'Jusqu\'au niveau {$a}';
 $string['visualsintro'] = 'Personnaliser l\'apparence des niveaux, et des points.';

@@ -128,7 +128,7 @@ class local_xp_course_group_leaderboard_testcase extends local_xp_base_testcase 
         $ranking = $l->get_ranking(new limit(100));
         $this->assertCount(2, $ranking);
         $this->assertEquals(1, $ranking[0]->get_rank());
-        $this->assertEquals(41+47+79, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals(41 + 47 + 79, $ranking[0]->get_state()->get_xp());
         $this->assertEquals(2, $ranking[1]->get_rank());
         $this->assertEquals(61, $ranking[1]->get_state()->get_xp());
         $ranking = $l->get_ranking(new limit(1, 1));
@@ -176,7 +176,7 @@ class local_xp_course_group_leaderboard_testcase extends local_xp_base_testcase 
         $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u2->id]);
         $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u3->id]);
 
-        // Group 3
+        // Group 3.
         $g3 = $dg->create_group(['courseid' => $c1->id]);
         $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u1->id]);
         $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u2->id]);
@@ -205,16 +205,16 @@ class local_xp_course_group_leaderboard_testcase extends local_xp_base_testcase 
         $ranking = $l->get_ranking(new limit(100));
         $this->assertCount(4, $ranking);
         $this->assertEquals(1, $ranking[0]->get_rank());
-        $this->assertEquals(11+22+33+44+55, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals(11 + 22 + 33 + 44 + 55, $ranking[0]->get_state()->get_xp());
         $this->assertEquals($g3->id, $ranking[0]->get_state()->get_id());
         $this->assertEquals(2, $ranking[1]->get_rank());
-        $this->assertEquals(22+44+66, $ranking[1]->get_state()->get_xp());
+        $this->assertEquals(22 + 44 + 66, $ranking[1]->get_state()->get_xp());
         $this->assertEquals($g1->id, $ranking[1]->get_state()->get_id());
         $this->assertEquals(3, $ranking[2]->get_rank());
-        $this->assertEquals(11+22+33, $ranking[2]->get_state()->get_xp());
+        $this->assertEquals(11 + 22 + 33, $ranking[2]->get_state()->get_xp());
         $this->assertEquals($g2->id, $ranking[2]->get_state()->get_id());
         $this->assertEquals(3, $ranking[3]->get_rank());
-        $this->assertEquals(11+22+33, $ranking[3]->get_state()->get_xp());
+        $this->assertEquals(11 + 22 + 33, $ranking[3]->get_state()->get_xp());
         $this->assertEquals($g4->id, $ranking[3]->get_state()->get_id());
 
         $this->assertSame(2, $l->get_rank($g1->id)->get_rank());
@@ -270,7 +270,7 @@ class local_xp_course_group_leaderboard_testcase extends local_xp_base_testcase 
         $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u2->id]);
         $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u3->id]);
 
-        // Group 3
+        // Group 3.
         $g3 = $dg->create_group(['courseid' => $c1->id]);
         $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u4->id]);
         $dg->create_group_member(['groupid' => $g3->id, 'userid' => $u5->id]);

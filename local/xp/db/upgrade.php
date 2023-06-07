@@ -270,8 +270,20 @@ function xmldb_local_xp_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2022021120, 'local', 'xp');
     }
 
-    // Lastly, force update of block_xp, because it won't update automatically.
-    \core\task\manager::reset_scheduled_tasks_for_component('block_xp');
+    if ($oldversion < 2022090111) {
+
+        // Define field currencytheme to be added to local_xp_config.
+        $table = new xmldb_table('local_xp_config');
+        $field = new xmldb_field('currencytheme', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null, 'currencystate');
+
+        // Conditionally launch add field currencytheme.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2022090111, 'local', 'xp');
+    }
 
     return true;
 }

@@ -42,5 +42,19 @@ function xmldb_qtype_mtf_upgrade($oldversion) {
         $dbman->rename_field($table, $oldfield, 'shuffleanswers');
     }
 
+    if ($oldversion < 2023012200) {
+        // Define field deduction to be added to qtype_mtf_options.
+        $table = new xmldb_table('qtype_mtf_options');
+        $field = new xmldb_field('deduction', XMLDB_TYPE_FLOAT, '4, 3', null, XMLDB_NOTNULL, null, '0', 'answernumbering');
+
+        // Conditionally launch add field deduction.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // MTF savepoint reached.
+        upgrade_plugin_savepoint(true, 2023012200, 'qtype', 'mtf');
+    }
+
     return true;
 }

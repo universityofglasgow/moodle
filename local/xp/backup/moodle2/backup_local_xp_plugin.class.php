@@ -48,7 +48,7 @@ class backup_local_xp_plugin extends backup_local_plugin {
         // Add config.
         $config = new backup_nested_element('xp_config', null, [
             'maxpointspertime', 'timeformaxpoints', 'currencystate', 'badgetheme', 'enablegroupladder',
-            'groupidentitymode', 'progressbarmode', 'groupladdercols', 'grouporderby'
+            'groupidentitymode', 'progressbarmode', 'groupladdercols', 'grouporderby', 'currencytheme'
         ]);
         $config->set_source_table('local_xp_config', ['courseid' => backup::VAR_COURSEID]);
         $pluginwrapper->add_child($config);
@@ -60,6 +60,7 @@ class backup_local_xp_plugin extends backup_local_plugin {
         $xpdrops->add_child($xpdrop);
         $pluginwrapper->add_child($xpdrops);
 
+        // @codingStandardsIgnoreStart
         // Add logs. Note that those will not be useful for the cheat guard any more, as
         // they will point to other resources, linked to another course. In fact, for now
         // we won't include it as it could have a negative effect on the teacher's perceptions
@@ -76,6 +77,7 @@ class backup_local_xp_plugin extends backup_local_plugin {
         //     $logs->add_child($log);
         // }
         // $pluginwrapper->add_child($logs);
+        // @codingStandardsIgnoreEnd
 
         // Add currency.
         $pluginwrapper->annotate_files('local_xp', 'currency', null, context_course::instance($this->task->get_courseid())->id);

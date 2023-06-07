@@ -60,7 +60,7 @@ $string['privacy:metadata:log:time'] = 'Gerçekleşen tarih';
 $string['privacy:metadata:log:type'] = 'Etkinlik türü';
 $string['privacy:metadata:log:userid'] = 'Puan kazanan kullanıcı';
 $string['ruleactivitycompletion'] = 'Aktivite tamamlama';
-$string['ruleactivitycompletion_help'] = 'Bu koşul aktivite (tamamlama başarız olarak işaretlenmediği sürece) "tamamlandı" olarak işaretlediğinde yerine getirilmiş sayılmaktadır. 
+$string['ruleactivitycompletion_help'] = 'Bu koşul aktivite (tamamlama başarız olarak işaretlenmediği sürece) "tamamlandı" olarak işaretlediğinde yerine getirilmiş sayılmaktadır.
 
 Aktivitelerin tamamlanması için standart Moodle parametrelerine uygun olarak, öğretmenler bir aktiviteyi tamamlanması için gerekli şartları tam olarak kontrol ederler. Bu şartlar kurs içindeki her bir aktivite için tarih, değerlendirme notu gibi parametreler olabilir. Ayrıca bu koşullardan birisi öğrencilerin aktiviteyi manuel olarak tamamlandı işaretlemesini de içermektedir.
 

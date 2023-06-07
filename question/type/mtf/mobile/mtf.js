@@ -33,13 +33,20 @@ var result = {
             return that.CoreQuestionHelperProvider.showComponentError(that.onAbort);
         }
 
+        // Determine whether the question has a deduction
+        var hasdeduction = div.querySelector('.mtfresponsebutton.reset');
+        this.question.hasdeduction = hasdeduction !== null;
+
         var prompt = div.querySelector('.prompt');
         this.question.prompt = prompt !== null ? prompt.innerHTML : null;
 
-        var headerc1 = div.querySelector('.que.mtf .generaltable thead .header.c0');
+        // If the question has a deduction, the renderer will add a column (with a trash icon)
+        // before the options, so the columns are c1 and c2 instead of c0 and c1
+        var additionalcolumn = (this.question.hasdeduction ? 1 : 0);
+        var headerc1 = div.querySelector('.que.mtf .generaltable thead .header.c' + (0 + additionalcolumn));
         this.question.headerc1 = headerc1 !== null ? headerc1.innerHTML : null;
 
-        var headerc2 = div.querySelector('.que.mtf .generaltable thead .header.c1');
+        var headerc2 = div.querySelector('.que.mtf .generaltable thead .header.c' + (1 + additionalcolumn));
         this.question.headerc2 = headerc2 !== null ? headerc2.innerHTML : null;
 
         var scoringmethod = div.querySelector('.que.mtf [id^="scoringmethodinfo_q"]');
@@ -57,7 +64,7 @@ var result = {
             var text = d.querySelector('span.optiontext');
             text = (text !== null) ? text.innerHTML : null;
 
-            var name = d.querySelector('.mtfresponsebutton.c0 input');
+            var name = d.querySelector('.mtfresponsebutton.c' + (0 + additionalcolumn) + ' input');
             name = (name !== null) ? name.getAttribute('name') : null;
 
             var disabled = d.querySelector('input');
@@ -69,9 +76,9 @@ var result = {
             var qclass = d.getAttribute('class');
 
             var selection = null;
-            if (d.querySelector('.mtfresponsebutton.c0 input[type=radio]').checked) {
+            if (d.querySelector('.mtfresponsebutton.c' + (0 + additionalcolumn) + ' input[type=radio]').checked) {
                 selection = 1;
-            } else if (d.querySelector('.mtfresponsebutton.c1 input[type=radio]').checked) {
+            } else if (d.querySelector('.mtfresponsebutton.c' + (1 + additionalcolumn) + ' input[type=radio]').checked) {
                 selection = 2;
             }
 

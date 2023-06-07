@@ -300,7 +300,7 @@ class import_controller extends page_controller {
         }
 
         echo markdown_to_html(get_string('importcsvintro', 'local_xp', [
-            'docsurl' => (new moodle_url('https://levelup.plus/docs/article/importing-points-from-csv', [
+            'docsurl' => (new moodle_url('https://docs.levelup.plus/xp/docs/how-to/import-points/importing-points-from-csv', [
                 'ref' => 'localxp_help'
             ]))->out(false),
             'sampleurl' => (new moodle_url('/local/xp/samples/points-import.csv'))->out(false),

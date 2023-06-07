@@ -27,6 +27,8 @@ namespace local_xp\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use action_menu_link;
+use block_xp\di;
 use coding_exception;
 use moodle_database;
 use moodle_url;
@@ -34,6 +36,7 @@ use pix_icon;
 use renderer_base;
 use block_xp\local\course_world;
 use block_xp\local\xp\course_state_store;
+use context_system;
 use local_xp\local\team\team_membership_resolver;
 
 /**
@@ -95,14 +98,50 @@ class report_table extends \block_xp\output\report_table {
      * @return array
      */
     protected function generate_columns_definition() {
-        $cols = parent::generate_columns_definition();
+        global $CFG;
+
+        $origcols = parent::generate_columns_definition();
+        $cols = $origcols;
+
         if ($this->is_downloading()) {
-            $cols = array_intersect_key($cols, [
+
+            // Name fields.
+            $cols = array_intersect_key($origcols, [
                 'fullname' => true,
+            ]);
+            $cols = array_merge([
+                'firstname' => get_string('firstname', 'core'),
+                'lastname' => get_string('lastname', 'core')
+            ], $cols);
+
+            // Additional identity fields.
+            if (has_capability('moodle/site:viewuseridentity', $this->world->get_context())) {
+
+                // Defining which fields are to be hidden.
+                $forwholesite = di::get('config')->get('context') == CONTEXT_SYSTEM;
+                $hiddenidentityfields = explode(',', $CFG->hiddenuserfields);
+                if ($forwholesite && has_capability('moodle/user:viewhiddendetails', context_system::instance())) {
+                    $hiddenidentityfields = [];
+                } else if (!$forwholesite && has_capability('moodle/course:viewhiddenuserfields', $this->world->get_context())) {
+                    $hiddenidentityfields = [];
+                }
+
+                // Gathering the additional identity fields.
+                $showuseridentity = explode(',', $CFG->showuseridentity);
+                $identityfields = array_diff_key(array_intersect_key([
+                    'username' => get_string('username', 'core'),
+                    'idnumber' => get_string('idnumber', 'core'),
+                    'email' => get_string('email', 'core'),
+                ], array_flip($showuseridentity)), array_flip($hiddenidentityfields));
+                $cols = array_merge($cols, $identityfields);
+            }
+
+            // Report fields.
+            $cols = array_merge($cols, array_intersect_key($origcols, [
                 'lvl' => true,
                 'xp' => true,
                 'progress' => true,
-            ]);
+            ]));
         }
 
         if (!$this->teamresolver) {
@@ -119,19 +158,23 @@ class report_table extends \block_xp\output\report_table {
     }
 
     /**
-     * Formats the column actions.
+     * Get the actions for row.
      *
      * @param stdClass $row Table row.
-     * @return string Output produced.
+     * @return action_menu_link[] List of actions.
      */
-    protected function col_actions($row) {
-        $parent = parent::col_actions($row);
-        $actions = [];
+    protected function get_row_actions($row) {
+        $actions = parent::get_row_actions($row);
 
-        $url = new moodle_url($this->baseurl, ['action' => 'add', 'userid' => $row->id]);
-        $actions[] = $this->renderer->action_icon($url, new pix_icon('t/add', get_string('add')));
+        $actions = array_merge([
+            new action_menu_link(
+                new moodle_url($this->baseurl, ['action' => 'add', 'userid' => $row->id]),
+                new pix_icon('t/add', get_string('add', 'core')),
+                get_string('awardpoints', 'local_xp')
+            )
+        ], $actions);
 
-        return implode(' ', $actions) . ' ' . $parent;
+        return $actions;
     }
 
     /**

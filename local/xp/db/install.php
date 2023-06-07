@@ -32,9 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 function xmldb_local_xp_install() {
 
-    // Force update of block_xp, because it won't update automatically.
-    \core\task\manager::reset_scheduled_tasks_for_component('block_xp');
-
     // We unset the length for which logs are kept, to force the admin to set it again.
     // The local plugin needs logs to be kept for a longer time.
     unset_config('keeplogs', 'block_xp');

@@ -75,6 +75,21 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
     }
 
     /**
+     * Pre content.
+     *
+     * @return void
+     */
+    protected function pre_content() {
+        parent::pre_content();
+
+        // Override for the sole purpose of calling init_page_requirements after
+        // we have had a chance to save the form, otherwise the redirect is botched
+        // because the page requirements output stuff.
+        $form = $this->get_form();
+        $form->init_page_requirements();
+    }
+
+    /**
      * Get the initial form data.
      *
      * @return array
@@ -93,6 +108,7 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
         }
 
         $data['currency'] = $draftitemid;
+        $data['currencytheme'] = $config->get('currencytheme');
         $data['badgetheme'] = $config->get('badgetheme');
 
         return $data;
@@ -114,6 +130,7 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
 
         $config->set_many([
             'currencystate' => default_course_world_config::CURRENCY_IS_CUSTOMIED,
+            'currencytheme' => $data->currencytheme,
             'badgetheme' => $data->badgetheme
         ]);
     }

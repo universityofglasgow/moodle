@@ -54,6 +54,7 @@ class mobile {
         global $USER;
 
         di::get('addon')->require_activated();
+        static::log_init();
 
         $config = di::get('config');
         if ($config->get('context') != CONTEXT_COURSE) {
@@ -85,6 +86,7 @@ class mobile {
         global $USER;
 
         di::get('addon')->require_activated();
+        static::log_init();
 
         $config = di::get('config');
         if ($config->get('context') != CONTEXT_SYSTEM) {
@@ -226,6 +228,7 @@ class mobile {
         global $USER;
 
         di::get('addon')->require_activated();
+        static::log_page_view();
 
         $courseid = isset($args['courseid']) ? $args['courseid'] : SITEID;
         $page = isset($args['page']) ? $args['page'] : 0;
@@ -280,6 +283,7 @@ class mobile {
      */
     public static function info_page(array $args) {
         di::get('addon')->require_activated();
+        static::log_page_view();
 
         $courseid = isset($args['courseid']) ? $args['courseid'] : 0;
 
@@ -339,6 +343,7 @@ class mobile {
         global $USER;
 
         di::get('addon')->require_activated();
+        static::log_page_view();
 
         $courseid = isset($args['courseid']) ? $args['courseid'] : SITEID;
         $groupid = isset($args['groupid']) ? $args['groupid'] : -1;
@@ -408,6 +413,7 @@ class mobile {
         global $USER;
 
         di::get('addon')->require_activated();
+        static::log_page_view();
 
         $courseid = isset($args['courseid']) ? $args['courseid'] : 0;
         $userid = $USER->id;
@@ -444,6 +450,22 @@ class mobile {
             'otherdata' => null,
             'files' => [],
         ];
+    }
+
+    /**
+     * Log an init hit.
+     */
+    protected static function log_init() {
+        $config = di::get('config');
+        $config->set('mobilelastinit', time());
+    }
+
+    /**
+     * Log a page view.
+     */
+    protected static function log_page_view() {
+        $config = di::get('config');
+        $config->set('mobilelastview', time());
     }
 
 }

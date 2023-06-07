@@ -109,6 +109,9 @@ class qtype_mtf extends question_type {
         if (!isset($question->options->shuffleanswers)) {
             $question->options->shuffleanswers = $mtfconfig->shuffleanswers;
         }
+        if (!isset($question->options->deduction)) {
+            $question->options->deduction = 0.0;
+        }
         if (!isset($question->options->scoringmethod)) {
             $question->options->scoringmethod = $mtfconfig->scoringmethod;
         }
@@ -223,6 +226,7 @@ class qtype_mtf extends question_type {
             $options->numberofcolumns = '';
             $options->numberofrows = '';
             $options->answernumbering = '';
+            $options->deduction = 0.0;
             $options->id = $DB->insert_record('qtype_mtf_options', $options);
         }
 
@@ -269,6 +273,7 @@ class qtype_mtf extends question_type {
         $options->numberofrows = $countfilledrows;
         $options->numberofcolumns = $question->numberofcolumns;
         $options->answernumbering = $question->answernumbering;
+        $options->deduction = $question->deduction;
         $DB->update_record('qtype_mtf_options', $options);
 
         unset($question->option);
@@ -492,6 +497,13 @@ class qtype_mtf extends question_type {
         parent::initialise_question_instance($question, $questiondata);
         $question->shuffleanswers = $questiondata->options->shuffleanswers;
         $question->scoringmethod = $questiondata->options->scoringmethod;
+        // If the admin does not allow deductions, we discard the value from the DB
+        // and use 0.0 instead.
+        if (get_config('qtype_mtf')->allowdeduction) {
+            $question->deduction = $questiondata->options->deduction;
+        } else {
+            $question->deduction = 0.0;
+        }
         $question->numberofrows = $questiondata->options->numberofrows;
         $question->numberofcolumns = $questiondata->options->numberofcolumns;
         $question->rows = $questiondata->options->rows;
@@ -715,6 +727,8 @@ class qtype_mtf extends question_type {
                  "</numberofcolumns>\n";
         $expout .= '    <answernumbering>' . $question->options->answernumbering .
                  "</answernumbering>\n";
+        $expout .= '    <deduction>' . $question->options->deduction .
+                 "</deduction>\n";
 
         // Now we export the question rows (options).
         foreach ($question->options->rows as $row) {
@@ -787,6 +801,7 @@ class qtype_mtf extends question_type {
         $question->numberofrows = $format->getpath($data, array('#', 'numberofrows', 0, '#'), QTYPE_MTF_NUMBER_OF_OPTIONS);
         $question->numberofcolumns = $format->getpath($data, array('#', 'numberofcolumns', 0, '#'), QTYPE_MTF_NUMBER_OF_RESPONSES);
         $question->answernumbering = $format->getpath($data, array('#', 'answernumbering', 0, '#'), 'none');
+        $question->deduction = $format->getpath($data, array('#', 'deduction', 0, '#'), '0.0');
 
         $rows = $data['#']['row'];
         $i = 1;

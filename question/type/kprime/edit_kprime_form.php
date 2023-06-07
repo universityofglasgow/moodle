@@ -444,32 +444,57 @@ class qtype_kprime_edit_form extends question_edit_form {
             }
         }
 
+        // Make sure that the user can edit the question.
+        if (empty($data['makecopy']) && isset($this->question->id)
+            && !$this->question->formoptions->canedit) {
+            $errors['currentgrp'] = get_string('nopermissionedit', 'question');
+        }
+
+        // Category.
+        if (empty($data['category'])) {
+            // User has provided an invalid category.
+            $errors['category'] = get_string('required');
+        }
+
+        // Default mark.
+        if (array_key_exists('defaultmark', $data) && $data['defaultmark'] < 0) {
+            $errors['defaultmark'] = get_string('defaultmarkmustbepositive', 'question');
+        }
+
         // Can only have one idnumber per category.
         if (strpos($data['category'], ',') !== false) {
-            list($category) = explode(',', $data['category']);
+            list($category, $categorycontextid) = explode(',', $data['category']);
         } else {
             $category = $data['category'];
         }
-
-        if (isset($data['idnumber']) && ((string)$data['idnumber'] !== '')) {
+        if (isset($data['idnumber']) && ((string) $data['idnumber'] !== '')) {
             if (empty($data['usecurrentcat']) && !empty($data['categorymoveto'])) {
                 $categoryinfo = $data['categorymoveto'];
             } else {
                 $categoryinfo = $data['category'];
             }
-
-            list($categoryid) = explode(',', $categoryinfo);
-
-            $conditions = 'category = ? AND idnumber = ?';
+            list($categoryid, $notused) = explode(',', $categoryinfo);
+            $conditions = 'questioncategoryid = ? AND idnumber = ?';
             $params = [$categoryid, $data['idnumber']];
-
             if (!empty($this->question->id)) {
+                // Get the question bank entry id to not check the idnumber for the same bank entry.
+                $sql = "SELECT DISTINCT qbe.id
+                          FROM {question_versions} qv
+                          JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+                         WHERE qv.questionid = ?";
+                $bankentry = $DB->get_record_sql($sql, ['id' => $this->question->id]);
                 $conditions .= ' AND id <> ?';
-                $params[] = $this->question->id;
+                $params[] = $bankentry->id;
             }
-            if ($DB->record_exists_select('question', $conditions, $params)) {
+
+            if ($DB->record_exists_select('question_bank_entries', $conditions, $params)) {
                 $errors['idnumber'] = get_string('idnumbertaken', 'error');
             }
+        }
+
+        if ($this->customfieldpluginenabled) {
+            // Add the custom field validation.
+            $errors  = array_merge($errors, $this->customfieldhandler->instance_form_validation($data, $files));
         }
 
         return $errors;

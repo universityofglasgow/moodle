@@ -28,9 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 $string['activitycompleted'] = 'Activity completed';
 $string['adddrop'] = 'Add a drop';
 $string['afterimport'] = 'After import';
+$string['anysection'] = 'Any section';
 $string['anonymousgroup'] = 'Another team';
 $string['anonymousiomadcompany'] = 'Another company';
 $string['anonymousiomaddepartment'] = 'Another department';
+$string['awardpoints'] = 'Award points';
 $string['badgetheme'] = 'Level badges theme';
 $string['badgetheme_help'] = 'A badge theme defines the default appearance of the badges.';
 $string['categoryn'] = 'Category: {$a}';
@@ -47,8 +49,11 @@ $string['currentpoints'] = 'Current points';
 $string['currencysign'] = 'Points symbol';
 $string['currencysign_help'] = 'With this setting you can change the meaning of the points. It will be displayed next to the amount of points each user has as a substitute for the reference to _experience points_.
 
-For instance you could upload the image of a carrot for the users to be rewarded with carrots for their actions.';
-$string['currencysignformhelp'] = 'The image uploaded here will be displayed next to the points as a substitute for the reference to experience points. The recommended image height is 18 pixels.';
+Choose one of the provided symbols, or upload your own!';
+$string['currencysignformhelp'] = 'The recommended image height is 18 pixels.';
+$string['currencysignoverride'] = 'Points symbol override';
+$string['currencysignxp'] = 'XP (Experience points)';
+$string['custom'] = 'Custom';
 $string['dropcollected'] = 'Drop collected';
 $string['dropherea'] = 'Drop: {$a}';
 $string['dropenabled'] = 'Enabled';
@@ -62,7 +67,7 @@ $string['dropsintro'] = 'Drops are code snippets directly placed in content that
 $string['drops_help'] = '
 In video games, some characters can _drop_ items or experience points on the ground for the player to pick up. These items and points are commonly referred to as drops.
 
-In Level Up, drops are shortcodes (e.g. `[xpdrop abcdef]`) that an instructor can place in regular Moodle content. When encountered by a user, these drops will be _picked up_ and a certain amount of points will be awarded.
+In Level Up XP, drops are shortcodes (e.g. `[xpdrop abcdef]`) that an instructor can place in regular Moodle content. When encountered by a user, these drops will be _picked up_ and a certain amount of points will be awarded.
 
 At present, drops are invible to the user and passively award points the first time they are encountered.
 
@@ -72,6 +77,8 @@ Drops can be use to cleverly award points when certain type of content is consum
 - Place a drop in deep content to reward their consumption
 - Place a drop in an interesting forum discussion
 - Place a drop in a hard-to-get-to page in a lesson module
+
+[More info](https://docs.levelup.plus/xp/docs/how-to/use-drops?ref=localxp_help)
 ';
 $string['displaygroupidentity'] = 'Display teams identity';
 $string['displayfirstnameinitiallastname'] = 'Display first name and initial (e.g. Sam H.)';
@@ -79,12 +86,13 @@ $string['editdrop'] = 'Edit drop';
 $string['enablecheatguard'] = 'Enable cheat guard';
 $string['enablecheatguard_help'] = 'The cheat guard prevents students from being rewarded once they reach certain limits.
 
-[More info](https://levelup.plus/docs/article/level-up-cheat-guard?ref=localxp_help)
+[More info](https://docs.levelup.plus/xp/docs/getting-started/cheat-guard?ref=localxp_help)
 ';
 $string['errorunknowncourse'] = 'Error: unknown course';
 $string['errorunknowngradeitem'] = 'Error: unknown grade item';
+$string['event_section_completed'] = 'Section completed';
 $string['filtergradeitems'] = 'Filter grade items';
-$string['filtershortcodesrequiredfordrops'] = 'The plugin [Shortcodes]({$a->url}) needs to be installed and enabled to use drops, it is freely available from [moodle.org]({$a->url}). This plugin will also unlock [Level Up\'s shortcodes]({$a->shortcodesdocsurl}).';
+$string['filtershortcodesrequiredfordrops'] = 'The plugin [Shortcodes]({$a->url}) needs to be installed and enabled to use drops, it is freely available from [moodle.org]({$a->url}). This plugin will also unlock [Level Up XP\'s shortcodes]({$a->shortcodesdocsurl}).';
 $string['keeplogsdesc'] = 'The logs are playing an important role in the plugin. They are used for
 the cheat guard, for finding the recent rewards, and for some other things. Reducing the time for
 which the logs are kept can affect how points are distributed over time and should be dealt with carefully.';
@@ -104,12 +112,12 @@ Example: Alice submits an assignment, and receives the mark of 40/100. In _Level
 Alice reattempts her assignment, but this time her grade is lowered to 25/100. Alice\'s points in _Level Up XP_ do not change.
 For her final attempt, Alice scores 60/100, she earns 20 additional points in _Level Up XP_, her total of points earned is 60.
 
-[More at _Level Up XP_ documentation](https://levelup.plus/docs/article/grade-based-rewards?ref=localxp_help)
+[More at _Level Up XP_ documentation](https://docs.levelup.plus/xp/docs/how-to/grade-based-rewards?ref=localxp_help)
 ';
 $string['groupanonymity'] = 'Anonymity';
 $string['groupanonymity_help'] = 'This setting controls whether participants can see the names of the teams they do not belong to.';
-$string['groupladder'] = 'Team ladder';
-$string['groupladdercols'] = 'Ladder columns';
+$string['groupladder'] = 'Team leaderboard';
+$string['groupladdercols'] = 'Columns';
 $string['groupladdercols_help'] = 'This setting determines which columns are displayed aside from the teams ranks and names.
 
 The __Points__ column displays the points of the team.
@@ -122,9 +130,9 @@ as teams with more members will have more points remaining than others, even tho
 
 Press the CTRL or CMD key while clicking to select more than one column, or to unselect a selected column.';
 $string['groupladdersource'] = 'Team up students using';
-$string['groupladdersource_help'] = 'The team ladder displays a leaderboard of an aggregate of the students\' points.
+$string['groupladdersource_help'] = 'The team leaderboard displays a ranking of an aggregate of the students\' points.
 The value you choose determines what _Level Up XP_ uses to group the students together.
-When set to _Nothing_ the team ladder will not be available.
+When set to _Nothing_ the team leaderboard will not be available.
 
 To limit the _Course groups_ that appear in the leaderboard, you may create a new grouping containing the relevant groups, and then set this grouping as the _Default grouping_ in the course settings.';
 $string['groupname'] = 'Team name';
@@ -142,7 +150,7 @@ $string['groupsourcecoursegroups'] = 'Course groups';
 $string['groupsourcecohorts'] = 'Cohorts';
 $string['groupsourceiomadcompanies'] = 'IOMAD companies';
 $string['groupsourceiomaddepartments'] = 'IOMAD departments';
-$string['groupsourcenone'] = 'Nothing, the ladder is disabled';
+$string['groupsourcenone'] = 'Nothing, the leaderboard is disabled';
 $string['hidegroupidentity'] = 'Hide teams identity';
 $string['importcsvfile_help'] = '';
 $string['importcsvintro'] = 'Use the form below to import points from a CSV file. The import may be used to _increase_ students\' points, or to override them with the provided value. Note that the import __does not__ use the same format as the exported report. The required format is described in the [documentation]({$a->docsurl}), additionally a sample file is available [here]({$a->sampleurl}).';
@@ -182,7 +190,7 @@ $string['messageprovider:manualaward'] = 'Level Up XP points manually awarded';
 $string['missingpermssionsmessage'] = 'You do not have the required permissions to access this content.';
 $string['mylevel'] = 'My level';
 $string['navdrops'] = 'Drops';
-$string['navgroupladder'] = 'Team ladder';
+$string['navgroupladder'] = 'Team leaderboard';
 $string['pluginname'] = 'Level Up XP+';
 $string['points'] = 'Points';
 $string['previewmore'] = 'Preview more';
@@ -202,6 +210,9 @@ In either case, the progress bar will remain full when the last level is attaine
 $string['progressbarmodelevel'] = 'The next level';
 $string['progressbarmodeoverall'] = 'The ultimate level';
 $string['reallyedeletedrop'] = 'Are you sure that you want to delete this drop? This action is not reversible.';
+$string['reason'] = 'Reason';
+$string['reasonlocation'] = 'Location';
+$string['reasonlocationurl'] = 'Location URL';
 $string['ruleactivitycompletion'] = 'Activity completion';
 $string['ruleactivitycompletion_help'] = '
 This condition is met when an activity was just marked as complete, so long as the completion was not marked as failed.
@@ -248,6 +259,10 @@ $string['rulegradeitemtype'] = 'Grade type';
 $string['rulegradeitemtype_help'] = 'This condition is met when the grade item is of the required type. When an activity type is selected, any grade originating from this activity type would match.';
 $string['rulegradeitemtypedesc'] = 'The grade is a \'{$a}\' grade';
 $string['rulegradeitemtypeinfo'] = 'This condition matches when the grade item is of the required type.';
+$string['rulesectioncompletion'] = 'Section completion';
+$string['rulesectioncompletion_help'] = 'This condition is met an activity is completed and that activity is the last activity to be completed within the section.';
+$string['rulesectioncompletioninfo'] = 'This condition matches when the student completes all activities in a section.';
+$string['rulesectioncompletiondesc'] = 'The section to complete is \'{$a->sectionname}\'';
 $string['ruleusergraded'] = 'Grade received';
 $string['ruleusergraded_help'] = 'This condition is met when:
 
@@ -264,7 +279,7 @@ $string['sendawardnotification_help'] = 'When enabled, the student will receive 
 $string['shortcode:xpdrop'] = 'Include a drop in the content.';
 $string['shortcode:xpteamladder'] = 'Display a portion of the team ladder.';
 $string['shortcode:xpteamladder_help'] = '
-By default, a portion of the team ladder surrounding the current user will be displayed.
+By default, a portion of the team leaderboard surrounding the current user will be displayed.
 
 ```
 [xpteamladder]
@@ -277,13 +292,13 @@ To display the top 5 teams instead of the teams neighbouring those of the curren
 [xpteamladder top=15]
 ```
 
-A link to the full ladder will automatically be displayed below the table if there are more results to be displayed, if you do not want to display such link, add the argument `hidelink`.
+A link to the full leaderboard will automatically be displayed below the table if there are more results to be displayed, if you do not want to display such link, add the argument `hidelink`.
 
 ```
 [xpteamladder hidelink]
 ```
 
-By default, the table does not include the progress column which displays the progress bar. If such column has been selected in the additional colums in the ladder\'s settings, you can use the argument `withprogress` to display it.
+By default, the table does not include the progress column which displays the progress bar. If such column has been selected in the additional colums in the leaderboard\'s settings, you can use the argument `withprogress` to display it.
 
 ```
 [xpteamladder withprogress]
@@ -291,11 +306,15 @@ By default, the table does not include the progress column which displays the pr
 
 Note that when the current user belongs to multiple teams, the plugin will use the one with the best rank as reference.
 ';
+$string['sectioncompleted'] = 'Section completed';
+$string['sectiontocompleteis'] = 'The section to complete is {$a}';
 $string['studentsearnpointsforgradeswhen'] = 'Students earn points for grades when:';
 $string['unabletoidentifyuser'] = 'Unable to identify user.';
 $string['unknowngradeitemtype'] = 'Unknown type ({$a})';
+$string['unknownsectiona'] = 'Unknown section ({$a})';
 $string['uptoleveln'] = 'Up to level {$a}';
 $string['team'] = 'Team';
+$string['teams'] = 'Teams';
 $string['themestandard'] = 'Standard';
 $string['theyleftthefollowingmessage'] = 'They left the following message:';
 $string['timeformaxpoints'] = 'Time frame for max. points';

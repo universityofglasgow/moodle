@@ -79,15 +79,25 @@ class cm_name extends block_xp_rule_base {
         $output = \block_xp\di::get('renderer');
 
         $o = parent::get_form($basename);
-        $o .= get_string('rulecmname', 'local_xp') . ' ';
-        $o .= html_writer::select(array(
-                self::EQ => get_string('rule:' . self::EQ, 'block_xp'),
-                self::CT => get_string('rule:' . self::CT, 'block_xp'),
-            ), $basename . '[compare]', $this->compare, '', array('id' => '', 'class' => ''));
-        $o .= '&nbsp;';
-        $o .= html_writer::empty_tag('input', array('type' => 'text', 'name' => $basename . '[value]',
+
+        $o .= html_writer::start_div('xp-flex xp-gap-1');
+
+        $o .= html_writer::start_div('xp-flex xp-items-center');
+        $o .= get_string('rulecmname', 'local_xp');
+        $o .= html_writer::end_div();
+
+        $operator = html_writer::select(array(
+            self::EQ => get_string('rule:' . self::EQ, 'block_xp'),
+            self::CT => get_string('rule:' . self::CT, 'block_xp'),
+        ), $basename . '[compare]', $this->compare, '', array('id' => '', 'class' => ''));
+        $o .= html_writer::div($operator, 'xp-min-w-px');
+
+        $input = html_writer::empty_tag('input', array('type' => 'text', 'name' => $basename . '[value]',
             'value' => s($this->value), 'class' => 'form-control block_xp-form-control-inline'));
-        $o .= $output->help_icon('rulecmname', 'local_xp');
+        $helpicon = $output->help_icon('rulecmname', 'local_xp');
+        $o .= html_writer::div($input . $helpicon, 'xp-min-w-px xp-max-w-[80%] xp-whitespace-nowrap');
+
+        $o .= html_writer::end_div();
 
         return $o;
     }

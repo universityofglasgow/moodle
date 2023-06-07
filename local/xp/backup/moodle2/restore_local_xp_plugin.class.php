@@ -42,9 +42,12 @@ class restore_local_xp_plugin extends restore_local_plugin {
         $paths = [];
         $userinfo = $this->get_setting_value('users');
 
-        // Define each path.
+        // Define each path. Note that, this structure may not always be defined. If the backup is merging
+        // into an existing course, and the setting 'Overwrite course configuration' is set to 'No' (the default),
+        // then the restore_course_structure_step is not included, and thus this structure is not defined. This
+        // can lead to data loss if users are not aware of this. This also means that delete & merge backups
+        // without the overwrite setting enabled, will not have their data deleted.
         $paths[] = new restore_path_element($this->get_namefor('config'), $this->get_pathfor('/xp_config'));
-
         $paths[] = new restore_path_element($this->get_namefor('drop'), $this->get_pathfor('/xp_drops/xp_drop'));
 
         // This path is a legacy one to ensure that older backups still work. We had to change the name of the
@@ -55,6 +58,33 @@ class restore_local_xp_plugin extends restore_local_plugin {
         $paths[] = new restore_path_element($this->get_namefor('config_legacy_key'), $this->get_pathfor('/config'));
 
         return $paths;
+    }
+
+    /**
+     * Pre-processing.
+     *
+     * This method must be called from the first restore path element as we cannot simulate the presence
+     * of another path if there is no associated data in the backup about it.
+     *
+     * @return void
+     */
+    private function pre_process_local_xp() {
+        global $DB;
+
+        $target = $this->task->get_target();
+        $courseid = $this->task->get_courseid();
+
+        // The backup target expects that all content is first being removed. Since deleting the block
+        // instance does not delete the data itself, we must manually delete everything.
+        if ($target == backup::TARGET_CURRENT_DELETING || $target == backup::TARGET_EXISTING_DELETING) {
+            $this->task->log('local_xp: deleting all data in target course', backup::LOG_DEBUG);
+
+            // Removing associated data.
+            $conditions = ['courseid' => $courseid];
+            $DB->delete_records('local_xp_config', $conditions);
+            $DB->delete_records('local_xp_drops', $conditions);
+            $DB->delete_records('local_xp_log', ['contextid' => $this->task->get_contextid()]);
+        }
     }
 
     /**
@@ -75,6 +105,10 @@ class restore_local_xp_plugin extends restore_local_plugin {
      */
     public function process_local_xp_config($data) {
         global $DB;
+
+        // Call the pre-process.
+        $this->pre_process_local_xp();
+
         $data['courseid'] = $this->task->get_courseid();
         if ($DB->record_exists('local_xp_config', ['courseid' => $data['courseid']])) {
             $this->task->log('local_xp: config not restored, existing config was found', backup::LOG_DEBUG);
@@ -93,7 +127,6 @@ class restore_local_xp_plugin extends restore_local_plugin {
         global $DB;
 
         $oldid = $data['id'];
-        unset($oldid);
         $data['courseid'] = $this->task->get_courseid();
 
         // When the secret is already found, we cannot proceed with the restore. It usually means that

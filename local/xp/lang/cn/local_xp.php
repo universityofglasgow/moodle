@@ -53,7 +53,7 @@ $string['displaygroupidentity'] = '显示团队身份';
 $string['enablecheatguard'] = '启用防欺诈';
 $string['enablecheatguard_help'] = '达到一定的限制，防欺诈可阻止学生获取奖励。
 
-[更多](https://levelup.plus/docs/article/level-up-cheat-guard?ref=localxp_help)';
+[更多](https://docs.levelup.plus/xp/docs/getting-started/cheat-guard?ref=localxp_help)';
 $string['enablegroupladder'] = '启用团队条装图';
 $string['enablegroupladder_help'] = '启用后学生可以查看课程组的排行榜。组积分是根据组内的成员所累积的积分来计算的。当前仅在每门课程都使用插件时才适用，且不适用于整个站点。';
 $string['errorunknowncourse'] = '报错: 未知的课程';
@@ -75,7 +75,7 @@ $string['gradesrules_help'] = '以下规则设定了学生在收获得成绩后�
 爱丽丝重新提交她的作业，但是这次她的成绩降低到 25/100。爱丽丝在_Level Up XP_ 中的积分不变。
 爱丽丝(Alice)的最后一次尝试得分为 60/100，她在_Level Up XP_ 中将额外获得 20 积分，她最后的总积分为 60.
 
-[更多 _Level Up XP_ 文档](https://levelup.plus/docs/article/grade-based-rewards?ref=localxp_help)';
+[更多 _Level Up XP_ 文档](https://docs.levelup.plus/xp/docs/how-to/grade-based-rewards?ref=localxp_help)';
 $string['groupanonymity'] = '匿名者';
 $string['groupanonymity_help'] = '此处设置控制参与者是否可以看到其他团队的名称。';
 $string['groupladder'] = '团队梯形图';
@@ -215,7 +215,7 @@ $string['ruleusergraded_help'] = '以下情况下符合此条件:
 * 在一项活动中获得了成绩
 * 活动指定及格分数
 * 成绩达到及格分数
-* 成绩 _not_ 基于评分 (例如在论坛中) 
+* 成绩 _not_ 基于评分 (例如在论坛中)
 * 成绩是基于积分的，而不是基于获得分数
 
 这种情况只会奖励1 次学生。';

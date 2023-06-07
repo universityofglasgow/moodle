@@ -21,79 +21,85 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Templates from 'core/templates';
-import Modal from 'core/modal';
-import ModalEvents from 'core/modal_events';
-import Notification from 'core/notification';
-import * as RoleButton from 'block_xp/role-button';
+define(['core/templates', 'core/modal', 'core/modal_events', 'core/notification', 'block_xp/role-button'], function(
+    Templates,
+    Modal,
+    ModalEvents,
+    Notification,
+    RoleButton
+) {
+    // Trigger pre-loading.
+    Templates.render('local_xp/modal-drop-setup', []);
 
-// Trigger pre-loading.
-Templates.render('local_xp/modal-drop-setup', []);
+    /**
+   * Show the modal.
+   *
+   * @param {Object} context The template context.
+   */
+    function show(context) {
+        Templates.render('local_xp/modal-drop-setup', context)
+            .then((html) => {
+                const modal = new Modal(html);
 
-/**
- * Show the modal.
- *
- * @param {Object} context The template context.
- */
-function show(context) {
-    Templates.render('local_xp/modal-drop-setup', context).then((html) => {
-        const modal = new Modal(html);
+                // Broadcast when the modal has been shown.
+                modal.getRoot().on(ModalEvents.shown, () => {
+                    const codeNode = modal.getRoot().find('[data-content="shortcode"]')[0];
+                    const copyBtn = modal.getRoot().find('[data-action="copy"]')[0];
+                    if (!codeNode || !copyBtn) {
+                        return;
+                    } else if (!navigator.clipboard) {
+                        copyBtn.style = 'display: none';
+                        return;
+                    }
 
-        // Broadcast when the modal has been shown.
-        modal.getRoot().on(ModalEvents.shown, () => {
-            const codeNode = modal.getRoot().find('[data-content="shortcode"]')[0];
-            const copyBtn = modal.getRoot().find('[data-action="copy"]')[0];
-            if (!codeNode || !copyBtn) {
+                    copyBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        navigator.clipboard.writeText(codeNode.textContent);
+                    });
+                });
+
+                modal.show();
                 return;
-            } else if (!navigator.clipboard) {
-                copyBtn.style = 'display: none';
-                return;
-            }
+            })
+            .catch(Notification.exception);
+    }
 
-            copyBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigator.clipboard.writeText(codeNode.textContent);
-            });
-        });
-
-        modal.show();
-        return;
-    }).catch(Notification.exception);
-}
-
-/**
- * Show the modal from a node selector.
- *
- * @param {String} nodeSelector The node selector.
- */
-function showFromSelector(nodeSelector) {
-    const node = document.querySelector(nodeSelector);
-    if (!node) {return;}
-    showFromNode(node);
-}
-
-/**
- * Show the modal from a node.
- *
- * @param {Node} node The node
- */
-function showFromNode(node) {
-    const name = node.dataset.name;
-    const shortcode = node.dataset.shortcode;
-    const editurl = node.dataset.editurl;
-    show({name, shortcode, editurl});
-}
-
-/**
- * Delegate the modal.
- *
- * @param {String} rootSelector The root selector.
- * @param {String} nodeSelector The node selector.
- */
-function delegateClick(rootSelector, nodeSelector) {
-    RoleButton.delegateClick(rootSelector, nodeSelector, (node) => {
+    /**
+   * Show the modal from a node selector.
+   *
+   * @param {String} nodeSelector The node selector.
+   */
+    function showFromSelector(nodeSelector) {
+        const node = document.querySelector(nodeSelector);
+        if (!node) {
+            return;
+        }
         showFromNode(node);
-    });
-}
+    }
 
-export {show, showFromNode, showFromSelector, delegateClick};
+    /**
+   * Show the modal from a node.
+   *
+   * @param {Node} node The node
+   */
+    function showFromNode(node) {
+        const name = node.dataset.name;
+        const shortcode = node.dataset.shortcode;
+        const editurl = node.dataset.editurl;
+        show({name, shortcode, editurl});
+    }
+
+    /**
+   * Delegate the modal.
+   *
+   * @param {String} rootSelector The root selector.
+   * @param {String} nodeSelector The node selector.
+   */
+    function delegateClick(rootSelector, nodeSelector) {
+        RoleButton.delegateClick(rootSelector, nodeSelector, (node) => {
+            showFromNode(node);
+        });
+    }
+
+    return {show, showFromNode, showFromSelector, delegateClick};
+});

@@ -42,6 +42,7 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
     protected $requiremanage = false;
     protected $supportsgroups = false;
     protected $routename = 'group_ladder';
+    protected $navname = 'ladder';
 
     protected function define_optional_params() {
         return [

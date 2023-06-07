@@ -56,9 +56,12 @@ class file_server extends \block_xp\local\file\file_server implements \block_xp\
 
         // Check context consistency.
         if ($filearea == 'currency') {
-            if ($this->forwholesite && $context->contextlevel !== CONTEXT_SYSTEM) {
-                return false;
-            } else if (!$this->forwholesite && $context->contextlevel !== CONTEXT_COURSE) {
+
+            // Note that we no longer check whether the context is consistent with the "For whole site"
+            // setting because it is possible to access a course instance in "For whole site" mode and
+            // vice-versa, and we ran into situations where the plugin looked buggy because the currency
+            // image was not loading, so it's best to be less strict!
+            if ($context->contextlevel !== CONTEXT_SYSTEM && $context->contextlevel !== CONTEXT_COURSE) {
                 return false;
             }
 

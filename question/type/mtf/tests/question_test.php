@@ -53,6 +53,7 @@ class qtype_mtf_question_test extends advanced_testcase {
         $mtf->generalfeedback = 'You should do this and that';
         $mtf->qtype = question_bank::get_qtype('mtf');
         $mtf->answernumbering = 'abc';
+        $mtf->deduction = 0.0;
         $mtf->scoringmethod = "subpoints";
         $mtf->options = new stdClass();
         $mtf->shuffleanswers = 0;

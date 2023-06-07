@@ -43,6 +43,7 @@ use local_xp\local\reason\event_reason;
 use local_xp\local\rule\calculator;
 use local_xp\local\rule\event_subject;
 use local_xp\local\rule\result_calculator;
+use local_xp\local\rule\subject;
 
 /**
  * Course world collection strategy.
@@ -112,9 +113,9 @@ class course_world_collection_strategy implements event_collection_strategy {
             return;
         }
 
-        // Make the reason and the subject.
-        $reason = $this->reasonmaker->make_from_event($event);
+        // Make the reasons and the subject.
         $subject = new event_subject($event);
+        $reason = $this->reasonmaker->make_from_event($event);
 
         // Proceed with the collection.
         $this->collect_for_user($userid, $subject, $reason);
@@ -178,7 +179,9 @@ class course_world_collection_strategy implements event_collection_strategy {
     protected function can_capture($userid, reason $reason, config $config) {
 
         // There are some events we only want to see once! So they are not bound to the cheat guard.
-        if ($reason instanceof \local_xp\local\reason\activity_completion_reason) {
+        if ($reason instanceof \local_xp\local\reason\activity_completion_reason
+                || $reason instanceof \local_xp\local\reason\section_completion_reason) {
+
             if ($this->reasonoccuranceindicator->has_reason_happened_since($userid, $reason, new DateTime('@0'))) {
                 return false;
             }
@@ -283,6 +286,12 @@ class course_world_collection_strategy implements event_collection_strategy {
 
         } else if ($reason instanceof \local_xp\local\reason\course_completed_reason) {
             // We skip the cheat guard for course completion because we don't want to actions/points cap
+            // to affect whether students are rewarded for this.
+            return true;
+
+        } else if ($reason instanceof \local_xp\local\reason\section_completion_reason) {
+            // We skip the cheat guard for section completion because we're already filtering out
+            // whether they happened more than once or not. And we don't want to actions/points cap
             // to affect whether students are rewarded for this.
             return true;
 

@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->dirroot . '/course/externallib.php');
 
+use block_xp\local\utils\external_utils;
 use block_xp\local\xp\algo_levels_info;
 use context_course;
 use context_system;
@@ -81,7 +82,7 @@ class external extends external_api {
                 || strpos(core_text::strtolower($SITE->fullname), $query) !== false) {
 
             array_unshift($courses, array_merge((array) $SITE, [
-                'displayname' => external_format_string(get_course_display_name_for_list($SITE),
+                'displayname' => external_utils::format_string(get_course_display_name_for_list($SITE),
                     context_course::instance($SITE->id))
             ]));
         }
@@ -231,7 +232,7 @@ class external extends external_api {
     public static function set_default_levels_info($levels, $algo) {
         global $USER;
         $params = self::validate_parameters(self::set_default_levels_info_parameters(), compact('levels', 'algo'));
-        extract($params);
+        extract($params); // @codingStandardsIgnoreLine
 
         // Permission checks.
         $context = context_system::instance();
@@ -296,7 +297,7 @@ class external extends external_api {
     public static function set_levels_info($courseid, $levels, $algo) {
         global $USER;
         $params = self::validate_parameters(self::set_levels_info_parameters(), compact('courseid', 'levels', 'algo'));
-        extract($params);
+        extract($params); // @codingStandardsIgnoreLine
 
         // Pre-checks.
         $worldfactory = di::get('course_world_factory');

@@ -33,6 +33,7 @@ use block_xp\local\activity\user_recent_activity_repository;
 use block_xp\local\activity\xp_activity;
 use block_xp\local\reason\reason;
 use block_xp\local\logger\collection_logger_with_group_reset;
+use block_xp\local\logger\collection_logger_with_id_reset;
 use block_xp\local\logger\reason_collection_logger;
 use local_xp\local\reason\reason_with_short_description;
 use local_xp\local\reason\maker_from_type_and_signature;
@@ -50,6 +51,7 @@ use local_xp\local\reason\maker_from_type_and_signature;
 class context_collection_logger implements
         reason_collection_logger,
         collection_logger_with_group_reset,
+        collection_logger_with_id_reset,
         collection_counts_indicator,
         reason_collection_counts_indicator,
         reason_occurance_indicator,
@@ -79,7 +81,7 @@ class context_collection_logger implements
         );
     }
 
-    public function count_collections_with_reason_since($id, reason $reason, DateTime $since) {
+    public function count_collections_with_reason_since($userid, reason $reason, DateTime $since) {
         return $this->db->count_records_select(
             $this->table,
             'contextid = :contextid AND time >= :time AND hashkey = :hashkey AND userid = :userid',
@@ -244,6 +246,22 @@ class context_collection_logger implements
         ];
 
         $this->db->execute($sql, $params);
+    }
+
+    /**
+     * Purge by ID.
+     *
+     * @param int $id The ID.
+     * @return void
+     */
+    public function reset_by_id($id) {
+        $this->db->delete_records(
+            $this->table,
+            [
+                'contextid' => $this->context->id,
+                'userid' => $id
+            ]
+        );
     }
 
 }

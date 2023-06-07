@@ -53,6 +53,8 @@ class maker_from_event {
             return course_completed_reason::from_event($e);
         } else if ($e instanceof \core\event\user_graded) {
             return graded_reason::from_event($e);
+        } else if ($e instanceof \local_xp\event\section_completed) {
+            return section_completion_reason::from_event($e);
         }
         return event_reason::from_event($e);
     }

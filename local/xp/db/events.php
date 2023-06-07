@@ -15,37 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Base testcase.
+ * Messages.
  *
- * @package    block_xp
- * @copyright  2014 Frédéric Massart - FMCorz.net
+ * @package    local_xp
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-
-/**
- * Base testcase class.
- *
- * @package    block_xp
- * @copyright  2014 Frédéric Massart - FMCorz.net
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-abstract class block_xp_base_testcase extends advanced_testcase {
-
-    public function setUp(): void {
-        $this->resetAfterTest();
-        $this->reset_container();
-    }
-
-    protected function get_world($courseid) {
-        return \block_xp\di::get('course_world_factory')->get_world($courseid);
-    }
-
-    protected function reset_container() {
-        \block_xp\di::set_container(new \block_xp\local\default_container());
-    }
-
-}
+// Note that this is a simple implementation of events in local_xp, but there is
+// an advanced mechanism (observer_rules_maker) that we could use to override, or
+// extend the events from block_xp. We could change this in the future so that
+// the course deletion hook (to purge data) is called from block_xp, or from
+// an extension of its observer.
+$observers = [
+    [
+        'eventname' => '\\core\\event\\course_deleted',
+        'callback' => 'local_xp\\local\\observer\\observer::course_deleted'
+    ]
+];

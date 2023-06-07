@@ -73,18 +73,23 @@ class rules_controller extends \block_xp\local\controller\rules_controller {
             // We want to inject the completion rules right before this one. Note that we
             // cannot use instanceof as it matches on subclasses.
             if (get_class($rule->rule) == 'block_xp_rule_property') {
-                array_splice($rules, -1, 0, [
+                array_splice($rules, -1, 0, array_filter([
                     (object) [
                         'name' => get_string('ruleactivitycompletion', 'local_xp'),
                         'info' => get_string('ruleactivitycompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\activity_completion(),
                     ],
                     (object) [
+                        'name' => get_string('rulesectioncompletion', 'local_xp'),
+                        'info' => get_string('rulesectioncompletioninfo', 'local_xp'),
+                        'rule' => new \local_xp\local\rule\section_completion($this->courseid),
+                    ],
+                    (object) [
                         'name' => get_string('rulecoursecompletion', 'local_xp'),
                         'info' => get_string('rulecoursecompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\course_completion(),
                     ]
-                ]);
+                ]));
             }
 
         }

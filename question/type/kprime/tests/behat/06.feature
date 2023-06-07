@@ -136,7 +136,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student2: 50% correct options (SUBPOINTS are activated)
@@ -150,7 +150,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student3: 0% correct options (SUBPOINTS are activated)
@@ -164,7 +164,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Check results for Subpoints
@@ -217,7 +217,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student5: 0% correct options (KPrime1/0 is activated)
@@ -231,7 +231,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Check results for Kprime1/0
@@ -276,7 +276,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student7: 1 false option -> 50% (Kprime is activated)
@@ -290,7 +290,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving quiz as student8: 2 false option -> 0% (KPrime is activated)
@@ -304,7 +304,7 @@ Feature: Step 6
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
 # Check results for Kprime

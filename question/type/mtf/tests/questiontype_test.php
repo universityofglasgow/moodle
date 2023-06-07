@@ -87,6 +87,7 @@ class qtype_mtf_test extends advanced_testcase {
         $qdata->options = new stdClass();
         $qdata->options->scoringmethod = "subpoints";
         $qdata->options->answernumbering = 123;
+        $qdata->options->deduction = 0.0;
         $qdata->options->shuffleanswers = 0;
         $qdata->options->numberofrows = 2;
         $qdata->options->numberofcolumns = 2;

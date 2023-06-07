@@ -88,6 +88,7 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
         file_prepare_draft_area($draftitemid, $this->get_currency_filemanager_context()->id, 'local_xp', 'defaultcurrency',
             0, $this->get_currency_filemanager_options());
         $data['currency'] = $draftitemid;
+        $data['currencytheme'] = $this->adminconfig->get('currencytheme');
         $data['badgetheme'] = $this->adminconfig->get('badgetheme');
 
         return $data;
@@ -96,6 +97,8 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
     protected function pre_content() {
         $this->adminconfig = \block_xp\di::get('config');
         parent::pre_content();
+        $form = $this->get_form();
+        $form->init_page_requirements();
     }
 
     /**
@@ -109,6 +112,7 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
         file_save_draft_area_files($data->currency, $this->get_currency_filemanager_context()->id, 'local_xp',
             'defaultcurrency', 0, $this->get_currency_filemanager_options());
         $this->adminconfig->set('badgetheme', $data->badgetheme);
+        $this->adminconfig->set('currencytheme', $data->currencytheme);
     }
 
     /**

@@ -44,7 +44,7 @@ Feature: Step 2
     And I upload "question/type/mtf/tests/fixtures/testquestion.moodle.xml" file to "Import" filemanager
     And I press "id_submitbutton"
     Then I should see "Parsing questions from import file."
-    And I should see "Importing 1 questions from file"
+    And I should see "Importing 2 questions from file"
     And I press "Continue"
 
     And I should see "MTF-Question-001"
@@ -66,3 +66,8 @@ Feature: Step 2
     And I should see "feedback to option 1"
     And I should see "option text 1: True"
     And I should see "option text 2: False"
+    And I press "Close preview"
+
+    And I should see "MTF-Question-002"
+    And I choose "Preview" action for "MTF-Question-002" in the question bank
+    And I should see "MTF-Question-002"

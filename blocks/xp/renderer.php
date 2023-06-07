@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_xp\local\course_world;
 use block_xp\local\activity\activity;
 use block_xp\local\utils\user_utils;
@@ -308,7 +306,7 @@ class block_xp_renderer extends plugin_renderer_base {
         }
 
         if ($notice) {
-            [$flag, $textfn] = $notice;
+            list($flag, $textfn) = $notice;
 
             require_once($CFG->libdir . '/ajax/ajaxlib.php');
             user_preference_allow_ajax_update($flag, PARAM_BOOL);

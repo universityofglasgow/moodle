@@ -26,7 +26,6 @@
  */
 
 namespace block_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 use DirectoryIterator;
 use cache;
@@ -178,7 +177,7 @@ class event_lister {
         // We need to disable debugging as some events can be deprecated.
         $debuglevel = $CFG->debug;
         $debugdisplay = $CFG->debugdisplay;
-        $debugusers = $CFG->debugusers;
+        $debugusers = $CFG->debugusers ?? '';
         $CFG->debugusers = '';
         set_debugging(0, false);
 

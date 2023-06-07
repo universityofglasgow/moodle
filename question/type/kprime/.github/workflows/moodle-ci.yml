@@ -1,35 +1,46 @@
-name: Moodle Plugin CI
-
+name: Moodle plugin CI
 on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: 'ubuntu-latest'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.0'
+            moodle-branch: 'master'
+            database: 'pgsql'
+          - php: '8.1'
+            moodle-branch: 'MOODLE_402_STABLE'
+            database: 'mariadb'
+          - php: '8.0'
+            moodle-branch: 'MOODLE_401_STABLE'
+            database: 'mariadb'
 
     services:
       postgres:
-        image: postgres:10.0
+        image: postgres:13
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+
       mariadb:
-        image: mariadb:10.5
+        image: mariadb:10
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['7.4']
-        moodle-branch: ['MOODLE_400_STABLE']
-        database: [pgsql, mariadb]
 
     steps:
       - name: Check out repository code
@@ -41,6 +52,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: ${{ matrix.extensions }}
+          ini-values: max_input_vars=5000
           coverage: none
 
       - name: Initialise moodle-plugin-ci
@@ -50,7 +63,8 @@ jobs:
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
-      - name: Install moodle-plugin-ci
+
+      - name: Install Moodle
         run: |
           moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
@@ -61,19 +75,14 @@ jobs:
         if: ${{ always() }}
         run: moodle-plugin-ci phplint
 
-    #  - name: PHP Copy/Paste Detector
-    #    continue-on-error: true # This step will show errors but will not fail
-    #    if: ${{ always() }}
-    #    run: moodle-plugin-ci phpcpd
-
       - name: PHP Mess Detector
-        continue-on-error: true # This step will show errors but will not fail
+        continue-on-error: true
         if: ${{ always() }}
         run: moodle-plugin-ci phpmd
 
       - name: Moodle Code Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker --max-warnings 10000
+        run: moodle-plugin-ci codechecker --max-warnings 1000
 
       - name: Validating
         if: ${{ always() }}
@@ -88,8 +97,8 @@ jobs:
         run: moodle-plugin-ci mustache
 
       - name: Grunt
-        if: ${{ always() }}
-        run: moodle-plugin-ci grunt || [  "$MOODLE_BRANCH" != 'master' -a  "$MOODLE_BRANCH" != 'MOODLE_311_STABLE' -a  "$MOODLE_BRANCH" != 'MOODLE_310_STABLE' -a  "$MOODLE_BRANCH" != 'MOODLE_39_STABLE' ]
+        if: ${{ matrix.moodle-branch == 'MOODLE_400_STABLE' }}
+        run: moodle-plugin-ci grunt --max-lint-warnings 1000
 
       - name: PHPUnit tests
         if: ${{ always() }}
@@ -97,4 +106,4 @@ jobs:
 
       - name: Behat features
         if: ${{ always() }}
-        run: moodle-plugin-ci behat # --profile chrome
+        run: moodle-plugin-ci behat

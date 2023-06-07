@@ -149,7 +149,7 @@ class drops_controller extends page_controller {
             if (!empty($drop->id)) {
                 $editurl = new url($this->pageurl, ['editid' => $drop->id]);
                 $name = format_string($drop->name, true, ['context' => $this->world->get_context()]);
-                $setupdivid =html_writer::random_id();
+                $setupdivid = html_writer::random_id();
                 echo html_writer::div('', 'xp-hidden', [
                     'id' => $setupdivid,
                     'data-name' => $name,
@@ -160,7 +160,7 @@ class drops_controller extends page_controller {
             }
         }
 
-        echo $output->advanced_heading(get_string('drops', 'local_xp'),[
+        echo $output->advanced_heading(get_string('drops', 'local_xp'), [
             'actions' => $this->hasdependencies ? [
                 new action_link($url, get_string('adddrop', 'local_xp'), null, ['class' => 'btn btn-secondary btn-default'])
             ] : [],
@@ -168,10 +168,9 @@ class drops_controller extends page_controller {
             'help' => new \help_icon('drops', 'local_xp'),
         ]);
 
-
         if (!$this->hasdependencies) {
             $pluginurl = new moodle_url('https://moodle.org/plugins/filter_shortcodes');
-            $shortcodesurl = new moodle_url('https://levelup.plus/docs/article/using-shortcodes');
+            $shortcodesurl = new moodle_url('https://docs.levelup.plus/xp/docs/how-to/use-shortcodes?ref=localxp_drops');
             echo $output->notification_without_close(markdown_to_html(get_string('filtershortcodesrequiredfordrops', 'local_xp', [
                 'url' => $pluginurl->out(false),
                 'shortcodesdocsurl' => $shortcodesurl->out(false)

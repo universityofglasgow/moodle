@@ -55,6 +55,7 @@ class default_admin_config extends immutable_config {
 
             // Other settings.
             'badgetheme' => '',
+            'currencytheme' => '',
             'maxpointspertime' => 0,
             'timeformaxpoints' => 0,
 
@@ -64,6 +65,10 @@ class default_admin_config extends immutable_config {
             'grouporderby' => default_course_world_config::GROUP_ORDER_BY_POINTS,
 
             'progressbarmode' => default_course_world_config::PROGRESS_BAR_MODE_LEVEL,
+
+            // Last call a mobile init function, and last view of a page.
+            'mobilelastinit' => 0,
+            'mobilelastview' => 0,
         ]));
     }
 

@@ -54,6 +54,7 @@ class container implements \block_xp\local\container {
         'course_world_leaderboard_factory_with_config' => true,
         'course_world_navigation_factory' => true,
         'currency' => true,
+        'currency_repository' => true,
         'file_server' => true,
         'drop_repository' => true,
         'grouped_leaderboard_helper' => true,
@@ -68,6 +69,7 @@ class container implements \block_xp\local\container {
         'theme_repository' => true,
         'theme_updater' => true,
         'url_resolver' => true,
+        'usage_reporter' => true,
     ];
 
     /** @var array Object instances. */
@@ -331,6 +333,17 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Get the currency repository.
+     *
+     * @return currency\currency_repository
+     */
+    protected function get_currency_repository() {
+        global $CFG;
+        $dir = $CFG->dirroot . '/local/xp/pix/sign';
+        return new \local_xp\local\currency\currency_repository(new \DirectoryIterator($dir));
+    }
+
+    /**
      * Get the drop repository.
      *
      * @return drop\drop_repository
@@ -379,7 +392,7 @@ class container implements \block_xp\local\container {
      */
     protected function get_renderer() {
         global $PAGE;
-        if (!$PAGE->has_set_url() && !WS_SERVER) {
+        if (!$PAGE->has_set_url() && !WS_SERVER && !CLI_SCRIPT) {
             debugging('The renderer was requested too early in the process.', DEBUG_DEVELOPER);
         }
         $renderer = $PAGE->get_renderer('local_xp');
@@ -444,6 +457,7 @@ class container implements \block_xp\local\container {
      * Get the tasks definition maker.
      *
      * @return tasks_definition_maker
+     * @deprecated Overridding block_xp tasks is not advised.
      */
     protected function get_tasks_definition_maker() {
         return new \local_xp\local\task\tasks_definition_maker();
@@ -480,7 +494,7 @@ class container implements \block_xp\local\container {
 
     /**
      * Get URL resolver.
-     *a
+     *
      * @return url_resolver
      */
     protected function get_url_resolver() {
@@ -488,6 +502,16 @@ class container implements \block_xp\local\container {
             $this->get('base_url'),
             $this->get('routes_config')
         );
+    }
+
+    /**
+     * Get usage reporter.
+     *
+     * @return plugin\usage_reporter
+     */
+    protected function get_usage_reporter() {
+        $config = $this->get('config');
+        return new \block_xp\local\plugin\usage_reporter($config, new plugin\usage_report_maker($this->get('db'), $config));
     }
 
     /**

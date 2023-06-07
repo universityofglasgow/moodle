@@ -26,13 +26,12 @@
 namespace local_xp\local\leaderboard;
 defined('MOODLE_INTERNAL') || die();
 
-use moodle_database;
-use stdClass;
+use block_xp\local\utils\external_utils;
 use block_xp\local\xp\levels_info;
 use local_xp\local\team\static_team;
 use local_xp\local\xp\levelless_cohort_state;
-
-require_once($CFG->libdir . '/externallib.php');
+use moodle_database;
+use stdClass;
 
 /**
  * Cohort leaderboard.
@@ -120,7 +119,7 @@ class cohort_leaderboard extends grouped_leaderboard {
                  WHERE tm.userid = :userid";
         $params = ['userid' => $memberid];
         return array_map(function($cohort) {
-            return new static_team($cohort->id, external_format_string($cohort->name, $cohort->contextid));
+            return new static_team($cohort->id, external_utils::format_string($cohort->name, $cohort->contextid));
         }, $this->db->get_records_sql($sql, $params));
     }
 

@@ -77,19 +77,23 @@ class config extends \block_xp\form\config {
 
         // Re-implement those to extend the units allowed.
         $mform->removeElement('maxactionspertime');
-        $el = $mform->createElement('block_xp_form_itemspertime', 'maxactionspertime', get_string('maxactionspertime', 'block_xp'), [
-            'maxunit' => DAYSECS,
-            'itemlabel' => get_string('actions', 'block_xp')
-        ]);
+        $el = $mform->createElement('block_xp_form_itemspertime', 'maxactionspertime',
+            get_string('maxactionspertime', 'block_xp'), [
+                'maxunit' => DAYSECS,
+                'itemlabel' => get_string('actions', 'block_xp')
+            ]
+        );
         $mform->insertElementBefore($el, 'timebetweensameactions');
         unset($el);
         $mform->addHelpButton('maxactionspertime', 'maxactionspertime', 'block_xp');
 
         $mform->removeElement('timebetweensameactions');
-        $el = $mform->createElement('block_xp_form_duration', 'timebetweensameactions', get_string('timebetweensameactions', 'block_xp'), [
-            'maxunit' => DAYSECS,
-            'optional' => false,        // We must set this...
-        ]);
+        $el = $mform->createElement('block_xp_form_duration', 'timebetweensameactions',
+            get_string('timebetweensameactions', 'block_xp'), [
+                'maxunit' => DAYSECS,
+                'optional' => false,        // We must set this...
+            ]
+        );
         $mform->insertElementBefore($el, '__cheatguardend');
         unset($el);
         $mform->addHelpButton('timebetweensameactions', 'timebetweensameactions', 'block_xp');

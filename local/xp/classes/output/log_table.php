@@ -28,11 +28,17 @@ namespace local_xp\output;
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/tablelib.php');
 
+use block_xp\di;
 use context;
 use html_writer;
 use stdClass;
 use table_sql;
 use block_xp\local\utils\user_utils;
+use coding_exception;
+use context_system;
+use local_xp\local\team\team_membership_resolver;
+use moodle_url;
+use pix_icon;
 
 /**
  * Log table class.
@@ -49,10 +55,16 @@ class log_table extends table_sql {
 
     /** @var context The context. */
     protected $context;
+    /** @var int Filter by user ID, falsy means not filtering. */
+    protected $filterbyuserid;
     /** @var renderer_base The renderer. */
     protected $renderer;
     /** @var object The reason maker. */
     protected $reasonmaker;
+    /** @var team_membership_resolver Team resolver. */
+    protected $teamresolver;
+    /** @var array Array of team objects indexed by user ID. */
+    protected $teamscache = [];
 
     /**
      * Constructor.
@@ -61,11 +73,17 @@ class log_table extends table_sql {
      * @param int $groupid The group ID.
      * @param string $downloadformat The download format.
      */
-    public function __construct(context $context, $groupid, $downloadformat = null) {
-        parent::__construct('block_xp_log');
+    public function __construct(context $context, $groupid, $downloadformat = null,
+            team_membership_resolver $teamresolver = null, $userid = null) {
+
+                $userid = max(0, (int) $userid);
+        parent::__construct('block_xp_log_' . $userid);
+
         $this->context = $context;
+        $this->filterbyuserid = $userid;
         $this->renderer = \block_xp\di::get('renderer');
         $this->reasonmaker = new \local_xp\local\reason\maker_from_type_and_signature();
+        $this->teamresolver = $teamresolver;
 
         // Downloadable things.
         $this->is_downloading($downloadformat, 'xp_log_' . $context->id);
@@ -95,14 +113,87 @@ class log_table extends table_sql {
 
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u');
+        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u') . ', u.email, u.idnumber, u.username';
         $this->sql->from = $sqlfrom;
         $this->sql->where = 'contextid = :contextid';
         $this->sql->params = array_merge(['contextid' => $context->id], $sqlparams);
+        if ($this->filterbyuserid) {
+            $this->sql->where .= ' AND userid = :userid';
+            $this->sql->params = array_merge($this->sql->params, ['userid' => $this->filterbyuserid]);
+        }
 
         // Define various table settings.
         $this->sortable(true, 'time', SORT_DESC);
         $this->collapsible(false);
+    }
+
+    /**
+     * Get the columns definition.
+     *
+     * @return array
+     */
+    protected function get_columns_definition() {
+        global $CFG;
+        $isdownloading = $this->is_downloading();
+
+        // Log fields.
+        $cols = [
+            'time' => get_string('eventtime', 'block_xp'),
+        ];
+
+        // Name fields.
+        if ($isdownloading) {
+            $cols = array_merge($cols, [
+                'firstname' => get_string('firstname', 'core'),
+                'lastname' => get_string('lastname', 'core')
+            ]);
+        }
+        $cols = array_merge($cols, [
+            'fullname' => get_string('fullname'),
+        ]);
+
+        // Identity fields.
+        if ($isdownloading) {
+
+            // Additional identity fields.
+            if (has_capability('moodle/site:viewuseridentity', $this->context)) {
+
+                // Defining which fields are to be hidden.
+                $forwholesite = di::get('config')->get('context') == CONTEXT_SYSTEM;
+                $hiddenidentityfields = explode(',', $CFG->hiddenuserfields);
+                if ($forwholesite && has_capability('moodle/user:viewhiddendetails', context_system::instance())) {
+                    $hiddenidentityfields = [];
+                } else if (!$forwholesite && has_capability('moodle/course:viewhiddenuserfields', $this->context)) {
+                    $hiddenidentityfields = [];
+                }
+
+                // Gathering the additional identity fields.
+                $showuseridentity = explode(',', $CFG->showuseridentity);
+                $identityfields = array_diff_key(array_intersect_key([
+                    'username' => get_string('username', 'core'),
+                    'idnumber' => get_string('idnumber', 'core'),
+                    'email' => get_string('email', 'core'),
+                ], array_flip($showuseridentity)), array_flip($hiddenidentityfields));
+                $cols = array_merge($cols, $identityfields);
+            }
+
+            // Include the teams when downloading the logs.
+            if ($this->teamresolver) {
+                $cols['team'] = get_string('team', 'local_xp');
+            }
+        }
+
+        // Log fields.
+        $cols = array_merge($cols, [
+            'points' => get_string('reward', 'block_xp'),
+            'reason' => !$isdownloading ? '' : get_string('reason', 'local_xp'),
+            'location' => !$isdownloading ? '' : get_string('reasonlocation', 'local_xp')
+        ]);
+        if ($isdownloading) {
+            $cols['location_url'] = get_string('reasonlocationurl', 'local_xp');
+        }
+
+        return $cols;
     }
 
     /**
@@ -111,36 +202,16 @@ class log_table extends table_sql {
      * @return array
      */
     protected function get_columns() {
-        $cols = [
-            'time',
-            'fullname',
-            'points',
-            'reason',
-            'location'
-        ];
-        if ($this->is_downloading()) {
-            $cols[] = 'location_url';
-        }
-        return $cols;
+        return array_keys($this->get_columns_definition());
     }
 
     /**
      * Get the headers.
      *
-     * @return void
+     * @return array
      */
     protected function get_headers() {
-        $cols = [
-            get_string('eventtime', 'block_xp'),
-            get_string('fullname'),
-            get_string('reward', 'block_xp'),
-            '',
-            ''
-        ];
-        if ($this->is_downloading()) {
-            $cols[] = '';
-        }
-        return $cols;
+        return array_values($this->get_columns_definition());
     }
 
     /**
@@ -158,6 +229,23 @@ class log_table extends table_sql {
     }
 
     /**
+     * Formats the column time.
+     *
+     * @param stdClass $row Table row.
+     * @return string Output produced.
+     */
+    public function col_fullname($row) {
+        $fullname = parent::col_fullname($row);
+        if (!$this->filterbyuserid && !$this->is_downloading()) {
+            $fullname .= ' ' . $this->renderer->action_icon(
+                new moodle_url($this->baseurl, ['userid' => $row->userid]),
+                new pix_icon('i/search', get_string('filterbyuser', 'block_xp'))
+            );
+        }
+        return $fullname;
+    }
+
+    /**
      * Reason location.
      *
      * @param stdClass $row The row.
@@ -171,6 +259,7 @@ class log_table extends table_sql {
             if (!$name) {
                 return '';
             }
+            $name = !$this->is_downloading() ? s($name) : $name;
             if ($url && !$this->is_downloading()) {
                 return html_writer::link($url, $name);
             }
@@ -211,6 +300,30 @@ class log_table extends table_sql {
             return $desc;
         }
         return \html_writer::tag('span', $desc);
+    }
+
+    /**
+     * Formats the column.
+     *
+     * @param stdClass $row Table row.
+     * @return string Output produced.
+     */
+    protected function col_team($row) {
+        if (!$this->teamresolver) {
+            return '';
+        }
+
+        // We need a local cache because the current implementation of the team resolver does
+        // does not implement any caching mechanism, which would cause a lot of repeated queries.
+        // Using a local cache of the team object should not cause any overhead if/when the team
+        // resolver implements its own caching of team objects.
+        if (!isset($this->teamscache[$row->userid])) {
+            $this->teamscache[$row->userid] = $this->teamresolver->get_teams_of_member($row->userid);
+        }
+
+        return implode(', ', array_map(function($team) {
+            return $team->get_name();
+        }, $this->teamscache[$row->userid]));
     }
 
     /**

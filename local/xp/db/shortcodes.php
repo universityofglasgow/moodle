@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // At present we cannot use the shortcodes_definition_maker interface in the
 // dependency injection container, because the shortcodes plugin enforces the
-//'component' the shortcodes belongs to, and thus does not associate the description
+// 'component' the shortcodes belongs to, and thus does not associate the description
 // string with 'local_xp', which leads to 'block_xp' lacking the required strings.
 // When the filter will allow this form of subclassing, we will update this file.
 $shortcodes = [

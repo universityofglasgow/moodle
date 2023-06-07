@@ -64,7 +64,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then I should see "feedback to option 1"
     And I should see "feedback to option 2"
     And I should see "feedback to option 3"
@@ -96,7 +96,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then I should see "feedback to option 1"
     And I should see "feedback to option 2"
     And I should see "feedback to option 3"
@@ -131,7 +131,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element" should exist
     And ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element" should exist
     And ".qtype_mtf_row:contains('option text 3') input[value=1]" "css_element" should exist
@@ -175,7 +175,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
@@ -200,7 +200,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
@@ -225,7 +225,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Incorrect']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Incorrect']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Incorrect']" "xpath_element" should exist
@@ -298,7 +298,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
@@ -323,7 +323,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
@@ -399,7 +399,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
@@ -424,7 +424,7 @@ Feature: Step 6
     And I click on ".qtype_mtf_row:contains('option text 8') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     Then "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 1')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 2')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist
     And "//div[starts-with(@id,'question') and substring(@id, string-length(@id)-1)='-1']//tr[contains(.,'option text 3')]//td[contains(@class, 'mtfcorrectness')]//i[@title='Correct']" "xpath_element" should exist

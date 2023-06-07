@@ -31,7 +31,8 @@
         </ion-row>
         <ng-container *ngFor="let option of question.options" >
             <ion-radio-group
-                [name]="option.name" [(ngModel)]="option.selection" class="{{option.qclass}}">
+                [name]="option.name" [(ngModel)]="option.selection" class="{{option.qclass}}"
+                [allowEmptySelection]="question.hasdeduction">
                 <ion-row>
                     <ion-col>
                         <ion-label class="addon-qtype-mtf-container qtext ion-text-wrap ">

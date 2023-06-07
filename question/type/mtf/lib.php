@@ -49,3 +49,19 @@ function qtype_mtf_pluginfile($course, $cm, $context, $filearea, $args, $forcedo
     require_once($CFG->libdir . '/questionlib.php');
     question_pluginfile($course, $context, 'qtype_mtf', $filearea, $args, $forcedownload, $options);
 }
+
+/**
+ * Callback function for the question's admin settings page. The function
+ * makes sure that the administrator does not disallow deductions while
+ * setting them as default scoring method.
+ *
+ * @param string $name name of the modified setting
+ * @return void
+ */
+function mtf_settings_callback($name) {
+    if (get_config('qtype_mtf', 'scoringmethod') == 'subpointdeduction' && get_config('qtype_mtf', 'allowdeduction') === '0') {
+        set_config('allowdeduction', 1, 'qtype_mtf');
+    }
+}
+
+

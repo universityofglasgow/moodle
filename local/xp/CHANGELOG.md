@@ -1,6 +1,78 @@
 Changelog
 =========
 
+v1.14.1
+-------
+
+Bug fixes
+
+- Address compatibility issues with Moodle 3.4
+
+v1.14.0
+-------
+
+Quality of life
+
+- Adjusted styles and rules for better flow and readability
+
+Bug fixes
+
+- Restoring backup into existing course honours delete contents option
+- The restore process could be interupted while restoring drops
+- Prevent extraneous grade rules from being restored
+
+Technical changes
+
+- Raised minimum required version to Moodle 3.4
+- Compatibility with Moodle 4.2
+
+v1.13.2
+-------
+
+Quality of life
+
+- Added German translations
+- Updated French translations
+
+Technical changes
+
+- Compatibility with 4.0 message provider constants
+- Escape output of location in log table
+- Other inconsequential minor changes
+
+Acknowledgements
+
+- We would like to thank [Ruhr-Universität Bochum](https://moodle.ruhr-uni-bochum.de) and [Hochschule München](https://moodle.hm.edu) for translating and sharing the plugin in German.
+
+v1.13.1
+-------
+
+Bug fixes
+
+- Some JS files were not loaded in development mode
+
+v1.13.0
+-------
+
+New features
+
+- Rule to award points for completing a section
+- Added level visuals showcasing a seed growing into a tree
+- Added level visuals showcasing a house constructed to completion
+- Added alternative point symbols: brick, droplet 💧, leaf 🍃, lightbulb 💡, puzzle 🧩 and star ⭐
+
+Quality of life
+
+- Additional identity columns included in downloadable report
+- Additional identity columns included in downloadable logs
+- Team names included in downloadable logs
+- Renamed "Team ladder" to "Team leaderboard"
+- The team leaderboards is now found under the "Leaderboard" tab
+
+Technical changes
+
+- Compatibility with Moodle 4.1
+
 v1.12.1
 -------
 

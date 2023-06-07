@@ -86,6 +86,7 @@ class qtype_mtf_renderer extends qtype_renderer {
         global $CFG;
 
         $question = $qa->get_question();
+        $hasdeduction = ($question->scoringmethod === 'subpointdeduction' && get_config('qtype_mtf')->allowdeduction);
         $response = $question->get_response($qa);
 
         $inputname = $qa->get_qt_field_name('option');
@@ -96,6 +97,7 @@ class qtype_mtf_renderer extends qtype_renderer {
         }
 
         $this->page->requires->js(new moodle_url($CFG->wwwroot . '/question/type/mtf/js/attempt.js'));
+        $this->page->requires->js(new moodle_url($CFG->wwwroot . '/question/type/mtf/js/clear.js'));
 
         $result = '';
         $result .= html_writer::tag('div', $question->format_questiontext($qa), array('class' => 'qtext'));
@@ -104,6 +106,12 @@ class qtype_mtf_renderer extends qtype_renderer {
         $table->attributes['class'] = 'generaltable';
 
         $table->head = array();
+
+        // If the question has a deduction defined, add empty header for column with trash icon.
+        if ($hasdeduction) {
+            $table->head[] = '';
+        }
+
         // Add empty header for option texts.
         // Add the response texts as table headers.
         foreach ($question->columns as $column) {
@@ -135,6 +143,21 @@ class qtype_mtf_renderer extends qtype_renderer {
             // Holds the data for one table row.
             $rowdata = array();
 
+            // If the question has a deduction defined, add trash icon for each row.
+            if ($hasdeduction) {
+                $alttext = get_string('clearrow', 'qtype_mtf', $key + 1);
+                $trashicon = html_writer::tag('span', '', array(
+                    'class' => 'fa fa-trash',
+                    'id' => 'qtype_mtf_reset_' . $qa->get_field_prefix() . $field,
+                    'role' => 'img',
+                    'aria-label' => $alttext,
+                    'title' => $alttext
+                ));
+                $trashcell = new html_table_cell($trashicon);
+                $trashcell->attributes['class'] = 'mtfresponsebutton reset';
+                $rowdata[] = $trashcell;
+            }
+
             // Add the response radio buttons to the table.
             foreach ($question->columns as $column) {
                 $buttonname = $qa->get_field_prefix() . $field;
@@ -159,7 +182,7 @@ class qtype_mtf_renderer extends qtype_renderer {
                     $radio .= '<span class="mtfgreyingout">' . $this->feedback_image($weight > 0.0) . '</span>';
                 }
                 $cell = new html_table_cell($radio);
-                $cell->attributes['class'] = 'mtfresponsebutton';
+                $cell->attributes['class'] = 'mtfresponsebutton radio';
                 $rowdata[] = $cell;
             }
 

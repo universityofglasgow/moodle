@@ -184,7 +184,7 @@ abstract class grouped_leaderboard implements
      *
      * @return int
      */
-    protected function get_highest_member_count()   {
+    protected function get_highest_member_count() {
         if ($this->highestmembercountcache === null) {
             $sql = "SELECT MAX(q2.membercount) FROM (
                            SELECT COUNT(x.userid) AS membercount

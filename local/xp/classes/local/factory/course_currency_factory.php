@@ -26,6 +26,7 @@
 namespace local_xp\local\factory;
 defined('MOODLE_INTERNAL') || die();
 
+use block_xp\di;
 use \local_xp\local\config\default_course_world_config;
 use \local_xp\local\currency\currency;
 
@@ -70,11 +71,16 @@ class course_currency_factory {
             $world = $this->worldfactory->get_world($courseid);
             $courseid = $world->get_courseid();
             $config = $world->get_config();
+            $renderer = di::get('renderer');
 
             if ($config->get('currencystate') == default_course_world_config::CURRENCY_USE_DEFAULT) {
                 $currency = $this->defaultcurrency;
             } else {
-                $resolver = new \local_xp\local\currency\course_sign_url_resolver($world->get_context());
+                $currencytheme = $config->get('currencytheme');
+                $resolver = new \local_xp\local\currency\stack_sign_url_resolver(array_filter([
+                    new \local_xp\local\currency\course_sign_url_resolver($world->get_context()),
+                    $currencytheme ? new \local_xp\local\currency\theme_sign_url_resolver($renderer, $currencytheme) : null,
+                ]));
                 $currency = new \local_xp\local\currency\default_currency($resolver);
             }
 

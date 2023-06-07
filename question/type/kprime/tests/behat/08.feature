@@ -49,7 +49,7 @@ Feature: Step 8
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving the exam as students
@@ -69,12 +69,12 @@ Feature: Step 8
     And I click on "tr:contains('option text 4') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Backup Exam as admin
     Given I log in as "admin"
-    And I am on "Course 1" course homepage
+    # And I am on "Course 1" course homepage
     And I am on the "Quiz 1" "quiz activity" page
     And I navigate to "Backup" in current page administration
     And I click on "input[id='id_setting_root_grade_histories']" "css_element"

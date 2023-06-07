@@ -24,6 +24,9 @@
  */
 
 namespace local_xp\local\controller;
+
+use local_xp\local\config\default_course_world_config;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -47,10 +50,18 @@ class log_controller extends \block_xp\local\controller\log_controller {
 
     protected function get_table() {
         if (!$this->table) {
+            $teamresolver = null;
+            $withteams = $this->world->get_config()->get('enablegroupladder') != default_course_world_config::GROUP_LADDER_NONE;
+            if ($withteams) {
+                $teamresolverfactory = \block_xp\di::get('team_membership_resolver_factory');
+                $teamresolver = $teamresolverfactory->get_course_team_membership_resolver($this->world);
+            }
             $table = new \local_xp\output\log_table(
                 $this->world->get_context(),
                 $this->get_groupid(),
-                $this->get_param('download')
+                $this->get_param('download'),
+                $teamresolver,
+                $this->get_user_id()
             );
             $table->define_baseurl($this->pageurl->get_compatible_url());
             $this->table = $table;

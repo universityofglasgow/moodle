@@ -77,6 +77,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->options = new stdClass();
         $qdata->options->scoringmethod = "subpoints";
         $qdata->options->answernumbering = 123;
+        $qdata->options->deduction = 0.0;
         $qdata->options->shuffleanswers = 0;
         $qdata->options->numberofrows = 2;
         $qdata->options->numberofcolumns = 2;
@@ -204,6 +205,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofrows = 2;
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
+        $qdata->deduction = 0.0;
         $qdata->option = array(
             0 => array(
                 "text" => "option text 1",
@@ -286,6 +288,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->options = new stdClass();
         $qdata->options->scoringmethod = "subpoints";
         $qdata->options->answernumbering = 123;
+        $qdata->options->deduction = 0.0;
         $qdata->options->shuffleanswers = 1;
         $qdata->options->numberofrows = 8;
         $qdata->options->numberofcolumns = 2;
@@ -569,6 +572,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofrows = 8;
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
+        $qdata->deduction = 0.0;
         $qdata->option = array(
             0 => array(
                 "text" => "option text 1",
@@ -713,6 +717,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofrows = 8;
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
+        $qdata->deduction = 0.0;
         $qdata->option = array(
             0 => array(
                 "text" => "option text 1",
@@ -841,6 +846,7 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofrows = 8;
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
+        $qdata->deduction = 0.0;
         $qdata->option = array(
             0 => array(
                 "text" => "option text 1",

@@ -51,6 +51,7 @@ use block_xp\local\config\filtered_config;
 use block_xp\local\config\mapped_config;
 use block_xp\local\iterator\map_iterator;
 use block_xp\local\sql\limit;
+use block_xp\local\utils\external_utils;
 use block_xp\local\xp\anonymised_state;
 use block_xp\local\xp\level;
 use block_xp\local\xp\level_with_badge;
@@ -754,7 +755,7 @@ class external extends external_api {
             return array_reduce($children, function($carry, $child) use ($query, $categories) {
                 $child = static::grade_item_tree_reducer($child, $query, $categories);
                 if ($child === null) {
-                   return $carry;
+                    return $carry;
                 } else if (!is_array($child)) {
                     $child = [$child];
                 }
@@ -839,12 +840,7 @@ class external extends external_api {
      * @return string
      */
     public static function format_string($text, context $context) {
-        if (function_exists('external_format_string')) {
-            return external_format_string($text, $context->id);
-        }
-        return format_string($text, true, [
-            'context' => $context,
-        ]);
+        return external_utils::format_string($text, $context);
     }
 
     /**

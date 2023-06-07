@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="question/type/mtf/db" VERSION="20140924"
+<XMLDB PATH="question/type/mtf/db" VERSION="20230122"
 	COMMENT="XMLDB file for Moodle question/type/mtf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd">
 	<TABLES>
@@ -22,6 +22,9 @@
 				<FIELD NAME="answernumbering" TYPE="char" LENGTH="10" NOTNULL="true"
 					DEFAULT="none" SEQUENCE="false"
 					COMMENT="Indicates how and whether the choices should be numbered." />
+				<FIELD NAME="deduction" TYPE="float" LENGTH="4" NOTNULL="true"
+					DEFAULT="0" SEQUENCE="false" DECIMALS="3"
+					COMMENT="Deduction for wrong answers." />
 			</FIELDS>
 			<KEYS>
 				<KEY NAME="primary" TYPE="primary" FIELDS="id" />

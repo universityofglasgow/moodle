@@ -46,7 +46,7 @@ Feature: Step 8
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving the exam as students
@@ -61,7 +61,7 @@ Feature: Step 8
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   #Backup course including MTF question
@@ -124,7 +124,7 @@ Feature: Step 8
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Solving the exam as students
@@ -139,7 +139,7 @@ Feature: Step 8
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I press "Finish attempt ..."
     And I press "Submit all and finish"
-    And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
     And I log out
 
   # Backup Exam as admin

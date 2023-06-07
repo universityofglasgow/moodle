@@ -24,6 +24,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allowdeduction'] = 'Allow penalty deductions';
+$string['allowdeduction_help'] = 'If enabled, teachers can configure their questions to have deductions for wrong answers.
+        If disabled, this option will not be available, e. g. because the institution does not want penalties in this question type. This option cannot be disabled, if "Subpoints with deduction" is set as the default scoring method.';
 $string['answernumbering'] = 'Number the options?';
 $string['answernumbering123'] = '1., 2., 3., ...';
 $string['answernumberingabc'] = 'a., b., c., ...';
@@ -31,9 +34,13 @@ $string['answernumberingABCD'] = 'A., B., C., ...';
 $string['answernumberingiii'] = 'i., ii., iii., ...';
 $string['answernumberingIIII'] = 'I., II., III., ...';
 $string['answernumberingnone'] = 'No numbering';
+$string['cannotusedeductions'] = 'Please set a valid scoring method.';
+$string['clearrow'] = 'Clear answer for row {$a}';
 $string['configintro'] = 'Default values for Multiple True/False questions.';
 $string['configscoringmethod'] = 'Default scoring method for Multiple True/False questions.';
 $string['configshuffleanswers'] = 'Default setting for option shuffling in Multiple True/False questions.';
+$string['deduction'] = 'Deduction if wrong';
+$string['deduction_help'] = 'Penalty to be deducted for wrong answers, as a fraction of the points the item would get. Only useful if using subpoints scoring method.';
 $string['deletedchoice'] = 'This choice was deleted after the attempt was started.';
 $string['enterfeedbackhere'] = 'Enter feedback here.';
 $string['entergeneralfeedbackhere'] = 'Enter general feedback here.';
@@ -43,6 +50,7 @@ $string['false'] = 'False';
 $string['feedbackforoption'] = 'Feedback for';
 $string['generalfeedback'] = 'General Feedback.';
 $string['generalfeedback_help'] = 'The same general feedback is displayed regardless of the answer chosen. <br />Use general feedback e.g. to explain the correct answers or give students a link to additional information.';
+$string['invaliddeduction'] = 'Deduction must be a float between 0 and 1 (inclusive)';
 $string['maxpoints'] = 'Max. points';
 $string['mustsupplyresponses'] = 'You must supply values for all responses.';
 $string['mustsupplyvalue'] = 'You must supply a value here.';
@@ -64,12 +72,14 @@ $string['responsetexts'] = 'Judgement options';
 $string['save'] = 'Save';
 $string['scoringmtfonezero'] = 'MTF1/0';
 $string['scoringmtfonezero_help'] = 'The student receives full points if all responses are correct, and zero points otherwise.';
+$string['scoringsubpointdeduction'] = 'Subpoints with deduction';
+$string['scoringsubpointdeduction_help'] = 'The student is awarded subpoints for each correct response, but also deductions for wrong answers.';
 $string['scoringsubpoints'] = 'Subpoints';
 $string['scoringsubpoints_help'] = 'The student is awarded subpoints for each correct response.';
 $string['showscoringmethod'] = 'Show scoringmethod';
 $string['showscoringmethod_help'] = 'If enabled, students will see the scoringmethod in tests.';
 $string['scoringmethod'] = 'Scoring method';
-$string['scoringmethod_help'] = 'There are two alternative scoring methods. <br /><strong>Subpoints</strong> (recommended): The student is awarded subpoints for each correct response.<br/><strong>MTF1/0</strong>: The student receives full points if all responses are correct, and zero points otherwise.';
+$string['scoringmethod_help'] = 'There are three alternative scoring methods. <br /><strong>Subpoints</strong> (recommended): The student is awarded subpoints for each correct response.<br /><strong>Subpoints with deduction</strong>: The student is awarded subpoints for each correct response, but also deductions for wrong answers. This method needs prior activation by the administrator.<br/><strong>MTF1/0</strong>: The student receives full points if all responses are correct, and zero points otherwise.';
 $string['shuffleanswers'] = 'Shuffle options';
 $string['shuffleanswers_help'] = 'If enabled, the order of the options is randomly shuffled for each attempt,
          provided that "Shuffle within questions" in the activity settings is also enabled.';
