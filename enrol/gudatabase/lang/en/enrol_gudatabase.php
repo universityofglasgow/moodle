@@ -62,7 +62,9 @@ $string['enforceenddate_desc'] = 'Automatic enrolment is only functional between
 $string['enrolenddate'] = 'Enrol end date';
 $string['enrolenddate_help'] = 'If enabled, users will be unenrolled (or their role changed) after this date/time. Note that this only applies to users enrolled AFTER this is set or changed.';
 $string['enrolguard'] = 'Enrol guard period';
-$string['enrolguard_help'] = 'Enrolment will be disabled after course start date plus this number of days';
+$string['enrolguardpercent'] = 'Enrol guard period (percent)';
+$string['enrolguardpercent_help'] = 'Enrolment will be disabled after this percentage of the way through the course (based on start and end date).';
+$string['enrolguard_help'] = 'Enrolment will be disabled after this percentage of the way through the course (based on start and end date).';
 $string['enrolguardwarning'] = 'Enrolment disabled. Guard period from course start date has elapsed';
 $string['enrolmentdisabled'] = '<b>Enrolment is disabled for this course</b> See <a href="{$a}">Enrolment Report</a> for more information.';
 $string['enrolmentnotpossible'] = 'ENROLMENT IS DISABLED FOR THIS INSTANCE';

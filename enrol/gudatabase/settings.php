@@ -154,6 +154,7 @@ if ($ADMIN->fulltree) {
         get_string('unenrolguard', 'enrol_gudatabase'), get_string('unenrolguard_help', 'enrol_gudatabase'),
         7776000, $unenrolguardoptions));
 
+    /*
     $enrolguardoptions = [
         0        => get_string('daysoff', 'enrol_gudatabase'),
         2592000  => get_string('days30', 'enrol_gudatabase'),
@@ -166,6 +167,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('enrol_gudatabase/enrolguard',
         get_string('enrolguard', 'enrol_gudatabase'), get_string('enrolguard_help', 'enrol_gudatabase'),
         15228000, $enrolguardoptions));
+    */
+
+    $settings->add(new admin_setting_configtext('enrol_gudatabase/enrolguardpercent',
+        get_string('enrolguardpercent', 'enrol_gudatabase'), get_string('enrolguardpercent_help', 'enrol_gudatabase'), 50));
 
     $settings->add(new admin_setting_heading('enrol_gudatabase_codesheader',
         get_string('settingsheadercodes', 'enrol_gudatabase'), ''));

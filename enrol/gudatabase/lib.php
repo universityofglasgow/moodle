@@ -1131,13 +1131,25 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @return boolean
      */
     public function enrolment_guard($course) {
-        $enrolguard = $this->get_config('enrolguard');
-        if (!$enrolguard) {
-            return true;
+        $enrolguardpercent = $this->get_config('enrolguardpercent');
+        if (!$enrolguardpercent) {
+
+            // If it's not set then set it to 50%
+            $enrolguardpercent = 50;
+            $this->set_config('enrolguardpercent', $enrolguardpercent);
         }
 
-        // As long as we're before course start date + guard time it's all good
-        return time() < ($course->startdate + $enrolguard);
+        // Course start and end date *must* be defined
+        if (!$course->startdate || !$course->enddate) {
+            return false;
+        }
+
+        // Calculate "cut off" time
+        $decfraction = $enrolguardpercent / 100;
+        $cutoff = $course->startdate + (($course->enddate - $course->startdate) * $decfraction);
+
+        // As long as we're before cutoff then it's all good
+        return time() < $cutoff;
     }
 
     /**
