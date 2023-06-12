@@ -66,7 +66,7 @@ body.hillhead40-spacing * {
 
   body.hillhead40-#{$class} * {
     background: $background !important;
-    color: $foreground !important;
+    color: $foreground;
     border-color: $foreground !important;
     border-radius: 0 !important;
     text-shadow: none !important;
@@ -242,7 +242,7 @@ body.hillhead40-bold * {
 
 body.hillhead40-night, #page-my-index.hillhead40-night {
   background-color: #132030;
-  color: #C4D6EE;
+  color: #C4D6EE !important;
 }
 
 body.hillhead40-night #page.drawers .main-inner, body.hillhead40-night #searchform-navbar {
@@ -311,7 +311,6 @@ body.hillhead40-night .card .block-header, body.hillhead40-night.format-weeks .c
 }
 
 body.hillhead40-night .card-body, body.hillhead40-night .message-app {
-  background-color: #274163;
   border-radius: .5rem;
 }
 
@@ -439,7 +438,6 @@ body.hillhead40-night .alert.alert-warning a, body.hillhead40-night .adminwarnin
 }
 
 body.hillhead40-night .alert.alert-info {
-  background-color: #406BAF !important;
   border-color: #243C62 !important;
   color: #c4d6ee !important;
 }
@@ -677,4 +675,8 @@ body.hillhead40-night .popover-region-container {
   color: #c4d6ee;
   border-color: #c4d6ee;
   background-color: #1A2B41;
+}
+
+.block .block-cards a.coursename, .block .block-cards span.categoryname, .block .block-cards .btn-link, .block .block-cards .progress-text {
+  color: inherit;
 }
