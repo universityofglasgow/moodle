@@ -57,8 +57,10 @@ The current web service functions are as follows:
 | API Function         | Description
 |----------------------|---------------------------------------------------------------------------- |
 | [get_activities](../classes/external/get_activities.php) | Given the course id a tree-structured list of activities (organised by grade category structure) is returned. This is primarily used to structure selection UI to select current, active grade item. |
+| [get_audit](../classes/external/get_audit.php) | Returns audit trail for given userid |
 | [get_capture_page](../classes/external/get_capture_page.php)| Given the ID of the selected activity this returns all the data needed to display the current table of the grade capture page. This includes all the students who can access the selected activity. |
-| [get_grade_item](../classes/external/get_grade_item.php)| Returns full details of the selected grad item. 
+| [get_grade_item](../classes/external/get_grade_item.php)| Returns full details of the selected grad item. |
+| [get_history] | (../classes/external/get_history.php) | Given a gradeitem and userid, the list of updates to that grade (for display as grade history) |
 | [get_levelonecategories](../classes/external/get_levelonecategories.php) | Lists the top level grade categories for the initial selection (e.g. Summative / Formative) |
 | [get_user_grades](../classes/external/get_user_grades.php) | Returns all the grades for a given user id - site wide |
 | [get_user_picture_url](../classes/external/get_user_picture_url.php) | Return URL of user avatar/image |
@@ -90,10 +92,14 @@ The current Components are as follows:
 | Component            | Description
 |----------------------|--------------------------------------------------------------|
 | [App](../ui/src/App.vue) | Top level of UI. Called from the plugin's index.php |
+| [ActivitySelect](../ui/src/components/ActivitySelect.vue) | Parent of ActivityTree. Fetches the list of activities/grade and displays them using ActivityTree. Emits the resulting selection. |
 | [ActivityTree](../ui/src/components/ActivityTree.vue) | Constructs a tree structure of grade categories and grade-items. User selects current item. View changes to the selected item until clicked again |
+| [AddGradeButton](../ui/src/components/AddGradeButton.vue) | Displays the 'Add grade' button and processes what happens when it's clicked |
 | [CaptureAggregation](../ui/src/views/CaptureAggregation.vue) | Container for the capture and aggregation screens |
 | [CaptureGrades](../ui/src/components/CaptureGrades.vue) | Displays the first grade cell in the capture table |
 | [CaptureTable](../ui/src/components/CaptureTable.vue) | Paginated table of users and grades during capture |
+| [HistoryButton](../ui/src/components/HistoryButton.vue) | Displays the 'History' button on the capture table and processes it when clicked. |
+| [ImportButton](../ui/src/components/ImportButton.vue) | Displays the 'Import' button above the capture table and processes it when clicked. |
 | [InitialBar](../ui/src/components/InitialBar.vue) | Used by NameFilter - shows one line of letters |
 | [LevelOneSelect](../ui/src/components/LevelOneSelect.vue) | Shows a drop down to select the top level grade category (Note that if there are none an error is displayed) |
 | [ModalForm](../ui/src/components/ModalForm.vue) | Displays a general purpose modal popup |
@@ -111,3 +117,19 @@ Standard Moodle event logging is used for critical functions. This records "Pers
 |---------------------|--------------------|
 | [import_grades_users](../classes/event/import_grades_users.php) | Grade import button has been pressed |
 | [view_gugrades](../classes/event/view_gugrades.php) | Tool has been viewed |
+
+# Audit
+
+Somewhat similar to logging but this functionality stores specific audit data for actions performed within the tool. The user
+can choose to display their audit and it will show a comprehensive list of operations undertaken, plus errors and warnings generated. 
+
+This is implemented on the server/PHP side by a classes in the classes/audit directory. A class 'base.php' defines the basic functionality
+and classes for each audit type extend this. Each class should define its own constructor to 'collect' the data that it requires pertinent
+to that operation. The base class 'save' function writes the data to the databse.
+
+Current audit classes are as follows...
+
+| Audit              | Description
+|--------------------|------------------------|
+| [import_grades_users](../classes/audit/import_grades_users.php) | User has completed the import grades function |
+| [nottoplevel] | Tool has detected that no grade categories have been defined, indicating that the Gradebook has not been configured |
