@@ -100,7 +100,7 @@ class check_recompletion extends \core\task\scheduled_task {
     protected function reset_completions($userid, $course, $config) {
         global $DB;
         $params = array('userid' => $userid, 'course' => $course->id);
-        if ($config->archivecompletiondata) {
+        if (!empty(get_config('local_recompletion', 'forcearchivecompletiondata')) || $config->archivecompletiondata) {
             $coursecompletions = $DB->get_records('course_completions', $params);
             $DB->insert_records('local_recompletion_cc', $coursecompletions);
             $criteriacompletions = $DB->get_records('course_completion_crit_compl', $params);
@@ -111,7 +111,7 @@ class check_recompletion extends \core\task\scheduled_task {
 
         // Archive and delete all activity completions.
         $selectsql = 'userid = ? AND coursemoduleid IN (SELECT id FROM {course_modules} WHERE course = ?)';
-        if ($config->archivecompletiondata) {
+        if (!empty(get_config('local_recompletion', 'forcearchivecompletiondata')) || $config->archivecompletiondata) {
             $cmc = $DB->get_records_select('course_modules_completion', $selectsql, $params);
             foreach ($cmc as $cid => $unused) {
                 // Add courseid to records to help with restore process.
@@ -144,9 +144,12 @@ class check_recompletion extends \core\task\scheduled_task {
         $a->link = course_get_url($course)->out();
         if (trim($config->recompletionemailbody) !== '') {
             $message = $config->recompletionemailbody;
-            $key = array('{$a->coursename}', '{$a->profileurl}', '{$a->link}', '{$a->fullname}', '{$a->email}');
-            $value = array($a->coursename, $a->profileurl, $a->link, fullname($userrecord), $userrecord->email);
+            $key = ['{$a->coursename}', '{$a->profileurl}', '{$a->link}', '{$a->fullname}', '{$a->email}'];
+            $value = [$a->coursename, $a->profileurl, $a->link, fullname($userrecord), $userrecord->email];
             $message = str_replace($key, $value, $message);
+            // Message body now stored as html - some might be non-html though, so we have to handle both - not clean but it works for now.
+            $keyhtml = ['{$a-&gt;coursename}', '{$a-&gt;profileurl}', '{$a-&gt;link}', '{$a-&gt;fullname}', '{$a-&gt;email}'];
+            $message = str_replace($keyhtml, $value, $message);
             $messagehtml = format_text($message, FORMAT_HTML, array('context' => $context,
                 'para' => false, 'newlines' => true, 'filter' => true));
             $messagetext = html_to_text($messagehtml);

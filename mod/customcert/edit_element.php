@@ -88,6 +88,7 @@ if ($data = $mform->get_data()) {
     // Set the id, or page id depending on if we are editing an element, or adding a new one.
     if ($action == 'edit') {
         $data->id = $id;
+        $data->pageid = $element->pageid;
     } else {
         $data->pageid = $pageid;
     }
@@ -96,6 +97,9 @@ if ($data = $mform->get_data()) {
     // Get an instance of the element class.
     if ($e = \mod_customcert\element_factory::get_element_instance($data)) {
         $e->save_form_elements($data);
+
+        // Trigger updated event.
+        \mod_customcert\event\template_updated::create_from_template($template)->trigger();
     }
 
     $url = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid));

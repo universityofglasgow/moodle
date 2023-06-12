@@ -73,6 +73,8 @@ class template {
         $savedata->timemodified = time();
 
         $DB->update_record('customcert_templates', $savedata);
+
+        \mod_customcert\event\template_updated::create_from_template($this)->trigger();
     }
 
     /**
@@ -103,7 +105,14 @@ class template {
         $page->timemodified = $page->timecreated;
 
         // Insert the page.
-        return $DB->insert_record('customcert_pages', $page);
+        $pageid = $DB->insert_record('customcert_pages', $page);
+
+        $page->id = $pageid;
+
+        \mod_customcert\event\page_created::create_from_page($page, $this)->trigger();
+        \mod_customcert\event\template_updated::create_from_template($this)->trigger();
+
+        return $page->id;
     }
 
     /**
@@ -136,7 +145,11 @@ class template {
                 $p->timemodified = $time;
                 // Update the page.
                 $DB->update_record('customcert_pages', $p);
+
+                \mod_customcert\event\page_updated::create_from_page($p, $this)->trigger();
             }
+
+            \mod_customcert\event\template_updated::create_from_template($this)->trigger();
         }
     }
 
@@ -176,6 +189,8 @@ class template {
             return false;
         }
 
+        \mod_customcert\event\template_deleted::create_from_template($this)->trigger();
+
         return true;
     }
 
@@ -192,6 +207,8 @@ class template {
 
         // Delete this page.
         $DB->delete_records('customcert_pages', array('id' => $page->id));
+
+        \mod_customcert\event\page_deleted::create_from_page($page, $this)->trigger();
 
         // The element may have some extra tasks it needs to complete to completely delete itself.
         if ($elements = $DB->get_records('customcert_elements', array('pageid' => $page->id))) {
@@ -213,6 +230,8 @@ class template {
                  WHERE templateid = :templateid
                    AND sequence > :sequence";
         $DB->execute($sql, array('templateid' => $this->id, 'sequence' => $page->sequence));
+
+        \mod_customcert\event\template_updated::create_from_template($this)->trigger();
     }
 
     /**
@@ -241,6 +260,8 @@ class template {
                  WHERE pageid = :pageid
                    AND sequence > :sequence";
         $DB->execute($sql, array('pageid' => $element->pageid, 'sequence' => $element->sequence));
+
+        \mod_customcert\event\template_updated::create_from_template($this)->trigger();
     }
 
     /**
@@ -272,11 +293,15 @@ class template {
 
             // I want to have my digital diplomas without having to change my preferred language.
             $userlang = $USER->lang ?? current_language();
-            $forcelang = mod_customcert_force_current_language($customcert->language);
-            if (!empty($forcelang)) {
-                // This is a failsafe -- if an exception triggers during the template rendering, this should still execute.
-                // Preventing a user from getting trapped with the wrong language.
-                \core_shutdown_manager::register_function('force_current_language', [$userlang]);
+
+            // Check the $customcert exists as it is false when previewing from mod/customcert/manage_templates.php.
+            if ($customcert) {
+                $forcelang = mod_customcert_force_current_language($customcert->language);
+                if (!empty($forcelang)) {
+                    // This is a failsafe -- if an exception triggers during the template rendering, this should still execute.
+                    // Preventing a user from getting trapped with the wrong language.
+                    \core_shutdown_manager::register_function('force_current_language', [$userlang]);
+                }
             }
 
             // If the template belongs to a certificate then we need to check what permissions we set for it.
@@ -331,9 +356,12 @@ class template {
                 }
             }
 
-            // We restore original language.
-            if ($userlang != $customcert->language) {
-                mod_customcert_force_current_language($userlang);
+            // Check the $customcert exists as it is false when previewing from mod/customcert/manage_templates.php.
+            if ($customcert) {
+                // We restore original language.
+                if ($userlang != $customcert->language) {
+                    mod_customcert_force_current_language($userlang);
+                }
             }
 
             if ($return) {
@@ -347,10 +375,12 @@ class template {
     /**
      * Handles copying this template into another.
      *
-     * @param int $copytotemplateid The template id to copy to
+     * @param object $copytotemplate The template instance to copy to
      */
-    public function copy_to_template($copytotemplateid) {
+    public function copy_to_template($copytotemplate) {
         global $DB;
+
+        $copytotemplateid = $copytotemplate->get_id();
 
         // Get the pages for the template, there should always be at least one page for each template.
         if ($templatepages = $DB->get_records('customcert_pages', array('templateid' => $this->id))) {
@@ -362,6 +392,7 @@ class template {
                 $page->timemodified = $page->timecreated;
                 // Insert into the database.
                 $page->id = $DB->insert_record('customcert_pages', $page);
+                \mod_customcert\event\page_created::create_from_page($page, $this)->trigger();
                 // Now go through the elements we want to load.
                 if ($templateelements = $DB->get_records('customcert_elements', array('pageid' => $templatepage->id))) {
                     foreach ($templateelements as $templateelement) {
@@ -376,10 +407,21 @@ class template {
                             if (!$e->copy_element($templateelement)) {
                                 // Failed to copy - delete the element.
                                 $e->delete();
+                            } else {
+                                \mod_customcert\event\element_created::create_from_element($e)->trigger();
                             }
                         }
                     }
                 }
+            }
+
+            // Trigger event for template instance being copied to.
+            if ($copytotemplate->get_context() == \context_system::instance()) {
+                // If CONTEXT_SYSTEM we're creating a new template.
+                \mod_customcert\event\template_created::create_from_template($copytotemplate)->trigger();
+            } else {
+                // Otherwise we're loading template in a course module instance.
+                \mod_customcert\event\template_updated::create_from_template($copytotemplate)->trigger();
             }
         }
     }
@@ -423,6 +465,8 @@ class template {
         if ($moveitem && !empty($swapitem)) {
             $DB->set_field($table, 'sequence', $swapitem->sequence, array('id' => $moveitem->id));
             $DB->set_field($table, 'sequence', $moveitem->sequence, array('id' => $swapitem->id));
+
+            \mod_customcert\event\template_updated::create_from_template($this)->trigger();
         }
     }
 
@@ -502,6 +546,10 @@ class template {
         $template->timemodified = $template->timecreated;
         $template->id = $DB->insert_record('customcert_templates', $template);
 
-        return new \mod_customcert\template($template);
+        $template = new \mod_customcert\template($template);
+
+        \mod_customcert\event\template_created::create_from_template($template)->trigger();
+
+        return $template;
     }
 }
