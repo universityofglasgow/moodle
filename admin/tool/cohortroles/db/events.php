@@ -15,15 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * tool_behat version info
+ * Plugin event observers
  *
- * @package    tool_behat
- * @copyright  2012 David Monllaó
+ * @package    tool_cohortroles
+ * @copyright  2023 Paul Holden <paulh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022112802;   // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2022111800;   // Requires this Moodle version.
-$plugin->component = 'tool_behat'; // Full name of the plugin (used for diagnostics)
+$observers = [
+    [
+        'eventname' => '\core\event\user_deleted',
+        'callback' => '\tool_cohortroles\observers::user_deleted',
+    ],
+];
