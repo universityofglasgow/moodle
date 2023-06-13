@@ -38,6 +38,7 @@ class manual implements activity_interface {
 
     private $lastnamefilter;
 
+    private $gradeitem;
 
     /**
      * Constructor, set grade itemid
@@ -45,8 +46,13 @@ class manual implements activity_interface {
      * @param int $courseid
      */
     public function __construct(int $gradeitemid, int $courseid) {
+        global $DB;
+
         $this->gradeitemid = $gradeitemid;
         $this->courseid = $courseid;
+
+        // Get grade item
+        $this->gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
     }
 
     /**
@@ -95,4 +101,19 @@ class manual implements activity_interface {
         return false;
     }
 
+    /**
+     * Get item type
+     * @return string
+     */
+    public function get_itemtype() {
+        return  'manual';
+    }
+
+    /**
+     * Get item name
+     * @return string
+     */
+    public function get_itemname() {
+        return $this->gradeitem->itemname;
+    }
 }

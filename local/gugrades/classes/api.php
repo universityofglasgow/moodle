@@ -68,6 +68,8 @@ class api {
         return [
             'users' => json_encode($users),
             'hidden' => $activity->is_names_hidden(),
+            'itemtype' => $activity->get_itemtype(),
+            'itemname' => $activity->get_itemname(),
         ];
     }
 

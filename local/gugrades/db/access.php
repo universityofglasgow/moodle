@@ -40,4 +40,11 @@ $capabilities = array(
         'archetypes' => array(
         )
     ),
+    'local/gugrades:exportworksheet' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+        )
+    ),
 );

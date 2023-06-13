@@ -57,4 +57,15 @@ interface activity_interface {
      */
     public function get_first_grade(int $userid);
 
+    /**
+     * Get item type
+     * @return string
+     */
+    public function get_itemtype();
+
+    /**
+     * Get item name
+     */
+    public function get_itemname();
+
 }

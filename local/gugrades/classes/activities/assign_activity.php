@@ -44,14 +44,21 @@ class assign_activity implements activity_interface {
 
     private $assign;
 
+    private $gradeitem;
+
     /**
      * Constructor, set grade itemid
      * @param int $gradeitemid Grade item id
      * @param int $courseid
      */
     public function __construct(int $gradeitemid, int $courseid) {
+        global $DB;
+
         $this->gradeitemid = $gradeitemid;
         $this->courseid = $courseid;
+
+        // Get grade item
+        $this->gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
 
         // Get the assignment object
         $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
@@ -90,13 +97,14 @@ class assign_activity implements activity_interface {
 
         $assigninstance = $this->assign->get_instance();
 
-        // Displayname
+        // Displayname and uniqueid
         $hidden = $this->is_names_hidden();
         foreach ($users as $user) {
+            $uniqueid = \assign::get_uniqueid_for_user_static($assigninstance->id, $user->id);
+            $user->uniqueid = $uniqueid;
+            $user->fullname = fullname($user);
             if ($hidden) {
-                $uniqueid = \assign::get_uniqueid_for_user_static($assigninstance->id, $user->id);
                 $user->displayname = get_string('participantnumber', 'local_gugrades', $uniqueid);
-                $user->uniqueid = $uniqueid;
             } else {
                 $user->displayname = fullname($user);
             }
@@ -138,4 +146,19 @@ class assign_activity implements activity_interface {
         return false;
     }
 
+    /**
+     * Get item type
+     * @return string
+     */
+    public function get_itemtype() {
+        return 'assign';
+    }
+
+    /**
+     * Get item name
+     * @return string
+     */
+    public function get_itemname() {
+        return $this->gradeitem->itemname;
+    }
 }

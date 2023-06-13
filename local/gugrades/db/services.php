@@ -92,4 +92,10 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
+    'local_gugrades_has_capability' => [
+        'classname' => 'local_gugrades\external\has_capability',
+        'description' => 'Check if current user has a given capability.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];    

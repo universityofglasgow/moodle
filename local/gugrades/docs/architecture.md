@@ -132,4 +132,4 @@ Current audit classes are as follows...
 | Audit              | Description
 |--------------------|------------------------|
 | [import_grades_users](../classes/audit/import_grades_users.php) | User has completed the import grades function |
-| [nottoplevel] | Tool has detected that no grade categories have been defined, indicating that the Gradebook has not been configured |
+| [nottoplevel](../classes/audit/notoplevel.php) | Tool has detected that no grade categories have been defined, indicating that the Gradebook has not been configured |

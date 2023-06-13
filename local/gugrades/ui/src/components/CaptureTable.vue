@@ -2,6 +2,7 @@
     <div>
         <div class="border rounded p-2 py-4 mt-2">
             <ImportButton :itemid="itemid" :userids="userids" @imported="gradesimported"></ImportButton>
+            <ExportWorksheetButton :users="users" :itemtype="itemtype" :itemname="itemname"></ExportWorksheetButton>
         </div>
 
         <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
@@ -46,6 +47,7 @@
     import HistoryButton from '@/components/HistoryButton.vue';
     import ImportButton from '@/components/ImportButton.vue';
     import AddGradeButton from '@/components/AddGradeButton.vue';
+    import ExportWorksheetButton from '@/components/ExportWorksheetButton.vue';
     import { getstrings } from '@/js/getstrings.js';
     import { useToast } from "vue-toastification";
 
@@ -64,6 +66,8 @@
     const currentpage = ref(1);
     const usershidden = ref(false);
     const namefilterref = ref(null);
+    const itemtype = ref('');
+    const itemname = ref('');
 
     const toast = useToast();
 
@@ -109,6 +113,8 @@
         .then((result) => {
             usershidden.value = result['hidden'];
             users.value = JSON.parse(result['users']);
+            itemtype.value = result['itemtype'];
+            itemname.value = result['itemname'];
             userids.value = users.value.map(u => u.id);
             totalrows.value = users.value.length;
             //window.console.log(userids);

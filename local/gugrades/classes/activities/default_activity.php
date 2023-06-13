@@ -34,19 +34,30 @@ class default_activity implements activity_interface {
 
     private $courseid;
 
+    private $itemtype = '';
+
     private $firstnamefilter;
 
     private $lastnamefilter;
+
+    private $gradeitem;
 
 
     /**
      * Constructor, set grade itemid
      * @param int $gradeitemid Grade item id
      * @param int $courseid
+     * @param int $itemtype
      */
-    public function __construct(int $gradeitemid, int $courseid) {
+    public function __construct(int $gradeitemid, int $courseid, string $itemtype) {
+        global $DB;
+
         $this->gradeitemid = $gradeitemid;
         $this->courseid = $courseid;
+        $this->itemtype = $itemtype;
+
+        // Get grade item
+        $this->gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
     }
 
     /**
@@ -99,5 +110,19 @@ class default_activity implements activity_interface {
         return false;
     }
 
+    /**
+     * Get item type
+     * @return string
+     */
+    public function get_itemtype() {
+        return $this->itemtype;
+    }
 
+    /**
+     * Get item name
+     * @return string
+     */
+    public function get_itemname() {
+        return $this->gradeitem->itemname;
+    }
 }

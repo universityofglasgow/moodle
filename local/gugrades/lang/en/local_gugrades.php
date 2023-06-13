@@ -35,14 +35,18 @@ $string['date'] = 'Date';
 $string['description'] = 'Description';
 $string['eventviewgugrades'] = 'View grading tool';
 $string['eventimportgradesusers'] = 'Import grades for user list';
+$string['exportworksheet'] = 'Export worksheet';
 $string['firstname'] = 'First name';
 $string['firstnamelastname'] = 'Firstname / lastname';
 $string['grade'] = 'Grade';
 $string['gradeitem'] = 'Grade item';
+$string['gradenoun'] = 'Grade';
+$string['hiddenuser'] = 'Participant';
 $string['history'] = 'History';
 $string['idnumber'] = 'ID number';
 $string['importgrades'] = 'Import grades';
 $string['importgradesusers'] = 'Importing grades for userlist for grade item \'{$a}\'';
+$string['lastmodifiedgrade'] = 'Last modified (grade)';
 $string['lastname'] = 'Last name';
 $string['manage'] = 'UofG Grade Tool Settings';
 $string['noaudit'] = 'No audit logs for this course';
@@ -51,6 +55,7 @@ $string['notoplevel'] = 'Course has not been properly setup (no top-level Grade 
 $string['nothingtodisplay'] = 'Nothing to display';
 $string['participantnumber'] = 'Participant {$a}';
 $string['pluginname'] = 'UofG Grade Tool';
+$string['recordid'] = 'Identifier';
 $string['resetfilter'] = 'Reset filter';
 $string['scalevalues'] = 'Scale values';
 $string['scalevalueshelp'] = 'Add scale value on each line followed by a space and then the numeric value';
@@ -62,6 +67,7 @@ $string['type'] = 'Type';
 $string['userpicture'] = 'Pic';
 
 // Capabilities
+$string['gugrades:exportworksheet'] = 'Export empty worksheet for selected assignment';
 $string['gugrades:readotheraudit'] = 'Read another user\'s audit trail';
 $string['gugrades:view'] = 'View gugrades tool';
 
