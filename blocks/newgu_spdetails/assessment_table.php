@@ -50,13 +50,23 @@ class currentassessment_table extends table_sql
             $tdrnew = 4;
         }
 
+        $tdirat_icon = '';
+        if ($tdr==4 && $ts=="assessmenttype") {
+            $tdirat_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="assessmenttype") {
+            $tdirat_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
 
         $headers = array(
             '<a href="view.php?t=1&ts=coursename&tdr=' . $tdrnew . '">' . get_string('course') . $tdircn_icon . '</a>',
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('activity') . ' type',
-            get_string('assessmenttype', 'block_newgu_spdetails'),
+            '<a href="view.php?t=1&ts=assessmenttype&tdr=' . $tdrnew . '">' . get_string('assessmenttype','block_newgu_spdetails') . $tdirat_icon . '</a>',
             get_string('source', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
             '<a href="view.php?t=1&ts=duedate&tdr=' . $tdrnew . '">' . get_string('duedate','block_newgu_spdetails') . $tdirdd_icon . '</a>',
@@ -398,12 +408,22 @@ class pastassessment_table extends table_sql
             $tdrnew = 4;
         }
 
+        $tdirat_icon = '';
+        if ($tdr==4 && $ts=="assessmenttype") {
+            $tdirat_icon = ' <i class="fa fa-caret-down"></i>';
+            $tdrnew = 3;
+        }
+        if ($tdr==3 && $ts=="assessmenttype") {
+            $tdirat_icon = ' <i class="fa fa-caret-up"></i>';
+            $tdrnew = 4;
+        }
+
         $headers = array(
             '<a href="view.php?t=2&ts=coursename&tdr=' . $tdrnew . '">' . get_string('course') . $tdircn_icon . '</a>',
 /*            get_string('coursecode', 'block_newgu_spdetails'), */
             get_string('assessment'),
             get_string('activity') . ' type',
-            get_string('assessmenttype', 'block_newgu_spdetails'),
+            '<a href="view.php?t=2&ts=assessmenttype&tdr=' . $tdrnew . '">' . get_string('assessmenttype','block_newgu_spdetails') . $tdirat_icon . '</a>',
             get_string('source', 'block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
             '<a href="view.php?t=2&ts=startdate&tdr=' . $tdrnew . '">' . get_string('startdate','block_newgu_spdetails') . $tdirsd_icon . '</a>',
@@ -496,7 +516,7 @@ class pastassessment_table extends table_sql
       if ($cfdvalue==1) {
           return "Old GCAT";
       } else {
-          return "";
+          return "Gradebook";
       }
     }
 
