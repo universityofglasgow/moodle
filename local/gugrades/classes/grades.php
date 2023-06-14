@@ -34,58 +34,20 @@ require_once($CFG->dirroot . '/grade/lib.php');
  */
 class grades {
 
-    // Course id
-    private $courseid;
-
-    // Grade items
-    private $gradeitems;
-
-    // Grade categories
-    private $gradecategories;
-
-    // Grade types
-    private $gradetypes;
-
-    // Gradetypes by id
-    private $gradetypes_id;
-
-    /**
-     * Class constructor
-     * @param int $courseid
-     */
-    function __construct($courseid) {
-        global $DB;
-
-        $this->courseid = $courseid;
-
-        // Read all grade items (not hidden) for current course
-        $this->gradeitems = $DB->get_records('grade_items', [
-            'courseid' => $this->courseid,
-            'hidden' => 0,
-        ]);
-
-        // Read all grade categories (not hidden) for current course
-        $this->gradecategories = $DB->get_records('grade_categories', [
-            'courseid' => $this->courseid,
-            'hidden' => 0,
-        ]);
-
-        // Get the list of gradetypes
-        $this->get_gradetypes();
-    }
-
     /**
      * Get grade types from database
+     * @return array [shortname => gradetype]
      */
-    private function get_gradetypes() {
+    private static function get_gradetypes() {
         global $DB;
 
         $gradetypes = $DB->get_records('local_gugrades_gradetype');
-        $this->gradetypes_id = $gradetypes;
-        $this->gradetypes = [];
+        $gradetypesbyshortname = [];
         foreach ($gradetypes as $gradetype) {
-            $this->gradetypes[$gradetype->shortname] = $gradetype;
+            $gradetypesbyshortname[$gradetype->shortname] = $gradetype;
         }
+
+        return $gradetypesbyshortname;
     }
 
     /**
@@ -93,30 +55,13 @@ class grades {
      * @param string $shortname
      * @return object
      */
-    private function get_gradetype(string $shortname) {
-        if (!array_key_exists($shortname, $this->gradetypes)) {
+    private static function get_gradetype(string $shortname) {
+        $gradetypes = self::get_gradetypes();
+        if (!array_key_exists($shortname, $gradetypes)) {
             throw new \coding_exception('Gradetype with shortname "' . $shortname . '" does not exist.');
         }
         
-        return $this->gradetypes[$shortname];
-    }
-
-    /**
-     * Get gradetype (reason) given id
-     * @param int $id
-     * @return object
-     */
-    private function get_gradetype_from_id(int $id) {
-        return $this->gradetypes_id[$id];
-    }
-
-    /**
-     * Utility function to get reason name
-     * @param int $id
-     * @return string
-     */
-    public function get_reason_from_id(int $id) {
-        return $this->get_gradetype_from_id($id)->fullname;
+        return $gradetypes[$shortname];
     }
 
     /**
@@ -124,7 +69,7 @@ class grades {
      * @param int $gradeitemid
      * @return string
      */
-    public function get_item_name_from_itemid(int $itemid) {
+    public static function get_item_name_from_itemid(int $gradeitemid) {
         global $DB;
 
         if ($grade_item = $DB->get_record('grade_items', ['id' => $gradeitemid])) {
@@ -137,12 +82,19 @@ class grades {
     /**
      * Get first level categories (should be summative / formative and so on)
      * Actually depth==2 in the database (1 == top level)
+     * @param int $courseid
+     * @return array
      */
-    public function get_firstlevel() {
+    public static function get_firstlevel(int $courseid) {
         global $DB;
 
+        $gradecategories = $DB->get_records('grade_categories', [
+            'courseid' => $courseid,
+            'hidden' => 0,
+        ]);
+
         $cats = [];
-        foreach ($this->gradecategories as $category) {
+        foreach ($gradecategories as $category) {
             if ($category->depth == 2) {
                 $cats[] = $category;
             }
@@ -153,12 +105,23 @@ class grades {
 
     /**
      * Get the category/item tree beneath the selected depth==2 category.
+     * @param int $courseid
      * @param int $categoryid
      * @return object
      */
-    public function get_activitytree($categoryid) {
-        $category = $this->gradecategories[$categoryid];  
-        $categorytree = $this->recurse_activitytree($category);
+    public static function get_activitytree(int $courseid, int $categoryid) {
+        global $DB; 
+
+        $category = $DB->get_record('grade_categories', ['id' => $categoryid], '*', MUST_EXIST);
+        $gradeitems = $DB->get_records('grade_items', [
+            'courseid' => $courseid,
+            'hidden' => 0,
+        ]);
+        $gradecategories = $DB->get_records('grade_categories', [
+            'courseid' => $courseid,
+            'hidden' => 0,
+        ]);
+        $categorytree = self::recurse_activitytree($category, $gradeitems, $gradecategories);
         
         return $categorytree;
     }
@@ -172,14 +135,16 @@ class grades {
      *     categories -> array of grade categories, children of this category (recursive)
      * }
      * @param object $category
+     * @param array $gradeitems
+     * @param array $gradecategories
      * @return object 
      */
-    private function recurse_activitytree($category) {
+    private static function recurse_activitytree($category, $gradeitems, $gradecategories) {
         $tree = [];
 
         // first find any grade items attached to the current category
         $items = [];
-        foreach ($this->gradeitems as $item) {
+        foreach ($gradeitems as $item) {
             if ($item->categoryid == $category->id) {
                 $items[$item->id] = $item;
             }
@@ -187,9 +152,9 @@ class grades {
 
         // next find any sub-categories of this category
         $categories = [];
-        foreach ($this->gradecategories as $gradecategory) {
+        foreach ($gradecategories as $gradecategory) {
             if ($gradecategory->parent == $category->id) {
-                $categories[$gradecategory->id] = $this->recurse_activitytree($gradecategory);
+                $categories[$gradecategory->id] = self::recurse_activitytree($gradecategory, $gradeitems, $gradecategories);
             }
         }
 
@@ -206,7 +171,8 @@ class grades {
     /**
      * Write grade to local_gugrades_grade table
      *  
-     * @param in $gradeitemid
+     * @param int $courseid
+     * @param int $gradeitemid
      * @param int $userid
      * @param float $grade
      * @param float $weightedgrade
@@ -214,7 +180,8 @@ class grades {
      * @param string $other
      * @param bool $iscurrent;
      */
-    public function write_grade(
+    public static function write_grade(
+        int $courseid,
         int $gradeitemid,
         int $userid,
         float $grade,
@@ -226,11 +193,11 @@ class grades {
         global $DB, $USER;
 
         // Get id of reason code
-        $reasonid = $this->get_gradetype($reason)->id;
+        $reasonid = self::get_gradetype($reason)->id;
 
         // Does this already exist
         if ($oldgrade = $DB->get_record('local_gugrades_grade', [
-            'courseid' => $this->courseid,
+            'courseid' => $courseid,
             'gradeitemid' => $gradeitemid,
             'userid' => $userid,
             'reason' => $reasonid,
@@ -241,7 +208,7 @@ class grades {
         }
 
         $gugrade = new \stdClass;
-        $gugrade->courseid = $this->courseid;
+        $gugrade->courseid = $courseid;
         $gugrade->gradeitemid = $gradeitemid;
         $gugrade->userid = $userid;
         $gugrade->grade = $grade;
@@ -257,19 +224,20 @@ class grades {
 
     /**
      * Get user grades
+     * @param int $courseid,
      * @param int $gradeitemid
      * @param int $userid
      * @param string $reason (FIRST, SECOND... null = get all)
      * @param o
      */
-    public function get_user_grades(int $gradeitemid, int $userid, string $reason = null) {
+    public static function get_user_grades(int $courseid, int $gradeitemid, int $userid, string $reason = null) {
         global $DB;
 
         if ($reason) {
-            $reasonid = $this->get_gradetype($reason)->id;
+            $reasonid = $self::get_gradetype($reason)->id;
             $gugrade = $DB->get_record('local_gugrades_grade', [
-                'courseid' => $this->courseid,
-                'gradeitemid' => $this->gradeitemid,
+                'courseid' => $courseid,
+                'gradeitemid' => $gradeitemid,
                 'userid' => $userid,
                 'reason' => $reasonid
             ]);
@@ -277,15 +245,18 @@ class grades {
             return $gugrade;
         } else {
             $gugrades = $DB->get_records('local_gugrades_grade', [
-                'courseid' => $this->courseid,
+                'courseid' => $courseid,
                 'gradeitemid' => $gradeitemid,
                 'userid' => $userid,
             ]);
 
+            // Get gradetypes
+            $gradetypes = $DB->get_records('local_gugrades_gradetype');
+
             // Index by reason
             $reasongrades = [];
             foreach ($gugrades as $gugrade) {
-                $reasonshortname = $this->get_gradetype_from_id($gugrade->reason)->shortname;
+                $reasonshortname = $gradetypes[$gugrade->reason]->shortname;
                 $reasongrades[$reasonshortname] = $gugrade;
             }
 
@@ -295,16 +266,23 @@ class grades {
 
     /**
      * Add grades to user records for capture page
+     * @param int $courseid
      * @param int $gradeitemid
      * @param array $users
      * @return array
      */
-    public function add_grades_to_user_records(int $gradeitemid, array $users) {
+    public static function add_grades_to_user_records(int $courseid, int $gradeitemid, array $users) {
         foreach ($users as $user) {
-            $grades = $this->get_user_grades($gradeitemid, $user->id);
+            $grades = self::get_user_grades($courseid, $gradeitemid, $user->id);
             $user->grades = $grades;
         }
 
         return $users;
     }
+
+    /**
+     * Get scale conversion table
+     * @param int $gradeitemid
+     * @return array or false (false if unsupported scale)
+     */
 }

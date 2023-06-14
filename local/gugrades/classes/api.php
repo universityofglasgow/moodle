@@ -34,8 +34,7 @@ class api {
      * @return object List of activities/subcategories in
      */
     public static function get_activities(int $courseid, int $categoryid) {
-        $grades = new \local_gugrades\grades($courseid);
-        $tree = $grades->get_activitytree($categoryid);
+        $tree = \local_gugrades\grades::get_activitytree($courseid, $categoryid);
 
         return $tree;
     }
@@ -52,6 +51,8 @@ class api {
      */
     public static function get_capture_page(int $courseid, int $gradeitemid, int $pageno, int $pagelength, string $firstname, string $lastname) {
 
+        // Sanity checks for selected grade item
+
         // Instantiate object for this activity type
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
         $activity->set_name_filter($firstname, $lastname);
@@ -61,9 +62,8 @@ class api {
 
         // Get list of users.
         // Will be everybody for 'manual' grades or filtered list for modules.
-        $grades = new \local_gugrades\grades($courseid);
         $users = $activity->get_users();
-        $users = $grades->add_grades_to_user_records($gradeitemid, $users);
+        $users = \local_gugrades\grades::add_grades_to_user_records($courseid, $gradeitemid, $users);
 
         return [
             'users' => json_encode($users),
@@ -101,9 +101,8 @@ class api {
      * @return array
      */
     public static function get_levelonecategories(int $courseid) {
-        $grades = new \local_gugrades\grades($courseid);
         $results = [];
-        $categories = $grades->get_firstlevel();
+        $categories = \local_gugrades\grades::get_firstlevel($courseid);
         foreach ($categories as $category) {
             $results[] = [
                 'id' => $category->id,
@@ -128,7 +127,6 @@ class api {
      * @return 
      */
     public static function import_grade(int $courseid, int $gradeitemid, int $userid) {
-        $grades = new \local_gugrades\grades($courseid);
 
         // Instantiate object for this activity type
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
@@ -137,7 +135,8 @@ class api {
         $grade = $activity->get_first_grade($userid);
 
         if ($grade !== false) {
-            $grades->write_grade(
+            \local_gugrades\grades::write_grade(
+                $courseid,
                 $gradeitemid,
                 $userid,
                 $grade,
@@ -200,8 +199,8 @@ class api {
             $grade->courseshortname = $course->shortname;
 
             // Additional grade data
-            $gradeobject = new \local_gugrades\grades($courseid);
-            $grade->reasonname = $gradeobject->get_reason_from_id($grade->reason);
+            $gradetype = $DB->get_record('local_gugrades_gradetype', ['id' => $grade->reason], '*', MUST_EXIST);
+            $grade->reasonname = $gradetype->fullname;
 
             // Item into
             $grade->itemname = $gradeobject->get_item_name_from_itemid($grade->gradeitemid);
@@ -228,8 +227,8 @@ class api {
         // Additional info
         $newgrades = [];
         foreach ($grades as $grade) {
-            $gradeobject = new \local_gugrades\grades($courseid);
-            $grade->reasonname = $gradeobject->get_reason_from_id($grade->reason);
+            $gradetype = $DB->get_record('local_gugrades_gradetype', ['id' => $grade->reason], '*', MUST_EXIST);
+            $grade->reasonname = $gradetype->fullname;
             $grade->time = userdate($grade->audittimecreated);
             $grade->current = $grade->iscurrent ? get_string('yes') : get_string('no');
 
