@@ -24,6 +24,8 @@
 
 namespace mod_scheduler\model;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * A class for representing a scheduler slot.
  *
@@ -332,12 +334,12 @@ class slot extends mvc_child_record_model {
     }
 
 
-    /*
-     * The event code is SSstu (for a student event) or SSsup (for a teacher event).
-     * then the id of the scheduler slot that it belongs to,
-     * in a colon delimited string.
-     * This allows for slot ids of at most 14 digits.
-     */
+    /* The event code is SSstu (for a student event) or SSsup (for a teacher event).
+     * then, the id of the scheduler slot that it belongs to.
+    * finally, the courseID (legacy reasons -- not really used),
+    * all in a colon delimited string. This will run into problems when the IDs of slots and courses
+    * are bigger than 7 digits in length...
+    */
 
     /**
      * Get the id string for teacher events in this slot
@@ -345,7 +347,8 @@ class slot extends mvc_child_record_model {
      */
     private function get_teacher_eventtype() {
         $slotid = $this->get_id();
-        return "SSsup:{$slotid}";
+        $courseid = $this->get_parent()->get_courseid();
+        return "SSsup:{$slotid}:{$courseid}";
     }
 
     /**
@@ -354,7 +357,8 @@ class slot extends mvc_child_record_model {
      */
     private function get_student_eventtype() {
         $slotid = $this->get_id();
-        return "SSstu:{$slotid}";
+        $courseid = $this->get_parent()->get_courseid();
+        return "SSstu:{$slotid}:{$courseid}";
     }
 
     /**

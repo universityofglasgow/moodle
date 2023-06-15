@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_scheduler;
-
 defined('MOODLE_INTERNAL') || die();
 
 use \mod_scheduler\model\scheduler;
@@ -39,7 +37,7 @@ require_once($CFG->dirroot . '/mod/scheduler/locallib.php');
  * @copyright  2014 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class slot_test extends \advanced_testcase {
+class mod_scheduler_slot_testcase extends advanced_testcase {
 
     /**
      * @var int Course_modules id used for testing
@@ -135,8 +133,6 @@ class slot_test extends \advanced_testcase {
 
     /**
      * Test creating a slot with appointments
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     public function test_create() {
 
@@ -167,8 +163,6 @@ class slot_test extends \advanced_testcase {
 
     /**
      * Test deleting a slot and associated data
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     public function test_delete() {
 
@@ -197,8 +191,6 @@ class slot_test extends \advanced_testcase {
 
     /**
      * Test adding an appointment to a slot.
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     public function test_add_appointment() {
 
@@ -222,8 +214,6 @@ class slot_test extends \advanced_testcase {
 
     /**
      * Test removing an appointment from a slot.
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     public function test_remove_appointment() {
 
@@ -246,8 +236,6 @@ class slot_test extends \advanced_testcase {
 
     /**
      * Test presence or absence of event records when appointments are modified.
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     public function test_calendar_events() {
         global $DB;

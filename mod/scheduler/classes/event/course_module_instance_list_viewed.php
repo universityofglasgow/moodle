@@ -24,6 +24,8 @@
 
 namespace mod_scheduler\event;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The mod_scheduler course module viewed event.
  *

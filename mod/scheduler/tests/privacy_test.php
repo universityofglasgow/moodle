@@ -23,11 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-namespace mod_scheduler;
-
 defined('MOODLE_INTERNAL') || die();
-
 global $CFG;
 
 use core_privacy\tests\provider_testcase;
@@ -45,7 +41,7 @@ require_once($CFG->dirroot.'/mod/scheduler/locallib.php');
  * @copyright  2018 Henning Bostelmann
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class privacy_test extends provider_testcase {
+class mod_scheduler_privacy_testcase extends provider_testcase {
 
     /**
      * @var int course_module id used for testing
@@ -120,7 +116,7 @@ class privacy_test extends provider_testcase {
 
         $this->schedulerid = $scheduler->id;
         $this->moduleid  = $coursemodule->id;
-        $this->context = \context_module::instance($scheduler->cmid);
+        $this->context = context_module::instance($scheduler->cmid);
 
         $recs = $DB->get_records('scheduler_slots', array('schedulerid' => $scheduler->id), 'id DESC');
         $this->slotid = array_keys($recs)[0];
@@ -149,8 +145,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Test getting the contexts for a user.
-     *
-     * @covers \mod_scheduler\privacy\provider::get_contexts_for_userid
      */
     public function test_get_contexts_for_userid() {
 
@@ -161,8 +155,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Test getting the users within a context.
-     *
-     * @covers \mod_scheduler\privacy\provider::get_users_in_context
      */
     public function test_get_users_in_context() {
         global $DB;
@@ -183,8 +175,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Export test for teacher data.
-     *
-     * @covers \mod_scheduler\privacy\provider::export_user_data
      */
     public function test_export_teacher_data() {
         global $DB;
@@ -200,8 +190,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Export test for student1's data.
-     *
-     * @covers \mod_scheduler\privacy\provider::export_user_data
      */
     public function test_export_user_data1() {
 
@@ -215,8 +203,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Test for delete_data_for_all_users_in_context().
-     *
-     * @covers \mod_scheduler\privacy\provider::delete_data_for_all_users_in_context
      */
     public function test_delete_data_for_all_users_in_context() {
         provider::delete_data_for_all_users_in_context($this->context);
@@ -228,8 +214,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Test for delete_data_for_user().
-     *
-     * @covers \mod_scheduler\privacy\provider::delete_data_for_user
      */
     public function test_delete_data_for_user() {
         $appctx = new approved_contextlist($this->student1, 'mod_scheduler', [$this->context->id]);
@@ -242,8 +226,6 @@ class privacy_test extends provider_testcase {
 
     /**
      * Test for delete_data_for_users().
-     *
-     * @covers \mod_scheduler\privacy\provider::delete_data_for_users
      */
     public function test_delete_data_for_users() {
         $component = 'mod_scheduler';

@@ -24,6 +24,9 @@
 
 namespace mod_scheduler\model;
 
+defined('MOODLE_INTERNAL') || die();
+
+
 /**
  * A model mirroring one datebase record in a specific table of the Moodle DB.
  *

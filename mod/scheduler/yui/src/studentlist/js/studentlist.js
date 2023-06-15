@@ -1,7 +1,6 @@
 // ESLint directives.
 /* eslint-disable camelcase */
 
-/* eslint-disable-next-line */
 var CSS = {
     EXPANDED: 'expanded',
     COLLAPSED: 'collapsed'

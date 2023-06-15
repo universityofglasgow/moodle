@@ -27,17 +27,14 @@ Feature: Teachers are warned about scheduling conflicts
       | scheduler | Test scheduler A | n     | C1     | schedulerA | 0         | oneonly       | 1           |
       | scheduler | Test scheduler B | n     | C1     | schedulerB | 0         | oneonly       | 1           |
 
+  @javascript
   Scenario: A teacher edits a single slot and is warned about conflicts
 
-    Given the following "mod_scheduler > slots" exist:
-      | scheduler  | starttime            | duration | teacher   | location  |
-      | schedulerA | ##tomorrow 1:00am##  | 45       | teacher1  | My office |
-      | schedulerA | ##tomorrow 2:00am##  | 45       | teacher1  | My office |
-      | schedulerA | ##tomorrow 3:00am##  | 45       | teacher1  | My office |
-      | schedulerA | ##tomorrow 4:00am##  | 45       | teacher1  | My office |
-      | schedulerA | ##tomorrow 5:00am##  | 45       | teacher1  | My office |
-      | schedulerB | ##tomorrow 10:00am## | 15       | teacher1  | My office |
-    And I log in as "teacher1"
+    Given I log in as "teacher1"
+    And I add 5 slots 5 days ahead in "schedulerA" scheduler and I fill the form with:
+      | Location | My office |
+    And I add a slot 5 days ahead at 1000 in "schedulerB" scheduler and I fill the form with:
+      | Location | My office |
 
     When I am on the "schedulerA" Activity page
     And I click on "Edit" "link" in the "2:00 AM" "table_row"
@@ -68,22 +65,16 @@ Feature: Teachers are warned about scheduling conflicts
     And "9:55 AM" "table_row" should exist
     And I log out
 
+  @javascript
   Scenario: A manager edits slots for several teachers, creating conflicts
 
-    Given the following "mod_scheduler > slots" exist:
-      | scheduler  | starttime           | duration | teacher   | location  |
-      | schedulerA | ##tomorrow 1:00am## | 45       | teacher1  | Office T1 |
-      | schedulerA | ##tomorrow 2:00am## | 45       | teacher1  | Office T1 |
-      | schedulerA | ##tomorrow 3:00am## | 45       | teacher1  | Office T1 |
-      | schedulerA | ##tomorrow 4:00am## | 45       | teacher1  | Office T1 |
-      | schedulerA | ##tomorrow 5:00am## | 45       | teacher1  | Office T1 |
-      | schedulerA | ##tomorrow 6:00am## | 45       | teacher1  | Office T1 |
-      | schedulerB | ##tomorrow 1:00am## | 45       | teacher2  | Office T2 |
-      | schedulerB | ##tomorrow 2:00am## | 45       | teacher2  | Office T2 |
-      | schedulerB | ##tomorrow 3:00am## | 45       | teacher2  | Office T2 |
-      | schedulerB | ##tomorrow 4:00am## | 45       | teacher2  | Office T2 |
-      | schedulerB | ##tomorrow 5:00am## | 45       | teacher2  | Office T2 |
-    And I log in as "manager1"
+    Given I log in as "manager1"
+    And I add 6 slots 5 days ahead in "schedulerA" scheduler and I fill the form with:
+      | Location | Office T1 |
+      | Teacher  | Teacher 1 |
+    And I add 5 slots 5 days ahead in "schedulerB" scheduler and I fill the form with:
+      | Location | Office T2 |
+      | Teacher  | Teacher 2 |
 
     When I am on the "schedulerA" Activity page
     And I click on "Edit" "link" in the "3:00 AM" "table_row"
@@ -120,18 +111,30 @@ Feature: Teachers are warned about scheduling conflicts
     And I should see "slot updated"
     And "6:40 AM" "table_row" should exist
     And "Save changes" "button" should not exist
+    And I log out
 
+  @javascript
   Scenario: A teacher adds a series of slots, creating conflicts
 
-    Given the following "mod_scheduler > slots" exist:
-      | scheduler  | starttime          | duration | teacher   | location  | student  |
-      | schedulerA | ##+5 days 1:25am## | 15       | teacher1  | My office |          |
-      | schedulerA | ##+5 days 2:25am## | 100      | teacher1  | My office |          |
-      | schedulerA | ##+5 days 8:55am## | 10       | teacher1  | My office | student1 |
-      | schedulerB | ##+5 days 6:05am## | 20       | teacher1  | My office |          |
+    Given I log in as "teacher1"
+    And I add a slot 5 days ahead at 0125 in "schedulerA" scheduler and I fill the form with:
+      | Location  | My office |
+      | duration  | 15        |
+    # Blocks 3 other slots on a 1-hour grid
+    And I add a slot 5 days ahead at 0225 in "schedulerA" scheduler and I fill the form with:
+      | Location  | My office |
+      | duration  | 100       |
+    # Booked slot - must not be deleted as conflict
+    And I add a slot 5 days ahead at 0855 in "schedulerA" scheduler and I fill the form with:
+      | Location  | My office |
+      | duration  | 10        |
+      | studentid[0]  | Student 1 |
+    # Slot in other scheduler - must not be deleted as conflict
+    And I add a slot 5 days ahead at 0605 in "schedulerB" scheduler and I fill the form with:
+      | Location  | My office |
+      | duration  | 20        |
 
-    When I log in as "teacher1"
-    And I add 10 slots 5 days ahead in "schedulerA" scheduler and I fill the form with:
+    When I add 10 slots 5 days ahead in "schedulerA" scheduler and I fill the form with:
       | Location | Lecture hall |
     Then I should see "conflicting slots"
     And I should not see "deleted"
@@ -149,8 +152,8 @@ Feature: Teachers are warned about scheduling conflicts
     And  "8:00 AM" "table_row" should exist
     And  "9:00 AM" "table_row" should not exist
     And "10:00 AM" "table_row" should exist
-    And I am on the "schedulerB" Activity page
-    And "6:05 AM" "table_row" should exist
+    When I am on the "schedulerB" Activity page
+    Then "6:05 AM" "table_row" should exist
 
     When I add 10 slots 5 days ahead in "schedulerA" scheduler and I fill the form with:
       | Location | Lecture hall |
@@ -171,5 +174,8 @@ Feature: Teachers are warned about scheduling conflicts
     And  "8:00 AM" "table_row" should exist
     And  "9:00 AM" "table_row" should not exist
     And "10:00 AM" "table_row" should exist
-    And I am on the "schedulerB" Activity page
-    And "6:05 AM" "table_row" should exist
+    And I am on "Course 1" course homepage
+    When I am on the "schedulerB" Activity page
+    Then "6:05 AM" "table_row" should exist
+
+    And I log out

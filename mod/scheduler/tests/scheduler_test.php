@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_scheduler;
-
 defined('MOODLE_INTERNAL') || die();
 
 use \mod_scheduler\model\scheduler;
@@ -40,7 +38,7 @@ require_once($CFG->dirroot . '/mod/scheduler/locallib.php');
  * @copyright  2011 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class scheduler_test extends \advanced_testcase {
+class mod_scheduler_scheduler_testcase extends advanced_testcase {
 
     /**
      * @var int Course_module id used for testing
@@ -127,8 +125,6 @@ class scheduler_test extends \advanced_testcase {
 
     /**
      * Test a scheduler instance
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_coursemodule_id
      */
     public function test_scheduler() {
         global $DB;
@@ -143,8 +139,6 @@ class scheduler_test extends \advanced_testcase {
 
     /**
      * Test the loading of slots
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_coursemodule_id
      */
     public function test_load_slots() {
         global $DB;
@@ -191,8 +185,6 @@ class scheduler_test extends \advanced_testcase {
 
     /**
      * Test adding slots to a scheduler
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_coursemodule_id
      */
     public function test_add_slot() {
 
@@ -212,8 +204,6 @@ class scheduler_test extends \advanced_testcase {
 
     /**
      * Test deleting a scheduler
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     public function test_delete_scheduler() {
 
@@ -298,8 +288,6 @@ class scheduler_test extends \advanced_testcase {
 
     /**
      * Test slot timings when parameters of the scheduler are altered.
-     *
-     * @coversNothing
      */
     public function test_load_slot_timing() {
 
@@ -394,8 +382,6 @@ class scheduler_test extends \advanced_testcase {
      * @param int $expectedwithoutchangeables expected number of bookable appointments, excluding changeable ones
      * @param int $schedid scheduler id
      * @param int $studentid student id
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_id
      */
     private function assert_bookable_appointments($expectedwithchangeables, $expectedwithoutchangeables,
                                                   $schedid, $studentid) {
@@ -475,8 +461,6 @@ class scheduler_test extends \advanced_testcase {
 
     /**
      * Test the retrieveal routines for bookable appointments.
-     *
-     * @coversNothing
      */
     public function test_bookable_appointments() {
 

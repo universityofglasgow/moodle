@@ -696,4 +696,5 @@ class scheduler_appointment_info implements renderable {
 
         return $info;
     }
+
 }

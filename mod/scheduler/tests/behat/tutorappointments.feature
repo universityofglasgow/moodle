@@ -97,6 +97,7 @@ Feature: Booking of appointments with individual tutors per group
     And I should not see "students still need to make an appointment"
     And I log out
 
+  @javascript
   Scenario: Several tutors add slots, they can be seen only by relevant users
     When I log in as "coor1"
     And I add 10 slots 5 days ahead in "scheduler1" scheduler and I fill the form with:

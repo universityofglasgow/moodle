@@ -25,6 +25,8 @@
 
 namespace mod_scheduler\model;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * An abstract factory class for loading child records from the database.
  *
@@ -60,7 +62,7 @@ abstract class mvc_child_model_factory extends mvc_model_factory {
      *
      * @param mvc_record_model $parent
      */
-    abstract public function create_child(mvc_record_model $parent);
+    public abstract function create_child(mvc_record_model $parent);
 
     /**
      * Create a child record from a database entry, already loaded

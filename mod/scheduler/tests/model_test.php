@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_scheduler;
-
 defined('MOODLE_INTERNAL') || die();
 
 use \mod_scheduler\model\scheduler;
@@ -39,7 +37,7 @@ require_once($CFG->dirroot . '/mod/scheduler/locallib.php');
  * @copyright  2014 Henning Bostelmann and others (see README.txt)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_test extends \advanced_testcase {
+class mod_scheduler_model_testcase extends advanced_testcase {
 
     /**
      * @var int Course_modules id used for testing
@@ -92,8 +90,6 @@ class model_test extends \advanced_testcase {
 
     /**
      * Test loading a scheduler instance from the database
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_coursemodule_id
      */
     public function test_scheduler() {
         global $DB;
@@ -109,9 +105,7 @@ class model_test extends \advanced_testcase {
     /**
      * Test the "appointment" data object
      * (basic functionality, with minimal reference to slots)
-     *
-     * @covers \mod_scheduler\model\scheduler::load_by_coursemodule_id
-     */
+     **/
     public function test_appointment() {
 
         global $DB;
@@ -122,7 +116,7 @@ class model_test extends \advanced_testcase {
 
         $user = $this->getdataGenerator()->create_user();
 
-        $app0 = new \stdClass();
+        $app0 = new stdClass();
         $app0->slotid = 1;
         $app0->studentid = $user->id;
         $app0->attended = 0;
