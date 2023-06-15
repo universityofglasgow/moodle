@@ -189,32 +189,31 @@ if ($action == 'updateslot') {
     // Paging.
     $appointmentsperpage = get_config('mod_scheduler', 'appointmentsperpage');
 
-    global $DB;
-    $appointments = $DB->count_records('scheduler_appointment', array('slotid' => $slotid));
-
-    $lastpage = false;
-    $pagesize = $appointmentsperpage;
-    $repeats = $appointmentsperpage;
-    if ($offset == -1) {
-        if ($appointments > $pagesize) {
-            $offset = floor($appointments / $pagesize);
-        } else {
-            $offset = 0;
-        }
-    }
-    if ($offset * $pagesize >= $appointments && $appointments > 0) {
-        $offset = floor(($appointments - 1) / $pagesize);
-    }
-
-    if ($appointments - $offset * $pagesize <= $pagesize) {
-        $repeats = $appointments - $offset * $pagesize;
-        $lastpage = true;
-    }
-
-
-
     $pagingbar = null;
     if (!empty($appointmentsperpage)) {
+
+        global $DB;
+        $appointments = $DB->count_records('scheduler_appointment', array('slotid' => $slotid));
+
+        $lastpage = false;
+        $pagesize = $appointmentsperpage;
+        $repeats = $appointmentsperpage;
+        if ($offset == -1) {
+            if ($appointments > $pagesize) {
+                $offset = floor($appointments / $pagesize);
+            } else {
+                $offset = 0;
+            }
+        }
+        if ($offset * $pagesize >= $appointments && $appointments > 0) {
+            $offset = floor(($appointments - 1) / $pagesize);
+        }
+
+        if ($appointments - $offset * $pagesize <= $pagesize) {
+            $repeats = $appointments - $offset * $pagesize;
+            $lastpage = true;
+        }
+
         global $output;
         $pagingbar = $output->paging_bar($appointments, $offset, $appointmentsperpage, $actionurl, 'offset');
     }

@@ -336,21 +336,22 @@ class scheduler_editslot_form extends scheduler_slotform_base {
 
         $appointmentsperpage = get_config('mod_scheduler', 'appointmentsperpage');
 
-        if (!$lastpage) {
-            $this->_form->disabledIf('appointment_add', 'repeatno', 'eq', $appointmentsperpage);
-        }
+        if (!empty($appointmentsperpage)) {
+            if (!$lastpage) {
+                $this->_form->disabledIf('appointment_add', 'repeatno', 'eq', $appointmentsperpage);
+            }
+            if (!empty($pagingbar)) {
+                $mform->addElement('html', $pagingbar);
+            }
 
-        if (!empty($pagingbar)) {
-            $mform->addElement('html', $pagingbar);
-        }
+            // Fix appointment numbers affected by paging here. repeat_elements doesn't support paging.
 
-        // Fix appointment numbers affected by paging here. repeat_elements doesn't support paging.
-
-        $number = $offset * $appointmentsperpage;
-        foreach ($this->_form->_elements as $element) {
-            if (is_a($element, 'HTML_QuickForm_header')) {
-                $element->setValue(str_replace('{number}', ($number + 1), $element->_text));
-                $number++;
+            $number = $offset * $appointmentsperpage;
+            foreach ($this->_form->_elements as $element) {
+                if (is_a($element, 'HTML_QuickForm_header')) {
+                    $element->setValue(str_replace('{number}', ($number + 1), $element->_text));
+                    $number++;
+                }
             }
         }
 
