@@ -343,15 +343,14 @@ class scheduler_editslot_form extends scheduler_slotform_base {
             if (!empty($pagingbar)) {
                 $mform->addElement('html', $pagingbar);
             }
+        }
 
-            // Fix appointment numbers affected by paging here. repeat_elements doesn't support paging.
-
-            $number = $offset * $appointmentsperpage;
-            foreach ($this->_form->_elements as $element) {
-                if (is_a($element, 'HTML_QuickForm_header')) {
-                    $element->setValue(str_replace('{number}', ($number + 1), $element->_text));
-                    $number++;
-                }
+        // Fix appointment numbers affected by paging here. repeat_elements doesn't support paging.
+        $number = $offset * $appointmentsperpage;
+        foreach ($this->_form->_elements as $element) {
+            if (is_a($element, 'HTML_QuickForm_header')) {
+                $element->setValue(str_replace('{number}', ($number + 1), $element->_text));
+                $number++;
             }
         }
 
