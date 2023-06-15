@@ -8,7 +8,7 @@
             <div class="col-12 col-lg-6">
                 <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
                 <div v-if="currenttab == 'capture'">
-                    <ActivitySelect v-if="showactivityselect" :categoryid="level1category" @activityselected="activity_selected"></ActivitySelect>
+                    <ActivitySelect v-if="showactivityselect" :categoryid="level1category" :currentitem="itemid" @activityselected="activity_selected"></ActivitySelect>
                 </div>
             </div>
             <div class="col-12 col-lg-6">
@@ -70,5 +70,8 @@
      */
     function tabChange(tab) {
         currenttab.value = tab;
+        level1category.value = 0;
+        showactivityselect.value = false;
+        itemid.value = 0;
     }
 </script>

@@ -22,6 +22,7 @@
 
     const props = defineProps({
         categoryid: Number,
+        currentitem: Number,
     });
 
     const emit = defineEmits(['activityselected']);
@@ -86,7 +87,14 @@
     }
 
     onMounted(() => {
+        window.console.log('ActivitySelect ON MOUNTED');
         getActivity();
+
+        // Could be mounted with something selected
+        if (props.currentitem) {
+            selectedactivity.value = props.currentitem;
+            collapsed.value = true;
+        }
     });
 
     // If the categoryid prop changes then we read new values

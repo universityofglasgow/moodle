@@ -68,7 +68,7 @@ class users {
             if (class_exists($classname)) {
                 return new $classname($gradeitemid, $courseid);
             } else {
-                return new \local_gugrades\activities\default_activity($gradeitemid, $courseid);
+                return new \local_gugrades\activities\default_activity($gradeitemid, $courseid, $item->itemtype);
             }
         } 
     }
