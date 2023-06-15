@@ -190,12 +190,12 @@ if ($action == 'updateslot') {
     $appointmentsperpage = get_config('mod_scheduler', 'appointmentsperpage');
 
     $pagingbar = null;
+    $lastpage = false;
     if (!empty($appointmentsperpage)) {
 
         global $DB;
         $appointments = $DB->count_records('scheduler_appointment', array('slotid' => $slotid));
 
-        $lastpage = false;
         $pagesize = $appointmentsperpage;
         $repeats = $appointmentsperpage;
         if ($offset == -1) {
