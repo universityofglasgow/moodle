@@ -78,6 +78,20 @@ function scheduler_add_instance($data, $mform = null) {
     return $data->id;
 }
 
+function student_autocomplete_callback($value) {
+    global $OUTPUT;
+
+    $userfieldsapi = \core_user\fields::for_name();
+    $allusernames = $userfieldsapi->get_sql('', false, '', '', false)->selects;
+    $fields = 'id, ' . $allusernames;
+    $user = \core_user::get_user($value, $fields);
+    $useroptiondata = [
+        'fullname' => fullname($user)
+    ];
+
+    return $OUTPUT->render_from_template('mod_scheduler/studentid', $useroptiondata);
+}
+
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod.html) this function
@@ -267,7 +281,7 @@ function scheduler_scale_used($cmid, $scaleid) {
 function scheduler_scale_used_anywhere($scaleid) {
     global $DB;
 
-    if ($scaleid && $DB->record_exists('scheduler', array('scale' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('scheduler', array('scale' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -375,8 +389,7 @@ function scheduler_supports($feature) {
             return false;
         case FEATURE_BACKUP_MOODLE2:
             return true;
-        case FEATURE_MOD_PURPOSE:
-            return MOD_PURPOSE_ADMINISTRATION;
+
         default:
             return null;
     }
@@ -719,8 +732,7 @@ function scheduler_pluginfile($course, $cm, $context, $filearea, $args, $forcedo
     $fullpath = "/$context->id/mod_scheduler/$filearea/$entryid/$relativepath";
 
     $fs = get_file_storage();
-    $file = $fs->get_file_by_hash(sha1($fullpath));
-    if (!$file || $file->is_directory()) {
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
         return false;
     }
 

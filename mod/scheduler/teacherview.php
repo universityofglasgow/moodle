@@ -45,8 +45,8 @@ function scheduler_print_schedulebox(scheduler $scheduler, $studentid, $groupid 
         $startdatecnv = $output->userdate($slot->starttime);
         $starttimecnv = $output->usertime($slot->starttime);
 
-        $startdatestr = ($startdatemem != '' && $startdatemem == $startdatecnv) ? "-----------------" : $startdatecnv;
-        $starttimestr = ($starttimemem != '' && $starttimemem == $starttimecnv) ? '' : $starttimecnv;
+        $startdatestr = ($startdatemem != '' and $startdatemem == $startdatecnv) ? "-----------------" : $startdatecnv;
+        $starttimestr = ($starttimemem != '' and $starttimemem == $starttimecnv) ? '' : $starttimecnv;
 
         $startdatemem = $startdatecnv;
         $starttimemem = $starttimecnv;
@@ -148,7 +148,7 @@ if ($action == 'addslot') {
     $actionurl = new moodle_url($baseurl, array('what' => 'addslot'));
 
     if (!$scheduler->has_available_teachers()) {
-        throw new moodle_exception('needteachers', 'scheduler', viewurl);
+        print_error('needteachers', 'scheduler', viewurl);
     }
 
     $mform = new scheduler_editslot_form($actionurl, $scheduler, $cm, $groupsicansee);
@@ -184,19 +184,63 @@ if ($action == 'updateslot') {
         $timeoptions = array('step' => 5, 'optional' => false);
     }
 
-    $actionurl = new moodle_url($baseurl, array('what' => 'updateslot', 'slotid' => $slotid));
+    $actionurl = new moodle_url($baseurl, array('what' => 'updateslot', 'slotid' => $slotid, 'sesskey' => sesskey()));
 
-    $mform = new scheduler_editslot_form($actionurl, $scheduler, $cm, $groupsicansee, array(
-            'slotid' => $slotid,
-            'timeoptions' => $timeoptions)
-        );
-    $data = $mform->prepare_formdata($slot);
+    // Paging.
+    $appointmentsperpage = get_config('mod_scheduler', 'appointmentsperpage');
+
+    global $DB;
+    $appointments = $DB->count_records('scheduler_appointment', array('slotid' => $slotid));
+
+    $lastpage = false;
+    $pagesize = $appointmentsperpage;
+    $repeats = $appointmentsperpage;
+    if ($offset == -1) {
+        if ($appointments > $pagesize) {
+            $offset = floor($appointments / $pagesize);
+        } else {
+            $offset = 0;
+        }
+    }
+    if ($offset * $pagesize >= $appointments && $appointments > 0) {
+        $offset = floor(($appointments - 1) / $pagesize);
+    }
+
+    if ($appointments - $offset * $pagesize <= $pagesize) {
+        $repeats = $appointments - $offset * $pagesize;
+        $lastpage = true;
+    }
+
+
+
+    $pagingbar = null;
+    if (!empty($appointmentsperpage)) {
+        global $output;
+        $pagingbar = $output->paging_bar($appointments, $offset, $appointmentsperpage, $actionurl, 'offset');
+    }
+
+    $mform = new scheduler_editslot_form($actionurl, $scheduler, $cm, $groupsicansee, [
+        'slotid' => $slotid,
+        'scheduler' => $scheduler->id,
+        'timeoptions' => $timeoptions,
+        'repeats' => $repeats,
+        'offset' => $offset,
+        'lastpage' => $lastpage,
+        'pagingbar' => $pagingbar
+    ]);
+    $data = $mform->prepare_formdata($slot, $offset);
+
     $mform->set_data($data);
 
     if ($mform->is_cancelled()) {
         redirect($viewurl);
     } else if ($formdata = $mform->get_data()) {
         $mform->save_slot($slotid, $formdata);
+
+        if (isset($formdata->savechangesandcontinueediting)) {
+            $viewurl = $actionurl;
+        }
+
         redirect($viewurl,
                  get_string('slotupdated', 'scheduler'),
                  0,
@@ -204,7 +248,9 @@ if ($action == 'updateslot') {
     } else {
         echo $output->header();
         echo $output->heading(get_string('updatesingleslot', 'scheduler'));
+
         $mform->display();
+
         echo $output->footer($course);
         die;
     }
@@ -218,7 +264,7 @@ if ($action == 'addsession') {
     $actionurl = new moodle_url($baseurl, array('what' => 'addsession'));
 
     if (!$scheduler->has_available_teachers()) {
-        throw new moodle_exception('needteachers', 'scheduler', $viewurl);
+        print_error('needteachers', 'scheduler', $viewurl);
     }
 
     $mform = new scheduler_addsession_form($actionurl, $scheduler, $cm, $groupsicansee);
@@ -421,6 +467,9 @@ if ($groupmode) {
         echo html_writer::div($message, 'groupmodeyourgroups');
     }
 }
+
+// Print intro.
+echo $output->mod_intro($scheduler);
 
 
 if ($subpage == 'allappointments') {
@@ -638,7 +687,8 @@ if ($students === 0) {
 
             $groupcnt = 0;
             foreach ($groupsicanschedule as $group) {
-                $members = groups_get_members($group->id, 'u.*', 'u.lastname, u.firstname');
+                $members = groups_get_members($group->id,
+                    implode(',', \core_user\fields::get_picture_fields()), 'lastname, firstname');
                 if (empty($members)) {
                     continue;
                 }
