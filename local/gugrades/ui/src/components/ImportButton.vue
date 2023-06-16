@@ -4,7 +4,7 @@
     <Teleport to="body">
         <ModalForm :show="showimportmodal" @close="showimportmodal = false">
             <template #header>
-                <h4>{{ strings.importgrades }}</h4>
+                <h4><MString name="importgrades"></MString></h4>
             </template>
             <template #body>
                 Form goes here
@@ -30,7 +30,6 @@
     const emit = defineEmits(['imported']);
 
     const showimportmodal = ref(false);
-    const strings = ref({});
 
     /**
      * Import grades button clicked

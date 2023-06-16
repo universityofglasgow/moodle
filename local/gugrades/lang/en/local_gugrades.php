@@ -40,6 +40,7 @@ $string['firstname'] = 'First name';
 $string['firstnamelastname'] = 'Firstname / lastname';
 $string['grade'] = 'Grade';
 $string['gradeitem'] = 'Grade item';
+$string['gradenotsupported'] = '<b><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Grade type is not supported</b><br/>Make sure grade is either points or a scale. If a scale, check that it is a supported one.';
 $string['gradenoun'] = 'Grade';
 $string['hiddenuser'] = 'Participant';
 $string['history'] = 'History';

@@ -52,6 +52,15 @@ class api {
     public static function get_capture_page(int $courseid, int $gradeitemid, int $pageno, int $pagelength, string $firstname, string $lastname) {
 
         // Sanity checks for selected grade item
+        if (!\local_gugrades\grades::is_grade_supported($gradeitemid)) {
+            return [
+                'users' => json_encode([]),
+                'hidden' => false,
+                'itemtype' => '',
+                'itemname' => '',
+                'gradesupported' => false,
+            ];
+        }
 
         // Instantiate object for this activity type
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
@@ -70,6 +79,7 @@ class api {
             'hidden' => $activity->is_names_hidden(),
             'itemtype' => $activity->get_itemtype(),
             'itemname' => $activity->get_itemname(),
+            'gradesupported' => true,
         ];
     }
 

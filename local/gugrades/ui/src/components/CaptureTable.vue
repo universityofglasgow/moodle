@@ -1,40 +1,48 @@
 <template>
     <div>
-        <div class="border rounded p-2 py-4 mt-2">
-            <ImportButton :itemid="itemid" :userids="userids" @imported="gradesimported"></ImportButton>
-            <ExportWorksheetButton :users="users" :itemtype="itemtype" :itemname="itemname"></ExportWorksheetButton>
+        <div v-if="!gradesupported">
+            <div class="alert alert-danger mt-2">
+                <span v-html="strings.gradenotsupported"></span>
+            </div>
         </div>
 
-        <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
-        <PagingBar :totalrows="totalrows" :perpage="perpage" @pagechange="pagechanged"></PagingBar>
+        <div v-else>
+            <div class="border rounded p-2 py-4 mt-2">
+                <ImportButton :itemid="itemid" :userids="userids" @imported="gradesimported"></ImportButton>
+                <ExportWorksheetButton :users="users" :itemtype="itemtype" :itemname="itemname"></ExportWorksheetButton>
+            </div>
 
-        <div class="table-responsive">
-            <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
-                <thead class="thead-light">
-                    <th v-if="!usershidden">{{ strings.userpicture }}</th>
-                    <th>{{ strings.firstnamelastname }}</th>
-                    <th>{{ strings.idnumber }}</th>
-                    <th>{{ strings.grade }}</th>
-                    <th> </th>
-                </thead>
-                <tbody>
-                    <tr v-for="user in pagedusers" :key="user.id">
-                        <td v-if="!usershidden">
-                            <UserPicture :userid="parseInt(user.id)" :fullname="user.displayname"></UserPicture>
-                        </td>
-                        <td>{{ user.displayname }}</td>
-                        <td>{{ user.idnumber }}</td>
-                        <CaptureGrades :grades="user.grades"></CaptureGrades>
-                        <td>
-                            <AddGradeButton :itemid="itemid" :userid="parseInt(user.id)"></AddGradeButton>&nbsp;
-                            <HistoryButton :userid="parseInt(user.id)" :itemid="itemid"></HistoryButton>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
+            <PagingBar :totalrows="totalrows" :perpage="perpage" @pagechange="pagechanged"></PagingBar>
+
+            <div class="table-responsive">
+                <table v-if="showtable" class="table table-striped table-sm mt-4 border rounded">
+                    <thead class="thead-light">
+                        <th v-if="!usershidden">{{ strings.userpicture }}</th>
+                        <th>{{ strings.firstnamelastname }}</th>
+                        <th>{{ strings.idnumber }}</th>
+                        <th>{{ strings.grade }}</th>
+                        <th> </th>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in pagedusers" :key="user.id">
+                            <td v-if="!usershidden">
+                                <UserPicture :userid="parseInt(user.id)" :fullname="user.displayname"></UserPicture>
+                            </td>
+                            <td>{{ user.displayname }}</td>
+                            <td>{{ user.idnumber }}</td>
+                            <CaptureGrades :grades="user.grades"></CaptureGrades>
+                            <td>
+                                <AddGradeButton :itemid="itemid" :userid="parseInt(user.id)"></AddGradeButton>&nbsp;
+                                <HistoryButton :userid="parseInt(user.id)" :itemid="itemid"></HistoryButton>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
         </div>
-
-        <h2 v-if="!showtable">{{ strings.nothingtodisplay }}</h2>
     </div>   
 </template>
 
@@ -68,6 +76,7 @@
     const namefilterref = ref(null);
     const itemtype = ref('');
     const itemname = ref('');
+    const gradesupported = ref(true);
 
     const toast = useToast();
 
@@ -115,6 +124,7 @@
             users.value = JSON.parse(result['users']);
             itemtype.value = result['itemtype'];
             itemname.value = result['itemname'];
+            gradesupported.value = result['gradesupported'];
             userids.value = users.value.map(u => u.id);
             totalrows.value = users.value.length;
             //window.console.log(userids);
@@ -202,6 +212,7 @@
             'grade',
             'importgrades',
             'userpicture',
+            'gradenotsupported',
         ];
         getstrings(stringslist)
         .then(results => {

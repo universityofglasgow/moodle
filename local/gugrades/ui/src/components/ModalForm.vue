@@ -10,7 +10,7 @@ const props = defineProps({
 <template>
   <Transition name="modal">
     <div v-if="props.show" class="modal-mask">
-      <div class="border rounded modal-container">
+      <div class="border rounded shadow modal-container col-11 col-lg-5">
         <div class="modal-header">
           <slot name="header">default header</slot>
         </div>
@@ -46,12 +46,12 @@ const props = defineProps({
 }
 
 .modal-container {
-  width: 300px;
+  /* width: 300px; */
   margin: auto;
   padding: 20px 30px;
   background-color: #fff;
-  border-radius: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  /* border-radius: 2px; */
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33); */
   transition: all 0.3s ease;
 }
 
