@@ -37,14 +37,16 @@ class get_user_picture_url extends \external_api {
 
     public static function execute_parameters() {
         return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'userid' => new external_value(PARAM_INT, 'User ID'),
         ]);
     }
 
-    public static function execute(int $userid) {
+    public static function execute(int $courseid, int $userid) {
 
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
+            'courseid' => $courseid,
             'userid' => $userid,
         ]);
         $context = \context_user::instance($userid);
@@ -52,13 +54,19 @@ class get_user_picture_url extends \external_api {
 
         // NB. this returns a moodle_url (not a string)
         $url = \local_gugrades\api::get_user_picture_url($userid);
+        $profileurl = new \moodle_url('/user/view.php', ['id' => $userid, 'courseid' => $courseid]);
 
-        return ['url' => $url->out(false)];
+
+        return [
+            'url' => $url->out(false),
+            'profileurl' => $profileurl->out(false),
+        ];
     }
 
     public static function execute_returns() {
         return new external_single_structure([
             'url' => new external_value(PARAM_URL, 'Picture URL'),
+            'profileurl' => new external_value(PARAM_URL, 'User profile URL')
         ]);
     }
 }

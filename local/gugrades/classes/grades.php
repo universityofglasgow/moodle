@@ -234,21 +234,23 @@ class grades {
         global $DB;
 
         if ($reason) {
+
+            // Get the *latest* of this gradetype (possible there is more than one)
             $reasonid = $self::get_gradetype($reason)->id;
-            $gugrade = $DB->get_record('local_gugrades_grade', [
+            $gugrades = $DB->get_records('local_gugrades_grade', [
                 'courseid' => $courseid,
                 'gradeitemid' => $gradeitemid,
                 'userid' => $userid,
                 'reason' => $reasonid
-            ]);
+            ], 'audittimecreated DESC');
 
-            return $gugrade;
+            return reset($gugrades);
         } else {
             $gugrades = $DB->get_records('local_gugrades_grade', [
                 'courseid' => $courseid,
                 'gradeitemid' => $gradeitemid,
                 'userid' => $userid,
-            ]);
+            ], 'audittimecreated ASC');
 
             // Get gradetypes
             $gradetypes = $DB->get_records('local_gugrades_gradetype');
@@ -281,8 +283,25 @@ class grades {
     }
 
     /**
-     * Get scale conversion table
+     * Is grade supported (e.g. scale with no scale mapping)
      * @param int $gradeitemid
-     * @return array or false (false if unsupported scale)
+     * @return bool
      */
+    public static function is_grade_supported(int $gradeitemid) {
+        global $DB;
+
+        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradetype = $gradeitem->gradetype;        
+        if (($gradetype == GRADE_TYPE_NONE) || ($gradetype == GRADE_TYPE_TEXT)) {
+            return false;
+        }
+        if ($gradetype == GRADE_TYPE_SCALE) {
+            $scaleid = $gradeitem->scaleid;
+            if (!$DB->record_exists_sql('select * from {local_gugrades_scalevalue} where scaleid=:scaleid', ['scaleid' => $scaleid])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

@@ -71,6 +71,7 @@ class get_capture_page extends \external_api {
             'hidden' => new external_value(PARAM_BOOL, 'True if student names are hidden'),
             'itemtype' => new external_value(PARAM_TEXT, 'Name of item type (quiz, assign, manual etc)'),
             'itemname' => new external_value(PARAM_TEXT, 'Name of item'),
+            'gradesupported' => new external_value(PARAM_BOOL, 'Is the selected grade type one we can handle / have configured (for scales)'),
         ]);
     }
 
