@@ -70,3 +70,7 @@ $string['source'] = 'Source';
 
 $string['oldgcat'] = 'Old GCAT';
 $string['newgcat'] = 'New GCAT';
+
+$string['includelti'] = 'Include LTI';
+
+$string['includeltilabel'] = 'Select LTIs to include on the Student dashboard.';

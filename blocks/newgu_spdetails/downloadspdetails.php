@@ -34,6 +34,9 @@ global $PAGE, $CFG, $DB, $OUTPUT,$USER;
 $PAGE->set_context(context_system::instance());
 require_login();
 $usercontext = context_user::instance($USER->id);
+// FETCH LTI IDs TO BE INCLUDED
+$str_ltiinstancenottoinclude = get_ltiinstancenottoinclude();
+
 
 $spdetailstype = required_param('spdetailstype', PARAM_TEXT);
 $coursestype = required_param('coursestype', PARAM_TEXT);
@@ -65,7 +68,10 @@ if ($str_currentcourses!="" && $coursestype=="current") {
 
     $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
 
-    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+//    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+
+    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && (gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') && gi.itemmodule="lti") && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+//&& (gi.iteminstance IN ($str_ltiinstancenottoinclude) && gi.itemmodule='lti') &&
 
     $arr_cc = $DB->get_records_sql($sql_cc);
 
@@ -259,9 +265,9 @@ if ($str_currentcourses!="" && $coursestype=="current") {
         $col++;
         $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>$str_duedate);
         $col++;
-        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>$gradetodisplay);
+        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>strip_tags($gradetodisplay));
         $col++;
-        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>$str_gradetodisplay);
+        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>strip_tags($gradetodisplay));
         $col++;
 
     }
@@ -282,7 +288,9 @@ if ($coursestype=="past") {
 
     $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_pastcourses);
 
-    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+//    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+
+    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && (gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') && gi.itemmodule="lti") && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
 
     $arr_cc = $DB->get_records_sql($sql_cc);
 
@@ -477,9 +485,9 @@ if ($coursestype=="past") {
         $col++;
         $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>$enddate);
         $col++;
-        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>$gradetodisplay);
+        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>strip_tags($gradetodisplay));
         $col++;
-        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>$str_gradetodisplay);
+        $pastxl[$row][$col] = array("row"=>$row, "col"=>$col, "text"=>strip_tags($gradetodisplay));
         $col++;
     }
     $spdetailspdf .= "</table>";
@@ -627,6 +635,7 @@ if ($spdetailstype=="excel" && $spdetailspdf!="" && $str_coursestype!="") {
   }
 
   if ($coursestype=="past") {
+    $row++;
     $rowhd = 6;
     $col = 0;
     $pastxl[$row][$col] = array("row"=>$rowhd, "col"=>$col, "text"=>get_string('course'));
@@ -657,7 +666,6 @@ if ($spdetailstype=="excel" && $spdetailspdf!="" && $str_coursestype!="") {
   }
 
   $rowheight = 22;
-
 
   foreach ($pastxl as $key_pastxl) {
 
