@@ -185,9 +185,7 @@ $PAGE->requires->js_amd_inline("
 
                                         $str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_currentcourses);
 
-//                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
-
-                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && (gi.iteminstance IN ($str_ltiinstancenottoinclude) && gi.itemmodule='lti') && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
+                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_currentcourses.") && gi.courseid>1 && ((gi.iteminstance NOT IN ($str_ltiinstancenottoinclude) && gi.itemmodule='lti') OR gi.itemmodule!='lti') && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
 
                                         $table->no_sorting('coursename');
                                         $table->no_sorting('assessment');
@@ -291,7 +289,7 @@ $PAGE->requires->js_amd_inline("
 
 //                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
 
-                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && (gi.iteminstance IN ($str_ltiinstancenottoinclude) && gi.itemmodule='lti') && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
+                                        $table->set_sql('gi.*, c.fullname as coursename', "{grade_items} gi, {course} c", "gi.courseid in (".$str_pastcourses.") && gi.courseid>1 && gi.itemtype='mod' && ((gi.iteminstance NOT IN ($str_ltiinstancenottoinclude) && gi.itemmodule='lti') OR gi.itemmodule!='lti') && gi.id not in (".$str_itemsnotvisibletouser.") && gi.courseid=c.id $addsort");
 
 //$str_ltinottoinclude
 
