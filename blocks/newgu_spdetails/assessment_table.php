@@ -142,7 +142,7 @@ class currentassessment_table extends table_sql
       if ($cfdvalue==1) {
           return "Old GCAT";
       } else {
-          return "";
+          return "Gradebook";
       }
     }
 
@@ -509,6 +509,7 @@ class pastassessment_table extends table_sql
 
      $arr_customfielddata = $DB->get_record('customfield_data', array('fieldid'=>$cffid, 'instanceid'=>$courseid));
 
+
      if (!empty($arr_customfielddata)) {
           $cfdvalue = $arr_customfielddata->value;
      }
@@ -518,6 +519,7 @@ class pastassessment_table extends table_sql
       } else {
           return "Gradebook";
       }
+
     }
 
     function col_weight($values){
