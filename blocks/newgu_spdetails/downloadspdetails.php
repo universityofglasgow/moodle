@@ -70,7 +70,7 @@ if ($str_currentcourses!="" && $coursestype=="current") {
 
 //    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
 
-    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && (gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') && gi.itemmodule="lti") && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_currentcourses.') && gi.courseid>1 && gi.itemtype="mod" && ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') && gi.itemmodule="lti") OR gi.itemmodule!="lti") && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
 //&& (gi.iteminstance IN ($str_ltiinstancenottoinclude) && gi.itemmodule='lti') &&
 
     $arr_cc = $DB->get_records_sql($sql_cc);
@@ -290,7 +290,7 @@ if ($coursestype=="past") {
 
 //    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
 
-    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && (gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') && gi.itemmodule="lti") && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+    $sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_pastcourses.') && gi.courseid>1 && gi.itemtype="mod" && ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') && gi.itemmodule="lti") OR gi.itemmodule!="lti") && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
 
     $arr_cc = $DB->get_records_sql($sql_cc);
 
