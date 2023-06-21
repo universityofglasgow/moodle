@@ -327,8 +327,12 @@ body.hillhead40-night #nav-drawer h2 {
   color: #789bca;
 }
 
-body.hillhead40-night h1, body.hillhead40-night h2, body.hillhead40-night h3:not(.que), body.hillhead40-night h4, body.hillhead40-night h5, body.hillhead40-night h6 {
+body.hillhead40-night h1:not(page-header-headings), body.hillhead40-night h2, body.hillhead40-night h3:not(body.hillhead40-night .que), body.hillhead40-night h4, body.hillhead40-night h5, body.hillhead40-night h6 {
   color: #617591;
+}
+
+body.hillhead40-night div > h1, body.hillhead40-night div > h2, body.hillhead40-night div > section > h2,  body.hillhead40-night div > h3, body.hillhead40-night div > h5 {
+  color: inherit;
 }
 
 body.hillhead40-night .accessibility-tools .accessibility-group h4 {
@@ -406,8 +410,16 @@ body.hillhead40-night footer#page-footer a {
   color: #789BCA !important;
 }
 
-body.hillhead40-night a:not(.que a):not(.btn-primary):not(.btn-secondary), body.hillhead40-night a.nav-link, body.hillhead40-night .description .course-description-item {
-  color: #95B7E6 !important;
+body.hillhead40-night a:not(body.hillhead40-night .que a):not(body.hillhead40-night .btn-primary):not(body.hillhead40-night .btn-secondary):not([aria-selected="true"]):not(body.hillhead40-night .courseindex-item.dimmed.pageitem a), body.hillhead40-night a.nav-link, body.hillhead40-night .description .course-description-item {
+  color: #95B7E6;
+}
+
+body.hillhead40-night .drawercontent li.pageitem[aria-selected="false"] > a.courseindex-link {
+  color: inherit !important;
+}
+
+body.hillhead40-night .courseindex .courseindex-item.dimmed.pageitem a {
+  color: #fff !important;
 }
 
 body.hillhead40-night .description .course-description-item, body.hillhead40-night.path-mod .activity-header:not(:empty) {
@@ -450,6 +462,10 @@ body.hillhead40-night .submissionnotgraded {
 
 body.hillhead40-night .drawercontent a {
   color: #C4D6EE !important;
+}
+
+body.hillhead40-night .drawercontent li[aria-selected="false"] > a.courseindex-link[aria-selected="true"] {
+  color: white !important;
 }
 
 body.hillhead40-night .alert {
@@ -500,7 +516,15 @@ body.hillhead40-night .alert.alert-info h3 {
 body.hillhead40-night .alert.alert-success {
   background-color: #547D44 !important;
   border-color: #436336 !important;
-  color: #A4F284 !important;
+  color: #fff !important;
+}
+
+body.hillhead40-night .alert-success, body.hillhead40-night .environmenttable .ok {
+  background-color: #7465af;
+}
+
+body.hillhead40-night.path-mod .automatic-completion-conditions .badge {
+  mix-blend-mode: revert;
 }
 
 body.hillhead40-night .alert.alert-success a {
@@ -731,7 +755,11 @@ body.hillhead40-night .generaltable tbody tr:hover {
   color: #c4d6ee;
 }
 
-.block .block-cards a.coursename, .block .block-cards span.categoryname, .block .block-cards .btn-link, .block .block-cards .progress-text {
+body.hillhead40-night .block .block-cards a.coursename,
+body.hillhead40-night .block .block-cards span.categoryname,
+body.hillhead40-night .block .block-cards .btn-link,
+body.hillhead40-night .block .block-cards .progress-text,
+body.hillhead40-night .block_recentlyaccesseditems a.dashboard-card small {
   color: inherit;
 }
 
@@ -740,12 +768,39 @@ body.hillhead40-night .courses.frontpage-course-list-all a {
 }
 
 body.hillhead40-night .que h3, body.hillhead40-night .que div.info {
-  color: #526d91;
+  color: #526d91 !important;
 }
 
 body.hillhead40-night .que a {
   color: #5E6A7B !important;
 }
+
+body.hillhead40-night .message-app {
+  display: flex;
+  flex-direction: column;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night table.quizreviewsummary th.cell {
+  padding: 1px 0.5em 1px 1em;
+  font-weight: bold;
+  text-align: right;
+  width: 10em;
+  background-color: inherit
+}
+
+body.hillhead40-night table.quizreviewsummary td.cell {
+  padding: 1px 1em 1px 0.5em;
+  text-align: left;
+  background: inherit;
+}
+
+#page-mod-quiz-view.hillhead40-night table.quizattemptsummary tr.bestrow td {
+  border-color: #bce8f1;
+  background-color: #555658 !important;
+  color: white;
+}
+
 
 @media (prefers-color-scheme: dark) {
   /* Dark theme styles go here */
