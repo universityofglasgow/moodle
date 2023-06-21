@@ -528,7 +528,73 @@ return $finalweight;
 }
 
 
-function get_duedateorder() {
+function get_assessmenttypeorder($coursetype,$tdr) {
+
+global $USER, $DB, $CFG;
+
+$courses = newassessments_statistics::return_enrolledcourses($USER->id, $coursetype);
+$str_courses = implode(",", $courses);
+
+
+$str_itemsnotvisibletouser = newassessments_statistics::fetch_itemsnotvisibletouser($USER->id, $str_courses);
+
+$sql_cc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in ('.$str_courses.') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in ('.$str_itemsnotvisibletouser.') && gi.courseid=c.id';
+
+$arr_cc = $DB->get_records_sql($sql_cc);
+
+$arr_order = array();
+
+foreach ($arr_cc as $key_cc) {
+  $cmid = $key_cc->id;
+  $modulename = $key_cc->itemmodule;
+  $iteminstance = $key_cc->iteminstance;
+  $courseid = $key_cc->courseid;
+  $itemid = $key_cc->id;
+  $categoryid = $key_cc->categoryid;
+
+  // DUE DATE
+  $assessmenttype = "";
+  $str_assessmenttype = "—";
+
+  // READ individual TABLE OF ACTIVITY (MODULE)
+  if ($modulename!="") {
+
+    $arr_gradecategory = $DB->get_record('grade_categories',array('courseid'=>$courseid, 'id'=>$categoryid));
+    if (!empty($arr_gradecategory)) {
+      $gradecategoryname = $arr_gradecategory->fullname;
+    }
+
+    $aggregationcoef = $key_cc->aggregationcoef;
+
+    $assessmenttype = newassessments_statistics::return_assessmenttype($gradecategoryname, $aggregationcoef);
+
+  }
+
+  $arr_order[$itemid] = $assessmenttype;
+//    $arr_order2[$duedate] = $itemid;
+}
+
+if ($tdr==3) {
+  asort($arr_order);
+}
+if ($tdr==4) {
+  arsort($arr_order);
+}
+
+// echo "<pre>";
+// print_r($arr_order);
+// echo "</pre>";
+
+$str_order = "";
+foreach ($arr_order as $key_order=>$value) {
+$str_order .= $key_order . ",";
+}
+$str_order = rtrim($str_order,",");
+return $str_order;
+}
+
+
+function get_duedateorder($tdr) {
 
 global $USER, $DB, $CFG;
 
@@ -596,18 +662,24 @@ foreach ($arr_cc as $key_cc) {
 //    $arr_order2[$duedate] = $itemid;
 }
 
-asort($arr_order);
+if ($tdr==3) {
+  asort($arr_order);
+}
+if ($tdr==4) {
+  arsort($arr_order);
+}
 
 $str_order = "";
 foreach ($arr_order as $key_order=>$value) {
 $str_order .= $key_order . ",";
 }
 $str_order = rtrim($str_order,",");
+
 return $str_order;
 }
 
 
-function get_startenddateorder() {
+function get_startenddateorder($tdr) {
 
       global $USER, $DB, $CFG;
 
@@ -688,14 +760,24 @@ function get_startenddateorder() {
 
     }
 
-  asort($arr_sdorder);
+  if ($tdr==3) {
+    asort($arr_sdorder);
+  }
+  if ($tdr==4) {
+    arsort($arr_sdorder);
+  }
   $str_sdorder = "";
   foreach ($arr_sdorder as $key_order=>$value) {
     $str_sdorder .= $key_order . ",";
   }
   $str_sdorder = rtrim($str_sdorder,",");
 
-  asort($arr_edorder);
+  if ($tdr==3) {
+    asort($arr_edorder);
+  }
+  if ($tdr==4) {
+    arsort($arr_edorder);
+  }
   $str_edorder = "";
   foreach ($arr_edorder as $key_order=>$value) {
     $str_edorder .= $key_order . ",";
@@ -706,6 +788,52 @@ function get_startenddateorder() {
 
   return $array_order;
 
+}
+
+function get_ltiinstancenottoinclude() {
+    // FETCH LTI IDs TO BE INCLUDED
+    global $DB;
+
+    $str_ltitoinclude = "99999";
+    $str_ltinottoinclude = "99999";
+    $sql_ltitoinclude = "SELECT * FROM {config} WHERE name like '%block_newgu_spdetails_include_%' AND value=1";
+    $arr_ltitoinclude = $DB->get_records_sql($sql_ltitoinclude);
+    $array_ltitoinclude = array();
+    foreach ($arr_ltitoinclude as $key_ltitoinclude) {
+        $name = $key_ltitoinclude->name;
+        $name_pieces = explode("block_newgu_spdetails_include_",$name);
+        $ltitype = $name_pieces[1];
+        $array_ltitoinclude[] = $ltitype;
+    }
+    $str_ltitoinclude = implode(",", $array_ltitoinclude);
+
+    if ($str_ltitoinclude=="") {
+      $str_ltitoinclude = "99999";
+    }
+
+    $sql_ltitypenottoinclude = "SELECT id FROM {lti_types} WHERE id not in (".$str_ltitoinclude.")";
+    $arr_ltitypenottoinclude = $DB->get_records_sql($sql_ltitypenottoinclude);
+
+    $array_ltitypenottoinclude = array();
+    $array_ltitypenottoinclude[] = 0;
+    foreach ($arr_ltitypenottoinclude as $key_ltitypenottoinclude) {
+        $array_ltitypenottoinclude[] = $key_ltitypenottoinclude->id;
+    }
+    $str_ltitypenottoinclude = implode(",", $array_ltitypenottoinclude);
+
+    $sql_ltiinstancenottoinclude = "SELECT * FROM {lti} WHERE typeid NOT IN (".$str_ltitypenottoinclude.")";
+    $arr_ltiinstancenottoinclude = $DB->get_records_sql($sql_ltiinstancenottoinclude);
+
+    $array_ltiinstancenottoinclude = array();
+    foreach ($arr_ltiinstancenottoinclude as $key_ltiinstancenottoinclude) {
+        $array_ltiinstancenottoinclude[] = $key_ltiinstancenottoinclude->id;
+    }
+    $str_ltiinstancenottoinclude = implode(",", $array_ltiinstancenottoinclude);
+
+    if ($str_ltiinstancenottoinclude=="") {
+        $str_ltiinstancenottoinclude = 99999;
+    }
+    return $str_ltiinstancenottoinclude;
 }
 
 ?>

@@ -77,7 +77,11 @@ body.hillhead40-spacing * {
     background-color: $background !important;
   }
 
-  body.hillhead40-#{$class} .primary-navigation>nav>ul>li>a.nav-link, .navbar-light .navbar-nav .nav-link, .navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:active, .input-group .mr-2 {
+  body.hillhead40-#{$class} .primary-navigation>nav>ul>li>a.nav-link,
+  .navbar-light .navbar-nav .nav-link,
+  .navbar-light .navbar-nav .nav-link:hover,
+  .navbar-light .navbar-nav .nav-link:active,
+  .input-group .mr-2 {
     color: $foreground !important;
   }
 
@@ -85,7 +89,10 @@ body.hillhead40-spacing * {
     color: $foreground !important;
   }
 
-  body.hillhead40-#{$class} .primary-navigation .moremenu .nav-link.active, body.hillhead40-#{$class} .primary-navigation .moremenu .nav-link:hover, body.hillhead40-#{$class} .btn-primary:hover {
+  body.hillhead40-#{$class} .primary-navigation .moremenu .nav-link.active,
+  body.hillhead40-#{$class} .primary-navigation .moremenu .nav-link:hover,
+  body.hillhead40-#{$class} .btn-primary:hover,
+  {
     background-color: $background !important;
     border-bottom-color: $foreground !important;
   }
@@ -242,7 +249,7 @@ body.hillhead40-bold * {
 
 body.hillhead40-night, #page-my-index.hillhead40-night {
   background-color: #132030;
-  color: #C4D6EE !important;
+  color: #95B7E6 !important;
 }
 
 body.hillhead40-night #page.drawers .main-inner, body.hillhead40-night #searchform-navbar {
@@ -263,6 +270,34 @@ body.hillhead40-night nav.navbar.fixed-top {
   border-bottom-color: #121E30 !important;
 }
 
+body.hillhead40-night .secondary-navigation .navigation {
+  background-color: #274163 !important;
+  border-bottom-color: #274163 !important;
+}
+
+body.hillhead40-night nav .navbar-nav li.nav-item a.nav-link {
+  color: #95B7E6 !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav {
+  background-color: #182941;
+  border-bottom-color: #121E30 !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav .nav-item .nav-link, body.hillhead40-night .secondary-navigation .more-nav .nav-item a:active {
+  color: #789BCA !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav .nav-item a:visited {
+  background-color: #274163;
+  border-bottom-color: #121E30 !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav .nav-item a:hover {
+  background-color: #182941;
+  border-bottom-color: #463c72 !important;
+}
+
 body.hillhead40-night #nav-drawer {
   background-color: #182941;
   border-right-color: #121E30;
@@ -272,7 +307,7 @@ body.hillhead40-night .drawer {
   background-color: #182941 !important;
 }
 
-body.hillhead40-night nav.navbar.fixed-top a:hover, body.hillhead40-night nav.navbar.fixed-top a:visited {
+body.hillhead40-night nav.navbar.fixed-top a:hover, body.hillhead40-night nav.navbar.fixed-top a:visited, body.hillhead40-night .state-visible {
   background-color:#121E30 !important;
 }
 
@@ -292,8 +327,8 @@ body.hillhead40-night #nav-drawer h2 {
   color: #789bca;
 }
 
-body.hillhead40-night h1, body.hillhead40-night h2, body.hillhead40-night h3, body.hillhead40-night h4, body.hillhead40-night h5, body.hillhead40-night h6 {
-  color: #789bca;
+body.hillhead40-night h1, body.hillhead40-night h2, body.hillhead40-night h3:not(.que), body.hillhead40-night h4, body.hillhead40-night h5, body.hillhead40-night h6 {
+  color: #617591;
 }
 
 body.hillhead40-night .accessibility-tools .accessibility-group h4 {
@@ -310,13 +345,13 @@ body.hillhead40-night .card .block-header, body.hillhead40-night.format-weeks .c
   background-color: #274163;
 }
 
-body.hillhead40-night .card-body, body.hillhead40-night .message-app {
-  border-radius: .5rem;
+body.hillhead40-night.format-tiles #page .course-content ul li.section.main[data-section="0"] {
+  border-color: #121E30;
+  background-color: #1A2B41;
 }
 
-body#page-course-view-topics.hillhead40-night ul.topics li.section .sectionname {
-  border-bottom-color: #121E30;
-  background-color: #274163;
+body.hillhead40-night .card-body, body.hillhead40-night .message-app {
+  border-radius: .5rem;
 }
 
 body.hillhead40-night#page-course-view-topics .course-content ul.topics li.section {
@@ -333,7 +368,14 @@ body.hillhead40-night .accessibility-tools .accessibility-group h4 {
   background-color: #274163;
 }
 
-body.hillhead40-night #region-main, body.hillhead40-night#page-user-profile #region-main .description, body.hillhead40-night.path-course.path-user #region-main .description, body.hillhead40-night.path-course.path-user #region-main .page-context-header, body.hillhead40-night .course-content .single-section, body.hillhead40-night.path-admin #region-main .card-block, body.hillhead40-night.path-admin #region-main #page-enrol-users #filterform, #page-enrol-users body.hillhead40-night.path-admin #region-main #filterform {
+body.hillhead40-night #region-main,
+body.hillhead40-night#page-user-profile #region-main .description,
+body.hillhead40-night.path-course.path-user #region-main .description,
+body.hillhead40-night.path-course.path-user #region-main .page-context-header,
+body.hillhead40-night .course-content .single-section,
+body.hillhead40-night.path-admin #region-main .card-block,
+body.hillhead40-night.path-admin #region-main #page-enrol-users #filterform,
+#page-enrol-users body.hillhead40-night.path-admin #region-main #filterform {
   border-color: #121E30;
   background-color: #1A2B41;
 }
@@ -364,8 +406,12 @@ body.hillhead40-night footer#page-footer a {
   color: #789BCA !important;
 }
 
-body.hillhead40-night a, body.hillhead40-night a.nav-link, body.hillhead40-night .description .course-description-item {
-  color: #789BCA !important;
+body.hillhead40-night a:not(.que a):not(.btn-primary):not(.btn-secondary), body.hillhead40-night a.nav-link, body.hillhead40-night .description .course-description-item {
+  color: #95B7E6 !important;
+}
+
+body.hillhead40-night .description .course-description-item, body.hillhead40-night.path-mod .activity-header:not(:empty) {
+  background-color: #121E2D;
 }
 
 body.hillhead40-night .nav-tabs {
@@ -377,7 +423,7 @@ body.hillhead40-night .nav-tabs .nav-link {
 }
 
 body.hillhead40-night .nav-tabs .nav-link.active, body.hillhead40-night .nav-tabs .nav-item.show .nav-link {
-  color: #789BCA;
+  color: #86B1EA !important;
   background-color: #274163;
   border-color: #274163;
 }
@@ -414,16 +460,16 @@ body.hillhead40-night .alert {
 body.hillhead40-night .alert.alert-danger {
   background-color: #6B292B !important;
   border-color: #4D1F20 !important;
-  color: #E57A7E !important;
+  color: white !important;
 }
 
 body.hillhead40-night .alert.alert-danger a {
-  color: #E57A7E;
+  color: white !important;
   text-decoration: underline;
 }
 
 body.hillhead40-night .alert.alert-danger h3 {
-  color: #E57A7E;
+  color: white;
 }
 
 body.hillhead40-night .alert.alert-warning, body.hillhead40-night .adminwarning {
@@ -505,10 +551,14 @@ body.hillhead40-night table {
   color: #c4d6ee;
 }
 
-body.hillhead40-night .btn-primary {
+body.hillhead40-night .btn-primary, .navitem .btn-primary {
   background-color: #406BAF !important;
   border-color: #243C62 !important;
-  color: #c4d6ee !important;
+  color: white !important;
+}
+
+body.hillhead40-night .btn-secondary {
+  color: white !important;
 }
 
 body.hillhead40-night .btn-primary:hover {
@@ -548,7 +598,7 @@ body.hillhead40-night .btn-danger:hover {
 body.hillhead40-night .btn-secondary {
   background-color: #555658 !important;
   border-color: #474849 !important;
-  color: #B9BBBF !important;
+  color: white !important;
 }
 
 body.hillhead40-night .btn-secondary:hover {
@@ -627,7 +677,7 @@ body.hillhead40-night .moodle-dialogue-base .moodle-dialogue-wrap .moodle-dialog
 }
 
 body.hillhead40-night .text-muted, body.hillhead40-night a.dimmed, body.hillhead40-night a.dimmed:link, body.hillhead40-night a.dimmed:visited, body.hillhead40-night a.dimmed_text, body.hillhead40-night a.dimmed_text:link, body.hillhead40-night a.dimmed_text:visited, body.hillhead40-night .dimmed_text, body.hillhead40-night .dimmed_text a, body.hillhead40-night .dimmed_text a:link, body.hillhead40-night .dimmed_text a:visited, body.hillhead40-night .usersuspended, body.hillhead40-night .usersuspended a, body.hillhead40-night .usersuspended a:link, body.hillhead40-night .usersuspended a:visited, body.hillhead40-night .dimmed_category, body.hillhead40-night .dimmed_category a, body.hillhead40-night .tag_feed .media .muted a, body.hillhead40-night #page-admin-qtypes .disabled, body.hillhead40-night #page-admin-qbehaviours .disabled, body.hillhead40-night #page-admin-plugins #plugins-control-panel .pluginname .componentname, body.hillhead40-night #page-admin-plugins #plugins-control-panel .version .versionnumber, body.hillhead40-night #page-admin-plugins #plugins-control-panel .notes .requiredby, body.hillhead40-night #plugins-check-page .page-description, body.hillhead40-night #plugins-check-page #plugins-check .requires-ok, body.hillhead40-night #plugins-check-page #plugins-check .displayname .plugindir, body.hillhead40-night #plugins-check-page #plugins-check-available-dependencies .displayname .component, body.hillhead40-night #page-admin-search .adminpagepath li, body.hillhead40-night .block .minicalendar td.weekend, body.hillhead40-night .section .activity .stealth, body.hillhead40-night .course-content .section-summary .section-summary-activities .activity-count, body.hillhead40-night .course-content ul li.section.hidden .sectionname>span, body.hillhead40-night .course-content ul li.section.hidden .content>div.summary, body.hillhead40-night .course-content ul li.section.hidden .activity .activityinstance, body.hillhead40-night #course-category-listings .listitem[data-visible="0"], body.hillhead40-night #course-category-listings .listitem[data-visible="0"]>div>a, body.hillhead40-night #course-category-listings .listing-pagination-totals.dimmed, body.hillhead40-night .fitem.disabled .fp-btn-choose, body.hillhead40-night .form-defaultinfo, body.hillhead40-night .form-label .form-shortname, body.hillhead40-night .formsettingheading .form-horizontal, body.hillhead40-night .no-felement.fstatic, body.hillhead40-night .path-backup .backup_progress .backup_stage {
-  color: #8598B0 !important;
+  color: #9CB0C8 !important;
 }
 
 body.hillhead40-stripstyles i {
@@ -677,6 +727,30 @@ body.hillhead40-night .popover-region-container {
   background-color: #1A2B41;
 }
 
+body.hillhead40-night .generaltable tbody tr:hover {
+  color: #c4d6ee;
+}
+
 .block .block-cards a.coursename, .block .block-cards span.categoryname, .block .block-cards .btn-link, .block .block-cards .progress-text {
   color: inherit;
+}
+
+body.hillhead40-night .courses.frontpage-course-list-all a {
+  text-decoration: underline;
+}
+
+body.hillhead40-night .que h3, body.hillhead40-night .que div.info {
+  color: #526d91;
+}
+
+body.hillhead40-night .que a {
+  color: #5E6A7B !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Dark theme styles go here */
+}
+
+@media (prefers-color-scheme: light) {
+  /* Light theme styles go here */
 }
