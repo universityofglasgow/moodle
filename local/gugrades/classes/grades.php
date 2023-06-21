@@ -304,4 +304,16 @@ class grades {
 
         return true;
     }
+
+    /**
+     * Have any grades already been imported for gradeitem
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @return bool
+     */
+    public static function is_grades_imported(int $courseid, int $gradeitemid) {
+        global $DB;
+
+        return $DB->record_exists_sql('select * from {local_gugrades_grade} where gradeitemid=:gradeitemid', ['gradeitemid' => $gradeitemid]);
+    }
 }

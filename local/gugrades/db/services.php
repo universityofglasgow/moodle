@@ -98,4 +98,10 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
+    'local_gugrades_is_grades_imported' => [
+        'classname' => 'local_gugrades\external\is_grades_imported',
+        'description' => 'Check if selected grade item has had any grades imported.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];    

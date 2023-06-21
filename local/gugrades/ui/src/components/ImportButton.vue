@@ -7,7 +7,9 @@
                 <h4><MString name="importgrades"></MString></h4>
             </template>
             <template #body>
-                Form goes here
+                <div v-if="is_importgrades" class="alert alert-danger">
+                    Already imported
+                </div>
                 <p><button class="btn btn-primary" @click="importgrades">Import</button></p>
             </template>
         </ModalForm>
@@ -15,7 +17,7 @@
 </template>
 
 <script setup>
-    import {ref, defineProps, defineEmits} from '@vue/runtime-core';
+    import {ref, defineProps, defineEmits, onMounted} from '@vue/runtime-core';
     import ModalForm from '@/components/ModalForm.vue';
     import MString from '@/components/MString.vue';
     import { useToast } from "vue-toastification";
@@ -30,13 +32,12 @@
     const emit = defineEmits(['imported']);
 
     const showimportmodal = ref(false);
+    const is_importgrades = ref(false);
 
     /**
      * Import grades button clicked
      */
      function importgrades() {
-        window.console.log('IMPORT GRADES');
-
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany; 
@@ -61,4 +62,28 @@
 
         showimportmodal.value = false;
     }
+
+    /** 
+     * Check for existing grades
+     */
+    onMounted(() => {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_is_grades_imported',
+            args: {
+                courseid: courseid,
+                gradeitemid: props.itemid,
+            }
+        }])[0]
+        .then((result) => {
+            is_importgrades.value = result.imported;
+        })
+        .catch((error) => {
+            window.console.log(error);
+            toast.error('Error communicating with server (see console)');
+        });
+    });
 </script>

@@ -302,4 +302,13 @@ class api {
         return $newitems;
     }
 
+    /**
+     * Has anything been defined for gradeitemid
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @return boolean
+     */
+    public static function is_grades_imported(int $courseid, int $gradeitemid) {
+        return \local_gugrades\grades::is_grades_imported($courseid, $gradeitemid);
+    }
 }

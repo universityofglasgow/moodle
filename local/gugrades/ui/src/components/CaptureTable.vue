@@ -8,7 +8,7 @@
 
         <div v-else>
             <div class="border rounded p-2 py-4 mt-2">
-                <ImportButton :itemid="itemid" :userids="userids" @imported="gradesimported"></ImportButton>
+                <ImportButton :itemid="parseInt(itemid)" :userids="userids" @imported="gradesimported"></ImportButton>
                 <ExportWorksheetButton :users="users" :itemtype="itemtype" :itemname="itemname"></ExportWorksheetButton>
             </div>
 
