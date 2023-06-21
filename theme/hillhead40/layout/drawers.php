@@ -99,38 +99,38 @@ $primarymenu = $primary->export_for_template($renderer);
 
 // Because the navigation hook *_extend_navigation_*() only works for local, mod
 // and report plugins, we need to slot this in before Preferences, and its divider.
-if (isset($primarymenu['user']['items']) && count($primarymenu['user']['items']) > 0) {
-    $usesaccessibilitytools = get_user_preferences('theme_hillhead40_accessibility', false);
-    $varg = 'clear';
-    $spantext = 'Hide';
-    if ($usesaccessibilitytools === false) {
-        $varg = 'on';
-        $spantext = 'Show';
-    }
-
-    $branchlabel = $spantext . ' Accessibility Tools';
-    $branchtitle = str_replace(' ', '-', $branchlabel);
-
-    $accessibilityobj = new stdClass();
-    $accessibilityobj->itemtype = 'link';
-    $accessibilityobj->title = $branchlabel;
-    $accessibilityobj->titleidentifier = $branchtitle;
-    $args = [
-        'o' => 'theme_hillhead40_accessibility',
-        'v' => $varg
-    ];
-    $accessibilityurl = new moodle_url('/theme/hillhead40/accessibility.php', $args);
-    $accessibilityobj->url = $accessibilityurl;
-    $accessibilityobj->divider = false;
-    $accessibilityobj->link = true;
-
-    // Here begins the slicing and dicing...
-    $tmpitems = array_slice($primarymenu['user']['items'], -4, null, true);
-    // ...add our Accessibility link to the beginning of this temp array...
-    array_unshift($tmpitems, $accessibilityobj);
-    // ...finally, replace the items at the end of the array, with the new item...
-    array_splice($primarymenu['user']['items'], -4, null, $tmpitems);
-}
+//if (isset($primarymenu['user']['items']) && count($primarymenu['user']['items']) > 0) {
+//    $usesaccessibilitytools = get_user_preferences('theme_hillhead40_accessibility', false);
+//    $varg = 'clear';
+//    $spantext = 'Hide';
+//    if ($usesaccessibilitytools === false) {
+//        $varg = 'on';
+//        $spantext = 'Show';
+//    }
+//
+//    $branchlabel = $spantext . ' Accessibility Tools';
+//    $branchtitle = str_replace(' ', '-', $branchlabel);
+//
+//    $accessibilityobj = new stdClass();
+//    $accessibilityobj->itemtype = 'link';
+//    $accessibilityobj->title = $branchlabel;
+//    $accessibilityobj->titleidentifier = $branchtitle;
+//    $args = [
+//        'o' => 'theme_hillhead40_accessibility',
+//        'v' => $varg
+//    ];
+//    $accessibilityurl = new moodle_url('/theme/hillhead40/accessibility.php', $args);
+//    $accessibilityobj->url = $accessibilityurl;
+//    $accessibilityobj->divider = false;
+//    $accessibilityobj->link = true;
+//
+//    // Here begins the slicing and dicing...
+//    $tmpitems = array_slice($primarymenu['user']['items'], -4, null, true);
+//    // ...add our Accessibility link to the beginning of this temp array...
+//    array_unshift($tmpitems, $accessibilityobj);
+//    // ...finally, replace the items at the end of the array, with the new item...
+//    array_splice($primarymenu['user']['items'], -4, null, $tmpitems);
+//}
 
 $buildregionmainsettings = !$PAGE->include_region_main_settings_in_header_actions() && !$PAGE->has_secondary_navigation();
 // If the settings menu will be included in the header then don't add it here.

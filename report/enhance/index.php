@@ -24,6 +24,11 @@
 
 require(dirname(__FILE__).'/../../config.php');
 
+// 2023-06-21 - Making this page inaccessible until a decision has been made
+// with regards the VLE Enhancement request process.
+$urltogo= $CFG->wwwroot.'/my/';
+redirect($urltogo);
+
 // params
 $courseid = optional_param('courseid', 1, PARAM_INT);
 $export = optional_param('export', 0, PARAM_INT);
