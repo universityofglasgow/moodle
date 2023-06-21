@@ -801,6 +801,14 @@ body.hillhead40-night table.quizreviewsummary td.cell {
   color: white;
 }
 
+#page-mod-quiz-view.hillhead40-night table.quizattemptsummary a {
+  color: #ced4da;
+  text-decoration: underline;
+}
+
+body.hillhead40-night #courseindex > div > div > div > .courseindex-section-title.pageitem a.courseindex-link {
+  color: inherit !important;;
+}
 
 @media (prefers-color-scheme: dark) {
   /* Dark theme styles go here */
