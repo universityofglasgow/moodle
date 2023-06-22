@@ -275,7 +275,7 @@ body.hillhead40-night .secondary-navigation .navigation {
   border-bottom-color: #274163 !important;
 }
 
-body.hillhead40-night nav .navbar-nav li.nav-item a.nav-link {
+body.hillhead40-night nav .navbar-nav li.nav-item a.nav-link, body.hillhead40-night .secondary-navigation .more-nav .nav-item a.active {
   color: #95B7E6 !important;
 }
 
@@ -808,6 +808,10 @@ body.hillhead40-night table.quizreviewsummary td.cell {
 
 body.hillhead40-night #courseindex > div > div > div > .courseindex-section-title.pageitem a.courseindex-link {
   color: inherit !important;;
+}
+
+body.hillhead40-night.path-mod-quiz #mod_quiz_navblock .qnbutton, body.hillhead40-night.path-mod-quiz #mod_quiz_navblock .qnbutton.notyetanswered .trafficlight {
+  background-color: #555658;
 }
 
 @media (prefers-color-scheme: dark) {
