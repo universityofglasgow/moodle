@@ -474,13 +474,13 @@ body.hillhead40-night .alert {
 }
 
 body.hillhead40-night .alert.alert-danger {
-  background-color: #6B292B !important;
+  background-color: #CF6679 !important;
   border-color: #4D1F20 !important;
-  color: white !important;
+  color: #000 !important;
 }
 
 body.hillhead40-night .alert.alert-danger a {
-  color: white !important;
+  color: #000 !important;
   text-decoration: underline;
 }
 
@@ -814,8 +814,15 @@ body.hillhead40-night.path-mod-quiz #mod_quiz_navblock .qnbutton, body.hillhead4
   background-color: #555658;
 }
 
+body.hillhead40-night img {
+  filter: brightness(.8) contrast(1.2);
+}
+
 @media (prefers-color-scheme: dark) {
   /* Dark theme styles go here */
+  img {
+    filter: brightness(.8) contrast(1.2);
+  }
 }
 
 @media (prefers-color-scheme: light) {
