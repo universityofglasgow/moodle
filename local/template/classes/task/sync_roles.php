@@ -104,11 +104,11 @@ class sync_roles extends scheduled_task {
                             }
 
                             // Find all users with course create capability
-                            $users = $users + get_role_users($createroles, $categorycontext);
+                            $users = $users + get_role_users($createroles, $categorycontext, false, 'ra.id', 'ra.id');
                         }
 
                         // Synchronise role assignment for this template course category.
-                        $templateroles = $DB->get_record_select('role_assignments', '', ['roleid' => $syncrole->id, 'contextid' => $templatecategorycontext->id]);
+                        $templateroles = $DB->get_records_select('role_assignments', '', ['roleid' => $syncrole->id, 'contextid' => $templatecategorycontext->id]);
                         foreach ($templateroles as $userrole) {
                             // if userrole user is not in users, unassign the role
                             $foundflag = false;
@@ -119,7 +119,7 @@ class sync_roles extends scheduled_task {
                             }
                             if (!$foundflag) {
                                 mtrace("Unassigning role {$syncrole->name} for user " . fullname($user) . " in template course category {$templatecategory->name}");
-                                role_unassign($syncrole->id, $user->id, $templatecategorycontext);
+                                role_unassign($syncrole->id, $user->id, $templatecategorycontext->id);
                             }
                         }
 
@@ -134,7 +134,7 @@ class sync_roles extends scheduled_task {
                             }
                             if (!$foundflag) {
                                 mtrace("Assigning role {$syncrole->name} for user " . fullname($user) . " in template course category {$templatecategory->name}");
-                                role_assign($syncrole->id, $user->id, $templatecategorycontext);
+                                role_assign($syncrole->id, $user->id, $templatecategorycontext->id);
                             }
                         }
 
