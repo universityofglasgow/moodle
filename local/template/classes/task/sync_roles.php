@@ -39,7 +39,7 @@ class sync_roles extends scheduled_task {
      * @return string Name of this event.
      */
     public function get_name() {
-        return get_string('taskupdatestaticpage', 'local_template');
+        return get_string('tasksyncroles', 'local_template');
     }
 
     /**
@@ -84,7 +84,7 @@ class sync_roles extends scheduled_task {
                     if (empty($parentcategory)) {
                         mtrace("Could not find parent category {$parentid}");
                     } else {
-                        mtrace("Syncronising role {$syncrole->name} for template category {$templatecategory->name} in course category {$parentcategory->name}");
+                        mtrace("Syncronising role '{$syncrole->name}' for template category '{$templatecategory->name}' in course category '{$parentcategory->name}'");
 
                         $path = $DB->sql_like_escape($parentcategory->path) . '%';
                         $like = $DB->sql_like('path', ':likepath');
@@ -97,8 +97,14 @@ class sync_roles extends scheduled_task {
                             // Get category context.
                             $categorycontext = \context_coursecat::instance($category->id);
 
+                            $createroles = [];
+                            $roles = get_roles_with_capability('moodle/course:create');
+                            foreach($roles as $role) {
+                                array_push($createroles, $role->id);
+                            }
+
                             // Find all users with course create capability
-                            $users = $users + get_enrolled_users($categorycontext, 'moodle/course:create');
+                            $users = $users + get_role_users($createroles, $categorycontext);
                         }
 
                         // Synchronise role assignment for this template course category.
