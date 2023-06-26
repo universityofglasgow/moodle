@@ -40,7 +40,6 @@ defined('MOODLE_INTERNAL') || die();
 class utils  {
 
     static function is_admin() {
-        return false;
         return has_capability('local/template:managetemplate', \context_system::instance());
     }
 

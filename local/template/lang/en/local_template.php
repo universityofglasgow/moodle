@@ -33,12 +33,14 @@ $string['addnewcoursehook_desc'] = 'Enable add new course redirection to course 
 $string['addnewcoursenavigation'] = 'Add new course to category navigation';
 $string['addnewcoursenavigation_desc'] = 'Add additional Course Template Selector option to category navigation menu';
 
-
 $string['addnewcoursecategoryactionbar'] = 'Add new course to category action bar';
 $string['addnewcoursecategoryactionbar_desc'] = 'Add additional Add new course via template option to category page options dropdown (performed by theme)';
 
 $string['addnewcoursecoursemanagement'] = 'Add new course to course management';
 $string['addnewcoursecoursemanagement_desc'] = 'Add additional Add new course via template button to course management page (performed by theme)';
+
+$string['syncrole'] = 'Synchronisation role';
+$string['syncrole_desc'] = 'If selected, the role here is applied to template course categories for users with course creation capability in sibling and child course categories';
 
 $string['categories'] = 'Course Categories';
 $string['categories_desc'] = 'List of course categories that are defined as holding template courses';
@@ -129,6 +131,7 @@ $string['nobackupcontrollersdefined'] = 'No backup controllers';
 $string['addbackupcontroller'] = 'Add Backup Controller';
 $string['createbackupcontroller'] = 'Create Backup Controller';
 
+$string['backupcontrollercollection'] = 'Backup controller collection';
 $string['backupcontrollerstatuscreated'] = 'Created';
 $string['backupcontrollerstatusrequireconv'] = 'Requires Conversion';
 $string['backupcontrollerstatusplanned'] = 'Planned';
@@ -186,3 +189,6 @@ $string['addnewcourseviatemplate'] = 'Add a new course via template';
 $string['log'] = 'Log';
 
 $string['notemplatedefined'] = 'No log items';
+
+$string['tasksyncroles'] = 'Synchronise roles';
+

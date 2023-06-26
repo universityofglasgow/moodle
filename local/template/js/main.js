@@ -1,13 +1,10 @@
-debugger;
 var templatestepper;
 
 $(document).ready(function() {
-    debugger;
     initStepper();
     initSliders();
 
     $(document).on('click', '.add-template', function() {
-        debugger;
         $("#templatecourseid").val = $(this).attr("data-id");
         var value = $(this).attr("data-id");
         var inputselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions li[data-value="' + value + '"]';
@@ -25,7 +22,6 @@ $(document).ready(function() {
     });
 
     $("h1.slider-heading").on('click', function() {
-        debugger;
         var sliderheading = $(this);
         var slider = sliderheading.nextAll('.slider:first');
         if (sliderheading.hasClass('collapsed')) {
@@ -39,14 +35,12 @@ $(document).ready(function() {
     });
 });
 
-
 function initStepper() {
     templatestepper = new Stepper(document.querySelector('#templatestepper'), {
         linear: false,
         animation: true
     });
 
-    debugger;
     if ($("#id_shortname").val()) {
         templatestepper.to(2);
     }
@@ -55,20 +49,14 @@ function initStepper() {
 function initSliders() {
     // wrapper.js
 
-    debugger;
-
     // Initialise all the sliders.
     $('.slider').each(function() {
-
-        debugger;
 
         var slider = $(this);
         // Hide the sliders and show the loading spinner.
         slider.css('opacity', 0.01).slideUp();
-        debugger;
         $.when(slider.not('.slick-initialized').slick()).then(
             waitForFinalEvent(function() {
-                debugger;
                 showSlider(slider);
                 slider.slideUp();
             }, 1000, "showSlider" + slider.attr("id"))
@@ -99,7 +87,6 @@ function showSlider(slider) {
         cardoverlay.fadeIn();
     });
 }
-
 
 // Add listeners to document for slick slide mouseenter.
 $(document).on('mouseenter', '.slick-slide', function() {
@@ -157,7 +144,6 @@ function fixTrackHeight(track, animate) {
     var prev = list.parent().find(".slick-prev");
     var next = list.parent().find(".slick-next");
     var trackheight = $(track).find(".slick-active").find(".card-img-top").height() + 60;
-    debugger;
     if (trackheight < 260) {
         trackheight = 260;
     }

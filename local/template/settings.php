@@ -83,6 +83,25 @@ if ($hassiteconfig) {
         )
     );
 
+    // Fetch roles that are assignable.
+    $assignableroles = get_assignable_roles(context_system::instance());
+
+    // Fetch roles that have the capability to use templates.
+    $capableroles = get_roles_with_capability('local/template:usetemplate');
+
+    $roles = [];
+    foreach ($capableroles as $key => $role) {
+       if (array_key_exists($key, $assignableroles)) {
+           $roles[$key] = $assignableroles[$key];
+       }
+    }
+    if (!empty($roles)) {
+       $settings->add(new admin_setting_configselect('local_template/syncrole',
+               new lang_string('syncrole', 'local_template'),
+               new lang_string('syncrole_desc', 'local_template'), null, $roles)
+       );
+    }
+
     $ADMIN->add('courses',
         new admin_externalpage('addnewcourseviatemplate', new lang_string('addnewcourseviatemplate', 'local_template'),
             new moodle_url('/local/template/index.php'),

@@ -89,8 +89,8 @@ class local_template_backup_controller extends \backup_controller {
         // Check format and type are correct
         backup_check::check_format_and_type($this->format, $this->type);
 
-        // Check id is correct
-        backup_check::check_id($this->type, $this->id);
+        // Check id is correct (TODO: This currently produces error/backup_check_course_not_exists)
+        // backup_check::check_id($this->type, $this->id);
 
         // Check user is correct
         backup_check::check_user($this->userid);

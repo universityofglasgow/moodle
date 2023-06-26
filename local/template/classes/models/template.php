@@ -260,6 +260,7 @@ class template extends \core\persistent implements renderable, templatable {
         }
 
         $addnew = false;
+        $select = '';
         if (!utils::is_admin()) {
             global $USER;
             // Only show records for current user, and not hidden records.

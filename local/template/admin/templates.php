@@ -52,7 +52,7 @@ $PAGE->navbar->add(get_string('template', 'local_template'), new moodle_url('/lo
 $action = optional_param('action', '', PARAM_ALPHANUMEXT );
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/template/admin/templates.php', ['action' => $action]));
-$PAGE->set_title(get_string('pluginname', 'local_template'));
+$PAGE->set_title(get_string('templateadmin', 'local_template'));
 
 switch ($action) {
     case 'setview':
