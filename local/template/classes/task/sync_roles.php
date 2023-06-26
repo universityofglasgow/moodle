@@ -15,25 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * update_static_page class.
+ * sync_roles class.
  *
- * @package   auth_outage
- * @author    Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright 2016 Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_template
+ * @copyright  2023 David Aylmer
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local\task;
+namespace local_template\task;
 
 use core\task\scheduled_task;
 
 /**
- * update_static_page class.
+ * sync_roles class.
  *
- * @package   auth_outage
- * @author    Daniel Thee Roperto <daniel.roperto@catalyst-au.net>
- * @copyright 2016 Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_template
+ * @copyright  2023 David Aylmer
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class sync_roles extends scheduled_task {
     /**
