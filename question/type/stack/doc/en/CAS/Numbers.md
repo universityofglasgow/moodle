@@ -2,7 +2,7 @@
 
 Separate pages document
 
-1. [numerical answer tests](../Authoring/Answer_tests_numerical.md),
+1. [numerical answer tests](../Authoring/Answer_Tests/Numerical.md),
 2. [complex numbers](Complex_numbers.md).
 
 
@@ -58,7 +58,7 @@ Rounding like this can also occur in calculations, for example
     v0:1-(p1+p2+p3);
     v1:0.18;
 
-Then Maxima returns `0.18` for `v0`, (as expected) but `v0-v1` equals \(5.551115123125783*10^-17\) and so `ATAlgEquiv(v0,v1)` will give false.  Please always use a [numerical test](../Authoring/Answer_tests_numerical.md) when testing floats.
+Then Maxima returns `0.18` for `v0`, (as expected) but `v0-v1` equals \(5.551115123125783*10^-17\) and so `ATAlgEquiv(v0,v1)` will give false.  Please always use a [numerical test](../Authoring/Answer_Tests/Numerical.md) when testing floats.
 
 
 
@@ -68,7 +68,7 @@ For its internal representation, Maxima always truncates trailing zeros from a f
 
 Display of numbers in STACK is controlled with LaTeX, and the underlying LISP provides flexible ways to represent numbers.
 
-Note, that apart from the units input, all other input types truncate the display of unnecessary trailing zeros in floating point numbers, loosing information about significant figures.  So, when the student's answer is a floating point number, trailing zeros will not be displayed.  If you want to specifically test for significant figures, use the [units input type](../Authoring/Units.md), with the teacher's answer having no units.  The units input type should display the same number of significant figures as typed in by the student.  
+Note, that apart from the units input, all other input types truncate the display of unnecessary trailing zeros in floating point numbers, loosing information about significant figures.  So, when the student's answer is a floating point number, trailing zeros will not be displayed.  If you want to specifically test for significant figures, use the [units input type](../Topics/Units.md), with the teacher's answer having no units.  The units input type should display the same number of significant figures as typed in by the student.  
 
 ## Display of numbers with LaTeX ##
 
@@ -129,7 +129,7 @@ There are two ways to round numbers ending in a digit \(5\).
 * Another common system is to use ``Bankers' Rounding". Bankers Rounding is an algorithm for rounding quantities to integers, in which numbers which are equidistant from the two nearest integers are rounded to the nearest even integer. \(0.5\rightarrow 0\), \(1.5 \rightarrow 2\), \(2.5 \rightarrow 2\) etc.  The supposed advantage to bankers rounding is that in the limit it is unbiased, and so produces better results with some statistical processes that involve rounding.
 * In experimental work, the number of significant figures requires sometimes depends on the first digits of the number.  For example, if the first digit is a \(1\) or \(2\) then we need to take an extra significant figure to ensure the relative error is suitably small.  The maxima string functions can be used to check the first digit of a number until we have bespoke internal functions to make this check.
 
-Maxima's `round(ex)` command rounds multiples of 1/2 to the nearest even integer, i.e. Maxima implements Bankers' Rounding.
+Maxima's `round(ex)` command rounds multiples of 1/2 to the nearest even integer, i.e. Maxima implements Bankers' Rounding.  We do not currently have an option to always round up.
 
 STACK has defined the function `significantfigures(x,n)` to conform to convention of rounding up.
 
