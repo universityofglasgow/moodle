@@ -819,8 +819,11 @@ body.hillhead40-night img {
 }
 
 @media (prefers-color-scheme: dark) {
-  /* Dark theme styles go here */
   img {
+    filter: brightness(1) contrast(1);
+  }
+
+  body.hillhead40-night img {
     filter: brightness(.8) contrast(1.2);
   }
 }
