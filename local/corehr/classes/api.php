@@ -447,19 +447,19 @@ class api {
 
         // Is this enabled for this course
         if (!$corehr = $DB->get_record('local_corehr', array('courseid' => $courseid))) {
-            self::mtrace('local_corehr: not configured for courseid = ' . $courseid . ', completing userid = ' . $userid);
+            // self::mtrace('local_corehr: not configured for courseid = ' . $courseid . ', completing userid = ' . $userid);
             return;
         }
 
         // Is the plugin enabled
         if (!$corehr->enable) {
-            self::mtrace('local_corehr: plugin is configured but disabled for courseid = ' . $courseid . ', completing userid = ' . $userid);
+            // self::mtrace('local_corehr: plugin is configured but disabled for courseid = ' . $courseid . ', completing userid = ' . $userid);
             return;
         }
 
         // Get the course code
         $coursecode = $corehr->coursecode;
-        self::mtrace("local_corehr: Processing completion for user=$userid, course=$courseid, coursecode=$coursecode");
+        // self::mtrace("local_corehr: Processing completion for user=$userid, course=$courseid, coursecode=$coursecode");
 
         // Get the user.
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
@@ -470,7 +470,7 @@ class api {
             'course' => $courseid
             ), 'id asc');
         if (!$completions) {
-            self::mtrace("local_corehr: No matching entries in course_completions table for user=$userid, course=$courseid");
+            // self::mtrace("local_corehr: No matching entries in course_completions table for user=$userid, course=$courseid");
             return false;
         }
         $completion = array_pop($completions);
@@ -513,7 +513,7 @@ class api {
             $status->error = '';
             $DB->insert_record('local_corehr_status', $status);
 
-            self::mtrace('Adding user to Campus Card queue. Userid = ' . $userid);
+            // self::mtrace('Adding user to Campus Card queue. Userid = ' . $userid);
         }
 
         return;
