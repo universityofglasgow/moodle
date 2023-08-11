@@ -458,7 +458,7 @@ class template extends \core\persistent implements renderable, templatable {
             global $DB;
             $course = $DB->get_record('course', ['id' => $templatecourseid]);
             if (empty($course)) {
-                $this->notifications->add('Created course does not exist.', notifications::ERROR);
+                // $this->notifications->add('Created course does not exist.', notifications::ERROR);
                 return false;
             }
             return $course;
@@ -494,7 +494,7 @@ class template extends \core\persistent implements renderable, templatable {
             global $DB;
             $course = $DB->get_record('course', ['id' => $importcourseid]);
             if (empty($course)) {
-                $this->notifications->add('Created course does not exist.', notifications::ERROR);
+                // $this->notifications->add('Created course does not exist.', notifications::ERROR);
                 return false;
             }
             return $course;
