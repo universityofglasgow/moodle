@@ -141,7 +141,9 @@ class persistentcollection implements Countable, renderable, templatable {
         $this->define_fields();
     }
 
-
+    public function get_collection() {
+        return $this->collection;
+    }
 
     public function totalcount() {
         return $this->totalcount;

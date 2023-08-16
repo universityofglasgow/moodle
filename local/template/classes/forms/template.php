@@ -158,10 +158,6 @@ class template extends \core\form\persistent {
         //$mform->addHelpButton('category', 'coursecategory');
 
 
-
-
-
-
         // Return to type.
         //$mform->addElement('hidden', 'returnto', null);
         //$mform->setType('returnto', PARAM_ALPHANUM);
@@ -455,11 +451,30 @@ class template extends \core\form\persistent {
         if (empty($importcategories)) {
             $importcourses = [0 => ''];
         } else {
-            list($insql, $params) = $DB->get_in_or_equal($importcategories, SQL_PARAMS_QM, 'param', false);
-            $importcourses = $DB->get_records_sql_menu('SELECT c.id, c.fullname FROM {course} c WHERE c.category ' . $insql, $params);
+            list($insql, $params) = $DB->get_in_or_equal(array_keys($importcategories), SQL_PARAMS_NAMED);
+            $importcoursesql = '
+                SELECT c.id, c.fullname, cc.name, cc.path
+                FROM {course} c
+                INNER JOIN {course_categories} cc ON cc.id = c.category
+                INNER JOIN {context} ctx ON ctx.contextlevel = :contextcategory AND ctx.instanceid = cc.id
+                WHERE c.timecreated > :twoyearsagosecs
+                AND c.category ';
+            $params['contextcategory'] = CONTEXT_COURSECAT;
+            $params['twoyearsagosecs'] = time() - YEARSECS * 2;
+            $importcourses = [];
+            $importcoursesrecords = $DB->get_records_sql($importcoursesql . $insql, $params);
+            foreach ($importcoursesrecords as $importcourserecord) {
+                list($insql, $params) = $DB->get_in_or_equal(explode('/', $importcourserecord->path));
+                $categorylist = $DB->get_records_sql('SELECT name FROM {course_categories} WHERE id ' . $insql . ' ORDER BY sortorder', $params);
+                $coursename = '';
+                foreach ($categorylist as $category) {
+                    $coursename .= $category->name . ' / ';
+                }
+                $coursename .= $importcourserecord->fullname;
+                $importcourses2[$importcourserecord->id] = $coursename;
+            }
             $importcourses = [0 => ''] + $importcourses;
         }
-
 
         $mform->addElement('static', 'createdcoursename', get_string('importcourse', 'local_template'),  get_string('importcourse_desc', 'local_template'));
 

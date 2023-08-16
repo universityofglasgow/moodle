@@ -717,8 +717,10 @@ class template extends \core\persistent implements renderable, templatable {
     private function read_backupcontrollers() {
         $id = $this->raw_get('id');
         if (!empty($id)) {
-            $backupcontrollers = \local_template\models\backupcontroller::get_records(['templateid' => $id], 'timemodified', 'DESC');
-            return $backupcontrollers;
+
+            //$backupcontrollers = \local_template\models\backupcontroller::get_records(['templateid' => $id], 'timemodified', 'DESC');
+            $backupcontrollers = \local_template\models\backupcontroller::collection($this->raw_get('id'));
+            return $backupcontrollers->get_collection();
         }
     }
 
