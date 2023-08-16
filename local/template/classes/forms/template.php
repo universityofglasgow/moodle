@@ -342,18 +342,28 @@ class template extends \core\form\persistent {
 
 
         // TODO: summary_editor
-        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 6, 'cols' => 100], ['autosave' => false]);
+        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 6, 'cols' => 100], course_overviewfiles_options(null));
         $mform->addHelpButton('summary_editor', 'coursesummary');
         $mform->setType('summary_editor', PARAM_RAW);
         // $mform->addRule('description', get_string('required'), 'required', null, 'client');
 
 
         // TODO: overviewfiles_filemanager
-        $course = null;
-        if ($overviewfilesoptions = course_overviewfiles_options($course)) {
-            $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles'), null, $overviewfilesoptions);
-            $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
-        }
+        /*
+        file_prepare_standard_filemanager(
+            $record,
+            'importfile',
+            models\marks::get_importfileoptions(),
+            models\marks::get_context(),
+            models\marks::TABLE,
+            models\marks::FILEAREA_IMPORT,
+            $record->id
+        );
+        */
+
+
+        $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles'), null, course_overviewfiles_options(null));
+        $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
 
         if (empty($this->_customdata['admin'])) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_END, []));

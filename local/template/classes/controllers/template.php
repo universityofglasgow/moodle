@@ -34,6 +34,8 @@ use local_template\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
+//require_once($CFG->dirroot .'/course/lib.php');
+
 class template {
 
     private static function context() {
@@ -127,10 +129,15 @@ class template {
             'id' => $id,
             'persistent' => $template,
             'action' => 'viewtemplate',
-            'category' => $categoryid
+            'category' => $categoryid,
+            'summary' => $record->get('summary'),
+            'summaryformat' => $record->get('summaryformat'),
         ];
 
         $name = shorten_text(format_string($record->get('name')));
+        $context = \context_coursecat::instance($record->get('category'));
+        $customdata = file_prepare_standard_editor($customdata, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $record->get('id'));
+        $customdata = file_prepare_standard_filemanager($customdata, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $record->get('id'));
 
         $form = new forms\template($PAGE->url->out(false), $customdata, 'post', '', null, false);
         // Print the page.
@@ -152,27 +159,36 @@ class template {
         // Are we 'creating' or 'editing'?
         $template = null;
 
+        $categoryid = optional_param('category', 0, PARAM_INT);
+        $customdata = [
+            'id' => $id,
+            'persistent' => $template,
+            'action' => 'edittemplate',
+            'admin' => $admin,
+            'category' => $categoryid,
+        ];
+
         if (empty($id)) {
             $strheading = get_string('createnewtemplate', 'local_template');
         } else {
             $template = new models\template($id);
             $record = $template->read();
             $strheading = get_string('edittemplate', 'local_template', shorten_text(format_string($record->get('fullname'))));
+
+            $customdata['summary'] = $record->get('summary');
+            $customdata['summaryformat'] = $record->get('summaryformat');
+            $customdata = (object)$customdata;
+            $context = \context_coursecat::instance($record->get_categoryid());
+            $customdata = file_prepare_standard_editor($customdata, 'summary', course_overviewfiles_options(null), null, 'local_template', 'summary', $record->get('id'));
+            $customdata = file_prepare_standard_filemanager($customdata, 'overviewfiles', course_overviewfiles_options(null), null, 'local_template', 'overviewfiles', $record->get('id'));
+            $customdata = (array)$customdata;
         }
 
         // Initialise a form object if we haven't been provided with one.
         if ($form == null) {
 
-            $customdata = [
-                'id' => $id,
-                'persistent' => $template,
-                'action' => 'edittemplate',
-                'admin' => $admin,
-            ];
-
             // Constructor calls set_data.
             $form = new forms\template($PAGE->url->out(false), $customdata);
-
         }
 
         if ($form->is_cancelled()) {
@@ -217,8 +233,14 @@ class template {
         if (!empty($id)) {
             $template = new models\template($id);
             $customdata['persistent'] = $template;
-
         }
+
+        /*
+        $name = shorten_text(format_string($record->get('name')));
+        $context = \context_coursecat::instance($record->get('category'));
+        $customdata = file_prepare_standard_editor($customdata, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $record->get('id'));
+        $customdata = file_prepare_standard_filemanager($customdata, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $record->get('id'));
+        */
 
         $form = new forms\template($PAGE->url->out(false), $customdata);
         $data = $form->get_data();
@@ -242,18 +264,43 @@ class template {
             try {
                 $data->usercreated = $USER->id;
 
+                /*
+                $data->summaryformat = intval(FORMAT_HTML);
+                if (isset($data->summary)) {
+                    if (isset($data->summary['text'])) {
+                        $data->summaryformat = isset($data->summary['format']) ? intval($data->summary['format']) : intval(FORMAT_HTML);
+                        $data->summary = $data->summary['text'];
+                    }
+                }
+                */
+
                 $templatetext = $data->fullname;
+
+                $context = \context_coursecat::instance($data->category);
 
                 $template = null;
                 if (empty($data->id)) {
+
                     $template = new models\template(0, $data);
                     if ($template->create()) {
                         notification::success("Course wizard: $templatetext successfully created");
+                        $data = file_postupdate_standard_editor($data, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $template->get('id'));
+                        $data = file_postupdate_standard_filemanager($data, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $template->get('id'));
+                        $template->set('summary', $data->summary);
+                        $template->set('summaryformat', $data->summaryformat);
+                        if ($template->update()) {
+                            notification::success("Course summary: {$data->summary} successfully updated");
+                        } else {
+                            notification::error("Could not update course summary to: {$data->summary}");
+                        }
                     } else {
                         notification::error("Could not create course wizard: $templatetext");
                     }
 
                 } else {
+                    $data = file_postupdate_standard_editor($data, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $data->id);
+                    $data = file_postupdate_standard_filemanager($data, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $data->id);
+
                     $template = new models\template();
                     $template->from_record($data);
                     if ($template->update()) {
@@ -263,12 +310,12 @@ class template {
                     }
                 }
 
-                if (utils::is_admin() || $id == 0) {
+                //if (utils::is_admin() || $id == 0) {
                     /*
                     $data = file_postupdate_standard_filemanager($data, 'importfile', models\template::get_importfileoptions(), models\template::get_context(),
                         models\template::TABLE, models\template::FILEAREA_IMPORT, $template->get('id'));
                     */
-                }
+                //}
 
                 //if (!$data->importfile) {
                 //    notification::error("Could not save draft file for: $templatetext");
@@ -326,6 +373,7 @@ class template {
             if (!$result) {
                 // TODO for notifications. $template->notifications->output(true).
             } else {
+                /*
                 if ($template->get('recordsinfo') > 0) {
                     notification::info($template->get('recordsinfo') . ' rows generated information');
                 }
@@ -338,6 +386,7 @@ class template {
                 if ($template->get('recordserror') > 0) {
                     notification::error($template->get('recordserror') . ' rows generated errors');
                 }
+                */
             }
         }
         self::do_redirect();

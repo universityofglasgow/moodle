@@ -181,8 +181,9 @@ class backupcontroller {
             $backupcontroller = new models\backupcontroller($id);
             $result = $backupcontroller->process();
             if (!$result) {
-                $backupcontroller->notifications->output(true);
+                // $backupcontroller->notifications->output(true);
             } else {
+                /*
                 if ($backupcontroller->get('recordsinfo') > 0) {
                     notification::info($backupcontroller->get('recordsinfo') . ' rows generated information');
                 }
@@ -195,6 +196,7 @@ class backupcontroller {
                 if ($backupcontroller->get('recordserror') > 0) {
                     notification::error($backupcontroller->get('recordserror') . ' rows generated errors');
                 }
+                */
             }
         }
         self::do_redirect();
@@ -272,10 +274,10 @@ class backupcontroller {
         $content = '';
         $content .= \html_writer::start_tag('div', array('class' => 'container'));
         $content .= \html_writer::start_tag('div', array('class' => 'progress'));
-        $content .= self::progresslevel($backupcontroller->get('recordsinfo'), $numrecords, 'info');
-        $content .= self::progresslevel($backupcontroller->get('recordssuccess'), $numrecords, 'success');
-        $content .= self::progresslevel($backupcontroller->get('recordswarning'), $numrecords, 'warning');
-        $content .= self::progresslevel($backupcontroller->get('recordserror'), $numrecords, 'danger');
+        //$content .= self::progresslevel($backupcontroller->get('recordsinfo'), $numrecords, 'info');
+        //$content .= self::progresslevel($backupcontroller->get('recordssuccess'), $numrecords, 'success');
+        //$content .= self::progresslevel($backupcontroller->get('recordswarning'), $numrecords, 'warning');
+        //$content .= self::progresslevel($backupcontroller->get('recordserror'), $numrecords, 'danger');
         $content .= \html_writer::end_tag('div');
         $content .= \html_writer::tag('span', $recordsprocessed . ' of ' . $numrecords);
         $content .= \html_writer::end_tag('div');

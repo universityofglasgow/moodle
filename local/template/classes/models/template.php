@@ -415,6 +415,10 @@ class template extends \core\persistent implements renderable, templatable {
     }
     */
 
+    public function get_categoryid() {
+        return $this->raw_get('category');
+    }
+
     protected function get_category() {
         $categoryid = $this->raw_get('category');
         if (!empty($categoryid)) {
@@ -1092,6 +1096,7 @@ class template extends \core\persistent implements renderable, templatable {
         $this->process_copy();
         $this->process_import();
         $this->process_enrolment();
+        $this->process_summary_and_files();
 
         return true;
 
@@ -1376,6 +1381,85 @@ class template extends \core\persistent implements renderable, templatable {
         //}
     }
 
+
+
+    private function process_enrolment() {
+        global $DB;
+
+        $gudbenrolment = $this->raw_get('gudbenrolment');
+        if (empty($gudbenrolment)) {
+            return;
+        }
+
+        $pluginname = 'gudatabase';
+
+        $fields = [
+            'status' => $this->raw_get('gudbstatus'), // status - enable existing enrolments. bigint10
+            'customint3' => $this->raw_get('gudbsettingscodes'), // settingscodes - enable codes in course settings.  bigint10
+            'customint6' => $this->raw_get('gudballowhidden'), // allowhidden allow hidden course customint6
+            'customtext1' => $this->raw_get('gudbcodelist'), // codelist more codes customtext1 text
+        ];
+
+        // Get the enrol plugin.
+        $plugin = enrol_get_plugin($pluginname);
+
+        // Get existing instances.
+        $instances  = enrol_get_instances($this->raw_get('createdcourseid'), false);
+        foreach ($instances as $instance) {
+            if ($instance->enrol === $pluginname) {
+                break;
+            }
+        }
+        if ($instance->enrol === $pluginname) {
+            $instance->status = $fields['status'];
+            $instance->customint3 = $fields['customint3'];
+            $instance->customint3 = $fields['customint3'];
+            $instance->customtext1 = $fields['customtext1'];
+            $DB->update_record('enrol', $instance);
+        } else {
+            $plugin->add_instance($this->get_course(), $fields);
+        }
+    }
+
+    private function process_summary_and_files() {
+        global $DB;
+
+        $summary = $this->raw_get('summary');
+        if (!empty($summary)) {
+            $course = $DB->get_record('course', ['id' => $this->get('createdcourseid')]);
+            $course->summary = $summary;
+            $course->summaryformat = $this->raw_get('format');
+            if ($DB->update_record('course', $course)) {
+                $this->move_course_files($course, 'summary');
+            } else {
+
+            }
+        }
+        $this->move_course_files($course, 'overviewfiles');
+
+    }
+
+    private function move_course_files($course, $filearea) {
+        $coursecontext = \context_course::instance($course->id);
+        $fs = get_file_storage();
+
+        // Delete newly restored files.
+        $fs->delete_area_files($coursecontext, 'course', $filearea, $course->id);
+
+        $categorycontext = \context_course::instance($course->category);
+
+        $count = 0;
+        $files = $fs->get_area_files($categorycontext, 'local_template', $filearea, $course->id, 'itemid, filepath, filename', true);
+        foreach ($files as $file) {
+            $filerecord = new stdClass();
+            $filerecord->contextid = $coursecontext;
+            $fs->create_file_from_storedfile($filerecord, $file);
+            $count += 1;
+        }
+        if ($count) {
+            $fs->delete_area_files($categorycontext, 'course', $filearea, $this->raw_get('id'));
+        }
+    }
 
     /**
      * Run the adhoc task and preform the backup.
@@ -1721,43 +1805,6 @@ class template extends \core\persistent implements renderable, templatable {
         $this->save();
     }
 
-    private function process_enrolment() {
-        global $DB;
-
-        $gudbenrolment = $this->raw_get('gudbenrolment');
-        if (empty($gudbenrolment)) {
-            return;
-        }
-
-        $pluginname = 'gudatabase';
-
-        $fields = [
-            'status' => $this->raw_get('gudbstatus'), // status - enable existing enrolments. bigint10
-            'customint3' => $this->raw_get('gudbsettingscodes'), // settingscodes - enable codes in course settings.  bigint10
-            'customint6' => $this->raw_get('gudballowhidden'), // allowhidden allow hidden course customint6
-            'customtext1' => $this->raw_get('gudbcodelist'), // codelist more codes customtext1 text
-        ];
-
-        // Get the enrol plugin.
-        $plugin = enrol_get_plugin($pluginname);
-
-        // Get existing instances.
-        $instances  = enrol_get_instances($this->raw_get('createdcourseid'), false);
-        foreach ($instances as $instance) {
-            if ($instance->enrol === $pluginname) {
-                break;
-            }
-        }
-        if ($instance->enrol === $pluginname) {
-            $instance->status = $fields['status'];
-            $instance->customint3 = $fields['customint3'];
-            $instance->customint3 = $fields['customint3'];
-            $instance->customtext1 = $fields['customtext1'];
-            $DB->update_record('enrol', $instance);
-        } else {
-            $plugin->add_instance($this->get_course(), $fields);
-        }
-    }
 
     private function get_copydata() {
         return (object)[
