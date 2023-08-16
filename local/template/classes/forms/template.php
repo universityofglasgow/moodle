@@ -471,7 +471,7 @@ class template extends \core\form\persistent {
                     $coursename .= $category->name . ' / ';
                 }
                 $coursename .= $importcourserecord->fullname;
-                $importcourses2[$importcourserecord->id] = $coursename;
+                $importcourses[$importcourserecord->id] = $coursename;
             }
             $importcourses = [0 => ''] + $importcourses;
         }

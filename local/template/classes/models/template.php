@@ -1113,7 +1113,7 @@ class template extends \core\persistent implements renderable, templatable {
         $copydata = $this->get_copydata();
 
         // Create the initial backupcontoller.
-        $bc = new \backup_controller(\backup::TYPE_1COURSE, $copydata->courseid, \backup::FORMAT_MOODLE,
+        $bc = new \local_template\core\local_template_backup_controller(\backup::TYPE_1COURSE, $copydata->courseid, \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO, \backup::MODE_COPY, $USER->id, \backup::RELEASESESSION_NO);
         $this->set('copybackupid', $bc->get_backupid());
 
@@ -1121,7 +1121,7 @@ class template extends \core\persistent implements renderable, templatable {
         list($fullname, $shortname) = \restore_dbops::calculate_course_names(
             0, get_string('copyingcourse', 'backup'), get_string('copyingcourseshortname', 'backup'));
         $createdcourseid = \restore_dbops::create_new_course($fullname, $shortname, $copydata->category);
-        $rc = new \restore_controller($this->raw_get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $rc = new \local_template\core\local_template_restore_controller($this->raw_get('copybackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_COPY, $USER->id, \backup::TARGET_NEW_COURSE, null,
             \backup::RELEASESESSION_NO, $copydata);
         $this->set('copyrestoreid', $rc->get_restoreid());
@@ -1149,7 +1149,7 @@ class template extends \core\persistent implements renderable, templatable {
         // First backup the course.
         //mtrace('Course copy: Processing course copy for course id: ' . $backuprecord->itemid);
         try {
-            $bc = \backup_controller::load_controller($backupid); // Get the backup controller by backup id.
+            $bc = \local_template\core\local_template_backup_controller::load_controller($backupid); // Get the backup controller by backup id.
         } catch (\backup_dbops_exception $e) {
             mtrace('Course copy: Can not load backup controller for copy, marking job as failed');
             var_dump($e);
@@ -1160,7 +1160,7 @@ class template extends \core\persistent implements renderable, templatable {
         $bc->set_progress($copybcprogress);
 
 
-        $rc = \restore_controller::load_controller($restoreid);  // Get the restore controller by restore id.
+        $rc = \local_template\core\local_template_restore_controller::load_controller($restoreid);  // Get the restore controller by restore id.
         //$bc->set_progress(new \core\progress\db_updater($backuprecord->id, 'backup_controllers', 'progress'));
         $rc->set_progress($copyrcprogress);
 
@@ -1313,7 +1313,7 @@ class template extends \core\persistent implements renderable, templatable {
         global $USER;
 
         // Import backup controller. MODE_IMPORT DOESNT CREATE FILE. MODE_IMPORT / GENERAL
-        $importbc = new \backup_controller(\backup::TYPE_1COURSE, $this->raw_get('importcourseid'), \backup::FORMAT_MOODLE,
+        $importbc = new \local_template\core\local_template_backup_controller(\backup::TYPE_1COURSE, $this->raw_get('importcourseid'), \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO, \backup::MODE_IMPORT, $USER->id);
         $this->set('importbackupid', $importbc->get_backupid());
         $importbc->save_controller();
@@ -1332,7 +1332,7 @@ class template extends \core\persistent implements renderable, templatable {
         // Import backup controller.
         $importbcprogress = new \core\progress\display();
         $importbcprogress->set_display_names();
-        $importbc = \backup_controller::load_controller($this->raw_get('importbackupid'));
+        $importbc = \local_template\core\local_template_backup_controller::load_controller($this->raw_get('importbackupid'));
         $importbc->set_progress($importbcprogress);
         $importbc->execute_plan();
         $results = $importbc->get_results();
@@ -1352,7 +1352,7 @@ class template extends \core\persistent implements renderable, templatable {
         global $USER;
         $createdcourseid = $this->raw_get('createdcourseid');
         // Import restore controller. SAMESITE vs GENERAL
-        $importrc = new \restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $importrc = new \local_template\core\local_template_restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
         $this->set('importrestoreid', $importrc->get_restoreid());
         //$importrc->save_controller();
@@ -1392,14 +1392,14 @@ class template extends \core\persistent implements renderable, templatable {
         // First backup the course.
         mtrace('Course copy: Processing course copy for course id: ' . $backuprecord->itemid);
         try {
-            $bc = \backup_controller::load_controller($backupid); // Get the backup controller by backup id.
+            $bc = \local_template\core\local_template_backup_controller::load_controller($backupid); // Get the backup controller by backup id.
         } catch (\backup_dbops_exception $e) {
             mtrace('Course copy: Can not load backup controller for copy, marking job as failed');
             delete_course($restorerecord->itemid, false); // Clean up partially created destination course.
             return; // Return early as we can't continue.
         }
 
-        $rc = \restore_controller::load_controller($restoreid);  // Get the restore controller by restore id.
+        $rc = \local_template\core\local_template_restore_controller::load_controller($restoreid);  // Get the restore controller by restore id.
         $bc->set_progress(new \core\progress\db_updater($backuprecord->id, 'backup_controllers', 'progress'));
         $copyinfo = $rc->get_copy();
         $backupplan = $bc->get_plan();
@@ -1547,7 +1547,7 @@ class template extends \core\persistent implements renderable, templatable {
         // Import backup controller.
         $importbcprogress = new \core\progress\display();
         $importbcprogress->set_display_names();
-        $importbc = \backup_controller::load_controller($this->raw_get('importbackupid'));
+        $importbc = \local_template\core\local_template_backup_controller::load_controller($this->raw_get('importbackupid'));
         $importbc->set_progress($importbcprogress);
         $importbc->execute_plan();
         $results = $importbc->get_results();
@@ -1567,7 +1567,7 @@ class template extends \core\persistent implements renderable, templatable {
         global $USER;
         $createdcourseid = $this->raw_get('createdcourseid');
         // Import restore controller. SAMESITE vs GENERAL
-        $importrc = new \restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
+        $importrc = new \local_template\core\local_template_restore_controller($this->raw_get('importbackupid'), $createdcourseid, \backup::INTERACTIVE_NO,
             \backup::MODE_SAMESITE, $USER->id, \backup::TARGET_EXISTING_ADDING, null, \backup::RELEASESESSION_NO);
         $this->set('importrestoreid', $importrc->get_restoreid());
 
