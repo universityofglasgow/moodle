@@ -1337,7 +1337,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     private function process_import() {
 
-        if (!empty($this->raw_get('importcourseid'))) {
+        if (empty($this->raw_get('importcourseid'))) {
             return false;
         }
 

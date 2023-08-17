@@ -346,7 +346,7 @@ class template extends \core\form\persistent {
             $mform->addElement('header', 'description', get_string('description', 'local_template'));
         }
 
-        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 6, 'cols' => 100], course_overviewfiles_options(null));
+        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 20, 'cols' => 100], course_overviewfiles_options(null));
         $mform->addHelpButton('summary_editor', 'coursesummary');
         $mform->setType('summary_editor', PARAM_RAW);
 
