@@ -1452,7 +1452,10 @@ class template extends \core\persistent implements renderable, templatable {
 
         $summary = $this->raw_get('summary');
         if (!empty($summary)) {
-            $course = $DB->get_record('course', ['id' => $this->get('createdcourseid')]);
+            $course = $DB->get_record('course', ['id' => $this->raw_get('createdcourseid')]);
+            if (!$course) {
+                // TODO: error condition
+            }
             $course->summary = $summary;
             $course->summaryformat = $this->raw_get('format');
             if ($DB->update_record('course', $course)) {
