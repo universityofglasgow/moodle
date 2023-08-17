@@ -264,7 +264,7 @@ class template {
                         $template->set('summaryformat', $data->summaryformat);
 
                         if ($template->update()) {
-                            notification::success("Course summary: {$data->summary} successfully updated");
+                            // notification::success("Course summary: {$data->summary} successfully updated");
                         } else {
                             notification::error("Could not update course summary to: {$data->summary}");
                         }

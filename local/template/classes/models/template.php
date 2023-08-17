@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_template\models;
+use core\notification;
 use core_user;
 use local_template\collections\persistentcollection;
 use local_template\controllers;
@@ -1449,19 +1450,22 @@ class template extends \core\persistent implements renderable, templatable {
 
     private function process_summary_and_files() {
         global $DB;
+        $id = $this->raw_get('id');
 
         $summary = $this->raw_get('summary');
         if (!empty($summary)) {
             $course = $DB->get_record('course', ['id' => $this->raw_get('createdcourseid')]);
             if (!$course) {
-                // TODO: error condition
+                notification::error("Could not retrieve course record based on createdcourseid for course template selector: '{$id}'");
+                return false;
             }
             $course->summary = $summary;
             $course->summaryformat = $this->raw_get('summaryformat');
             if ($DB->update_record('course', $course)) {
                 $this->move_course_files($course, 'summary');
             } else {
-                // TODO: error condition
+                notification::error("Could not update record for course template selector: '{$id}'");
+                return false;
             }
         }
         $this->move_course_files($course, 'overviewfiles');
@@ -1473,12 +1477,12 @@ class template extends \core\persistent implements renderable, templatable {
         $fs = get_file_storage();
 
         // Delete newly restored files.
-        $fs->delete_area_files($coursecontext, 'course', $filearea, $course->id);
+        $fs->delete_area_files($coursecontext->id, 'course', $filearea, $course->id);
 
-        $categorycontext = \context_course::instance($course->category);
+        $systemcontext = \context_system::instance($course->category);
 
         $count = 0;
-        $files = $fs->get_area_files($categorycontext, 'local_template', $filearea, $course->id, 'itemid, filepath, filename', true);
+        $files = $fs->get_area_files($systemcontext->id, 'local_template', $filearea, $course->id, 'itemid, filepath, filename', true);
         foreach ($files as $file) {
             $filerecord = new stdClass();
             $filerecord->contextid = $coursecontext;
@@ -1486,7 +1490,7 @@ class template extends \core\persistent implements renderable, templatable {
             $count += 1;
         }
         if ($count) {
-            $fs->delete_area_files($categorycontext, 'course', $filearea, $this->raw_get('id'));
+            $fs->delete_area_files($systemcontext->id, 'course', $filearea, $this->raw_get('id'));
         }
     }
 
