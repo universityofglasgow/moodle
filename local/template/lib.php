@@ -48,13 +48,13 @@ function local_template_pluginfile($course, $cm, $context, $filearea, $args, $fo
         return false;
     }
 
-    // Should be in a system context.
-    if ($context->contextlevel != CONTEXT_SYSTEM) {
+    // Should be in a course category context.
+    if ($context->contextlevel != CONTEXT_COURSECAT) {
         return false;
     }
 
-    // Should be import or export file area only
-    if (!($filearea == 'import' || $filearea == 'export')) {
+    // Should be summary or overviewfiles file area only
+    if (!($filearea == 'summary' || $filearea == 'overviewfiles')) {
         return false;
     }
 
@@ -69,24 +69,13 @@ function local_template_pluginfile($course, $cm, $context, $filearea, $args, $fo
 
     // Managetemplate users have access to all files.
     if (!utils::is_admin()) {
-        if ($filearea == 'import') {
-            $template = new \local_template\models\template($itemid);
-            global $USER;
+        $template = new \local_template\models\template($itemid);
+        global $USER;
 
-            // Enforce template userid is correct file userid.
-            if ($USER->id != $template->get('usercreated')) {
-                return false;
-            }
+        // Enforce template userid is correct file userid.
+        if ($USER->id != $template->get('usercreated')) {
+            return false;
         }
-        if ($filearea == 'export') {
-            $template = new \local_template\models\backupcontroller($itemid);
-            global $USER;
-            // Enforce template userid is correct file userid.
-            if ($USER->id != $template->get('usercreated')) {
-                return false;
-            }
-        }
-
     }
 
     // Extract the filename / filepath from the $args array.

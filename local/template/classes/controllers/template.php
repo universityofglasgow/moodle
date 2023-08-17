@@ -135,9 +135,6 @@ class template {
         ];
 
         $name = shorten_text(format_string($record->get('name')));
-        $context = \context_coursecat::instance($record->get('category'));
-        $customdata = file_prepare_standard_editor($customdata, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $record->get('id'));
-        $customdata = file_prepare_standard_filemanager($customdata, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $record->get('id'));
 
         $form = new forms\template($PAGE->url->out(false), $customdata, 'post', '', null, false);
         // Print the page.
@@ -174,14 +171,6 @@ class template {
             $template = new models\template($id);
             $record = $template->read();
             $strheading = get_string('edittemplate', 'local_template', shorten_text(format_string($record->get('fullname'))));
-
-            $customdata['summary'] = $record->get('summary');
-            $customdata['summaryformat'] = $record->get('summaryformat');
-            $customdata = (object)$customdata;
-            $context = \context_coursecat::instance($record->get_categoryid());
-            $customdata = file_prepare_standard_editor($customdata, 'summary', course_overviewfiles_options(null), null, 'local_template', 'summary', $record->get('id'));
-            $customdata = file_prepare_standard_filemanager($customdata, 'overviewfiles', course_overviewfiles_options(null), null, 'local_template', 'overviewfiles', $record->get('id'));
-            $customdata = (array)$customdata;
         }
 
         // Initialise a form object if we haven't been provided with one.
@@ -235,13 +224,6 @@ class template {
             $customdata['persistent'] = $template;
         }
 
-        /*
-        $name = shorten_text(format_string($record->get('name')));
-        $context = \context_coursecat::instance($record->get('category'));
-        $customdata = file_prepare_standard_editor($customdata, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $record->get('id'));
-        $customdata = file_prepare_standard_filemanager($customdata, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $record->get('id'));
-        */
-
         $form = new forms\template($PAGE->url->out(false), $customdata);
         $data = $form->get_data();
 
@@ -264,19 +246,7 @@ class template {
             try {
                 $data->usercreated = $USER->id;
 
-                /*
-                $data->summaryformat = intval(FORMAT_HTML);
-                if (isset($data->summary)) {
-                    if (isset($data->summary['text'])) {
-                        $data->summaryformat = isset($data->summary['format']) ? intval($data->summary['format']) : intval(FORMAT_HTML);
-                        $data->summary = $data->summary['text'];
-                    }
-                }
-                */
-
                 $templatetext = $data->fullname;
-
-                $context = \context_coursecat::instance($data->category);
 
                 $template = null;
                 if (empty($data->id)) {
@@ -284,10 +254,15 @@ class template {
                     $template = new models\template(0, $data);
                     if ($template->create()) {
                         notification::success("Course wizard: $templatetext successfully created");
-                        $data = file_postupdate_standard_editor($data, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $template->get('id'));
-                        $data = file_postupdate_standard_filemanager($data, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $template->get('id'));
+
+                        $summaryeditoroptions = models\template::get_summary_editor_options($template->get('id'));
+                        $courseoverviewfilesoptions = models\template::get_course_overviewfiles_options();
+                        $context = models\template::get_context();
+                        $data = file_postupdate_standard_editor($data, 'summary', $summaryeditoroptions, $context, models\template::TABLE, models\template::FILEAREA_SUMMARY, $template->get('id'));
+                        $data = file_postupdate_standard_filemanager($data, 'overviewfiles', $courseoverviewfilesoptions, $context, models\template::TABLE, models\template::FILEAREA_OVERVIEWFILES, $template->get('id'));
                         $template->set('summary', $data->summary);
                         $template->set('summaryformat', $data->summaryformat);
+
                         if ($template->update()) {
                             notification::success("Course summary: {$data->summary} successfully updated");
                         } else {

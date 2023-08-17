@@ -55,7 +55,7 @@ class persistentcollection implements Countable, renderable, templatable {
     protected $fields = [];
     protected $displayheadings = true;
     protected $page = 0;
-    protected $perpage = 10;
+    protected $perpage = 5;
     protected $pageparam = 'page';
     protected $addnew = false;
 

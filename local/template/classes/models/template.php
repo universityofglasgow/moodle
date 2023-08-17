@@ -52,7 +52,8 @@ class template extends \core\persistent implements renderable, templatable {
 
     const TABLE = 'local_template';
 
-    public const FILEAREA_COURSEIMAGE = 'courseimage';
+    public const FILEAREA_SUMMARY = 'summary';
+    public const FILEAREA_OVERVIEWFILES = 'overviewfiles';
 
     public const HIDDEN_FALSE = 0;
     public const HIDDEN_TRUE = 1;
@@ -636,23 +637,43 @@ class template extends \core\persistent implements renderable, templatable {
         return \context_system::instance();
     }
 
-    /*
-    public static function get_importfileoptions() {
-        global $CFG;
-        $context = \context_system::instance();
-        $maxbytes = get_user_max_upload_file_size($context, $CFG->maxbytes);
+    public static function get_summary_editor_options($id) {
 
-        $_10megabytes = 10485760;
-        $areamaxbytes = $_10megabytes;
-        if (!empty(get_config('local_template', 'areamaxbytes'))) {
-            $areamaxbytes = get_config('local_template', 'areamaxbytes');
+        global $CFG;
+
+        $maxbytes = get_user_max_upload_file_size(self::get_context(), $CFG->maxbytes);
+
+        return [
+            'maxfiles'  => EDITOR_UNLIMITED_FILES,
+            'maxbytes'  => $maxbytes,
+            'trusttext' => false,
+            'noclean'   => true,
+            'context'   => self::get_context(),
+            'subdirs'   => file_area_contains_subdirs(self::get_context(), self::TABLE, self::FILEAREA_SUMMARY, $id)
+        ];
+    }
+
+    public static function get_course_overviewfiles_options() {
+        global $CFG;
+        if (empty($CFG->courseoverviewfileslimit)) {
+            return null;
+        }
+
+        // Create accepted file types based on config value, falling back to default all.
+        $acceptedtypes = (new \core_form\filetypes_util)->normalize_file_types($CFG->courseoverviewfilesext);
+        if (in_array('*', $acceptedtypes) || empty($acceptedtypes)) {
+            $acceptedtypes = '*';
         }
 
         return [
-            'subdirs' => 0, 'maxbytes' => $maxbytes, 'areamaxbytes' => $areamaxbytes, 'maxfiles' => 1
+            'maxfiles' => $CFG->courseoverviewfileslimit,
+            'maxbytes' => $CFG->maxbytes,
+            'subdirs' => 0,
+            'accepted_types' => $acceptedtypes,
+            'context' => self::get_context()
         ];
     }
-    */
+
     /*
         public function get_file_url() {
             $file = $this->get_file();
@@ -1315,6 +1336,11 @@ class template extends \core\persistent implements renderable, templatable {
 
 
     private function process_import() {
+
+        if (!empty($this->raw_get('importcourseid'))) {
+            return false;
+        }
+
         global $USER;
 
         // Import backup controller. MODE_IMPORT DOESNT CREATE FILE. MODE_IMPORT / GENERAL

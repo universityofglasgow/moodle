@@ -96,6 +96,13 @@ class template extends \core\form\persistent {
             }
         }
 
+        $summaryeditoroptions = models\template::get_summary_editor_options($record->id);
+        $courseoverviewfilesoptions = models\template::get_course_overviewfiles_options();
+        $context = models\template::get_context();
+        $record = file_prepare_standard_editor($record, 'summary', $summaryeditoroptions, $context, models\template::TABLE, models\template::FILEAREA_SUMMARY, $record->id);
+        $record = file_prepare_standard_filemanager($record, 'overviewfiles', $courseoverviewfilesoptions, $context, models\template::TABLE, models\template::FILEAREA_OVERVIEWFILES, $record->id);
+        $this->set_data($record);
+
         //$course = $this->_customdata['course'];
         //$coursecontext = \context_course::instance($course->id);
         $courseconfig = get_config('moodlecourse');
@@ -339,28 +346,9 @@ class template extends \core\form\persistent {
             $mform->addElement('header', 'description', get_string('description', 'local_template'));
         }
 
-
-
-        // TODO: summary_editor
         $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 6, 'cols' => 100], course_overviewfiles_options(null));
         $mform->addHelpButton('summary_editor', 'coursesummary');
         $mform->setType('summary_editor', PARAM_RAW);
-        // $mform->addRule('description', get_string('required'), 'required', null, 'client');
-
-
-        // TODO: overviewfiles_filemanager
-        /*
-        file_prepare_standard_filemanager(
-            $record,
-            'importfile',
-            models\marks::get_importfileoptions(),
-            models\marks::get_context(),
-            models\marks::TABLE,
-            models\marks::FILEAREA_IMPORT,
-            $record->id
-        );
-        */
-
 
         $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles'), null, course_overviewfiles_options(null));
         $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
