@@ -273,8 +273,12 @@ class template {
                     }
 
                 } else {
-                    $data = file_postupdate_standard_editor($data, 'summary', course_overviewfiles_options(null), $context, 'local_template', 'summary', $data->id);
-                    $data = file_postupdate_standard_filemanager($data, 'overviewfiles', course_overviewfiles_options(null), $context, 'local_template', 'overviewfiles', $data->id);
+
+                    $summaryeditoroptions = models\template::get_summary_editor_options($data->id);
+                    $courseoverviewfilesoptions = models\template::get_course_overviewfiles_options();
+                    $context = models\template::get_context();
+                    $data = file_postupdate_standard_editor($data, 'summary', $summaryeditoroptions, $context, models\template::TABLE, models\template::FILEAREA_SUMMARY, $data->id);
+                    $data = file_postupdate_standard_filemanager($data, 'overviewfiles', $courseoverviewfilesoptions, $context, models\template::TABLE, models\template::FILEAREA_OVERVIEWFILES, $data->id);
 
                     $template = new models\template();
                     $template->from_record($data);
