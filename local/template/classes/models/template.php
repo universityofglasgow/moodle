@@ -1457,11 +1457,11 @@ class template extends \core\persistent implements renderable, templatable {
                 // TODO: error condition
             }
             $course->summary = $summary;
-            $course->summaryformat = $this->raw_get('format');
+            $course->summaryformat = $this->raw_get('summaryformat');
             if ($DB->update_record('course', $course)) {
                 $this->move_course_files($course, 'summary');
             } else {
-
+                // TODO: error condition
             }
         }
         $this->move_course_files($course, 'overviewfiles');
