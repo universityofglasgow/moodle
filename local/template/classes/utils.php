@@ -138,7 +138,7 @@ class utils  {
         }
 
         $retrieve = true;
-        if (!isset($_POST[$pagingtype]) && !isset($_GET[$pagingtype])) {
+        if (isset($_POST[$pagingtype]) || isset($_GET[$pagingtype])) {
             $retrieve = false;
         }
         $optionalparam = optional_param($pagingtype, 0, PARAM_INT);

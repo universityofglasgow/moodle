@@ -59,7 +59,8 @@ class template extends \core\persistent implements renderable, templatable {
     public const HIDDEN_FALSE = 0;
     public const HIDDEN_TRUE = 1;
 
-    public static $templateperpage = 20;
+    public static $templateperpage = 10;
+    public static $pageparam = 'templatepage';
 
     private $backupcontrollers = null;
 
@@ -254,7 +255,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function collection($parentid = 0, $view = 'table', $displayheadings = true, $params = null, $sort = 'timemodified', $order = 'DESC') {
 
-        $templatepage = utils::get_paging('templatepage');
+        $templatepage = utils::get_paging(self::$pageparam);
 
         $templateperpage = self::$templateperpage;
         if (!empty(get_config('local_template', 'templateperpage'))) {
@@ -348,14 +349,6 @@ class template extends \core\persistent implements renderable, templatable {
 
     public function __construct($id = 0, \stdClass $record = null) {
         parent::__construct($id, $record);
-
-        /*
-        if (!empty($id)) {
-            if (!empty($this->raw_get('importfileid'))) {
-                $this->read_file();
-            }
-        }
-        */
     }
 
     public function redirect_coursepage() {
@@ -603,7 +596,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function no_records($parentid) {
         global $OUTPUT;
-        return $OUTPUT->notification(get_string('notemplatedefined', 'local_template')); // . $OUTPUT->spacer() . self::add_new($parentid));
+        return $OUTPUT->box(get_string('notemplatedefined', 'local_template')); // . $OUTPUT->spacer() . self::add_new($parentid));
     }
 
     public function get_actions($count = 0) {
@@ -702,19 +695,8 @@ class template extends \core\persistent implements renderable, templatable {
     */
     public function cascadedelete() {
 
-        // 1. Delete file from mdl_file using file API
-        // 2. Delete all backupcontrollers
-        // 3. Delete self
-
-        $fs = get_file_storage();
-        $file = $fs->get_file_by_id($this->raw_get('importfileid'));
-        if (!$file) {
-            // No file to delete.
-        } else {
-            if (!$file->delete()) {
-                return false;
-            }
-        }
+        // 1. Delete all backupcontrollers
+        // 2. Delete self
 
         $backupcontrollers = $this->get_backupcontrollers();
         foreach ($backupcontrollers as $backupcontroller) {
@@ -1479,13 +1461,15 @@ class template extends \core\persistent implements renderable, templatable {
         // Delete newly restored files.
         $fs->delete_area_files($coursecontext->id, 'course', $filearea, $course->id);
 
-        $systemcontext = \context_system::instance($course->category);
+        $systemcontext = \context_system::instance();
 
         $count = 0;
+
+        // TODO: Change courseid to templated
         $files = $fs->get_area_files($systemcontext->id, 'local_template', $filearea, $course->id, 'itemid, filepath, filename', true);
         foreach ($files as $file) {
             $filerecord = new stdClass();
-            $filerecord->contextid = $coursecontext;
+            $filerecord->contextid = $coursecontext->id;
             $fs->create_file_from_storedfile($filerecord, $file);
             $count += 1;
         }

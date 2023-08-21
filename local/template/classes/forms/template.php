@@ -96,6 +96,7 @@ class template extends \core\form\persistent {
             }
         }
 
+        // Prepare summary and overview files.
         $summaryeditoroptions = models\template::get_summary_editor_options($record->id);
         $courseoverviewfilesoptions = models\template::get_course_overviewfiles_options();
         $context = models\template::get_context();
@@ -142,8 +143,12 @@ class template extends \core\form\persistent {
             $templatecategories = explode(',', $templatecategorysettings);
             if (!empty($templatecategories)) {
                 foreach ($templatecategories as $categoryid) {
-                    if (has_capability('local/template:usetemplate', \context_coursecat::instance($categoryid))) {
-                        $categories[] = $categoryid;
+                    $categorycontext = \context_coursecat::instance($categoryid);
+                    if (has_capability('local/template:usetemplate', $categorycontext)) {
+                        $category = \core_course_category::get($categoryid, MUST_EXIST, true);
+                        if ($category->visible || has_capability('moodle/category:viewhiddencategories', $categorycontext)) {
+                            $categories[] = $categoryid;
+                        }
                     }
 
                     // Remove template category from categories listing.
@@ -303,41 +308,6 @@ class template extends \core\form\persistent {
         //    $this->add_checkbox_controller(2);
         //}
 
-
-        /*
-        // TODO: Prepare course and the editor
-        // Prepare course and the editor.
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes'=>$CFG->maxbytes, 'trusttext'=>false, 'noclean'=>true);
-        $overviewfilesoptions = course_overviewfiles_options($course);
-        if (!empty($course)) {
-            // Add context for editor.
-            $editoroptions['context'] = $coursecontext;
-            $editoroptions['subdirs'] = file_area_contains_subdirs($coursecontext, 'course', 'summary', 0);
-            $course = file_prepare_standard_editor($course, 'summary', $editoroptions, $coursecontext, 'course', 'summary', 0);
-            if ($overviewfilesoptions) {
-                file_prepare_standard_filemanager($course, 'overviewfiles', $overviewfilesoptions, $coursecontext, 'course', 'overviewfiles', 0);
-            }
-
-            // Inject current aliases.
-            $aliases = $DB->get_records('role_names', array('contextid'=>$coursecontext->id));
-            foreach($aliases as $alias) {
-                $course->{'role_'.$alias->roleid} = $alias->name;
-            }
-
-            // Populate course tags.
-            $course->tags = core_tag_tag::get_item_tags_array('core', 'course', $course->id);
-
-        } else {
-            // Editor should respect category context if course context is not set.
-            $editoroptions['context'] = $catcontext;
-            $editoroptions['subdirs'] = 0;
-            $course = file_prepare_standard_editor($course, 'summary', $editoroptions, null, 'course', 'summary', null);
-            if ($overviewfilesoptions) {
-                file_prepare_standard_filemanager($course, 'overviewfiles', $overviewfilesoptions, null, 'course', 'overviewfiles', 0);
-            }
-        }
-        */
-
         if (empty($this->_customdata['admin'])) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_END, []));
 
@@ -346,7 +316,7 @@ class template extends \core\form\persistent {
             $mform->addElement('header', 'description', get_string('description', 'local_template'));
         }
 
-        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 20, 'cols' => 100], course_overviewfiles_options(null));
+        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 10, 'cols' => 100], course_overviewfiles_options(null));
         $mform->addHelpButton('summary_editor', 'coursesummary');
         $mform->setType('summary_editor', PARAM_RAW);
 
@@ -480,14 +450,6 @@ class template extends \core\form\persistent {
         //$mform->addRule('importcourseid', null, 'required', null, 'client');
         //$mform->addHelpButton('category', 'coursecategory');
         $mform->setDefault('importcourseid', 0);
-
-
-        //$buttonarray = array();
-        // $buttonarray[] = $mform->createElement('submit', 'submitreturn', get_string('copyreturn', 'backup'));
-        //$buttonarray[] = $mform->createElement('submit', 'submitdisplay', get_string('copyview', 'backup'));
-        //$buttonarray[] = $mform->createElement('cancel');
-        //$mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
-
 
 
         $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));

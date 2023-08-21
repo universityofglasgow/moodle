@@ -149,7 +149,7 @@ class sync_roles extends scheduled_task {
 
         $count = 1;
         $total = count($templatecategories);
-        if (empty($templatecategories)) {
+        if (empty($templatecategories) || $total == 1 && empty($templatecategories[0])) {
             mtrace("Error: Could not find template categories for local plugin setting: '" .
                 get_string('categories', 'local_template') . "'");
             return false;

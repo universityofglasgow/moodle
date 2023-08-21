@@ -83,7 +83,7 @@ $string['copyrestore'] = 'Copy Restore';
 $string['importbackup'] = 'Import Backup';
 $string['importrestore'] = 'Import Restore';
 
-$string['addtemplate'] = 'Reset Wizard';
+$string['addtemplate'] = 'Reset Course Template Selector';
 $string['timemodified'] = 'Time Modified';
 $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';
@@ -191,4 +191,6 @@ $string['log'] = 'Log';
 $string['notemplatedefined'] = 'No log items';
 
 $string['tasksyncroles'] = 'Synchronise roles';
+
+$string['invisiblecategory'] = 'Invisible Category';
 

@@ -253,7 +253,7 @@ class template {
 
                     $template = new models\template(0, $data);
                     if ($template->create()) {
-                        notification::success("Course wizard: $templatetext successfully created");
+                        notification::success("Course template selector: $templatetext successfully created");
 
                         $summaryeditoroptions = models\template::get_summary_editor_options($template->get('id'));
                         $courseoverviewfilesoptions = models\template::get_course_overviewfiles_options();
@@ -269,7 +269,7 @@ class template {
                             notification::error("Could not update course summary to: {$data->summary}");
                         }
                     } else {
-                        notification::error("Could not create course wizard: $templatetext");
+                        notification::error("Could not create course template selector: $templatetext");
                     }
 
                 } else {
@@ -283,9 +283,9 @@ class template {
                     $template = new models\template();
                     $template->from_record($data);
                     if ($template->update()) {
-                        notification::success("Course wizard: $templatetext updated");
+                        notification::success("Course template selector: $templatetext updated");
                     } else {
-                        notification::error("Could not update course wizard: $templatetext");
+                        notification::error("Could not update course template selector: $templatetext");
                     }
                 }
 
@@ -327,7 +327,7 @@ class template {
                     if ($template->process()) {
                         notification::success("Course wizard: $templatetext successfully processed");
                     } else {
-                        notification::error("Could not process course wizard: $templatetext");
+                        notification::error("Could not process course template selector: $templatetext");
                     }
                 }
                 if ($redirect) {

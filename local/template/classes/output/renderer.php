@@ -187,7 +187,13 @@ class renderer extends plugin_renderer_base {
             if (empty($settingscategoryid)) {
                 continue;
             }
-            $category = \core_course_category::get($settingscategoryid);
+
+            $category = \core_course_category::get($settingscategoryid, MUST_EXIST, true);
+            $context = \context_coursecat::instance($settingscategoryid);
+            if (!$category->visible && !has_capability('moodle/category:viewhiddencategories', $context)) {
+                continue;
+            }
+
             $courses = $category->get_courses(['summary']); //  'sort' => ['timecreated' => -1]
             $templatecourses = [];
             foreach ($courses as $course) {
@@ -213,7 +219,7 @@ class renderer extends plugin_renderer_base {
                     'courseid' => $course->id,
                     'fullname' => $course->get_formatted_fullname(),
                     'image' => \core_course\external\course_summary_exporter::get_course_image($course),
-                    'summary' => $course->summary,
+                    'summary' => shorten_text(html_to_text($course->summary, 0), 100),
                     'url' => (new \moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $course->id]))->out(),
                     'format' => $course->format,
                     'author' => $this->get_course_user($course->id),
@@ -236,6 +242,7 @@ class renderer extends plugin_renderer_base {
                 'categoryid' => $category->id,
                 'courses' => $templatecourses,
                 'description' => format_text($category->description),
+                'visible' => $category->visible,
             ];
             $templatecategories[] = $templatecategory;
         }
