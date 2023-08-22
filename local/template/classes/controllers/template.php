@@ -288,41 +288,6 @@ class template {
                         notification::error("Could not update course template selector: $templatetext");
                     }
                 }
-
-                //if (utils::is_admin() || $id == 0) {
-                    /*
-                    $data = file_postupdate_standard_filemanager($data, 'importfile', models\template::get_importfileoptions(), models\template::get_context(),
-                        models\template::TABLE, models\template::FILEAREA_IMPORT, $template->get('id'));
-                    */
-                //}
-
-                //if (!$data->importfile) {
-                //    notification::error("Could not save draft file for: $templatetext");
-                //} else {
-                    /*
-                    $fs = get_file_storage();
-                    $files = $fs->get_area_files(models\template::get_context()->id, models\template::TABLE, models\template::FILEAREA_IMPORT, $template->get('id'));
-                    $filecount = 0;
-                    $fileid = 0;
-                    foreach ($files as $file) {
-                        if ($file->get_filename() != '.') {
-                            $filecount++;
-                            $fileid = $file->get_id();
-                        }
-                    }
-                    if ($filecount == 0) {
-                        notification::error("No files found for template!");
-                    }
-                    if ($filecount > 1) {
-                        notification::error("Multiple files found for template!");
-                    }
-                    if (!empty($fileid)) {
-                        $template->set('importfileid', $fileid);
-                        $template->save();
-                    }
-                    $template->preprocess();
-                    */
-               // }
                 if ($process) {
                     if ($template->process()) {
                         notification::success("Course wizard: $templatetext successfully processed");

@@ -54,6 +54,7 @@ $string['introduction_default'] = 'Default <b>here</b>';
 
 $string['templateadmin'] = 'Admin';
 $string['templatecourse'] = 'Template Course';
+$string['templatecourse_help'] = 'The course template to use as a basis for the newly created course.';
 
 $string['template'] = 'Template';
 $string['templates'] = 'Templates';
@@ -68,7 +69,6 @@ $string['template:usetemplate'] = 'Use Template';
 $string['template:managetemplate'] = 'Manage Template';
 
 $string['createnewtemplate'] = 'Create new course via template';
-$string['templatecourse'] = 'Template Course';
 $string['importcourse'] = 'Import Course';
 
 $string['importcourse_desc'] = 'Optionally select a course below to reuse/import activities from another course.';
@@ -193,4 +193,9 @@ $string['notemplatedefined'] = 'No log items';
 $string['tasksyncroles'] = 'Synchronise roles';
 
 $string['invisiblecategory'] = 'Invisible Category';
+
+$string['missingtemplate'] = 'Missing Course Template';
+
+
+
 

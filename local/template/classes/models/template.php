@@ -1459,17 +1459,20 @@ class template extends \core\persistent implements renderable, templatable {
         $fs = get_file_storage();
 
         // Delete newly restored files.
-        $fs->delete_area_files($coursecontext->id, 'course', $filearea, $course->id);
+        // TODO: item ID or all files if not specified (remove $course->id below
+        $fs->delete_area_files($coursecontext->id, 'course', $filearea);
 
         $systemcontext = \context_system::instance();
 
         $count = 0;
 
         // TODO: Change courseid to templated
-        $files = $fs->get_area_files($systemcontext->id, 'local_template', $filearea, $course->id, 'itemid, filepath, filename', true);
+        $files = $fs->get_area_files($systemcontext->id, 'local_template', $filearea, $this->raw_get('id'));
         foreach ($files as $file) {
             $filerecord = new stdClass();
             $filerecord->contextid = $coursecontext->id;
+            $filerecord->component = 'course';
+            $filerecord->itemid = 0;
             $fs->create_file_from_storedfile($filerecord, $file);
             $count += 1;
         }
