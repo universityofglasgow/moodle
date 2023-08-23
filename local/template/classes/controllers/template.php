@@ -367,8 +367,8 @@ class template {
     public static function delete($id) {
         $template = new models\template($id);
         $name = get_string('missingtemplatename', 'local_template');
-        if (models\template::has_property('name')) {
-            $name = $template->get('name');
+        if (models\template::has_property('fullname')) {
+            $name = $template->get('fullname');
         }
 
         if (!empty($id)) {

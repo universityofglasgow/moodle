@@ -748,21 +748,6 @@ class backupcontroller extends \core\persistent {
         return false;
     }
 
-    private function deletefile() {
-        if (!empty($this->raw_get('exportfileid'))) {
-            $fs = get_file_storage();
-            $file = $fs->get_file_by_id($this->raw_get('exportfileid'));
-            if (!empty($file)) {
-                if (!$file->delete()) {
-                    return false;
-                }
-            }
-            $this->set('exportfileid', null);
-            $this->save();
-        }
-        return true;
-    }
-
     private function read_user() {
         $userid = $this->raw_get('userid');
         if (!empty($userid)) {

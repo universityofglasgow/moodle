@@ -122,6 +122,8 @@ $string['missingcategory'] = 'Missing Category';
 
 $string['missingcreatedcourse'] = 'No Created Course for this record.';
 $string['missingtemplatecourse'] = 'Missing Template Course';
+$string['missingtemplate'] = 'Missing Course Template';
+$string['missingtemplatename'] = 'Missing Course Template Name';
 $string['missingimportcourse'] = 'No Import Course Selected.';
 
 $string['notemplatesfound'] = 'No templates found.';
@@ -193,9 +195,4 @@ $string['notemplatedefined'] = 'No log items';
 $string['tasksyncroles'] = 'Synchronise roles';
 
 $string['invisiblecategory'] = 'Invisible Category';
-
-$string['missingtemplate'] = 'Missing Course Template';
-
-
-
 

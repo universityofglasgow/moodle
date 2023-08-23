@@ -1,28 +1,42 @@
 var templatestepper;
 
-$(document).ready(function() {
+var $local_template = jQuery.noConflict();
+
+$local_template(document).ready(function() {
+    debugger;
+    init();
+    $local_template(window).on('resize orientationChange', init());
+}
+
+function init() {
+    debugger;
+
     initStepper();
     initSliders();
 
-    $(document).on('click', '.add-template', function() {
-        $("#templatecourseid").val = $(this).attr("data-id");
-        var value = $(this).attr("data-id");
+    $local_template(document).on('click', '.add-template', function() {
+        debugger;
+        $local_template("#templatecourseid").val = $local_template(this).attr("data-id");
+        var value = $local_template(this).attr("data-id");
         var inputselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions li[data-value="' + value + '"]';
         templatestepper.next();
-        $(inputselector).trigger('click');
+        $local_template(inputselector).trigger('click');
         return false;
     });
 
-    $("#templatesteppertrigger1").on('click', function() {
-        $('.slider').each(function () {
-            var slider = $(this);
+    $local_template("#templatesteppertrigger1").on('click', function() {
+        debugger;
+        $local_template('.slider').each(function () {
+            debugger;
+            var slider = $local_template(this);
             slider[0].slick.refresh();
             resizeFixes(slider);
         });
     });
 
-    $("h1.slider-heading").on('click', function() {
-        var sliderheading = $(this);
+    $local_template("h1.slider-heading").on('click', function() {
+        debugger;
+        var sliderheading = $local_template(this);
         var slider = sliderheading.nextAll('.slider:first');
         if (sliderheading.hasClass('collapsed')) {
             sliderheading.removeClass('collapsed');
@@ -33,30 +47,33 @@ $(document).ready(function() {
             slider.hide();
         }
     });
-});
+};
 
 function initStepper() {
+    debugger;
     templatestepper = new Stepper(document.querySelector('#templatestepper'), {
         linear: false,
         animation: true
     });
 
-    if ($("#id_shortname").val()) {
+    if ($local_template("#id_shortname").val()) {
         templatestepper.to(2);
     }
 }
 
 function initSliders() {
-    // wrapper.js
+    debugger;
 
     // Initialise all the sliders.
-    $('.slider').each(function() {
-
-        var slider = $(this);
+    $local_template('.slider').each(function() {
+        debugger;
+        var slider = $local_template(this);
         // Hide the sliders and show the loading spinner.
         slider.css('opacity', 0.01).slideUp();
-        $.when(slider.not('.slick-initialized').slick()).then(
+        $local_template.when(slider.not('.slick-initialized').slick()).then(
+            debugger;
             waitForFinalEvent(function() {
+                debugger;
                 showSlider(slider);
                 slider.slideUp();
             }, 1000, "showSlider" + slider.attr("id"))
@@ -65,6 +82,7 @@ function initSliders() {
 }
 
 function showSlider(slider) {
+    debugger;
     var spinner = slider.parent().find(".spinner");
 
     slider.show();
@@ -80,7 +98,8 @@ function showSlider(slider) {
 
     // For each card in the slider, hide the body and footer, and animate the progress bar.
     slider.find('.card').each(function() {
-        var card = $(this);
+        debugger;
+        var card = $local_template(this);
         var cardbody = card.find('div.card-body');
         var cardoverlay = card.find('div.card-img-overlay');
         cardbody.hide();
@@ -89,9 +108,9 @@ function showSlider(slider) {
 }
 
 // Add listeners to document for slick slide mouseenter.
-$(document).on('mouseenter', '.slick-slide', function() {
-
-    var slide = $(this);
+$local_template(document).on('mouseenter', '.slick-slide', function() {
+    debugger;
+    var slide = $local_template(this);
     var card = slide.find('div.card');
     var cardbody = card.find('div.card-body');
     var cardoverlay = card.find('div.card-img-overlay');
@@ -105,9 +124,9 @@ $(document).on('mouseenter', '.slick-slide', function() {
 });
 
 // Add listeners for slick slide mouseleave.
-$(document).on('mouseleave', '.slick-slide', function() {
-
-    var slide = $(this);
+$local_template(document).on('mouseleave', '.slick-slide', function() {
+    debugger;
+    var slide = $local_template(this);
     var card = slide.find('div.card');
     var cardbody = card.find('div.card-body');
     var cardoverlay = card.find('div.card-img-overlay');
@@ -121,6 +140,7 @@ $(document).on('mouseleave', '.slick-slide', function() {
 });
 
 var waitForFinalEvent = (function() {
+    debugger;
     var timers = {};
     return function(callback, ms, uniqueId) {
         if (!uniqueId) {
@@ -134,25 +154,28 @@ var waitForFinalEvent = (function() {
 })();
 
 function resizeFixes(slider, animate) {
+    debugger;
     slider.find('.slick-track').each(function() {
+        debugger;
         fixTrackHeight(this, animate);
     });
 }
 
 function fixTrackHeight(track, animate) {
-    var list = $(track).parent();
+    debugger;
+    var list = $local_template(track).parent();
     var prev = list.parent().find(".slick-prev");
     var next = list.parent().find(".slick-next");
-    var trackheight = $(track).find(".slick-active").find(".card-img-top").height() + 60;
+    var trackheight = $local_template(track).find(".slick-active").find(".card-img-top").height() + 60;
     if (trackheight < 260) {
         trackheight = 260;
     }
     var arrowheight = (trackheight - 60) / 2;
 
-    $(track).css("overflow-y", 'unset');
+    $local_template(track).css("overflow-y", 'unset');
 
     if (animate) {
-        $(track).animate({
+        $local_template(track).animate({
             queue: false,
             duration: 'slow',
             'height': trackheight + 'px'
@@ -168,7 +191,7 @@ function fixTrackHeight(track, animate) {
             'top': arrowheight + 'px'
         }, 100);
     } else {
-        $(track).height(trackheight);
+        $local_template(track).height(trackheight);
         prev.css("top", arrowheight + 'px');
         next.css("top", arrowheight + 'px');
     }

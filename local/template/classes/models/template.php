@@ -700,7 +700,7 @@ class template extends \core\persistent implements renderable, templatable {
 
         $backupcontrollers = $this->get_backupcontrollers();
         foreach ($backupcontrollers as $backupcontroller) {
-            if (!$backupcontroller->cascadedelete()) {
+            if (!$backupcontroller->delete()) {
                 return false;
             }
         }

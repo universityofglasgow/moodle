@@ -202,12 +202,12 @@ class template extends \core\form\persistent {
         }
 
         // Course summary.
-        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 10, 'cols' => 100], course_overviewfiles_options(null));
+        $mform->addElement('editor', 'summary_editor', get_string('summary'), ['rows' => 10, 'cols' => 100], $summaryeditoroptions);
         $mform->addHelpButton('summary_editor', 'coursesummary');
         $mform->setType('summary_editor', PARAM_RAW);
 
         // Course overviewfiles.
-        $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles'), null, course_overviewfiles_options(null));
+        $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles'), null, $courseoverviewfilesoptions);
         $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
 
         // Stepper section: Enrolment.
