@@ -71,7 +71,6 @@ function initSliders() {
         // Hide the sliders and show the loading spinner.
         slider.css('opacity', 0.01).slideUp();
         $local_template.when(slider.not('.slick-initialized').slick()).then(
-            debugger;
             waitForFinalEvent(function() {
                 debugger;
                 showSlider(slider);
