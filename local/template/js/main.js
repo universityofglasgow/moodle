@@ -6,7 +6,7 @@ $local_template(document).ready(function() {
     debugger;
     init();
     $local_template(window).on('resize orientationChange', init());
-}
+});
 
 function init() {
     debugger;
