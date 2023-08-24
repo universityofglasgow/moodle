@@ -2,15 +2,9 @@ var templatestepper;
 
 var $local_template = jQuery.noConflict();
 
-function local_template_availableviews(a) {
-    debugger;
-    window.location = $local_template(a).val();
-}
-
 $local_template(document).ready(function() {
     debugger;
     init();
-    // $local_template(window).on('resize orientationChange', init());
 });
 
 function init() {

@@ -94,14 +94,14 @@ class template extends \core\form\persistent {
         $availableviews = models\template::get_available_views_links();
         $currentview = models\template::get_current_view_link();
         if (!empty($availableviews)) {
-            $attributes = ['onchange' => 'local_template_availableviews(this);'];
+            $attributes = ['onchange' => 'window.location.href = this.value'];
             $availableviewselement = $mform->addElement('select', 'availableviews', get_string('availableviews', 'local_template'), $availableviews, $attributes);
             $mform->setDefault('category', $currentview);
             $availableviewselement->setValue($currentview);
         }
 
         $createcoursemanually = '
-                <a href="' . models\template::get_addnewcourselink() . '" type="button" class="btn btn-primary float">' . get_string('usedefaultmoodlefunctions', 'local_template') . '</a>
+                <a href="' . models\template::get_addnewcourselink() . '" type="button" class="btn btn-primary float">' . get_string('usedefaultmoodlefunctions', 'local_template') . '</a><br/>
         ';
         $mform->addElement('html', $createcoursemanually);
 
