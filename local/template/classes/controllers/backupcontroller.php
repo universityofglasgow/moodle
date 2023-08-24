@@ -259,8 +259,8 @@ class backupcontroller {
     public static function renderbackupcontrollers($parentid = 0) {
         global $SESSION;
         $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
+        if (object_property_exists($SESSION, 'local_template_templateview')) {
+            $view = $SESSION->local_template_templateview;
         }
         $backupcontrollers = models\backupcontroller::collection($parentid, $view);
         return $backupcontrollers->render() . $backupcontrollers->render_paging_bar(self::path());

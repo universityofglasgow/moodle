@@ -60,19 +60,19 @@ class template {
         global $SESSION;
         switch($view) {
             case 'list':
-                $SESSION->local_template_view = 'list';
+                $SESSION->local_template_templateview = 'list';
                 notification::info('View changed to ' . $view);
                 break;
             case 'header':
-                $SESSION->local_template_view = 'header';
+                $SESSION->local_template_templateview = 'header';
                 notification::info('View changed to ' . $view);
                 break;
             case 'table':
-                $SESSION->local_template_view = 'table';
+                $SESSION->local_template_templateview = 'table';
                 notification::info('View changed to ' . $view);
                 break;
             default:
-                $SESSION->local_template_view = 'table';
+                $SESSION->local_template_templateview = 'table';
                 notification::info('Could not set view to ' . $view);
                 break;
         }
@@ -91,15 +91,15 @@ class template {
         //$SESSION->local_template_url = $PAGE->url;
         //notification::info('sesssion local_template_url: ' . $SESSION->local_template_url);
 
-        if (property_exists($SESSION, 'local_template_view')) {
-            //notification::info('sesssion local_template_view: ' . $SESSION->local_template_view);
+        if (property_exists($SESSION, 'local_template_templateview')) {
+            //notification::info('sesssion local_template_templateview: ' . $SESSION->local_template_templateview);
         }
 
         $view = 'table';
-        if (empty($SESSION->local_template_view)) {
-            $SESSION->local_template_view = 'table';
+        if (empty($SESSION->local_template_templateview)) {
+            $SESSION->local_template_templateview = 'table';
         } else {
-            $view = $SESSION->local_template_view;
+            $view = $SESSION->local_template_templateview;
         }
 
         $tableviewlink = \html_writer::tag('i','', ['class' => 'icon fa fa-th fa-fw', 'title' => 'Table', 'role' => 'img', 'aria-label' => 'Table']);
@@ -392,8 +392,8 @@ class template {
         global $SESSION, $OUTPUT;
 
         $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
+        if (object_property_exists($SESSION, 'local_template_templateview')) {
+            $view = $SESSION->local_template_templateview;
         }
         $template = models\template::collection(0, $view);
         $pagingbar = $template->render_paging_bar(self::path());
@@ -430,8 +430,8 @@ class template {
     public static function rendertemplates($parentid = 0) {
         global $SESSION;
         $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
+        if (object_property_exists($SESSION, 'local_template_templateview')) {
+            $view = $SESSION->local_template_templateview;
         }
         $templates = models\template::collection($parentid, $view);
         return $templates->render() . $templates->render_paging_bar(self::path());
@@ -440,8 +440,8 @@ class template {
     private static function rendertemplate($parentid = 0) {
         global $SESSION;
         $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
+        if (object_property_exists($SESSION, 'local_template_templateview')) {
+            $view = $SESSION->local_template_templateview;
         }
         $template = models\template::collection($parentid, $view);
         return $template->render() . $template->render_paging_bar(self::path());

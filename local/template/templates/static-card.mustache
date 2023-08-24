@@ -37,24 +37,34 @@
     Example context (json):
     {courseid, fullname, image, summary, url, format }
 }}
-<div class="card">
+<!--
+<div class="card dashboard-card">
     <div class="card-header">
-        <!-- <img class="card-img-top w-100" alt="{{fullname}}" data-lazy="{{image}}"> -->
-        <img class="card-img-top w-100" alt="{{fullname}}" src="{{image}}">
-        {{#slider}}
-        <div class="card-img-overlay card-img-overlay-slick">
-            <div class="overlaypadding">
-                <h5 class="card-title bg-light">{{fullname}}</h5>
-            </div>
-        </div>
-        {{/slider}}
+        <img class="card-img-top img-fluid dashboard-card-img" alt="{{fullname}}" src="{{image}}">
     </div>
 
     <div class="card-body">
         <h5 class="card-title">{{fullname}}</h5>
         <p class="card-text">{{{summary}}}</p>
     </div>
-    <div class="card-footer">
+    <div class="card-footer dashboard-card-footer">
+        <small class="text-muted">
+            test
+        </small>
+    </div>
+</div>
+-->
+
+<div class="card dashboard-card" data-toggle="modal" data-target="#course-modal-{{courseid}}">
+    <div class="card-header">
+        <img class="card-img-top w-100" alt="{{fullname}}" src="{{image}}"> <!--  dashboard-card-img -->
+    </div>
+
+    <div class="card-body">
+        <h5 class="card-title">{{fullname}}</h5>
+        <p class="card-text">{{{summary}}}</p>
+    </div>
+    <div class="card-footer dashboard-card-footer">
         <button type="button" class="btn btn-success add-template" data-id="{{courseid}}">Use template &nbsp;<i class="fa fa-plus"></i></button>
         <a type="button" href="{{url}}" class="btn btn-success" target="_blank">Open Course &nbsp;<i class="fa fa-search-plus"></i></a><br>
         <small class="text-muted">

@@ -65,6 +65,18 @@ if ($hassiteconfig) {
         1, [0 => get_string('no'), 1 => get_string('yes')]
     ));
 
+    $options = [
+        0 => get_string('availableviews_slider', 'local_template'),
+        1 => get_string('availableviews_staticdisplay', 'local_template'),
+        2 => get_string('availableviews_highcompatabilitymode','local_template'),
+    ];
+    $settings->add(new admin_setting_configmultiselect('local_template/availableviews',
+        get_string('availableviews', 'local_template'),
+        get_string('availableviews_desc', 'local_template'),
+        [0],
+        $options
+    ));
+
     $categories = core_course_category::make_categories_list('moodle/course:create');
     $settings->add(new autocomplete('local_template/categories',
         get_string('categories', 'local_template'),

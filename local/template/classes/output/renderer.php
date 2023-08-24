@@ -49,27 +49,6 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template('local_template/page', $data);
     }
 
-    public function render_import_search_form($courseid) {
-        $url = new \moodle_url('/local/template/index.php', ['id' => $courseid]);
-        $search = new \import_course_search(['url' => $url]);
-
-        global $PAGE;
-        $backuprenderer = $PAGE->get_renderer('core','backup');
-        $courses = $backuprenderer->render($search);
-
-        // TODO: correct context?
-        $context = \context_course::instance($courseid);
-
-        $data = (object)[
-            'url' => '',
-            'courseid' => $courseid,
-            'target' => \backup::TARGET_CURRENT_ADDING,
-            'courses' => $courses,
-            'contextid' => $context->id,
-        ];
-        return parent::render_from_template('local_template/import-course-selector', $data);
-    }
-
     /**
      * Defer to template.
      *
@@ -82,9 +61,13 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template('local_template/template', $data);
     }
 
-    //\local_template\models\template $template,
+    /**
+     * @param $step
+     * @param $data
+     * @return bool|string
+     * @throws \moodle_exception
+     */
     public function render_stepper($step, $data = []) {
-        global $CFG;
         $template = '';
 
         switch ($step) {
@@ -138,33 +121,22 @@ class renderer extends plugin_renderer_base {
             case \local_template\forms\template::STEPPER_FOOTER:
                 $template = 'local_template/stepper-footer';
                 break;
-            case \local_template\forms\template::STEPPER_JAVASCRIPT:
-                $template = 'local_template/javascript';
-                break;
         }
 
         return parent::render_from_template($template, $data);
     }
 
     private function get_data_template() {
-
         global $CFG;
         $introduction = get_config('local_template', 'introduction');
-        $categoryid = optional_param('category', 0, PARAM_INT);
-        $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
-        $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
-        $params['action'] = 'rejectlocaltemplate';
-        if (!empty($categoryid)) {
-            $params['category'] = $categoryid;
+        $addnewcourselink = \local_template\models\template::get_addnewcourselink();
+
+        $view = template::get_current_view();
+        $slider = false;
+        if ($view == template::VIEW_SLIDER) {
+            $slider = true;
         }
-        if (!empty($returnto)) {
-            $params['returnto'] = $returnto;
-        }
-        if (!empty($returnurl)) {
-            $params['returnurl'] = $returnurl;
-        }
-        $addnewcourselink = (new \moodle_url($CFG->wwwroot . '/local/template/index.php', $params))->out(false);
 
         $templatecategories = [];
         $templatecoursecount = 0;
@@ -215,10 +187,17 @@ class renderer extends plugin_renderer_base {
                     }
                 }
 
+                $courseimage = \core_course\external\course_summary_exporter::get_course_image($course);
+                if (empty($courseimage)) {
+                    $courseimage = new \moodle_url('/local/template/pix/course.jpg');
+                    global $OUTPUT;
+                    $courseimage = $OUTPUT->get_generated_image_for_id($course->id);
+                }
+
                 $templatecourse = (object)[
                     'courseid' => $course->id,
                     'fullname' => $course->get_formatted_fullname(),
-                    'image' => \core_course\external\course_summary_exporter::get_course_image($course),
+                    'image' => $courseimage,
                     'summary' => shorten_text(html_to_text($course->summary, 0), 100),
                     'url' => (new \moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $course->id]))->out(),
                     'format' => $course->format,
@@ -241,7 +220,7 @@ class renderer extends plugin_renderer_base {
                 'categoryname' => $category->get_formatted_name(),
                 'categoryid' => $category->id,
                 'courses' => $templatecourses,
-                'description' => format_text($category->description),
+                'description' => $description,
                 'visible' => $category->visible,
             ];
             $templatecategories[] = $templatecategory;
@@ -257,7 +236,8 @@ class renderer extends plugin_renderer_base {
             'introduction' => $introduction,
             'addnewcourselink' =>  $addnewcourselink,
             'categories' => $templatecategories,
-            'message' => $message
+            'message' => $message,
+            'slider' => $slider
         ];
     }
 

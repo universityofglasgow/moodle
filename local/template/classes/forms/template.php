@@ -51,7 +51,6 @@ class template extends \core\form\persistent {
     /** @var array Fields to remove from the persistent validation. */
     protected static $foreignfields = ['action'];
 
-
     public const STEPPER_HEADER = 1;
     public const STEPPER_SELECTTEMPLATE = 2;
     public const STEPPER_COURSE_START = 3;
@@ -65,7 +64,6 @@ class template extends \core\form\persistent {
     public const STEPPER_PROCESS_START = 11;
     public const STEPPER_PROCESS_END = 12;
     public const STEPPER_FOOTER = 13;
-    public const STEPPER_JAVASCRIPT = 14;
 
     /**
      * Define the form.
@@ -91,9 +89,29 @@ class template extends \core\form\persistent {
         $record = file_prepare_standard_filemanager($record, 'overviewfiles', $courseoverviewfilesoptions, $context, models\template::TABLE, models\template::FILEAREA_OVERVIEWFILES, $record->id);
         $this->set_data($record);
 
-        // Stepper section: Course.
+        // View Changer.
 
-        if (empty($this->_customdata['admin'])) {
+        $availableviews = models\template::get_available_views_links();
+        $currentview = models\template::get_current_view_link();
+        if (!empty($availableviews)) {
+            $attributes = ['onchange' => 'local_template_availableviews(this);'];
+            $availableviewselement = $mform->addElement('select', 'availableviews', get_string('availableviews', 'local_template'), $availableviews, $attributes);
+            $mform->setDefault('category', $currentview);
+            $availableviewselement->setValue($currentview);
+        }
+
+        $createcoursemanually = '
+                <a href="' . models\template::get_addnewcourselink() . '" type="button" class="btn btn-primary float">' . get_string('usedefaultmoodlefunctions', 'local_template') . '</a>
+        ';
+        $mform->addElement('html', $createcoursemanually);
+
+        // Stepper section: Course.
+        $showstepper = true;
+        if (models\template::get_current_view() == models\template::VIEW_HIGHCOMPATABILITY_MODE || !empty($this->_customdata['admin'])) {
+            $showstepper = false;
+        }
+
+        if ($showstepper) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_HEADER, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_SELECTTEMPLATE, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_START, []));
@@ -194,7 +212,7 @@ class template extends \core\form\persistent {
 
         // Stepper section: Description.
 
-        if (empty($this->_customdata['admin'])) {
+        if ($showstepper) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_START, []));
         } else {
@@ -212,7 +230,7 @@ class template extends \core\form\persistent {
 
         // Stepper section: Enrolment.
 
-        if (empty($this->_customdata['admin'])) {
+        if ($showstepper) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_DESCRIPTION_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_ENROLMENT_START, []));
         } else {
@@ -252,7 +270,7 @@ class template extends \core\form\persistent {
 
         // Stepper section: Import.
 
-        if (empty($this->_customdata['admin'])) {
+        if ($showstepper) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_ENROLMENT_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_START, []));
         } else {
@@ -294,17 +312,15 @@ class template extends \core\form\persistent {
         //$mform->addHelpButton('category', 'coursecategory');
         $mform->setDefault('importcourseid', 0);
 
-        if (empty($this->_customdata['admin'])) {
+        if ($showstepper) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_IMPORT_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_PROCESS_START, []));
         } else {
-            $mform->addElement('header', 'process', get_string('process', 'local_template'));
+            //$mform->addElement('header', 'process', get_string('process', 'local_template'));
         }
-
         $mform->addElement('html', '<br><hr>');
 
         // Action buttons.
-
         $buttonarray = array();
         $buttonarray[] = &$mform->createElement('submit', 'createandredirect', get_string('createandredirect', 'local_template'));
         $buttonarray[] = &$mform->createElement('submit', 'createcourse', get_string('createcourse', 'local_template'));
@@ -315,10 +331,12 @@ class template extends \core\form\persistent {
 
         // Stepper section: Admin only.
 
-        if (empty($this->_customdata['admin'])) {
+        if ($showstepper) {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_PROCESS_END, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_FOOTER, []));
-        } else {
+        }
+
+        if (!empty($this->_customdata['admin'])) {
             $mform->addElement('header', 'createdcourse', get_string('createdcourse', 'local_template'));
             $createdcoursename = get_string('missingcreatedcourse', 'local_template');
             if (!empty($record->createdcourseid)) {
@@ -329,30 +347,6 @@ class template extends \core\form\persistent {
                 $mform->addElement('header', 'backupcontrollers', get_string('backupcontrollers', 'local_template'));
                 $mform->addElement('html', $OUTPUT->box(controllers\backupcontroller::renderbackupcontrollers($record->id, true)));
             }
-        }
-    }
-
-    private function get_import() {
-
-        global $PAGE;
-
-        // Prepare the backup renderer
-        $renderer = $PAGE->get_renderer('core','backup');
-
-        // Check if we already have a import course id
-        if ($importcourseid === false || $searchcourses) {
-            // Obviously not... show the selector so one can be chosen
-            $url = new moodle_url('/backup/import.php', array('id'=>$courseid));
-            $search = new import_course_search(array('url'=>$url));
-
-            // show the course selector
-            echo $OUTPUT->header();
-            $backup = new import_ui(false, array());
-            echo $renderer->progress_bar($backup->get_progress_bar());
-            $html = $renderer->import_course_selector($url, $search);
-            echo $html;
-            echo $OUTPUT->footer();
-            die();
         }
     }
 

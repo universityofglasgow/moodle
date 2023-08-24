@@ -36,19 +36,36 @@
         </div>
     </div>
 
+    <!-- TODO: remove this
     <div class="container-fluid">
         <a href="{{addnewcourselink}}" type="button" class="btn btn-primary float">{{#str}} usedefaultmoodlefunctions, local_template {{/str}}</a>
     </div>
+    -->
 
     <br />
 
-    <div class="section-container">
-        {{#categories}}
-            {{> local_template/slider }}
-        {{/categories}}
-        {{^categories}}
-            {{> core/notification_info}}
-        {{/categories}}
-    </div>
+    {{#slider}}
+        <div class="section-container">
+            {{#categories}}
+                    {{> local_template/slider }}
+            {{/categories}}
+            {{^categories}}
+                {{> core/notification_info}}
+            {{/categories}}
+        </div>
+    {{/slider}}
+
+    {{^slider}}
+        <div class="container">
+            {{#categories}}
+                    {{> local_template/static }}
+            {{/categories}}
+            {{^categories}}
+                {{> core/notification_info}}
+            {{/categories}}
+        </div>
+    {{/slider}}
+
+
     <button class="btn btn-primary float-right" onclick="templatestepper.next();">Next</button>
 </div>

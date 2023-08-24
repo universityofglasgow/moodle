@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_template/stepper-selecttemplate
+    @template local_template/stepper-footer
 
     Moodle notification template.
 
@@ -35,18 +35,13 @@
     * level Which level this notification is (e.g. warning, success).
 
     Example context (json):
-    { introduction, addnewcourselink }
+    {categoryname, categoryid, courses}
 }}
-<div id="test-nl-1" role="tabpanel" class="bs-stepper-pane" aria-labelledby="templatesteppertrigger1">
-    <div class="jumbotron jumbotron-fluid">
-        <div class="container">
-            {{{introduction}}}
-        </div>
-    </div>
-
-    <hr>
-    <div class="container">
-        <button id="addnewcourse" type="button" class="btn btn-success" onclick="templatestepper.next();">{{#str}} addnewcourse, local_template {{/str}} &nbsp;<i class="fa fa-plus"></i></button>
-        <a href="{{addnewcourselink}}" type="button" class="btn btn-danger float-right">{{#str}} usedefaultmoodlefunctions, local_template {{/str}} &nbsp;<i class="fa fa-cog"></i></a>
-    </div>
+<div class="container"> <!-- data-target="local_template_category-{{categoryid}}" -->
+    <h1 class="category-heading {{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_category-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} <small>({{#str}} invisiblecategory, local_template {{/str}}{{/visible}})</small></h1>
+    <section id="local_template_category-{{categoryid}}" class="responsive card-deck dashboard-card-deck collapse">
+        {{#courses}}
+            {{> local_template/static-card }}
+        {{/courses}}
+    </section>
 </div>

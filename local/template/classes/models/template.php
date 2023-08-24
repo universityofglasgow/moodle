@@ -59,6 +59,10 @@ class template extends \core\persistent implements renderable, templatable {
     public const HIDDEN_FALSE = 0;
     public const HIDDEN_TRUE = 1;
 
+    public const VIEW_SLIDER = 0;
+    public const VIEW_STATIC_DISPLAY = 1;
+    public const VIEW_HIGHCOMPATABILITY_MODE = 2;
+
     public static $templateperpage = 10;
     public static $pageparam = 'templatepage';
 
@@ -543,8 +547,8 @@ class template extends \core\persistent implements renderable, templatable {
         global $PAGE, $SESSION;
         $view = 'table';
         $show = true;
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
+        if (object_property_exists($SESSION, 'local_template_templateview')) {
+            $view = $SESSION->local_template_templateview;
             if ($view == 'header') {
                 $view = 'table';
                 $show = true;
@@ -667,6 +671,102 @@ class template extends \core\persistent implements renderable, templatable {
             'context' => self::get_context()
         ];
     }
+
+    public static function get_available_views() {
+        $configavailableviews = explode(',', get_config('local_template', 'availableviews'));
+        if (empty($configavailableviews)) {
+            $configavailableviews = [0, 1, 2];
+        }
+
+        return $configavailableviews;
+    }
+
+    public static function get_available_views_links() {
+        global $PAGE;
+        $configavailableviews = self::get_available_views();
+
+        if (count($configavailableviews) > 1) {
+            $availableviews = [];
+            foreach ($configavailableviews as $configavailableview) {
+                $moodleurl = $PAGE->url;
+                $moodleurl->param('view', $configavailableview);
+                $display = '';
+                switch ($configavailableview) {
+                    case self::VIEW_SLIDER:
+                        $display = get_string('availableviews_slider', 'local_template');
+                        break;
+                    case self::VIEW_STATIC_DISPLAY:
+                        $display = get_string('availableviews_staticdisplay', 'local_template');
+                        break;
+                    case self::VIEW_HIGHCOMPATABILITY_MODE:
+                        $display = get_string('availableviews_highcompatabilitymode', 'local_template');
+                        break;
+                }
+                $availableviews[$moodleurl->out(false)] = $display;
+            }
+        }
+
+        return $availableviews;
+    }
+
+    public static function get_current_view_link() {
+        global $PAGE;
+        $moodleurl = $PAGE->url;
+        $moodleurl->param('view', self::get_current_view());
+        return $moodleurl->out(false);
+    }
+
+    public static function get_current_view() {
+        global $SESSION;
+
+        $availableviews = self::get_available_views();
+
+        $view = '';
+        if (object_property_exists($SESSION, 'local_template_view')) {
+            if (array_key_exists($SESSION->local_template_view, $availableviews)) {
+                $view = $SESSION->local_template_view;
+            }
+        }
+
+        $viewparamname = 'view';
+        if (isset($_POST[$viewparamname]) || isset($_GET[$viewparamname])) {
+            $param = optional_param('view', '', PARAM_RAW);
+            if (array_key_exists($param, $availableviews)) {
+                $view = $param;
+                $SESSION->local_template_view = $param;
+            }
+        }
+
+        if ($view == '') {
+            if (empty($availableviews)) {
+                $view = self::VIEW_HIGHCOMPATABILITY_MODE;
+            } else {
+                $view = reset($availableviews);
+            }
+        }
+        return $view;
+    }
+
+    public static function get_addnewcourselink() {
+        global $CFG;
+        $categoryid = optional_param('category', 0, PARAM_INT);
+        $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
+        $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+
+        $params['action'] = 'rejectlocaltemplate';
+        if (!empty($categoryid)) {
+            $params['category'] = $categoryid;
+        }
+        if (!empty($returnto)) {
+            $params['returnto'] = $returnto;
+        }
+        if (!empty($returnurl)) {
+            $params['returnurl'] = $returnurl;
+        }
+        return (new \moodle_url($CFG->wwwroot . '/local/template/index.php', $params))->out(false);
+
+    }
+
 
     /*
         public function get_file_url() {
@@ -853,8 +953,8 @@ class template extends \core\persistent implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $SESSION, $OUTPUT, $USER;
         $view = 'table';
-        if (object_property_exists($SESSION, 'local_template_view')) {
-            $view = $SESSION->local_template_view;
+        if (object_property_exists($SESSION, 'local_template_templateview')) {
+            $view = $SESSION->local_template_templateview;
         }
 
         $path = controllers\template::path();

@@ -37,8 +37,8 @@
     Example context (json):
     {categoryname, categoryid, courses}
 }}
-<div class="slider-container">
-    <h1 class="slider-heading collapsed{{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_slick-slider-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} {{#str}} invisiblecategory, local_template {{/str}}{{/visible}}</h1>
+<div class="slider-container"> <!--  category-heading -->
+    <h1 class="slider-heading category-heading collapsed{{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_slick-slider-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} {{#str}} invisiblecategory, local_template {{/str}}{{/visible}}</h1>
     <div id="block_slick-spinner-1" class="text-center spinner">
         <div class="spinner-border" role="status">
             <span class="sr-only">Loading...</span>
@@ -58,7 +58,7 @@
                 {"breakpoint": 1200, "settings": {"lazyLoad": "progressive", "slidesToShow": 3, "slidesToScroll": 3}},
                 {"breakpoint": 1024, "settings": {"lazyLoad": "ondemand", "slidesToShow": 2, "slidesToScroll": 2}},
                 {"breakpoint":  600, "settings": {"lazyLoad": "ondemand", "slidesToShow": 1, "slidesToScroll": 1}},
-                {"breakpoint":  480, "settings": "unslick"}
+                {"breakpoint":  480, "settings": {"lazyLoad": "ondemand", "slidesToShow": 1, "slidesToScroll": 1}}
                 ]
         }'>
         {{#courses}}

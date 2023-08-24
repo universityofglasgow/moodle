@@ -42,7 +42,7 @@
     overflow: visible;
 }
 
-.slider-heading::before {
+.category-heading::before {
     border-style: solid;
     border-width: 0.15em 0.15em 0 0;
     content: '';
@@ -56,7 +56,7 @@
     width: 0.6em;
 }
 
-.slider-heading.collapsed:before {
+.category-heading.collapsed:before {
     top: 0;
     transform: rotate(135deg);
 }
@@ -122,6 +122,7 @@
     left: 0px;
 }
 
+/*
 .card-deck {
     position: relative;
     z-index: 0;
@@ -145,6 +146,7 @@
     top: 0px;
     left: 0px;
 }
+*/
 
 .slick-prev {
     position: absolute;

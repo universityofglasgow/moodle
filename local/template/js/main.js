@@ -2,10 +2,15 @@ var templatestepper;
 
 var $local_template = jQuery.noConflict();
 
+function local_template_availableviews(a) {
+    debugger;
+    window.location = $local_template(a).val();
+}
+
 $local_template(document).ready(function() {
     debugger;
     init();
-    $local_template(window).on('resize orientationChange', init());
+    // $local_template(window).on('resize orientationChange', init());
 });
 
 function init() {
@@ -14,7 +19,8 @@ function init() {
     initStepper();
     initSliders();
 
-    $local_template(document).on('click', '.add-template', function() {
+    // document or body?
+    $local_template('body').on('click', '.add-template', function() {
         debugger;
         $local_template("#templatecourseid").val = $local_template(this).attr("data-id");
         var value = $local_template(this).attr("data-id");
@@ -34,19 +40,41 @@ function init() {
         });
     });
 
-    $local_template("h1.slider-heading").on('click', function() {
+    $local_template("h1.category-heading").on('click', function() {
         debugger;
-        var sliderheading = $local_template(this);
-        var slider = sliderheading.nextAll('.slider:first');
-        if (sliderheading.hasClass('collapsed')) {
-            sliderheading.removeClass('collapsed');
-            showSlider(slider);
+        var categoryheading = $local_template(this);
+        var carddeck = categoryheading.nextAll('.card-deck:first');
+        if (!carddeck.hasClass('slider')) return;
+
+        if (categoryheading.hasClass('collapsed')) {
+            categoryheading.removeClass('collapsed');
+            if (carddeck.hasClass('slider')) {
+                showSlider(carddeck);
+            } else {
+                carddeck.show();
+            }
         } else {
-            sliderheading.addClass('collapsed');
-            slider.slideUp();
-            slider.hide();
+            categoryheading.addClass('collapsed');
+            carddeck.slideUp();
+            carddeck.hide();
         }
     });
+};
+
+// Wait for element to exist.
+function elementLoaded(element, count, callback) {
+    debugger;
+    if ($local_template(element).length == count) {
+        debugger;
+        // All elements loaded.
+        callback($local_template(element));
+    } else {
+        // Repeat every 500ms.
+        setTimeout(function() {
+            debugger;
+            elementLoaded(element, count, callback)
+        }, 50);
+    }
 };
 
 function initStepper() {
@@ -70,13 +98,21 @@ function initSliders() {
         var slider = $local_template(this);
         // Hide the sliders and show the loading spinner.
         slider.css('opacity', 0.01).slideUp();
+
         $local_template.when(slider.not('.slick-initialized').slick()).then(
             waitForFinalEvent(function() {
                 debugger;
                 showSlider(slider);
                 slider.slideUp();
-            }, 1000, "showSlider" + slider.attr("id"))
+            }, 2000, "showSlider" + slider.attr("id"))
         );
+    });
+
+
+    elementLoaded('.slick-initialized', $local_template('.slider').length, function(element) {
+        // Element is ready to use.
+        debugger;
+        registerMouseEvents();
     });
 }
 
@@ -97,7 +133,7 @@ function showSlider(slider) {
 
     // For each card in the slider, hide the body and footer, and animate the progress bar.
     slider.find('.card').each(function() {
-        debugger;
+        // debugger;
         var card = $local_template(this);
         var cardbody = card.find('div.card-body');
         var cardoverlay = card.find('div.card-img-overlay');
@@ -106,37 +142,41 @@ function showSlider(slider) {
     });
 }
 
-// Add listeners to document for slick slide mouseenter.
-$local_template(document).on('mouseenter', '.slick-slide', function() {
+function registerMouseEvents() {
+    // Add listeners to document for slick slide mouseenter.
+    // document or body?
     debugger;
-    var slide = $local_template(this);
-    var card = slide.find('div.card');
-    var cardbody = card.find('div.card-body');
-    var cardoverlay = card.find('div.card-img-overlay');
+    $local_template('body').on('mouseenter', '.slick-slide', function() {
+        debugger;
+        var slide = $local_template(this);
+        var card = slide.find('div.card');
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
 
-    // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
-    slide.css('animation-name', 'fadein-scaleup');
+        // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
+        slide.css('animation-name', 'fadein-scaleup');
 
-    // Use jquery transitions for revealing cardbody and cardfooter.
-    cardbody.stop().slideDown();
-    cardoverlay.stop().fadeOut();
-});
+        // Use jquery transitions for revealing cardbody and cardfooter.
+        cardbody.stop().slideDown();
+        cardoverlay.stop().fadeOut();
+    });
 
-// Add listeners for slick slide mouseleave.
-$local_template(document).on('mouseleave', '.slick-slide', function() {
-    debugger;
-    var slide = $local_template(this);
-    var card = slide.find('div.card');
-    var cardbody = card.find('div.card-body');
-    var cardoverlay = card.find('div.card-img-overlay');
+    // Add listeners for slick slide mouseleave.
+    $local_template('body').on('mouseleave', '.slick-slide', function() {
+        debugger;
+        var slide = $local_template(this);
+        var card = slide.find('div.card');
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
 
-    // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
-    slide.css('animation-name', 'fadeout-scaledown');
+        // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
+        slide.css('animation-name', 'fadeout-scaledown');
 
-    // Use jquery transitions for hiding cardbody.
-    cardbody.stop().slideUp();
-    cardoverlay.stop().fadeIn();
-});
+        // Use jquery transitions for hiding cardbody.
+        cardbody.stop().slideUp();
+        cardoverlay.stop().fadeIn();
+    });
+}
 
 var waitForFinalEvent = (function() {
     debugger;
