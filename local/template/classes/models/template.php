@@ -918,7 +918,7 @@ class template extends \core\persistent implements renderable, templatable {
             if (!empty($this->raw_get('importbackupid'))) {
                 $status .= ' - Import';
                 if (empty($this->raw_get('importrestoreid'))) {
-                    $status .= ' - Not restored';
+                    //$status .= ' - Not restored';
                 } else {
                     $status .= ' - Restored';
                 }
@@ -1399,7 +1399,7 @@ class template extends \core\persistent implements renderable, templatable {
         // Send message to user if enabled.
         $messageenabled = (bool)get_config('backup', 'backup_async_message_users');
         if ($messageenabled && $rc->get_status() == \backup::STATUS_FINISHED_OK) {
-            mtrace('Course copy: Sending user notification.');
+            //mtrace('Course copy: Sending user notification.');
             //$asynchelper = new async_helper('copy', $restoreid);
             //$messageid = $asynchelper->send_message();
             //mtrace('Course copy: Sent message: ' . $messageid);
@@ -1731,7 +1731,7 @@ class template extends \core\persistent implements renderable, templatable {
         // Send message to user if enabled.
         $messageenabled = (bool)get_config('backup', 'backup_async_message_users');
         if ($messageenabled && $rc->get_status() == \backup::STATUS_FINISHED_OK) {
-            mtrace('Course copy: Sending user notification.');
+            //mtrace('Course copy: Sending user notification.');
             //$asynchelper = new async_helper('copy', $restoreid);
             //$messageid = $asynchelper->send_message();
             //mtrace('Course copy: Sent message: ' . $messageid);

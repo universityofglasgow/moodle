@@ -1,49 +1,153 @@
+// Jquery already defined in current context.
+/* global $, Stepper */
+/* jslint latedef:false */
+/* eslint-disable no-unused-vars */
+/* jshint unused:false */
+/* eslint-disable no-debugger */
+/* jshint debug: true */
+
 var templatestepper;
+var templateselector = '#templatestepper';
+var idshortnameselector = '#id_shortname';
+var coursedetailsstep = 2;
+var sliderselector = '.slider';
+var usetemplateselector = '.add-template';
+var idtemplatecourseselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions';
+var sliderinitcount = 0;
 
-var $local_template = jQuery.noConflict();
+// We are not in a moodle AMD context, so use jquery in no conflict mode.
+// var $local_template = jQuery.noConflict();
 
-$local_template(document).ready(function() {
+/**
+ * Wait until the page is loaded before initialising.
+ */
+$(document).ready(function() {
     debugger;
-    init();
+    local_template_init();
 });
 
-function init() {
+/**
+ * Initialise.
+ */
+function local_template_init() {
     debugger;
 
-    initStepper();
-    initSliders();
+    // If Stepper exists, initialise stepper.
+    if ($(templateselector).length) {
+        local_template_initStepper();
+    }
 
-    // document or body?
-    $local_template('body').on('click', '.add-template', function() {
+    // If sliders exist, register event for when sliders finish loading, and initialise sliders.
+    if ($(sliderselector).length) {
+        $(sliderselector).on('init', function (event, slick) {
+            debugger;
+            sliderinitcount += 1;
+            // Have all sliders been initialised?
+            if ($(sliderselector).length === sliderinitcount) {
+                // local_template_registerSliderEvents();
+            }
+        });
+
+        local_template_initSliders();
+    }
+
+    local_template_registerEvents();
+}
+
+/**
+ * Initialise the stepper component.
+ */
+function local_template_initStepper() {
+    debugger;
+
+    // Initialise stepper.
+    templatestepper = new Stepper(document.querySelector(templateselector), {
+        linear: false,
+        animation: true
+    });
+
+    // Automatically goto the second step of the stepper if the shortname already exists. e.g. loading a saved template.
+    if ($(idshortnameselector).val()) {
+        templatestepper.to(coursedetailsstep);
+    }
+}
+
+/**
+ * Initialise the slick sliders.
+ */
+function local_template_initSliders() {
+    debugger;
+
+    // Initialise all the sliders.
+    $(sliderselector).each(function() {
         debugger;
-        $local_template("#templatecourseid").val = $local_template(this).attr("data-id");
-        var value = $local_template(this).attr("data-id");
-        var inputselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions li[data-value="' + value + '"]';
+        var slider = $(this);
+        // Hide the sliders and show the loading spinner.
+        slider.css('opacity', 0.01).slideUp();
+        $.when(slider.not('.slick-initialized').slick()).then(
+            local_template_showSlider(slider),
+            slider.slideUp()
+        );
+
+        /*
+                $.when(slider.not('.slick-initialized').slick()).then(
+                    waitForFinalEvent(function() {
+                        debugger;
+                        showSlider(slider);
+                        slider.slideUp();
+                    }, 2000, "showSlider" + slider.attr("id"))
+                );
+
+         */
+    });
+
+    /*
+        elementLoaded('.slick-initialized', $('.slider').length, function(element) {
+            // Element is ready to use.
+            debugger;
+            registerMouseEvents();
+        });
+     */
+
+}
+
+/**
+ * Register events
+ */
+function local_template_registerEvents() {
+    // document or body?
+    $('body').on('click', usetemplateselector, function() {
+        debugger;
+
+        var value = $(this).attr("data-id");
+        var inputselector = idtemplatecourseselector + ' li[data-value="' + value + '"]';
+        $("#templatecourseid").val = value;
         templatestepper.next();
-        $local_template(inputselector).trigger('click');
+        $(inputselector).trigger('click');
+        document.getElementById('page-content').scrollIntoView();
         return false;
     });
 
-    $local_template("#templatesteppertrigger1").on('click', function() {
+    $("#templatesteppertrigger1").on('click', function() {
         debugger;
-        $local_template('.slider').each(function () {
+        $(sliderselector).each(function () {
             debugger;
-            var slider = $local_template(this);
+            var slider = $(this);
             slider[0].slick.refresh();
-            resizeFixes(slider);
+            local_template_resizeFixes(slider);
         });
     });
 
-    $local_template("h1.category-heading").on('click', function() {
+    $("h1.category-heading").on('click', function() {
         debugger;
-        var categoryheading = $local_template(this);
+        var categoryheading = $(this);
         var carddeck = categoryheading.nextAll('.card-deck:first');
         if (!carddeck.hasClass('slider')) return;
 
         if (categoryheading.hasClass('collapsed')) {
             categoryheading.removeClass('collapsed');
             if (carddeck.hasClass('slider')) {
-                showSlider(carddeck);
+                local_template_showSlider(carddeck);
             } else {
                 carddeck.show();
             }
@@ -53,15 +157,15 @@ function init() {
             carddeck.hide();
         }
     });
-};
-
+}
+/*
 // Wait for element to exist.
-function elementLoaded(element, count, callback) {
+function local_template_elementLoaded(element, count, callback) {
     debugger;
-    if ($local_template(element).length == count) {
+    if ($(element).length == count) {
         debugger;
         // All elements loaded.
-        callback($local_template(element));
+        callback($(element));
     } else {
         // Repeat every 500ms.
         setTimeout(function() {
@@ -70,108 +174,9 @@ function elementLoaded(element, count, callback) {
         }, 50);
     }
 };
+*/
 
-function initStepper() {
-    debugger;
-    templatestepper = new Stepper(document.querySelector('#templatestepper'), {
-        linear: false,
-        animation: true
-    });
-
-    if ($local_template("#id_shortname").val()) {
-        templatestepper.to(2);
-    }
-}
-
-function initSliders() {
-    debugger;
-
-    // Initialise all the sliders.
-    $local_template('.slider').each(function() {
-        debugger;
-        var slider = $local_template(this);
-        // Hide the sliders and show the loading spinner.
-        slider.css('opacity', 0.01).slideUp();
-
-        $local_template.when(slider.not('.slick-initialized').slick()).then(
-            waitForFinalEvent(function() {
-                debugger;
-                showSlider(slider);
-                slider.slideUp();
-            }, 2000, "showSlider" + slider.attr("id"))
-        );
-    });
-
-
-    elementLoaded('.slick-initialized', $local_template('.slider').length, function(element) {
-        // Element is ready to use.
-        debugger;
-        registerMouseEvents();
-    });
-}
-
-function showSlider(slider) {
-    debugger;
-    var spinner = slider.parent().find(".spinner");
-
-    slider.show();
-    slider[0].slick.refresh();
-    resizeFixes(slider, false);
-
-    spinner.hide();
-    slider.css('opacity', 1).hide();
-    slider.slideDown({
-        queue: false,
-        duration: 'slow'
-    });
-
-    // For each card in the slider, hide the body and footer, and animate the progress bar.
-    slider.find('.card').each(function() {
-        // debugger;
-        var card = $local_template(this);
-        var cardbody = card.find('div.card-body');
-        var cardoverlay = card.find('div.card-img-overlay');
-        cardbody.hide();
-        cardoverlay.fadeIn();
-    });
-}
-
-function registerMouseEvents() {
-    // Add listeners to document for slick slide mouseenter.
-    // document or body?
-    debugger;
-    $local_template('body').on('mouseenter', '.slick-slide', function() {
-        debugger;
-        var slide = $local_template(this);
-        var card = slide.find('div.card');
-        var cardbody = card.find('div.card-body');
-        var cardoverlay = card.find('div.card-img-overlay');
-
-        // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
-        slide.css('animation-name', 'fadein-scaleup');
-
-        // Use jquery transitions for revealing cardbody and cardfooter.
-        cardbody.stop().slideDown();
-        cardoverlay.stop().fadeOut();
-    });
-
-    // Add listeners for slick slide mouseleave.
-    $local_template('body').on('mouseleave', '.slick-slide', function() {
-        debugger;
-        var slide = $local_template(this);
-        var card = slide.find('div.card');
-        var cardbody = card.find('div.card-body');
-        var cardoverlay = card.find('div.card-img-overlay');
-
-        // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
-        slide.css('animation-name', 'fadeout-scaledown');
-
-        // Use jquery transitions for hiding cardbody.
-        cardbody.stop().slideUp();
-        cardoverlay.stop().fadeIn();
-    });
-}
-
+/*
 var waitForFinalEvent = (function() {
     debugger;
     var timers = {};
@@ -185,30 +190,93 @@ var waitForFinalEvent = (function() {
         timers[uniqueId] = setTimeout(callback, ms);
     };
 })();
+*/
 
-function resizeFixes(slider, animate) {
+function local_template_resizeFixes(slider, animate) {
     debugger;
     slider.find('.slick-track').each(function() {
         debugger;
-        fixTrackHeight(this, animate);
+        local_template_fixTrackHeight(this, animate);
     });
 }
 
-function fixTrackHeight(track, animate) {
+function local_template_showSlider(slider) {
     debugger;
-    var list = $local_template(track).parent();
+    var spinner = slider.parent().find(".spinner");
+
+    slider.show();
+    slider[0].slick.refresh();
+    local_template_resizeFixes(slider, false);
+
+    spinner.hide();
+    slider.css('opacity', 1).hide();
+    slider.slideDown({
+        queue: false,
+        duration: 'slow'
+    });
+
+    // For each card in the slider, hide the body and footer.
+    slider.find('.card').each(function() {
+        // debugger;
+        var card = $(this);
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
+        cardbody.hide();
+        cardoverlay.fadeIn();
+    });
+}
+
+function local_template_registerSliderEvents(track) {
+    // Add listeners to document for slick slide mouseenter.
+    // document or body?
+    debugger;
+    $(track).on('mouseenter', '.slick-slide', function() {
+        debugger;
+        var slide = $(this);
+        var card = slide.find('div.card');
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
+
+        // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
+        slide.css('animation-name', 'fadein-scaleup');
+
+        // Use jquery transitions for revealing cardbody and cardfooter.
+        cardbody.stop().slideDown();
+        cardoverlay.stop().fadeOut();
+    });
+
+    // Add listeners for slick slide mouseleave.
+    $(track).on('mouseleave', '.slick-slide', function() {
+        debugger;
+        var slide = $(this);
+        var card = slide.find('div.card');
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
+
+        // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
+        slide.css('animation-name', 'fadeout-scaledown');
+
+        // Use jquery transitions for hiding cardbody.
+        cardbody.stop().slideUp();
+        cardoverlay.stop().fadeIn();
+    });
+}
+
+function local_template_fixTrackHeight(track, animate) {
+    debugger;
+    var list = $(track).parent();
     var prev = list.parent().find(".slick-prev");
     var next = list.parent().find(".slick-next");
-    var trackheight = $local_template(track).find(".slick-active").find(".card-img-top").height() + 60;
+    var trackheight = $(track).find(".slick-active").find(".card-img-top").height() + 60;
     if (trackheight < 260) {
         trackheight = 260;
     }
     var arrowheight = (trackheight - 60) / 2;
 
-    $local_template(track).css("overflow-y", 'unset');
+    $(track).css("overflow-y", 'unset');
 
     if (animate) {
-        $local_template(track).animate({
+        $(track).animate({
             queue: false,
             duration: 'slow',
             'height': trackheight + 'px'
@@ -224,9 +292,11 @@ function fixTrackHeight(track, animate) {
             'top': arrowheight + 'px'
         }, 100);
     } else {
-        $local_template(track).height(trackheight);
+        $(track).height(trackheight);
         prev.css("top", arrowheight + 'px');
         next.css("top", arrowheight + 'px');
     }
+
+    local_template_registerSliderEvents(track);
 
 }
