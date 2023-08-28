@@ -198,6 +198,6 @@ $string['invisiblecategory'] = 'Invisible Category';
 
 $string['availableviews'] = 'Available Views';
 $string['availableviews_desc'] = 'Sets the views available to uses of this tool via a select option. If only one option is selected, the view is enforced and the selector is removed.';
-$string['availableviews_slider'] = 'Slider';
-$string['availableviews_staticdisplay'] = 'Static Display';
-$string['availableviews_highcompatabilitymode'] = 'High Compatability mode';
+$string['availableviews_slider'] = 'Default';
+$string['availableviews_staticdisplay'] = 'Static';
+$string['availableviews_highcompatabilitymode'] = 'Basic';

@@ -1535,8 +1535,8 @@ class template extends \core\persistent implements renderable, templatable {
         $id = $this->raw_get('id');
 
         $summary = $this->raw_get('summary');
+        $course = $DB->get_record('course', ['id' => $this->raw_get('createdcourseid')]);
         if (!empty($summary)) {
-            $course = $DB->get_record('course', ['id' => $this->raw_get('createdcourseid')]);
             if (!$course) {
                 notification::error("Could not retrieve course record based on createdcourseid for course template selector: '{$id}'");
                 return false;

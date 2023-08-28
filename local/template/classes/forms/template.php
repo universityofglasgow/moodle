@@ -116,6 +116,9 @@ class template extends \core\form\persistent {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_SELECTTEMPLATE, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_START, []));
         } else {
+            //$mform->addElement('html', $renderer->render_stepper(self::STEPPER_SELECTTEMPLATE, []));
+            //$template = 'local_template/stepper-template';
+            //$data = $this->get_data_template($template);
             $mform->addElement('header', 'coursedetails', get_string('coursedetails', 'local_template'));
         }
 
