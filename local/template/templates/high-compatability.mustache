@@ -29,7 +29,7 @@
     {
     }
 }}
-<div id="test-nl-{{step}}" role="tabpanel" class="bs-stepper-pane" aria-labelledby="templatesteppertrigger{{step}}">
+<div>
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
             {{{introduction}}}
@@ -56,14 +56,14 @@
     {{/slider}}
 
     {{^slider}}
-        {{#categories}}
-            {{> local_template/static }}
-        {{/categories}}
-        {{^categories}}
-            {{> core/notification_info}}
-        {{/categories}}
+        <div class="container">
+            {{#categories}}
+                    {{> local_template/static }}
+            {{/categories}}
+            {{^categories}}
+                {{> core/notification_info}}
+            {{/categories}}
+        </div>
     {{/slider}}
 
-
-    <button class="btn btn-primary float-right" onclick="templatestepper.next();">Next</button>
 </div>

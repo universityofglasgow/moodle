@@ -126,6 +126,12 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template($template, $data);
     }
 
+    public function render_high_compatability() {
+        $template = 'local_template/high-compatability';
+        $data = $this->get_data_template($template);
+        return parent::render_from_template($template, $data);
+    }
+
     private function get_data_template() {
         global $CFG;
         $introduction = get_config('local_template', 'introduction');

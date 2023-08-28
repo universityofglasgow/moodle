@@ -100,9 +100,9 @@ class template extends \core\form\persistent {
             $availableviewselement->setValue($currentview);
         }
 
-        $createcoursemanually = '
-                <a href="' . models\template::get_addnewcourselink() . '" type="button" class="btn btn-primary float">' . get_string('usedefaultmoodlefunctions', 'local_template') . '</a><br/>
-        ';
+        $createcoursemanually = '<div>
+                <a href="' . models\template::get_addnewcourselink() . '" type="button" class="btn btn-primary float">' . get_string('usedefaultmoodlefunctions', 'local_template') . '</a>
+        </div><br /><br />';
         $mform->addElement('html', $createcoursemanually);
 
         // Stepper section: Course.
@@ -116,9 +116,8 @@ class template extends \core\form\persistent {
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_SELECTTEMPLATE, []));
             $mform->addElement('html', $renderer->render_stepper(self::STEPPER_COURSE_START, []));
         } else {
-            //$mform->addElement('html', $renderer->render_stepper(self::STEPPER_SELECTTEMPLATE, []));
-            //$template = 'local_template/stepper-template';
-            //$data = $this->get_data_template($template);
+            $mform->addElement('header', 'selecttemplate', get_string('selecttemplate', 'local_template'));
+            $mform->addElement('html', $renderer->render_high_compatability());
             $mform->addElement('header', 'coursedetails', get_string('coursedetails', 'local_template'));
         }
 

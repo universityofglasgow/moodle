@@ -12,7 +12,7 @@ var idshortnameselector = '#id_shortname';
 var coursedetailsstep = 2;
 var sliderselector = '.slider';
 var usetemplateselector = '.add-template';
-var idtemplatecourseselector = '#fitem_id_templatecourseid .form-autocomplete-suggestions';
+var idtemplatecourseselector = '#fitem_id_templatecourseid';
 var sliderinitcount = 0;
 
 // We are not in a moodle AMD context, so use jquery in no conflict mode.
@@ -61,14 +61,16 @@ function local_template_initStepper() {
     debugger;
 
     // Initialise stepper.
-    templatestepper = new Stepper(document.querySelector(templateselector), {
-        linear: false,
-        animation: true
-    });
+    if ($(templateselector).length) {
+        templatestepper = new Stepper(document.querySelector(templateselector), {
+            linear: false,
+            animation: true
+        });
 
-    // Automatically goto the second step of the stepper if the shortname already exists. e.g. loading a saved template.
-    if ($(idshortnameselector).val()) {
-        templatestepper.to(coursedetailsstep);
+        // Automatically goto the second step of the stepper if the shortname already exists. e.g. loading a saved template.
+        if ($(idshortnameselector).val()) {
+            templatestepper.to(coursedetailsstep);
+        }
     }
 }
 
@@ -120,12 +122,19 @@ function local_template_registerEvents() {
         debugger;
 
         var value = $(this).attr("data-id");
-        var inputselector = idtemplatecourseselector + ' li[data-value="' + value + '"]';
+        var inputselector = idtemplatecourseselector + ' .form-autocomplete-suggestions li[data-value="' + value + '"]';
         $("#templatecourseid").val = value;
-        templatestepper.next();
+
+        if (templatestepper !== undefined) {
+            templatestepper.next();
+        }
         $(inputselector).trigger('click');
-        document.getElementById('page-content').scrollIntoView();
-        return false;
+        if ($('#id_coursedetailscontainer').length) {
+            if (!$('#id_coursedetailscontainer').hasClass('show')) {
+                $('a[href="#id_coursedetailscontainer"]').trigger('click');
+            }
+        }
+        document.querySelector(idtemplatecourseselector).scrollIntoView({behaviour: "auto", block: "start"}); //{block: "end",inline: "nearest"}
     });
 
     $("#templatesteppertrigger1").on('click', function() {
