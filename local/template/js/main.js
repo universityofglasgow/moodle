@@ -27,7 +27,7 @@ $(document).ready(function() {
 
 $( window ).on( "resize", function() {
     debugger;
-    local_template_registerEvents();
+    local_template_resizeFixes();
 } );
 
 /**
