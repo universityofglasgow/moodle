@@ -239,20 +239,6 @@ function local_template_registerSliderEvents(track) {
     // Add listeners to document for slick slide mouseenter.
     // document or body?
     debugger;
-    $(track).on('mouseenter', '.slick-slide', function() {
-        debugger;
-        var slide = $(this);
-        var card = slide.find('div.card');
-        var cardbody = card.find('div.card-body');
-        var cardoverlay = card.find('div.card-img-overlay');
-
-        // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
-        slide.css('animation-name', 'fadein-scaleup');
-
-        // Use jquery transitions for revealing cardbody and cardfooter.
-        cardbody.stop().slideDown();
-        cardoverlay.stop().fadeOut();
-    });
 
     // Add listeners for slick slide mouseleave.
     $(track).on('mouseleave', '.slick-slide', function() {
@@ -268,6 +254,21 @@ function local_template_registerSliderEvents(track) {
         // Use jquery transitions for hiding cardbody.
         cardbody.stop().slideUp();
         cardoverlay.stop().fadeIn();
+    });
+
+    $(track).on('mouseenter', '.slick-slide', function() {
+        debugger;
+        var slide = $(this);
+        var card = slide.find('div.card');
+        var cardbody = card.find('div.card-body');
+        var cardoverlay = card.find('div.card-img-overlay');
+
+        // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
+        slide.css('animation-name', 'fadein-scaleup');
+
+        // Use jquery transitions for revealing cardbody and cardfooter.
+        cardbody.stop().slideDown();
+        cardoverlay.stop().fadeOut();
     });
 }
 
