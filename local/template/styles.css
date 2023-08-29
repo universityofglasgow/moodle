@@ -14,11 +14,11 @@
 
 @keyframes fadein-scaleup {
     0%   {opacity: 0.75; transform: scale(1);}
-    100% {opacity: 1; transform: scale(1.25);}
+    100% {opacity: 1; transform: scale(1.2);}
 }
 
 @keyframes fadeout-scaledown {
-    0%   {opacity: 1; transform: scale(1.25);}
+    0%   {opacity: 1; transform: scale(1.2);}
     100% {opacity: 0.75; transform: scale(1);}
 }
 
