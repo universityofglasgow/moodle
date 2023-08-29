@@ -249,6 +249,7 @@ function local_template_registerSliderEvents(track) {
         var cardoverlay = card.find('div.card-img-overlay');
 
         // On mouseleave, return the current slide up to 75% opacity, and reset the scale to 1x.
+        slide.css('animation-delay', '20ms');
         slide.css('animation-name', 'fadeout-scaledown');
 
         // Use jquery transitions for hiding cardbody.
@@ -264,6 +265,7 @@ function local_template_registerSliderEvents(track) {
         var cardoverlay = card.find('div.card-img-overlay');
 
         // On mouseenter, bring the current slide up to 100% opacity, and scale by 1.2x.
+        slide.css('animation-delay', '20ms');
         slide.css('animation-name', 'fadein-scaleup');
 
         // Use jquery transitions for revealing cardbody and cardfooter.
