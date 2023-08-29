@@ -288,7 +288,7 @@ class template extends \core\form\persistent {
                 FROM {course} c
                 INNER JOIN {course_categories} cc ON cc.id = c.category
                 INNER JOIN {context} ctx ON ctx.contextlevel = :contextcategory AND ctx.instanceid = cc.id
-                WHERE c.timecreated > :twoyearsagosecs
+                WHERE c.timemodified > :twoyearsagosecs
                 AND c.category ';
             $params['contextcategory'] = CONTEXT_COURSECAT;
             $params['twoyearsagosecs'] = time() - YEARSECS * 2;

@@ -202,8 +202,8 @@ class template {
         echo $OUTPUT->box(self::rendertemplates($id, true));
 
         echo '<script src="' . $CFG->wwwroot . '/local/template/js/bs-stepper.min.js" type="text/javascript" charset="utf-8"></script>';
-        echo '<script src="' . $CFG->wwwroot . '/local/template/js/main.js" type="text/javascript" charset="utf-8"></script>';
         echo '<script src="' . $CFG->wwwroot . '/local/template/slick/slick.js" type="text/javascript" charset="utf-8"></script>';
+        echo '<script src="' . $CFG->wwwroot . '/local/template/js/main.js" type="text/javascript" charset="utf-8"></script>';
         echo $OUTPUT->footer();
 
         die;
