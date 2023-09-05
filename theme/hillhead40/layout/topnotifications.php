@@ -39,25 +39,25 @@ if ((empty($_SESSION['SESSION']->hillhead_notifications) ||
         && $PAGE->pagetype != 'admin-search') {
     switch ($hillheadnotificationtype) {
         case 'alert-danger':
-            $notiftext = '<div class="alert alert-danger mb-3 d-flex align-items-center"><i class="fa fa-warning"></i>';
+            $notiftext = '<div class="alert alert-danger mb-3 d-flex align-items-center">';
             $notiftext .= '<span class="d-flex-item">'.$hillheadnotificationtext.'</span><a class="close d-flex-item ml-auto" ';
             $notiftext .= 'href="'.$CFG->wwwroot.'/theme/' . $themetype . '/notification.php?h='.md5($hillheadnotificationtext);
             $notiftext .= '" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         case 'alert-warning':
-            $notiftext = '<div class="alert alert-warning mb-3 d-flex align-items-center"><i class="fa fa-warning"></i>';
+            $notiftext = '<div class="alert alert-warning mb-3 d-flex align-items-center">';
             $notiftext .= '<span class="d-flex-item">'.$hillheadnotificationtext.'</span><a class="close d-flex-item ml-auto" ';
             $notiftext .= 'href="'.$CFG->wwwroot.'/theme/' . $themetype . '/notification.php?h='.md5($hillheadnotificationtext);
             $notiftext .= '" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         case 'alert-success':
-            $notiftext = '<div class="alert alert-success mb-3 d-flex align-items-center"><i class="fa fa-info-circle"></i>';
+            $notiftext = '<div class="alert alert-success mb-3 d-flex align-items-center">';
             $notiftext .= '<span class="d-flex-item">'.$hillheadnotificationtext.'</span><a class="close d-flex-item ml-auto" ';
             $notiftext .= 'href="'.$CFG->wwwroot.'/theme/' . $themetype . '/notification.php?h='.md5($hillheadnotificationtext);
             $notiftext .= '" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
             break;
         case 'alert-info':
-            $notiftext = '<div class="alert alert-info mb-3 d-flex align-items-center"><i class="fa fa-info-circle"></i>';
+            $notiftext = '<div class="alert alert-info mb-3 d-flex align-items-center">';
             $notiftext .= '<span class="d-flex-item">'.$hillheadnotificationtext.'</span><a class="close d-flex-item ml-auto" ';
             $notiftext .= 'href="'.$CFG->wwwroot.'/theme/' . $themetype . '/notification.php?h='.md5($hillheadnotificationtext);
             $notiftext .= '" aria-label="Close"><span aria-hidden="true">&times;</span></a></div>';
@@ -120,7 +120,6 @@ if ($PAGE->pagetype == 'my-index') {
         $notiftext .= '<div class="alert alert-info alert-jumbo"><a class="close" href="' . $CFG->wwwroot;
         $notiftext .= '/theme/hillhead40/notification.php?h=' . md5('DashboardNoCourseWarning');
         $notiftext .= '" aria-label="Close"><span aria-hidden="true">&times;</span></a><span class="d-flex-item">';
-        $notiftext .= '<i class="fa fa-info-circle"></i>Can\'t see one of your courses?';
         $notiftext .= get_config('theme_hillhead40', 'hillhead_student_course_alert_text') . '</span></div>';
     }
 }
