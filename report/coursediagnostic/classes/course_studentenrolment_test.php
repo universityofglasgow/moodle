@@ -51,10 +51,17 @@ class course_studentenrolment_test implements \report_coursediagnostic\course_di
      */
     public function runtest(): array {
 
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $DB;
         require_once("$CFG->libdir/accesslib.php");
 
-        $studentyusers = count_role_users(5, $PAGE->context);
+        // The 'student' archetype can encompass many roles, e.g. revision student.
+        // count_role_users() handily accepts an array of roleids to check for.
+        $result = $DB->get_records('role', ['archetype' => 'student']);
+        $roleids = [];
+        foreach($result as $obj) {
+            $roleids[] = $obj->id;
+        }
+        $studentyusers = count_role_users($roleids, $PAGE->context);
         $participantsurl = new \moodle_url('/user/index.php', ['id' => $this->course->id]);
         $participantslink = \html_writer::link($participantsurl, get_string('participants_link_text', 'report_coursediagnostic'));
 
