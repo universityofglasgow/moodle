@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['core/templates', 'core/modal', 'core/modal_events', 'core/notification'], function(
+define(['core/templates', 'core/modal', 'core/modal_events', 'core/notification'], function (
     Templates,
     Modal,
     ModalEvents,
@@ -31,16 +31,18 @@ define(['core/templates', 'core/modal', 'core/modal_events', 'core/notification'
     Templates.render('block_xp/modal-popup-notification', []);
 
     /**
-   * Show the modal.
-   *
-   * @param {Object} context The template context.
-   * @param {Object} options The options.
-   */
+     * Show the modal.
+     *
+     * @param {Object} context The template context.
+     * @param {Object} options The options.
+     */
     function show(context, options) {
         options = options || {};
         Templates.render('block_xp/modal-popup-notification', context)
             .then((html) => {
                 const modal = new Modal(html);
+                const footer = modal.getFooter()[0];
+                const hideBtn = footer.querySelector('[data-action="hide"]');
 
                 // Prevent dismissing by clicking outside.
                 if (typeof ModalEvents.outsideClick !== 'undefined') {
@@ -54,6 +56,13 @@ define(['core/templates', 'core/modal', 'core/modal_events', 'core/notification'
                     if (options.onShown) {
                         options.onShown();
                     }
+
+                    // Show the button after a few seconds.
+                    setTimeout(() => {
+                        hideBtn.classList.remove('xp-pointer-events-none');
+                        hideBtn.classList.remove('xp-invisible');
+                        hideBtn.classList.remove('xp-opacity-0');
+                    }, 4000);
                 });
 
                 // Broadcast when the modal has been dismissed.

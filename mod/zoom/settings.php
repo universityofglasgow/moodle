@@ -36,14 +36,16 @@ if ($ADMIN->fulltree) {
 
     // Test whether connection works and display result to user.
     if (!CLI_SCRIPT && $PAGE->url == $CFG->wwwroot . '/' . $CFG->admin . '/settings.php?section=modsettingzoom') {
-        $status = 'connectionok';
-        $notifyclass = 'notifysuccess';
+        $status = 'connectionfailed';
+        $notifyclass = 'notifyproblem';
         $errormessage = '';
         try {
             zoom_get_user(zoom_get_api_identifier($USER));
+            $status = 'connectionok';
+            $notifyclass = 'notifysuccess';
+        } catch (\mod_zoom\webservice_exception $error) {
+            $errormessage = $error->response;
         } catch (moodle_exception $error) {
-            $notifyclass = 'notifyproblem';
-            $status = 'connectionfailed';
             $errormessage = $error->a;
         }
 
@@ -69,14 +71,6 @@ if ($ADMIN->fulltree) {
     $clientsecret = new admin_setting_configpasswordunmask('zoom/clientsecret', get_string('clientsecret', 'mod_zoom'),
             get_string('clientsecret_desc', 'mod_zoom'), '');
     $settings->add($clientsecret);
-
-    $apikey = new admin_setting_configtext('zoom/apikey', get_string('apikey', 'mod_zoom'),
-            get_string('apikey_desc', 'mod_zoom'), '', PARAM_ALPHANUMEXT);
-    $settings->add($apikey);
-
-    $apisecret = new admin_setting_configpasswordunmask('zoom/apisecret', get_string('apisecret', 'mod_zoom'),
-            get_string('apisecret_desc', 'mod_zoom'), '');
-    $settings->add($apisecret);
 
     $zoomurl = new admin_setting_configtext('zoom/zoomurl', get_string('zoomurl', 'mod_zoom'),
             get_string('zoomurl_desc', 'mod_zoom'), '', PARAM_URL);
@@ -363,7 +357,7 @@ if ($ADMIN->fulltree) {
     $recordingoption = new admin_setting_configselect('zoom/recordingoption',
         get_string('option_auto_recording', 'mod_zoom'),
         get_string('option_auto_recording_help', 'mod_zoom'),
-        ZOOM_AUTORECORDING_NONE, $autorecordingchoices);
+        ZOOM_AUTORECORDING_USERDEFAULT, $autorecordingchoices);
     $settings->add($recordingoption);
 
     $allowrecordingchangeoption = new admin_setting_configcheckbox('zoom/allowrecordingchangeoption',

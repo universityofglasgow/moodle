@@ -220,7 +220,7 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
 
         // If part has combined unit answer input.
         if ($part->part_has_combined_unit_field()) {
-            $variablename = "${i}_";
+            $variablename = "{$i}_";
             $currentanswer = $qa->get_last_qt_var($variablename);
             $inputname = $qa->get_qt_field_name($variablename);
             $inputattributes = array(
@@ -263,7 +263,7 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
         $inputs = array();
         foreach (range(0, $part->numbox) as $j) {    // Replace the input box for each placeholder {_0}, {_1} ...
             $placeholder = ($j == $part->numbox) ? "_u" : "_$j";    // The last one is unit.
-            $variablename = "${i}_$j";
+            $variablename = "{$i}_$j";
             $currentanswer = $qa->get_last_qt_var($variablename);
             $inputname = $qa->get_qt_field_name($variablename);
             $inputattributes = array(
@@ -485,7 +485,13 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
 
         $correctanswer = $question->format_text($question->correct_response_formatted($part),
                 $part->subqtextformat , $qa, 'qtype_formulas', 'answersubqtext', $part->id, false);
-        return html_writer::nonempty_tag('div', get_string('correctansweris', 'qtype_formulas', $correctanswer),
+
+        if ($part->answernotunique) {
+            $string = 'correctansweris';
+        } else {
+            $string = 'uniquecorrectansweris';
+        }
+        return html_writer::nonempty_tag('div', get_string($string, 'qtype_formulas', $correctanswer),
                     array('class' => 'formulaspartcorrectanswer'));
     }
 

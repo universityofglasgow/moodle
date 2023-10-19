@@ -1,3 +1,24 @@
+Changes in version 2023-08-16-06
+* Fix: In Snakes and Ladders uses last version of questions.
+
+Changes in version 2023-08-16-05
+* Fix: Showing equation in crossword.
+
+Changes in version 2023-08-16-04
+* Fix: Showing images on questions.
+
+Changes in version 2023-08-16-03
+* Fix: In Cryptex uses last version of questions.
+
+Changes in version 2023-08-16-02
+* Fix: In showanswers.php uses last version of questions.
+
+Changes in version 2023-08-16-01
+* Fix: Show the correct number of questions in mod_form.php (Ignores old versions of questions).
+
+Changes in version 2023-08-16
+* Fix: Problem in showing buttons in crossword.
+
 Changes in version 2023-01-25
 * Fix: Modle 4.2 compatibility.
 

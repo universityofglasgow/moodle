@@ -134,16 +134,17 @@ function game_cross_new( $game, $attemptid, &$crossm) {
  * @param array $legend
  * @param string $title
  */
-function showlegend( $legend, $title) {
+function showlegend( $dir, $legend, $title) {
     if (count( $legend) == 0) {
         return;
     }
 
-    echo "<br><b>$title</b><br>";
+    echo "<br><b>$title</b><br>\n";
     foreach ($legend as $key => $line) {
         $line = game_repairquestion( $line);
-        echo game_filtertext( "$key: $line<br>", 0);
+        echo "$key: <div id={$dir}{$key}>".game_filtertext( "$line<br>", 0)."</div>\n";
     }
+    echo "\n";
 }
 
 /**
@@ -550,7 +551,12 @@ function SelectThisWord(event) {
     s = s + WordLength[CurrentWord] + (WordLength[CurrentWord] == 1 ? <?php echo $letters;?>);
     document.getElementById("wordinfo").innerHTML = s;
 
-    document.getElementById("wordclue").innerHTML = Clue[CurrentWord];
+    if( CurrentWord <= LastHorizontalWord) {
+        id = 'a' + ( 1 + WordY[ CurrentWord]);
+    } else {
+        id = 'd' + ( 1 + WordX[ CurrentWord]);
+    }
+    document.getElementById("wordclue").innerHTML = document.getElementById( id).innerHTML;
     document.getElementById("worderror").style.display = "none";
 
     if (TheirWordLength == WordLength[CurrentWord]) {
@@ -911,18 +917,19 @@ function CheckHtmlClick() {
         echo '<div style="margin-top: 1em;">';
 
         if (!$done) {
-            echo '<button id="checkbutton" type="button" onclick="CheckServerClick( 0);" style="display: none;">'.
+            echo '<button id="checkbutton" type="button" onclick="CheckServerClick( 0);" style="display: inline;">'.
             get_string( 'cross_checkbutton', 'game');
+            echo '</button>';
+
+            echo ' &nbsp;&nbsp;&nbsp;&nbsp;<button id="finishattemptbutton" '.
+                ' type="button" onclick="CheckServerClick( 1);" style="display: inline;">'.
+            get_string( 'cross_endofgamebutton', 'game');
             echo '</button>';
         }
 
-        echo ' &nbsp;&nbsp;&nbsp;&nbsp;<button id="finishattemptbutton" '.
-        ' type="button" onclick="CheckServerClick( 1);" style="display: none;">'.
-        get_string( 'cross_endofgamebutton', 'game');
-        echo '</button>';
         if ($game->param5 == 1 || $game->param5 == null) {
             echo ' &nbsp;&nbsp;&nbsp;&nbsp;<button id="printbutton" type="button" '.
-            ' onclick="OnPrint( 0);" style="display: none;">'.get_string( 'print', 'game');
+            ' onclick="OnPrint( 0);" style="display: inline;">'.get_string( 'print', 'game');
             echo '</button>';
         }
 
@@ -1095,6 +1102,6 @@ function game_cross_show_welcome1() {
  * @param stdClass $cross
  */
 function game_cross_show_legends( $cross) {
-    ShowLegend( $cross->mlegendh,  get_string( 'cross_across', 'game'));
-    ShowLegend( $cross->mlegendv, get_string( 'cross_down', 'game'));
+    ShowLegend( 'a', $cross->mlegendh,  get_string( 'cross_across', 'game'));
+    ShowLegend( 'd', $cross->mlegendv, get_string( 'cross_down', 'game'));
 }

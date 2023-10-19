@@ -7,8 +7,8 @@ is why I'm now asking for your financial support in my endeavours.  Without your
 If you'd like to sponsor, get support or fund improvements, then please do get in touch via:
 
 - gjbarnard | Gmail dt com address.
-- GitHub | Please outline your issue / improvement on '[GitHub](https://github.com/gjb2048/moodle-format_grid/issues)'.
-- @gjbarnard | '[Twitter](https://twitter.com/gjbarnard)'.
+- GitHub | Please outline your issue / improvement on '[GitHub](https://github.com/gjbarnard/moodle-format_grid/issues)'.
+- @gjbarnard | '[X](https://twitter.com/gjbarnard)'.
 
 Open source software
 ====================
@@ -20,7 +20,7 @@ to ask questions.
 The Grid format can be obtained from:
 
 * [Moodle.org](https://moodle.org/plugins/view.php?plugin=format_grid).
-* [GitHub](https://github.com/gjb2048/moodle-format_grid/releases).
+* [GitHub](https://github.com/gjbarnard/moodle-format_grid/releases).
 
 You have all the rights granted to you by the GPLv3 license.  If you are unsure about anything, then the
 FAQ - [GPL FAQ](https://www.gnu.org/licenses/gpl-faq.html) - is a good place to look.
@@ -28,7 +28,7 @@ FAQ - [GPL FAQ](https://www.gnu.org/licenses/gpl-faq.html) - is a good place to 
 If you reuse any of the code then I kindly ask that you make reference to the format.
 
 If you make improvements or bug fixes then I would appreciate if you would send them back to me by forking from
-[GitHub](https://github.com/gjb2048/moodle-format_grid/) and doing a 'Pull Request' so that the rest of the Moodle community
+[GitHub](https://github.com/gjbarnard/moodle-format_grid/) and doing a 'Pull Request' so that the rest of the Moodle community
 benefits.
 
 Required release of Moodle
@@ -45,7 +45,7 @@ is essential that you are operating the required release of Moodle as stated abo
 functionality that is out of its control.
 
 If you think you've discovered a genuine bug with the format then please look at the Moodle Course and course formats forum first to see if it
-has already been repoted.  Secondly, look at [GitHub](https://github.com/gjb2048/moodle-format_grid/issues), and thirdly [Moodle Tracker](https://tracker.moodle.org/browse/CONTRIB/component/11231).
+has already been repoted.  Secondly, look at [GitHub](https://github.com/gjbarnard/moodle-format_grid/issues).
 
 I operate a policy that I will fix all genuine issues in 'my' (not other developers of the format) code, when fully described and
 replicatable.
@@ -54,13 +54,13 @@ It is essential that you provide as much information as possible, the critical i
 version.php file / or the top of the 'Information' settings tab.  Other information such as specific Moodle release, format name and
 release also helps.  A screen shot can be really useful in visualising the issue along with any files you consider to be relevant.
 
-You can use either the '[Course and course formats forum](https://moodle.org/mod/forum/view.php?id=47)' or '[GitHub](https://github.com/gjb2048/moodle-format_grid/issues)'.
+You can use either the '[Course and course formats forum](https://moodle.org/mod/forum/view.php?id=47)' or '[GitHub](https://github.com/gjbarnard/moodle-format_grid/issues)'.
 
 Currently developed and maintained by
 =====================================
 G J Barnard MSc. BSc(Hons)(Sndw). MBCS. CEng. CITP. PGCE.
 
 - Moodle profile | [Moodle.org](https://moodle.org/user/profile.php?id=442195)
-- @gjbarnard     | [Twitter](https://twitter.com/gjbarnard)
+- @gjbarnard     | [X](https://twitter.com/gjbarnard)
 - Web profile    | [About.me](https://about.me/gjbarnard)
 - Website        | [Website](https://gjbarnard.co.uk)

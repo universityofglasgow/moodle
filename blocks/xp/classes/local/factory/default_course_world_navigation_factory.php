@@ -54,7 +54,6 @@ class default_course_world_navigation_factory implements course_world_navigation
      *
      * @param url_resolver $resolver The URL resolver.
      * @param config $adminconfig Admin config.
-     * @param user_indicator $indicator The indicator.
      */
     public function __construct(url_resolver $resolver, config $adminconfig) {
         $this->resolver = $resolver;
@@ -91,6 +90,8 @@ class default_course_world_navigation_factory implements course_world_navigation
         $urlresolver = $this->resolver;
         $renderer = \block_xp\di::get('renderer');
         $accessperms = $world->get_access_permissions();
+        $hasaddon = di::get('addon')->is_activated();
+        $showpromo = $this->adminconfig->get('enablepromoincourses');
 
         if ($world->get_config()->get('enableinfos')) {
             $links[] = [
@@ -170,13 +171,33 @@ class default_course_world_navigation_factory implements course_world_navigation
                 'id' => 'rules',
                 'url' => $urlresolver->reverse('rules', ['courseid' => $courseid]),
                 'text' => get_string('navpoints', 'block_xp'),
-                'children' => [
+                'children' => array_filter([
                     [
                         'id' => 'rules',
                         'url' => $urlresolver->reverse('rules', ['courseid' => $courseid]),
-                        'text' => get_string('navrules', 'block_xp'),
-                    ]
-                ]
+                        'text' => get_string('naveventrules', 'block_xp'),
+                    ],
+                    $showpromo || $hasaddon ?
+                    [
+                        'id' => 'graderules',
+                        'url' => $urlresolver->reverse('graderules', ['courseid' => $courseid]),
+                        'text' => get_string('navgraderules', 'block_xp'),
+                        'addonrequired' => !$hasaddon
+                    ] : null,
+                    $showpromo || $hasaddon ?
+                    [
+                        'id' => 'drops',
+                        'url' => $urlresolver->reverse('drops', ['courseid' => $courseid]),
+                        'text' => get_string('navdrops', 'block_xp'),
+                        'addonrequired' => !$hasaddon
+                    ] : null,
+                    $showpromo || $hasaddon ? [
+                        'id' => 'import',
+                        'url' => $urlresolver->reverse('import', ['courseid' => $courseid]),
+                        'text' => get_string('navimport', 'block_xp'),
+                        'addonrequired' => !$hasaddon
+                    ] : null
+                ])
             ];
 
             $links[] = [
@@ -193,10 +214,9 @@ class default_course_world_navigation_factory implements course_world_navigation
             //   $CFG->forced_plugin_settings = ['block_xp' => ['enablepromoincourses' => 0]];
             //
             // @codingStandardsIgnoreEnd
-            $localxp = di::get('addon')->is_activated();
-            if ($this->adminconfig->get('enablepromoincourses') || $localxp) {
+            if ($showpromo || $hasaddon) {
                 $star = $renderer->pix_icon('star', '', 'block_xp', ['class' => 'icon']);
-                if ($localxp) {
+                if ($hasaddon) {
                     $star = '';
                 }
 

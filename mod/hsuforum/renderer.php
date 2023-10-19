@@ -117,7 +117,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $modinfo = get_fast_modinfo($forum->course);
         $forums = $modinfo->get_instances_of('hsuforum');
         if (!isset($forums[$forum->id])) {
-            print_error('invalidcoursemodule');
+            throw new \moodle_exception('invalidcoursemodule');
         }
         $cm = $forums[$forum->id];
 
@@ -128,18 +128,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         if ($id) {
             if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-                print_error('coursemisconf');
+                throw new \moodle_exception('coursemisconf');
             }
         } else if ($f) {
             if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-                print_error('coursemisconf');
+                throw new \moodle_exception('coursemisconf');
             }
 
             // move require_course_login here to use forced language for course
             // fix for MDL-6926
             require_course_login($course, true, $cm);
         } else {
-            print_error('missingparameter');
+            throw new \moodle_exception('missingparameter');
         }
 
         $context = \context_module::instance($cm->id);
@@ -340,7 +340,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (!property_exists($discussion, 'unread') or empty($discussion->unread)) {
             $discussion->unread = '-';
         }
-        $format = get_string('articledateformat', 'hsuforum');
+        $format = get_string('userdateformat', 'hsuforum');
 
         $groups = groups_get_all_groups($course->id, 0, $cm->groupingid);
         $group = '';
@@ -491,7 +491,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->fullname       = $postuser->fullname;
         $data->subject        = property_exists($post, 'breadcrumb') ? $post->breadcrumb : $this->raw_post_subject($post);
         $data->message        = $this->post_message($post, $cm, $search);
-        $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
+        $data->created        = userdate($post->created, get_string('userdateformat', 'hsuforum'));
         $data->rawcreated     = $post->created;
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
@@ -1917,7 +1917,7 @@ HTML;
      * @param int $discussion
      * @return string
      */
-    public function render_ax_button(moodle_url $url, $content, $method = 'post', $pinlink, $discussion) {
+    public function render_ax_button(moodle_url $url, $content, $method, $pinlink, $discussion) {
         global $PAGE;
 
         $PAGE->requires->js_call_amd('mod_hsuforum/accessibility', 'init', array());

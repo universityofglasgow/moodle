@@ -36,12 +36,41 @@
     gap: 0.75rem;
 }
 
+.format-grid .grid-justify-start {
+    justify-content: start;
+}
+
+.format-grid .grid-justify-center {
+    justify-content: center;
+}
+
+.format-grid .grid-justify-end {
+    justify-content: end;
+}
+
+.format-grid .grid-justify-space-around {
+    justify-content: space-around;
+}
+
+.format-grid .grid-justify-space-between {
+    justify-content: space-between;
+}
+
+.format-grid .grid-justify-space-evenly {
+    justify-content: space-evenly;
+}
+
 .format-grid .thegrid .grid-section {
     width: 210px;
 }
 
 .format-grid .thegrid .grid-section.currentgridsection {
     border: 2px solid var(--primary);
+}
+
+.format-grid .thegrid .grid-current-section .grid-section-inner {
+    border: 2px solid #183404;
+    border-radius: .5rem;
 }
 
 .format-grid .thegrid .grid-image {

@@ -1,5 +1,30 @@
 History
 =============
+
+Version 401.2.1b - 14/10/2023
+----------------------------
+1. Fix 'Webp image causes an error and makes course unaccessible' - #190.
+2. Fix "Hidden sections are shown as not available" doesn't seem to work. - #192.
+3. Add 'Flex containers' justify-content property options' - #191.  Sponsored by AAU.
+4. Fix 'Problems with creating multiple courses from template via CSV in Grid Format' - #189.
+5. Make 'Main content page' link on single section page more accessible.
+6. Fix 'Mouseover for shortened titles' - #187.
+7. Fix 'Grid completion calculated on user hidden modules' ('Available but not shown on course page' are still counted).
+8. Add keyboard control of the sections in the grid, left / right arrows.  When the arrows are used the current selected
+   section will show using an inner border to avoid conflict with accessibility, then use Esc to open the modal.  Accessibility
+   keys of Tab / Shift Tab and Enter will function to navigate with the focussed item and when a grid section is selected,
+   the Enter key will open the modal.  On the modal itself, the same keys will navigate the slider controls and the two
+   close buttons, as well as the modules within the section. #191.  Sponsored by AAU.
+
+Version 401.2.0 - 16/08/2023
+----------------------------
+1. Fix 'Previous/Next section arrows are incorrect for RTL languages' - #183.
+2. Fix 'Last section not showing its image when editing'.
+3. Convert 'numsections' to 'gnumsections' to facilitate both a course setting and flexible section management when editing.
+4. Fix 'Undefined property' - #186.
+5. Fix 'No sections showing when creating a course with the default number of sections'.
+6. Fix 'Images are missing in the grid boxes when restoring a course' - #172.
+
 Version 401.1.1 - 11/05/2023
 ----------------------------
 1. Fix 'Better way to calculate completion progress' - #180.

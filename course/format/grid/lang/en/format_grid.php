@@ -39,6 +39,7 @@ $string['page-course-view-grid'] = 'Any course main page in the grid format';
 $string['page-course-view-grid-x'] = 'Any course page in the grid format';
 
 $string['addsection'] = 'Add section';
+$string['addsections'] = 'Add section';
 $string['hidefromothers'] = 'Hide section'; // No longer used kept for legacy versions.
 $string['showfromothers'] = 'Show section'; // No longer used kept for legacy versions.
 $string['currentsection'] = 'This section'; // No longer used kept for legacy versions.
@@ -61,41 +62,53 @@ $string['default'] = 'Default - {$a}';
 
 // Section image.
 $string['sectionimage'] = 'Section image';
-$string['sectionimage_help'] = 'The section image.';
+$string['sectionimage_help'] = 'The section image';
 $string['sectionimagealttext'] = 'Image alt text';
-$string['sectionimagealttext_help'] = 'This text will be set as the image alt attribute.';
+$string['sectionimagealttext_help'] = "This text will be set as the image 'alt', being 'alternative' attribute.";
 
 // Section break.
 $string['sectionbreak'] = 'Section break';
-$string['sectionbreak_help'] = 'Break in the grid at this section.';
+$string['sectionbreak_help'] = 'Break the grid at this section';
 $string['sectionbreakheading'] = 'Section break heading';
 $string['sectionbreakheading_help'] = 'Show this heading at the point this section breaks in the grid.  HTML can be used.';
 
+// Grid justification.
+$string['gridjustification'] = 'Set the justification of the grid';
+$string['gridjustification_help'] = 'Set the justification to one of: Start, Centre, End, Space around, Space between or Space evenly';
+$string['defaultgridjustification'] = 'Default justification of the grid';
+$string['defaultgridjustification_desc'] = 'One of: Start, Centre, End, Space around, Space between or Space evenly.';
+$string['start'] = 'Start';
+$string['centre'] = 'Centre';
+$string['end'] = 'End';
+$string['spacearound'] = 'Space around';
+$string['spacebetween'] = 'Space between';
+$string['spaceevenly'] = 'Space evenly';
+
 // Image container width.
 $string['imagecontainerwidth'] = 'Set the image container width';
-$string['imagecontainerwidth_help'] = 'Set the image container width to one of: 128, 192, 210, 256, 320, 384, 448, 512, 576, 640, 704 or 768';
+$string['imagecontainerwidth_help'] = 'One of: 128, 192, 210, 256, 320, 384, 448, 512, 576, 640, 704 or 768';
 $string['defaultimagecontainerwidth'] = 'Default width of the image container';
-$string['defaultimagecontainerwidth_desc'] = 'The default width of the image container.';
+$string['defaultimagecontainerwidth_desc'] = 'One of: 128, 192, 210, 256, 320, 384, 448, 512, 576, 640, 704 or 768.';
 
 // Image container ratio.
 $string['imagecontainerratio'] = 'Set the image container ratio relative to the width';
-$string['imagecontainerratio_help'] = 'Set the image container ratio to one of: 3-2, 3-1, 3-3, 2-3, 1-3, 4-3 or 3-4.';
+$string['imagecontainerratio_help'] = 'One of: 3-2, 3-1, 3-3, 2-3, 1-3, 4-3 or 3-4';
 $string['defaultimagecontainerratio'] = 'Default ratio of the image container relative to the width';
-$string['defaultimagecontainerratio_desc'] = 'The default ratio of the image container relative to the width.';
+$string['defaultimagecontainerratio_desc'] = 'One of: 3-2, 3-1, 3-3, 2-3, 1-3, 4-3 or 3-4.';
 
 // Image resize method.
 $string['scale'] = 'Scale';
 $string['crop'] = 'Crop';
 $string['imageresizemethod'] = 'Set the image resize method';
-$string['imageresizemethod_help'] = "Set the image resize method to: 'Scale' or 'Crop' when resizing the image to fit the container.";
+$string['imageresizemethod_help'] = "Set to: 'Scale' or 'Crop' when resizing the image to fit the container";
 $string['defaultimageresizemethod'] = 'Default image resize method';
-$string['defaultimageresizemethod_desc'] = 'The default method of resizing the image to fit the container.';
+$string['defaultimageresizemethod_desc'] = "Set to: 'Scale' or 'Crop' when resizing the image to fit the container.";
 
 // Displayed image type.
 $string['original'] = 'Original';
 $string['webp'] = 'WebP';
 $string['defaultdisplayedimagefiletype'] = 'Displayed image type';
-$string['defaultdisplayedimagefiletype_desc'] = 'Set the displayed image type.';
+$string['defaultdisplayedimagefiletype_desc'] = "'Original' or 'WebP'.";
 
 // Single page summary image.
 $string['off'] = 'Off';
@@ -103,28 +116,27 @@ $string['centre'] = 'Centre';
 $string['left'] = 'Left';
 $string['right'] = 'Right';
 $string['singlepagesummaryimage'] = 'Show the grid image in the section summary';
-$string['singlepagesummaryimage_help'] = "Show the grid image for that section in the section summary when there is a summary in the section.";
+$string['singlepagesummaryimage_help'] = 'When there is a summary in the section';
 $string['defaultsinglepagesummaryimage'] = 'Show the grid image in the section summary';
-$string['defaultsinglepagesummaryimage_desc'] = "Show the grid image for that section in the section summary when there is a summary in the section.";
+$string['defaultsinglepagesummaryimage_desc'] = 'When there is a summary in the section.';
 
 // Modal.
 $string['popup'] = 'Use a popup';
-$string['popup_help'] = "Display the section in a popup instead of navigating to a single section page.";
+$string['popup_help'] = 'Display the section in a popup instead of navigating to a single section page';
 $string['defaultpopup'] = 'Use a popup';
-$string['defaultpopup_desc'] = "Default display the section in a popup instead of navigating to a single section page.";
+$string['defaultpopup_desc'] = 'Display the section in a popup instead of navigating to a single section page.';
 
 // Completion.
 $string['showcompletion'] = 'Show completion';
-$string['showcompletion_help'] = "Show the completion of the section on the grid.";
+$string['showcompletion_help'] = 'Show the completion of the section on the grid';
 $string['defaultshowcompletion'] = 'Show completion';
-$string['defaultshowcompletion_desc'] = "Default show the completion of the section on the grid.";
+$string['defaultshowcompletion_desc'] = 'Show the completion of the section on the grid.';
 
 // Other.
 $string['information'] = 'Information';
 $string['informationsettings'] = 'Information settings';
 $string['informationsettingsdesc'] = 'Grid format information';
 $string['informationchanges'] = 'Changes';
-$string['sectionchangecoursesettings'] = 'Change the number of sections in the course settings';
 $string['settings'] = 'Settings';
 $string['settingssettings'] = 'Settings settings';
 $string['settingssettingsdesc'] = 'Grid format settings';

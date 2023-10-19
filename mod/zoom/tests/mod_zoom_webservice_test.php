@@ -26,7 +26,7 @@ namespace mod_zoom;
 
 use advanced_testcase;
 use mod_zoom_webservice;
-use moodle_exception;
+use mod_zoom\webservice_exception;
 use zoom_api_retry_failed_exception;
 
 /**
@@ -51,9 +51,6 @@ class mod_zoom_webservice_test extends advanced_testcase {
         set_config('clientid', 'test', 'zoom');
         set_config('clientsecret', 'test', 'zoom');
         set_config('accountid', 'test', 'zoom');
-        // TODO: Remove with JWT deprecation June 2023.
-        set_config('apikey', 'test', 'zoom');
-        set_config('apisecret', 'test', 'zoom');
 
         $this->notfoundmockcurl = new class {
             // @codingStandardsIgnoreStart
@@ -124,7 +121,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $foundexception = false;
         try {
             $response = $mockservice->get_meeting_webinar_info('-1', false);
-        } catch (moodle_exception $error) {
+        } catch (webservice_exception $error) {
             $this->assertEquals(3001, $error->zoomerrorcode);
             $this->assertTrue(zoom_is_meeting_gone_error($error));
             $foundexception = true;
@@ -156,7 +153,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $foundexception = false;
         try {
             $founduser = $mockservice->get_user('-1');
-        } catch (moodle_exception $error) {
+        } catch (webservice_exception $error) {
             $this->assertEquals(1001, $error->zoomerrorcode);
             $this->assertTrue(zoom_is_meeting_gone_error($error));
             $this->assertTrue(zoom_is_user_not_found_error($error));
@@ -216,7 +213,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $foundexception = false;
         try {
             $founduser = $mockservice->get_user('-1');
-        } catch (moodle_exception $error) {
+        } catch (webservice_exception $error) {
             $this->assertEquals(1120, $error->zoomerrorcode);
             $this->assertTrue(zoom_is_meeting_gone_error($error));
             $this->assertTrue(zoom_is_user_not_found_error($error));
@@ -530,7 +527,7 @@ class mod_zoom_webservice_test extends advanced_testcase {
         $foundexception = false;
         try {
             $result = $mockservice->get_meetings('2020-01-01', '2020-01-02');
-        } catch (moodle_exception $error) {
+        } catch (webservice_exception $error) {
             $foundexception = true;
             $this->assertEquals($error->response, 'too many retries');
         }

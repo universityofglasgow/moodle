@@ -39,9 +39,9 @@ use stdClass;
  */
 class content extends content_base {
 
-    private $sectioncompletionpercentage = array();
-    private $sectioncompletionmarkup = array();
-    private $sectioncompletioncalculated = array();
+    private $sectioncompletionpercentage = [];
+    private $sectioncompletionmarkup = [];
+    private $sectioncompletioncalculated = [];
 
     /**
      * @var bool Grid format does not add section after each topic.
@@ -77,10 +77,6 @@ class content extends content_base {
         $course = $format->get_course();
         $currentsectionid = 0;
 
-        if ($editing) {
-            $data->coursesettings = new \moodle_url('/course/edit.php', array('id' => $course->id));
-        }
-
         if (!empty($sections)) {
             // Most formats uses section 0 as a separate section so we remove from the list.
             $initialsection = array_shift($sections);
@@ -110,11 +106,11 @@ class content extends content_base {
             $data->hasnavigation = true;
             $data->singlesection = array_shift($data->sections);
             $data->sectionreturn = $singlesection;
-            $data->maincoursepage = new \moodle_url('/course/view.php', array('id' => $course->id));
+            $data->maincoursepage = new \moodle_url('/course/view.php', ['id' => $course->id]);
         } else {
             $coursesettings = $format->get_settings();
             $toolbox = \format_grid\toolbox::get_instance();
-            $coursesectionimages = $DB->get_records('format_grid_image', array('courseid' => $course->id));
+            $coursesectionimages = $DB->get_records('format_grid_image', ['courseid' => $course->id]);
             if (!empty($coursesectionimages)) {
                 $fs = get_file_storage();
                 $coursecontext = \context_course::instance($course->id);
@@ -127,13 +123,16 @@ class content extends content_base {
                 }
             }
 
+            // Justification.
+            $data->gridjustification = $coursesettings['gridjustification'];
+
             // Popup.
             if (!$editing) {
                 $data->popup = false;
                 if ((!empty($coursesettings['popup'])) && ($coursesettings['popup'] == 2)) {
                     $data->popup = true;
-                    $data->popupsections = array();
-                    $potentialpopupsections = array();
+                    $data->popupsections = [];
+                    $potentialpopupsections = [];
                     foreach ($sections as $section) {
                         $potentialpopupsections[$section->id] = $section;
                     }
@@ -141,20 +140,20 @@ class content extends content_base {
             }
 
             // Suitable array.
-            $sectionimages = array();
+            $sectionimages = [];
             foreach ($coursesectionimages as $coursesectionimage) {
                 $sectionimages[$coursesectionimage->sectionid] = $coursesectionimage;
             }
 
             // Now iterate over the sections.
-            $data->gridsections = array();
+            $data->gridsections = [];
             $sectionsforgrid = $this->get_grid_sections($output, $coursesettings);
-            $iswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
+            $displayediswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
 
             $completionshown = false;
             $headerimages = false;
             if ($editing) {
-                $datasectionmap = array();
+                $datasectionmap = [];
                 foreach ($data->sections as $datasectionkey => $datasection) {
                     $datasectionmap[$datasection->id] = $datasectionkey;
                 }
@@ -163,7 +162,7 @@ class content extends content_base {
                 // Do we have an image?
                 if ((array_key_exists($section->id, $sectionimages)) && ($sectionimages[$section->id]->displayedimagestate >= 1)) {
                     $sectionimages[$section->id]->imageuri = $toolbox->get_displayed_image_uri(
-                        $sectionimages[$section->id], $coursecontext->id, $section->id, $iswebp);
+                        $sectionimages[$section->id], $coursecontext->id, $section->id, $displayediswebp);
                 } else {
                     // No.
                     $sectionimages[$section->id] = new stdClass;
@@ -182,7 +181,7 @@ class content extends content_base {
                 }
 
                 if ($editing) {
-                    if (!empty($data->sections[$section->num])) {
+                    if (!empty($data->sections[$datasectionmap[$section->id]])) {
                         // Add the image to the section content.
                         $data->sections[$datasectionmap[$section->id]]->gridimage = $sectionimages[$section->id];
                         $headerimages = true;
@@ -191,12 +190,18 @@ class content extends content_base {
                     // Section link.
                     $sectionimages[$section->id]->sectionurl = new \moodle_url(
                         '/course/view.php',
-                        array('id' => $course->id, 'section' => $section->num)
+                        ['id' => $course->id, 'section' => $section->num]
                     );
                     $sectionimages[$section->id]->sectionurl = $sectionimages[$section->id]->sectionurl->out(false);
 
                     // Section name.
                     $sectionimages[$section->id]->sectionname = $section->name;
+
+                    /* User visible.  For more info, see: $format->is_section_visible($thissection) method in relation
+                       to 'hiddensections' course format setting. */
+                    if (!$section->uservisible) {
+                        $sectionimages[$section->id]->notavailable = true;
+                    }
 
                     // Section break.
                     if ($sectionformatoptions['sectionbreak'] == 2) { // Yes.
@@ -230,6 +235,11 @@ class content extends content_base {
                 if ((!empty($coursesettings['showcompletion'])) && ($coursesettings['showcompletion'] == 2) && ($completionshown)) {
                     $data->showcompletion = true;
                 }
+                $gridsectionnums = [];
+                foreach ($data->gridsections as $gridsection) {
+                    $gridsectionnums[] = $gridsection->number;
+                }
+                $data->gridsectionnumbers = implode(',', $gridsectionnums);
             }
 
             if ($headerimages) {
@@ -296,6 +306,7 @@ class content extends content_base {
                     $section->sectioncompletionmarkup = $this->sectioncompletionmarkup[$thissection->section];
                 }
             }
+            $section->uservisible = $thissection->uservisible;
             $sections[] = $section;
         }
 
@@ -328,7 +339,7 @@ class content extends content_base {
                 foreach ($modinfo->sections[$section->section] as $cmid) {
                     $thismod = $modinfo->cms[$cmid];
 
-                    if ($thismod->available) {
+                    if ($thismod->uservisible) {
                         $asectionisavailable = true;
                         if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
                             $total++;
@@ -373,7 +384,8 @@ class content extends content_base {
                 } else {
                     $data->percentagequarter = 4;
                 }
-                $this->sectioncompletionmarkup[$section->section] = $output->render_from_template('format_grid/grid_completion', $data);
+                $this->sectioncompletionmarkup[$section->section] =
+                    $output->render_from_template('format_grid/grid_completion', $data);
             }
 
             $this->sectioncompletioncalculated[$section->section] = true;

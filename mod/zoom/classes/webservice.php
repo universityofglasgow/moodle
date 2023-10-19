@@ -27,21 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
-// Some plugins already might include this library, like mod_bigbluebuttonbn.
-// Hacky, but need to create list of plugins that might have JWT library.
-// NOTE: Remove file_exists checks and the JWT library in mod when versions prior to Moodle 3.7 is no longer supported.
-if (!class_exists('Firebase\JWT\JWT')) {
-    if (file_exists($CFG->libdir . '/php-jwt/src/JWT.php')) {
-        require_once($CFG->libdir . '/php-jwt/src/JWT.php');
-    } else {
-        if (file_exists($CFG->dirroot . '/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php')) {
-            require_once($CFG->dirroot . '/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php');
-        } else {
-            require_once($CFG->dirroot . '/mod/zoom/jwt/JWT.php');
-        }
-    }
-}
-
 /**
  * Web service class.
  */
@@ -84,18 +69,6 @@ class mod_zoom_webservice {
      * @var string
      */
     protected $accountid;
-
-    /**
-     * API key
-     * @var string
-     */
-    protected $apikey;
-
-    /**
-     * API secret
-     * @var string
-     */
-    protected $apisecret;
 
     /**
      * API base URL.
@@ -145,14 +118,6 @@ class mod_zoom_webservice {
             'clientsecret',
             'accountid',
         ];
-
-        // TODO: Remove when JWT is no longer supported in June 2023.
-        if (empty($config->clientid) || empty($config->clientsecret) || empty($config->accountid)) {
-            $requiredfields = [
-                'apikey',
-                'apisecret',
-            ];
-        }
 
         try {
             // Get and remember each required field.
@@ -205,7 +170,42 @@ class mod_zoom_webservice {
      * @return curl The curl object used to make the API calls
      */
     protected function get_curl_object() {
-        return new curl();
+        global $CFG;
+
+        $proxyhost = get_config('zoom', 'proxyhost');
+
+        if (!empty($proxyhost)) {
+            $cfg = new stdClass();
+            $cfg->proxyhost = $CFG->proxyhost;
+            $cfg->proxyport = $CFG->proxyport;
+            $cfg->proxyuser = $CFG->proxyuser;
+            $cfg->proxypassword = $CFG->proxypassword;
+            $cfg->proxytype = $CFG->proxytype;
+
+            // Parse string as host:port, delimited by a colon (:).
+            list($host, $port) = explode(':', $proxyhost);
+
+            // Temporarily set new values on the global $CFG.
+            $CFG->proxyhost = $host;
+            $CFG->proxyport = $port;
+            $CFG->proxytype = 'HTTP';
+            $CFG->proxyuser = '';
+            $CFG->proxypassword = '';
+        }
+
+        // Create $curl, which implicitly uses the proxy settings from $CFG.
+        $curl = new curl();
+
+        if (!empty($proxyhost)) {
+            // Restore the stored global proxy settings from above.
+            $CFG->proxyhost = $cfg->proxyhost;
+            $CFG->proxyport = $cfg->proxyport;
+            $CFG->proxyuser = $cfg->proxyuser;
+            $CFG->proxypassword = $cfg->proxypassword;
+            $CFG->proxytype = $cfg->proxytype;
+        }
+
+        return $curl;
     }
 
     /**
@@ -218,48 +218,12 @@ class mod_zoom_webservice {
      * @throws moodle_exception Moodle exception is thrown for curl errors.
      */
     private function make_call($path, $data = [], $method = 'get') {
-        global $CFG;
         $url = $this->apiurl . $path;
         $method = strtolower($method);
-        $proxyhost = get_config('zoom', 'proxyhost');
-        $cfg = new stdClass();
-        if (!empty($proxyhost)) {
-            $cfg->proxyhost = $CFG->proxyhost;
-            $cfg->proxyport = $CFG->proxyport;
-            $cfg->proxyuser = $CFG->proxyuser;
-            $cfg->proxypassword = $CFG->proxypassword;
-            $cfg->proxytype = $CFG->proxytype;
-            // Parse string as host:port, delimited by a colon (:).
-            list($host, $port) = explode(':', $proxyhost);
-            // Temporarily set new values on the global $CFG.
-            $CFG->proxyhost = $host;
-            $CFG->proxyport = $port;
-            $CFG->proxytype = 'HTTP';
-            $CFG->proxyuser = '';
-            $CFG->proxypassword = '';
-        }
 
-        $curl = $this->get_curl_object(); // Create $curl, which implicitly uses the proxy settings from $CFG.
-        if (!empty($proxyhost)) {
-            // Restore the stored global proxy settings from above.
-            $CFG->proxyhost = $cfg->proxyhost;
-            $CFG->proxyport = $cfg->proxyport;
-            $CFG->proxyuser = $cfg->proxyuser;
-            $CFG->proxypassword = $cfg->proxypassword;
-            $CFG->proxytype = $cfg->proxytype;
-        }
+        $token = $this->get_access_token();
 
-        // TODO: Remove JWT auth when deprecated in June 2023.
-        if (isset($this->clientid) && isset($this->clientsecret) && isset($this->accountid)) {
-            $token = $this->get_access_token();
-        } else {
-            $payload = [
-                'iss' => $this->apikey,
-                'exp' => time() + 40,
-            ];
-            $token = \Firebase\JWT\JWT::encode($payload, $this->apisecret, 'HS256');
-        }
-
+        $curl = $this->get_curl_object();
         $curl->setHeader('Authorization: Bearer ' . $token);
         $curl->setHeader('Accept: application/json');
 
@@ -297,8 +261,10 @@ class mod_zoom_webservice {
                         }
                     }
                     throw new zoom_bad_request_exception($response->message . $errorstring, $response->code);
+
                 case 404:
                     throw new zoom_not_found_exception($response->message, $response->code);
+
                 case 429:
                     $this->makecallretries += 1;
                     if ($this->makecallretries > self::MAX_RETRIES) {
@@ -337,12 +303,17 @@ class mod_zoom_webservice {
                         sleep($timediff);
                     }
                     return $this->make_call($path, $data, $method);
+
                 default:
                     if ($response) {
-                        $exception = new moodle_exception('errorwebservice', 'mod_zoom', '', $response->message);
-                        $exception->response = $response->message;
-                        $exception->zoomerrorcode = $response->code;
-                        throw $exception;
+                        throw new \mod_zoom\webservice_exception(
+                            $response->message,
+                            $response->code,
+                            'errorwebservice',
+                            'mod_zoom',
+                            '',
+                            $response->message
+                        );
                     } else {
                         throw new moodle_exception('errorwebservice', 'mod_zoom', '', "HTTP Status $httpstatus");
                     }
@@ -510,7 +481,7 @@ class mod_zoom_webservice {
             // Only available for Paid account, return default settings.
             $meetingsecurity = new stdClass();
             // If some other error, show debug message.
-            if ($error->zoomerrorcode != 200) {
+            if (isset($error->zoomerrorcode) && $error->zoomerrorcode != 200) {
                 debugging($error->getMessage());
             }
         }
@@ -542,7 +513,7 @@ class mod_zoom_webservice {
 
         try {
             $founduser = $this->make_call($url);
-        } catch (moodle_exception $error) {
+        } catch (\mod_zoom\webservice_exception $error) {
             if (zoom_is_user_not_found_error($error)) {
                 return false;
             } else {

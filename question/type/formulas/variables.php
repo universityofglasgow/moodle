@@ -452,6 +452,17 @@ class variables {
     private static $maxdataset = 2e9;      // It is the upper limit for the exhaustive enumeration.
     private static $listmaxsize = 1000;
 
+    /* Defining legacy properties here for compatibility with PHP 8.2 */
+    private $func_const = [];
+    private $func_unary = [];
+    private $func_binary = [];
+    private $func_special = [];
+    private $func_all = [];
+    private $binary_op_map = [];
+    private $func_algebraic = [];
+    private $constlist = ['pi' => '3.14159265358979323846'];
+    private $evalreplacelist = ['ln' => 'log', 'log10' => '(1./log(10.))*log'];
+
     private function initialize_function_list() {
         $this->func_const = array_flip( array('pi', 'fqversionnumber'));
         $this->func_unary = array_flip( array('abs', 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atanh', 'ceil',
@@ -474,9 +485,7 @@ class variables {
         // Note that the implementation is exactly the same as the client so the behaviour should be the same.
         $this->func_algebraic = array_flip( array('sin', 'cos', 'tan', 'asin', 'acos', 'atan',
                                                   'exp', 'log10', 'ln', 'sqrt', 'abs', 'ceil', 'floor', 'fact'));
-        $this->constlist = array('pi' => '3.14159265358979323846');
         // Natural log and log with base 10, no log allowed to avoid ambiguity.
-        $this->evalreplacelist = array('ln' => 'log', 'log10' => '(1./log(10.))*log');
     }
 
     public function __construct() {
@@ -1377,11 +1386,8 @@ class variables {
                     break;
                 }
                 if ($sz == 1) {
-                    // If we have one list, we use natural sorting.
-                    $tmp = $values[0];
-                    natsort($tmp);
-                    $this->replace_middle($vstack, $expression, $l, $r, $types[0], array_values($tmp));
-                    return true;
+                    // If we have one list, we duplicate it.
+                    $values[1] = $values[0];
                 }
                 if (mycount($values[0]) != mycount($values[1])) {
                     break;
@@ -1391,7 +1397,14 @@ class variables {
                 $tmp = $values[0];
                 $order = $values[1];
                 uksort($tmp, function($a, $b) use ($order) {
-                    return strnatcmp($order[$a], $order[$b]);
+                    $first = $order[$a];
+                    $second = $order[$b];
+                    // If both elements are numeric, we compare their numerical value.
+                    if (is_numeric($first) && is_numeric($second)) {
+                        return floatval($first) <=> floatval($second);
+                    }
+                    // Otherwise, we use natural sorting.
+                    return strnatcmp($first, $second);
                 });
                 $this->replace_middle($vstack, $expression, $l, $r, $types[0], array_values($tmp));
                 return true;

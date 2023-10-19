@@ -22,12 +22,21 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['accordion'] = 'Accordion effect';
+$string['accordiondesc'] = 'When one section is expanded, collapse all others.';
 $string['addsections'] = 'Add section';
 $string['addsubsection'] = 'Add subsection';
 $string['backtocourse'] = 'Back to course \'{$a}\'';
 $string['backtosection'] = 'Back to \'{$a}\'';
+$string['cmbacklink'] = 'Display back link in activities';
+$string['cmbacklinkdesc'] = 'Display link \'Back to ...\' allowing to return to the course section inside the section activities.';
 $string['confirmdelete'] = 'Are you sure you want to delete this section? All activities and subsections will also be deleted';
 $string['confirmmerge'] = 'Are you sure you want to merge this section content with the parent? All activities and subsections will be moved';
+$string['courseindexdisplay'] = 'Display course index';
+$string['courseindexdisplaydesc'] = 'Defines how to display the course index on the left side of the course page.';
+$string['courseindexfull'] = 'Sections and activities';
+$string['courseindexnone'] = 'Do not display';
+$string['courseindexsections'] = 'Only sections';
 $string['currentsection'] = 'This section';
 $string['deletesection'] = 'Delete section';
 $string['displaycontent'] = 'Display content';
@@ -55,6 +64,10 @@ $string['sectionname'] = 'Topic';
 $string['showcollapsed'] = 'Display as a link';
 $string['showexpanded'] = 'Display on the same page';
 $string['showfromothers'] = 'Show section';
+$string['showsection0title'] = 'Show top section title';
+$string['showsection0title_help'] = 'When enabled, the general section will have a title and will be collapsible, same as it behaves in the Topics format.';
+$string['showsection0titledefault'] = 'Show top section title by default';
+$string['showsection0titledefaultdesc'] = 'This defines default setting that will be used for new and existing courses, it can be changed for individual courses in their settings.';
 
 // Deprecated but still can be used in 4.0, to be removed when we have a branch for Moodle 4.1 or later.
 $string['addsection'] = 'Add section';

@@ -22,19 +22,14 @@ changed to "Released"). Alternatively, portfolios can also be submitted without
 locking. If portfolios are locked, they can be archived automatically in Mahara once
 grading has finished.
 
-The plugin requires that Mahara 20.10 or newer is installed. If you are using 
-Mahara 20.04 or earlier (not supported with security fixes by the project any more),
-apply the patches from the [issue report](https://bugs.launchpad.net/mahara/+bug/1882461).
-
-
-Branches
+Supported Branches
 --------
 
 | Moodle version     | Mahara version  | Branch  |
-| ----------------- | ---------------- | ---- |
-| Moodle 3.9+       | Mahara 20.10+ | main |
+| ----------------- | ---------------- | ----    |
+| Moodle 3.9+       | Mahara 22.04*    | main    |
 
-
+* Note: This plugin may work in some older unsupported Mahara versions as well, however we do not include these in our testing processes.
 
 Install the Moodle plugin
 --------------------------------------------------
@@ -83,6 +78,9 @@ Configure Mahara
 
       4.2 Set the authentication method that your institution members shall also be able to 
       use and click the 'Save' button.
+
+5. Ensure your Mahara server does not block the oauth authorization header.   
+Moodle passes the oauth tokens in an authorization header to the Mahara site, some webservers will block this information and you may get an error "Invalid token selected or none supplied" - If this occurs take a look at this stack-overflow post for information on to fix: https://stackoverflow.com/questions/26475885/authorization-header-missing-in-php-post-request
 
 Configure Moodle
 ----------------

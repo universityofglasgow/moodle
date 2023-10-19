@@ -17,7 +17,7 @@
 /**
  * Ally lti report context
  * @author    Guy Thomas
- * @copyright Copyright (c) 2019 Open LMS
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,7 +34,7 @@ use \tool_ally\models\component_content;
  * Ally filter context
  *
  * @author    Guy Thomas
- * @copyright Copyright (c) 2019 Open LMS
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @category  test
  * @package   filter_ally

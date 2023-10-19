@@ -47,6 +47,12 @@ class mod_zoom_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $PAGE, $USER, $OUTPUT;
+
+        // We don't do anything custom with completion data, so avoid doing any unnecessary work.
+        if ($PAGE->pagetype === 'course-editbulkcompletion' || $PAGE->pagetype === 'course-editdefaultcompletion') {
+            return;
+        }
+
         $config = get_config('zoom');
         $PAGE->requires->js_call_amd("mod_zoom/form", 'init');
 
@@ -119,7 +125,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         if (!$isnew) {
             try {
                 zoom_webservice()->get_meeting_webinar_info($this->current->meeting_id, $this->current->webinar);
-            } catch (moodle_exception $error) {
+            } catch (\mod_zoom\webservice_exception $error) {
                 // If the meeting can't be found, offer to recreate the meeting on Zoom.
                 if (zoom_is_meeting_gone_error($error)) {
                     $errstring = 'zoomerr_meetingnotfound';
@@ -162,7 +168,7 @@ class mod_zoom_mod_form extends moodleform_mod {
         $mform->addElement('text', 'name', get_string('title', 'zoom'), ['size' => '64']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addRule('name', get_string('maximumchars', '', 300), 'maxlength', 300, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 200), 'maxlength', 200, 'client');
 
         // Add description 'intro' and 'introformat'.
         $this->standard_intro_elements();
@@ -583,8 +589,14 @@ class mod_zoom_mod_form extends moodleform_mod {
                 $options[ZOOM_AUTORECORDING_CLOUD] = get_string('autorecording_cloud', 'mod_zoom');
             }
 
+            if ($config->recordingoption === ZOOM_AUTORECORDING_USERDEFAULT) {
+                $defaultsetting = $recordingsettings->auto_recording;
+            } else {
+                $defaultsetting = $config->recordingoption;
+            }
+
             $mform->addElement('select', 'option_auto_recording', get_string('option_auto_recording', 'mod_zoom'), $options);
-            $mform->setDefault('option_auto_recording', $config->recordingoption);
+            $mform->setDefault('option_auto_recording', $defaultsetting);
             $mform->addHelpButton('option_auto_recording', 'option_auto_recording', 'mod_zoom');
         }
 

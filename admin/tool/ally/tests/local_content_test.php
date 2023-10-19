@@ -18,7 +18,7 @@
  * Tests for local content library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace tool_ally;
@@ -38,7 +38,7 @@ require_once(__DIR__.'/abstract_testcase.php');
  * Tests for local content library.
  *
  * @package   tool_ally
- * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_content_test extends abstract_testcase {
@@ -265,14 +265,16 @@ class local_content_test extends abstract_testcase {
 
         // Now some real a/img tags.
         $sampleurl = "{$CFG->wwwroot}/pluginfile.php/1/tool_themeassets/assets/0/Folder 1/image2.png";
+        $drafturl = "{$CFG->wwwroot}/draftfile.php/5/user/draft/589727894/draft_image1.jpg";
         $html = '<div><a href="@@PLUGINFILE@@/some/file/path.txt">A link</a>' .
                 '<a href="@@PLUGINFILE@@some/file/path2.txt">A link without starting /</a>' .
                 '<img src="@@PLUGINFILE@@/image.jpg">' .
                 '<img src="' . $sampleurl . '">' .
+                '<img src="' . $drafturl . '">' .
                 '<img src="https://google.com/notthis.jpg">';
 
         $results = local_content::get_pluginfiles_in_html($html);
-        $this->assertCount(4, $results);
+        $this->assertCount(5, $results);
 
         $tmpresults = [];
         foreach ($results as $result) {

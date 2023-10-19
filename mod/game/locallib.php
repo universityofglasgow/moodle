@@ -613,15 +613,27 @@ function game_questions_selectrandom( $game, $count=1) {
 function game_questions_selectrandom_detail( $table, $select, $idfield="id", $count=1) {
     global $DB;
 
-    $sql = "SELECT $idfield FROM $table WHERE $select";
+    $versions = game_get_moodle_version() >= '04.00';
+    $fields = $versions ? ',qv.questionbankentryid,qv.version' : '';
+    $order = $versions ? ' ORDER BY qv.questionbankentryid,qv.version DESC' : '';
+
+    $sql = "SELECT $idfield{$fields} FROM $table WHERE $select $order";
     if (($recs = $DB->get_records_sql( $sql)) == false) {
         return false;
     }
 
     // The array contains the ids of all questions.
+    $map = array();
     $a = array();
     foreach ($recs as $rec) {
-        $a[$rec->id] = $rec->id;
+        if( $versions) {
+            if( array_key_exists( $rec->questionbankentryid, $map)) {
+                continue;
+            } else {
+                $map[ $rec->questionbankentryid] = 1;
+            }
+        }
+        $a[ $rec->id] = $rec->id;
     }
 
     if ($count >= count( $a)) {
@@ -836,7 +848,6 @@ function game_questions_shortanswer_quiz( $game) {
         $fields = "qa.id as qaid, q.id, q.questiontext as questiontext, ".
             "qa.answer as answertext, q.id as questionid,".
             " 0 as glossaryentryid,'' as attachment";
-
     } else {
         $select = "qtype='shortanswer' AND qs.quizid='$game->quizid' ".
             " AND qs.questionid=q.id".
@@ -890,6 +901,10 @@ function game_questions_shortanswer_question( $game) {
     $fields = "qa.id as qaid, q.id, q.questiontext as questiontext, ".
         "qa.answer as answertext, q.id as questionid";
 
+    if (game_get_moodle_version() >= '04.00') {
+        $fields .= ',qv.questionbankentryid, qv.version';
+    }
+
     return game_questions_shortanswer_question_fraction( $table, $fields, $select);
 }
 
@@ -905,7 +920,10 @@ function game_questions_shortanswer_question( $game) {
 function game_questions_shortanswer_question_fraction( $table, $fields, $select) {
     global $DB;
 
-    $sql = "SELECT $fields FROM $table WHERE $select ORDER BY fraction DESC";
+    $versions = game_get_moodle_version() >= '04.00';
+
+    $order = ($versions ? 'version DESC,' : '').'fraction';
+    $sql = "SELECT $fields FROM $table WHERE $select ORDER BY $order DESC";
 
     $recs = $DB->get_records_sql( $sql);
     if ($recs == false) {
@@ -913,11 +931,22 @@ function game_questions_shortanswer_question_fraction( $table, $fields, $select)
     }
 
     $recs2 = array();
-    $map = array();
+    $map = $map2 = array();
     foreach ($recs as $rec) {
         if (array_key_exists( $rec->questionid, $map)) {
             continue;
         }
+        
+        if( $versions) {
+            if( isset( $rec->questionbankentryid)) {
+                if (array_key_exists( $rec->questionbankentryid, $map2)) {
+                    continue;
+                } else {
+                    $map2[ $rec->questionbankentryid] = 1;
+                }
+            }
+        }
+
         $rec2 = new stdClass();
         $rec2->id = $rec->id;
         $rec2->questiontext = $rec->questiontext;

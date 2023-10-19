@@ -55,7 +55,7 @@ class format_grid_observer {
      */
     public static function course_restored(\core\event\course_restored $event) {
         global $DB;
-        $format = $DB->get_field('course', 'format', array('id' => $event->objectid));
+        $format = $DB->get_field('course', 'format', ['id' => $event->objectid]);
         // If not in the grid format, then don't need the images etc.
         if ($format != 'grid') {
             // Then delete the images.

@@ -346,9 +346,6 @@ function populate_zoom_from_response(stdClass $zoom, stdClass $response) {
     if (isset($response->settings->auto_recording)) {
         $newzoom->option_auto_recording = $response->settings->auto_recording;
     }
-    if (!isset($newzoom->option_auto_recording)) {
-        $newzoom->option_auto_recording = 'none';
-    }
 
     return $newzoom;
 }
@@ -378,9 +375,6 @@ function zoom_delete_instance($id) {
         } catch (zoom_not_found_exception $error) {
             // Meeting not on Zoom, so continue.
             mtrace('Meeting not on Zoom; continuing');
-        } catch (moodle_exception $error) {
-            // Some other error, so throw error.
-            throw $error;
         }
     }
 
@@ -1276,4 +1270,67 @@ function zoom_get_instance_breakout_rooms($zoomid) {
     }
 
     return $breakoutrooms;
+}
+
+/**
+ * Print zoom meeting date and time in the course listing page
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing. See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object
+ * @return cached_cm_info An object on information that the courses will know about
+ */
+function zoom_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = array('id' => $coursemodule->instance);
+    $fields = 'id, intro, introformat, start_time, duration';
+    if (!$zoom = $DB->get_record('zoom', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('zoom', $zoom, $coursemodule->id, false);
+    }
+
+    // Populate some other values that can be used in calendar or on dashboard.
+    if ($zoom->start_time) {
+        $result->customdata['start_time'] = $zoom->start_time;
+    }
+
+    if ($zoom->duration) {
+        $result->customdata['duration'] = $zoom->duration;
+    }
+
+    return $result;
+}
+
+/**
+ * Sets dynamic information about a course module
+ *
+ * This function is called from cm_info when displaying the module
+ *
+ * @param cm_info $cm
+ */
+function zoom_cm_info_dynamic(cm_info $cm) {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot . '/mod/zoom/locallib.php');
+
+    if (method_exists($cm, 'override_customdata')) {
+        $moduleinstance = $DB->get_record('zoom', array('id' => $cm->instance), '*', MUST_EXIST);
+
+        // Get meeting state from Zoom.
+        list($inprogress, $available, $finished) = zoom_get_state($moduleinstance);
+
+        // For unfinished meetings, override start_time with the next occurrence.
+        // If this is a recurring meeting without fixed time, do not override - it will set start_time = 0.
+        if (!$finished && $moduleinstance->recurrence_type != 0) {
+            $cm->override_customdata('start_time', zoom_get_next_occurrence($moduleinstance));
+        }
+    }
 }

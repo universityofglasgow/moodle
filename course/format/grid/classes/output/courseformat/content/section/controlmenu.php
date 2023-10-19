@@ -84,7 +84,7 @@ class controlmenu extends controlmenu_base {
                     'pixattr' => ['class' => ''],
                     'attr' => [
                         'class' => 'editing_highlight',
-                        'data-action' => 'removemarker'
+                        'data-action' => 'removemarker',
                     ],
                 ];
             } else {
@@ -97,7 +97,7 @@ class controlmenu extends controlmenu_base {
                     'pixattr' => ['class' => ''],
                     'attr' => [
                         'class' => 'editing_highlight',
-                        'data-action' => 'setmarker'
+                        'data-action' => 'setmarker',
                     ],
                 ];
             }

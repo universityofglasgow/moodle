@@ -55,11 +55,11 @@ use context_system;
  */
 class privacy_provider_test extends base_testcase {
 
-    public function setUp(): void {
+    public function setup_test() {
         if (!class_exists('core_privacy\manager')) {
             $this->markTestSkipped('Moodle versions does not support privacy subsystem.');
         }
-        parent::setUp();
+        parent::setup_test();
     }
 
     protected function get_world($courseid) {
@@ -443,7 +443,6 @@ class privacy_provider_test extends base_testcase {
 
         $this->assertNotEmpty($level);
         $this->assertEquals($userstate->get_xp(), $level->points);
-        $this->assertEquals($userstate->get_level()->get_level(), $level->level);
         $this->assertEquals($u1->id, $level->userid);
 
         $this->assertNotEmpty($logs);

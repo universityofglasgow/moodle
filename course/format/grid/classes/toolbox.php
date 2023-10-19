@@ -40,11 +40,11 @@ class toolbox {
     protected static $instance = null;
 
     // Width constants - 128, 192, 210, 256, 320, 384, 448, 512, 576, 640, 704 and 768:...
-    private static $imagecontainerwidths = array(128 => '128', 192 => '192', 210 => '210', 256 => '256', 320 => '320',
-        384 => '384', 448 => '448', 512 => '512', 576 => '576', 640 => '640', 704 => '704', 768 => '768');
+    private static $imagecontainerwidths = [128 => '128', 192 => '192', 210 => '210', 256 => '256', 320 => '320',
+        384 => '384', 448 => '448', 512 => '512', 576 => '576', 640 => '640', 704 => '704', 768 => '768', ];
     // Ratio constants - 3-2, 3-1, 3-3, 2-3, 1-3, 4-3 and 3-4:...
-    private static $imagecontainerratios = array(
-        1 => '3-2', 2 => '3-1', 3 => '3-3', 4 => '2-3', 5 => '1-3', 6 => '4-3', 7 => '3-4');
+    private static $imagecontainerratios = [
+        1 => '3-2', 2 => '3-1', 3 => '3-3', 4 => '2-3', 5 => '1-3', 6 => '4-3', 7 => '3-4', ];
 
     /**
      * This is a lonely object.
@@ -101,15 +101,22 @@ class toolbox {
      * @param stdClass $coursesectionimage Section information from its row in the 'format_grid_image' table.
      * @param int $coursecontextid Course context id.
      * @param int $sectionid Section id.
-     * @param bool $iswebp global defaultdisplayedimagefiletype setting is 'WEBP'.
+     * @param bool $displayediswebp The displayed image is in webp format.
      *
      * @return string Image URI.
      */
-    public function get_displayed_image_uri($coursesectionimage, $coursecontextid, $sectionid, $iswebp) {
+    public function get_displayed_image_uri($coursesectionimage, $coursecontextid, $sectionid, $displayediswebp) {
         $filename = $coursesectionimage->image;
 
-        if ($iswebp) {
-            $filename .= '.webp';
+        if ($displayediswebp) {
+            $filetype = strtolower(pathinfo($filename ?? '', PATHINFO_EXTENSION));
+            if (!empty($filetype)) {
+                if ($filetype != 'webp') {
+                    $filename .= '.webp';
+                }
+            } else {
+                $filename .= '.webp';
+            }
         }
         $image = \moodle_url::make_pluginfile_url(
             $coursecontextid,
@@ -184,6 +191,19 @@ class toolbox {
         if (!empty($sectionfile)) {
             $fs = get_file_storage();
             $mime = $sectionfile->get_mimetype();
+            $filename = $sectionfile->get_filename();
+
+            // Core does not natively support webp.
+            if ($mime == 'document/unknown') {
+                $filetype = strtolower(pathinfo($filename ?? '', PATHINFO_EXTENSION));
+                if ((!empty($filetype)) && ($filetype == 'webp')) {
+                    $mime = 'image/webp';
+                    $updatedrecord = new \stdClass;
+                    $updatedrecord->id = $sectionfile->get_id();
+                    $updatedrecord->mimetype = $mime;
+                    $DB->update_record('files', $updatedrecord);
+                }
+            }
 
             $displayedimageinfo = $this->get_displayed_image_container_properties($settings);
             $tmproot = make_temp_directory('gridformatdisplayedimagecontainer');
@@ -191,19 +211,22 @@ class toolbox {
             $sectionfile->copy_content_to($tmpfilepath);
 
             $crop = (get_config('format_grid', 'defaultimageresizemethod') == 1) ? false : true;
-            $iswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
-            if ($iswebp) { // WebP.
-                $newmime = 'image/webp';
-            } else {
-                $newmime = $mime;
+
+            $newmime = $mime;
+            $isdisplayedwebponly = false;
+            if ($mime != 'image/webp') {
+                $isdisplayedwebponly = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
+                if ($isdisplayedwebponly) { // WebP.
+                    $newmime = 'image/webp';
+                }
             }
 
-            $filename = $sectionfile->get_filename();
-            $debugdata = array(
+            $debugdata = [
+                'id' => $sectionfile->get_id(),
                 'itemid' => $sectionfile->get_itemid(),
                 'filename' => $filename,
-                'sectionid' => $sectionid
-            );
+                'sectionid' => $sectionid,
+            ];
             $data = self::generate_image($tmpfilepath, $displayedimageinfo['width'], $displayedimageinfo['height'], $crop, $newmime,
                 $debugdata);
             if (!empty($data)) {
@@ -219,7 +242,7 @@ class toolbox {
                 }
 
                 $created = time();
-                $displayedimagefilerecord = array(
+                $displayedimagefilerecord = [
                     'contextid' => $coursecontext->id,
                     'component' => 'format_grid',
                     'filearea' => 'displayedsectionimage',
@@ -231,9 +254,10 @@ class toolbox {
                     'license' => $sectionfile->get_license(),
                     'timecreated' => $created,
                     'timemodified' => $created,
-                    'mimetype' => $mime);
+                    'mimetype' => $mime,
+                ];
 
-                if ($iswebp) { // WebP.
+                if ($isdisplayedwebponly) { // Displayed WebP image from non-WebP original.
                     // Displayed image is a webp image from the original, so change a few things.
                     $displayedimagefilerecord['filename'] = $displayedimagefilerecord['filename'].'.webp';
                     $displayedimagefilerecord['mimetype'] = $newmime;
@@ -246,7 +270,7 @@ class toolbox {
             unlink($tmpfilepath);
 
             $DB->set_field('format_grid_image', 'displayedimagestate', $sectionimage->displayedimagestate,
-                array('sectionid' => $sectionid));
+                ['sectionid' => $sectionid]);
             if ($sectionimage->displayedimagestate == -1) {
                 throw new \moodle_exception('cannotconvertuploadedimagetodisplayedimage', 'format_grid', '',
                     get_string('cannotconvertuploadedimagetodisplayedimage', 'format_grid',
@@ -267,8 +291,8 @@ class toolbox {
      * @return array with the key => value of 'height' and 'width' for the container.
      */
     public function get_displayed_image_container_properties($settings) {
-        return array('height' => self::calculate_height($settings['imagecontainerwidth'], $settings['imagecontainerratio']),
-            'width' => $settings['imagecontainerwidth']);
+        return ['height' => self::calculate_height($settings['imagecontainerwidth'], $settings['imagecontainerratio']),
+            'width' => $settings['imagecontainerwidth'], ];
     }
 
     /**
@@ -378,9 +402,9 @@ class toolbox {
 
         $original = imagecreatefromstring(file_get_contents($filepath)); // Need to alter / check for webp support.
 
-        $imageargs = array(
-            1 => null // File.
-        );
+        $imageargs = [
+            1 => null, // File.
+        ];
         switch ($mime) {
             case 'image/png':
                 if (function_exists('imagepng')) {
@@ -410,7 +434,7 @@ class toolbox {
                 }
                 break;
             /* Moodle does not yet natively support webp as a mime type, but have here for us on the displayed image and
-               not yet as a source image. */
+               the source image. */
             case 'image/webp':
                 if (function_exists('imagewebp')) {
                     $imagefnc = 'imagewebp';
@@ -584,7 +608,7 @@ class toolbox {
         global $DB;
 
         if (!empty($courseid)) {
-            $coursesectionimages = $DB->get_records('format_grid_image', array('courseid' => $courseid));
+            $coursesectionimages = $DB->get_records('format_grid_image', ['courseid' => $courseid]);
         } else {
             $coursesectionimages = $DB->get_records('format_grid_image');
         }
@@ -658,7 +682,7 @@ class toolbox {
             $displayedimage->delete();
         }
 
-        $DB->delete_records("format_grid_image", array('courseid' => $courseid));
+        $DB->delete_records("format_grid_image", ['courseid' => $courseid]);
     }
 
     /**
@@ -670,7 +694,7 @@ class toolbox {
     public static function delete_image($sectionid, $courseid) {
         global $DB;
 
-        $coursesectionimage = $DB->get_record('format_grid_image', array('courseid' => $courseid, 'sectionid' => $sectionid));
+        $coursesectionimage = $DB->get_record('format_grid_image', ['courseid' => $courseid, 'sectionid' => $sectionid]);
         if (!empty($coursesectionimage)) {
             $fs = get_file_storage();
 
@@ -709,7 +733,7 @@ class toolbox {
                     get_string('cannotgetmanagesectionimagelock', 'format_grid')
                 );
             }
-            $DB->delete_records("format_grid_image", array('courseid' => $courseid, 'sectionid' => $sectionid));
+            $DB->delete_records("format_grid_image", ['courseid' => $courseid, 'sectionid' => $sectionid]);
         }
     }
 }

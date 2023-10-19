@@ -128,7 +128,6 @@
             "selector": "<select><option>Section 4</option></select>"
         },
         "sectionreturn": 1,
-        "coursesettings": "https://mymoodle/course/edit.php?id=4",
         "singlesection": {
             "num": 1,
             "id": 35,
@@ -162,7 +161,7 @@
 <div id="{{uniqid}}-course-format">
     <h2 class="accesshide">{{{title}}}</h2>
     {{#hasnavigation}}
-    <a href="{{{maincoursepage}}}"><p class="text-right">{{#str}}maincoursepage{{/str}}</p></a>
+    <p class="text-right"><a href="{{{maincoursepage}}}">{{#str}}maincoursepage{{/str}}</a></p>
     {{/hasnavigation}}
     {{{completionhelp}}}
     {{#hasheaderimages}}
@@ -210,9 +209,6 @@
             {{> core_courseformat/local/content/addsection}}
         {{/ core_courseformat/local/content/addsection}}
     {{/numsections}}
-    {{#coursesettings}}
-        <a class="d-block text-right" href="{{{coursesettings}}}">{{#str}}sectionchangecoursesettings, format_grid{{/str}}</a>
-    {{/coursesettings}}
 </div>
 {{#js}}
 require(['format_grid/local/content'], function(component) {

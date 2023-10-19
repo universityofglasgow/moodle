@@ -18,7 +18,7 @@
  * Test case for privacy implementation.
  *
  * @package   report_allylti
- * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace report_allylti;
@@ -31,7 +31,7 @@ use report_allylti\privacy\provider;
  * Test case for privacy implementation.
  *
  * @package   report_allylti
- * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net)
+ * @copyright Copyright (c) 2018 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class privacy_provider_test extends provider_testcase {

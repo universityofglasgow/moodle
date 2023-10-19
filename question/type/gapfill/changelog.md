@@ -1,3 +1,12 @@
+### Version 2.138 of the Moodle Gapfill question type May 2023
+Fix for PHP 8.1 deprecation messages. Thanks to Joseph Rézeau  for
+creating the ticket for that.
+https://github.com/marcusgreen/moodle-qtype_gapfill/issues/104
+
+Re-instate the creation of letterhints field in the db for upgrades from
+before v1.97 (in 2018). Thanks to Dr. Lucia Liljegren for creating the ticket for
+that https://github.com/marcusgreen/moodle-qtype_gapfill/issues/105
+
 ### Version 2.137 of the Moodle Gapfill question type April 2023
 Fix compatibility on mobile with dark theme (css tweak)
 https://github.com/marcusgreen/moodle-qtype_gapfill/pull/100

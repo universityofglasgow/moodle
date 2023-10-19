@@ -35,7 +35,7 @@ Feature: Using course in flexsections format
     And I add a "Forum" to section "2" and I fill the form with:
       | Forum name  | Second module |
       | Description | Test          |
-    And I follow "Add section"
+    And I click on "Add section" "link" in the "li#section-1" "css_element"
     And I open section "3" edit menu
     And I click on "Add subsection" "link" in the "li#section-3" "css_element"
 
@@ -72,7 +72,7 @@ Feature: Using course in flexsections format
     And I should not see "Topic 2"
     And I should not see "Second module"
 
-  Scenario: Collapsing section in flexsections format
+  Scenario: Display section as a link in flexsections format
     Given the following config values are set as admin:
       | unaddableblocks | | theme_boost|
     Given I add the "Navigation" block if not present
@@ -92,7 +92,7 @@ Feature: Using course in flexsections format
     And I should see "Topic 2" in the "Navigation" "block"
     And I should see "Second module" in the "Navigation" "block"
 
-  Scenario: Collapsing section with subsections in flexsections format
+  Scenario: Display section with subsections as a link in flexsections format
     And I change window size to "large"
     Given the following config values are set as admin:
       | unaddableblocks | | theme_boost|
@@ -143,7 +143,7 @@ Feature: Using course in flexsections format
     And I should see "Second module" in the "Navigation" "block"
 
   Scenario: Subsections depth limit prevents adding subsection
-    When I follow "Add section"
+    When I click on "Add section" "link" in the "li#section-3" "css_element"
     Then I should see "Topic 3"
     And I open section "3" edit menu
     And I click on "Add subsection" "link" in the "li#section-3" "css_element"

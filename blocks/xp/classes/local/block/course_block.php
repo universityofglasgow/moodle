@@ -169,18 +169,32 @@ class course_block extends block_base {
         // but that's probably an overkill for now.
         $service = $world->get_level_up_notification_service();
         if ($service->should_be_notified($USER->id)) {
-            $service->mark_as_notified($USER->id);
 
-            $level = $state->get_level();
-            $propsid = html_writer::random_id();
-            echo $renderer->json_script([[
-                'courseid' => $world->get_courseid(),
-                'levelnum' => $level->get_level(),
-                'levelname' => $level instanceof level_with_name ? $level->get_name() : null,
-                'levelbadge' => $renderer->level_badge($level),
-            ]], $propsid);
+            // Get the levels, and remove 0 when the user's level is already in the list.
+            $levels = array_unique(array_map(function($level) use ($state) {
+                if (!$level) {
+                    return $state->get_level()->get_level();
+                }
+                return $level;
+            }, $service->get_levels($USER->id)));
 
-            $PAGE->requires->js_call_amd('block_xp/popup-notification-queue', 'queueFromJson', ["#{$propsid}"]);
+            $levelsinfo = $world->get_levels_info();
+            foreach ($levels as $levelnum) {
+
+                // Remove invalid level number.
+                if ($levelnum <= 1 || $levelnum > $levelsinfo->get_count()) {
+                    $service->mark_as_notified($USER->id, $levelnum);
+                    continue;
+                }
+
+                // We never celebrate level 1, so there always is a previous level.
+                $level = $levelsinfo->get_level($levelnum);
+                $prevlevel = $levelsinfo->get_level(max(1, $level->get_level() - 1));
+
+                $propsid = html_writer::random_id();
+                echo $renderer->json_script([$this->get_popup_notification_props($renderer, $world, $level, $prevlevel)], $propsid);
+                $PAGE->requires->js_call_amd('block_xp/popup-notification-queue', 'queueFromJson', ["#{$propsid}"]);
+            }
         }
 
         return $this->content;
@@ -231,6 +245,24 @@ class course_block extends block_base {
         }
 
         return $actions;
+    }
+
+    /**
+     * Get popup notification props.
+     *
+     * @param object $renderer The renderer.
+     * @param \block_xp\local\course_world $world The world.
+     * @param \block_xp\local\xp\level $level The level.
+     * @param \block_xp\local\xp\level $prevlevel The previous level.
+     */
+    protected function get_popup_notification_props($renderer, $world, $level, $prevlevel) {
+        return [
+            'courseid' => $world->get_courseid(),
+            'levelnum' => $level->get_level(),
+            'levelname' => $level instanceof level_with_name ? $level->get_name() : null,
+            'levelbadge' => $renderer->level_badge($level),
+            'prevlevelbadge' => $renderer->level_badge($prevlevel),
+        ];
     }
 
     /**

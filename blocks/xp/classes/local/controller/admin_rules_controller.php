@@ -99,7 +99,8 @@ class admin_rules_controller extends admin_route_controller {
      * Save the filters.
      *
      * @param array $filters Filters data.
-     * @param int $category The category constant.
+     * @param array $existingfilters Existing filters data.
+     * @param int|null $category The category constant.
      * @return void
      */
     protected function save_filters($filters, $existingfilters, $category = null) {
@@ -242,14 +243,14 @@ class admin_rules_controller extends admin_route_controller {
             return;
         }
 
+        $this->page_warning_editing_defaults('rules');
         $this->page_plus_promo_content();
         echo html_writer::tag('p', get_string('admindefaultrulesintro', 'block_xp'));
         $this->page_rules_content();
 
         $hasdangerzone = $this->filtermanager->is_customised() || !$forwholesite;
         if ($hasdangerzone) {
-            echo html_writer::tag('div', $output->heading(get_string('dangerzone', 'block_xp'), 3),
-                ['style' => 'margin-top: 2em']);
+            echo $output->heading_with_divider(get_string('dangerzone', 'block_xp'));
         }
 
         // Revert button.

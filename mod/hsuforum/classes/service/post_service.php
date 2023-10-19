@@ -132,7 +132,7 @@ class post_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return json_response
      */
-    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(), array $options) {
+    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles, array $options) {
 
         $this->require_can_edit_post($forum, $context, $discussion, $post);
 
@@ -196,11 +196,11 @@ class post_service {
             if (((time() - $post->created) > $CFG->maxeditingtime) and
                 !has_capability('mod/hsuforum:editanypost', $context)
             ) {
-                print_error('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
+                throw new \moodle_exception('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
             }
         }
         if (($post->userid <> $USER->id) && !has_capability('mod/hsuforum:editanypost', $context)) {
-            print_error('cannoteditposts', 'hsuforum');
+            throw new \moodle_exception('cannoteditposts', 'hsuforum');
         }
     }
 

@@ -39,20 +39,22 @@ class restore_format_grid_plugin extends restore_format_plugin {
 
     /**
      * Returns the paths to be handled by the plugin at course level.
+     * I think this is only called when the course format settings change.
      */
     protected function define_course_plugin_structure() {
         /* Since this method is executed before the restore we can do some pre-checks here.
            In case of merging backup into existing course find the current number of sections. */
-        $target = $this->step->get_task()->get_target();
+        $task = $this->step->get_task();
+        $target = $task->get_target();
         if (($target == backup::TARGET_CURRENT_ADDING || $target == backup::TARGET_EXISTING_ADDING)) {
             global $DB;
             $maxsection = $DB->get_field_sql(
                 'SELECT max(section) FROM {course_sections} WHERE course = ?',
-                [$this->step->get_task()->get_courseid()]);
+                [$task->get_courseid()]);
             $this->originalnumsections = (int)$maxsection;
         }
 
-        $paths = array();
+        $paths = [];
 
         // Add own format stuff.
         $elename = 'grid'; // This defines the postfix of 'process_*' below.
@@ -78,21 +80,18 @@ class restore_format_grid_plugin extends restore_format_plugin {
         $courseid = $this->task->get_courseid();
         /* We only process this information if the course we are restoring to
            has 'grid' format (target format can change depending of restore options). */
-        $format = $DB->get_field('course', 'format', array('id' => $courseid));
+        $format = $DB->get_field('course', 'format', ['id' => $courseid]);
         if ($format !== 'grid') {
             return;
         }
 
         $data->courseid = $courseid;
 
-        if (!($course = $DB->get_record('course', array('id' => $data->courseid)))) {
+        if (!($course = $DB->get_record('course', ['id' => $data->courseid]))) {
             throw new \moodle_exception('invalidcourseid', 'format_grid', '',
                 get_string('invalidcourseid', 'error'));
         } // From /course/view.php.
         // No need to annotate anything here.
-    }
-
-    protected function after_execute_structure() {
     }
 
     /**
@@ -108,7 +107,7 @@ class restore_format_grid_plugin extends restore_format_plugin {
 
         /* We only process this information if the course we are restoring to
            has 'grid' format (target format can change depending of restore options). */
-        $format = $DB->get_field('course', 'format', array('id' => $courseid));
+        $format = $DB->get_field('course', 'format', ['id' => $courseid]);
         if ($format !== 'grid') {
             return;
         }
@@ -124,7 +123,7 @@ class restore_format_grid_plugin extends restore_format_plugin {
                 if (!$file->is_directory()) {
                     $filename = $file->get_filename();
                     $filesectionid = $file->get_itemid();
-                    $gridimage = $DB->get_record('format_grid_image', array('sectionid' => $filesectionid), 'image');
+                    $gridimage = $DB->get_record('format_grid_image', ['sectionid' => $filesectionid], 'image');
                     if (($gridimage) && ($gridimage->image == $filename)) { // Ensure the correct file.
                         $filerecord = new stdClass();
                         $filerecord->contextid = $coursecontext->id;
@@ -135,7 +134,7 @@ class restore_format_grid_plugin extends restore_format_plugin {
                         $newfile = $fs->create_file_from_storedfile($filerecord, $file);
                         if ($newfile) {
                             $DB->set_field('format_grid_image', 'contenthash', $newfile->get_contenthash(),
-                                array('sectionid' => $filesectionid));
+                                ['sectionid' => $filesectionid]);
                         }
                     }
                 }
@@ -152,8 +151,11 @@ class restore_format_grid_plugin extends restore_format_plugin {
 
             $maxsection = $DB->get_field_sql('SELECT max(section) FROM {course_sections} WHERE course = ?', [$courseid]);
 
-            $courseformat->restore_numsections($maxsection);
+            $courseformat->restore_gnumsections($maxsection);
             return;
+        } else {
+            // The backup file contains 'numsections' so we need to set 'gnumsections' to this value.
+            $courseformat->restore_gnumsections($settings['numsections']);
         }
 
         foreach ($backupinfo->sections as $key => $section) {
@@ -177,7 +179,7 @@ class restore_format_grid_plugin extends restore_format_plugin {
      */
     protected function define_section_plugin_structure() {
 
-        $paths = array();
+        $paths = [];
 
         // Add own format stuff.
         $elepath = $this->get_pathfor('/');  // Note: $this->get_recommended_name() gets! -> section/the name.
@@ -195,14 +197,30 @@ class restore_format_grid_plugin extends restore_format_plugin {
 
         $data = (object) $data;
 
+        $target = $this->step->get_task()->get_target();
+        if (($target == backup::TARGET_NEW_COURSE) ||
+            ($target == backup::TARGET_CURRENT_ADDING) ||
+            ($target == backup::TARGET_CURRENT_DELETING) ||
+            ($target == backup::TARGET_EXISTING_DELETING)) {
+            /* This ensures that when a course is created from an uploaded CSV file that the number of sections is correct.
+               Thus when an existing course or course file is used but the course restore code is not called.
+               Because the backup file / course being restored from has the correct 'sections', i.e. that will be in the
+               'course_sections' table. */
+            $courseid = $this->task->get_courseid();
+            static $gnumsections = 0;
+            $gnumsections++;
+            // We don't know how many more sections there is and also don't know if this is the last.
+            $courseformat = course_get_format($courseid);
+            $courseformat->restore_gnumsections($gnumsections);
+        }
         /* Allow this to process even if not in the grid format so that our event observer on 'course_restored'
            can perform a clean up of restored grid image files after all the data is in place in the database
            for this to happen properly. */
-
-        if ($this->step->get_task()->get_target() == backup::TARGET_NEW_COURSE) {
-            $courseid = $this->task->get_courseid();
-            $newsectionid = $this->task->get_sectionid();
-
+        if (($target == backup::TARGET_NEW_COURSE) ||
+            ($target == backup::TARGET_CURRENT_DELETING) ||
+            ($target == backup::TARGET_EXISTING_DELETING) ||
+            ($target == backup::TARGET_CURRENT_ADDING) ||
+            ($target == backup::TARGET_EXISTING_ADDING)) { // All of them, but just in case a new one is added!
             if (empty($data->contenthash)) {
                 // Less than M4.0 backup file.
                 if (!empty($data->imagepath)) {
@@ -211,29 +229,33 @@ class restore_format_grid_plugin extends restore_format_plugin {
                 } else if (empty($data->image)) {
                     $data->image = null;
                 }
+            }
+            if (!empty($data->image)) {
+                $newsectionid = $this->task->get_sectionid();
+                $existinggridimage = false;
+                if (($target == backup::TARGET_CURRENT_ADDING) ||
+                    ($target == backup::TARGET_EXISTING_ADDING)) {
+                    $existinggridimage = $DB->get_record('format_grid_image', ['sectionid' => $newsectionid], 'image');
+                }
+                if (!$existinggridimage) {
+                    // No image, so add the one from the backup file.
+                    $courseid = $this->task->get_courseid();
 
-                if (!empty($data->image)) {
                     $newimagecontainer = new \stdClass();
                     $newimagecontainer->sectionid = $newsectionid;
                     $newimagecontainer->courseid = $courseid;
                     $newimagecontainer->image = $data->image;
                     $newimagecontainer->displayedimagestate = 0;
-                    // Contenthash later!
+                    if (!empty($data->contenthash)) {
+                        $oldsectionid = $data->sectionid;
+                        $this->set_mapping('gridimage', $oldsectionid, $newsectionid, true);
+                        $this->add_related_files('format_grid', 'sectionimage', 'gridimage');
+                        $newimagecontainer->contenthash = $data->contenthash;
+                    } // Else contenthash later!
                     $newid = $DB->insert_record('format_grid_image', $newimagecontainer, true);
                 }
-            } else {
-                $oldsectionid = $data->sectionid;
-                $this->set_mapping('gridimage', $oldsectionid, $newsectionid, true);
-                $this->add_related_files('format_grid', 'sectionimage', 'gridimage');
-
-                $newimagecontainer = new \stdClass();
-                $newimagecontainer->sectionid = $newsectionid;
-                $newimagecontainer->courseid = $courseid;
-                $newimagecontainer->image = $data->image;
-                $newimagecontainer->contenthash = $data->contenthash;
-                $newimagecontainer->displayedimagestate = 0;
-                $newid = $DB->insert_record('format_grid_image', $newimagecontainer, true);
             }
         }
+
     }
 }

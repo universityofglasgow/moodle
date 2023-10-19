@@ -1,5 +1,7 @@
 # Ally filter
 
+![example workflow](https://github.com/anthology-ally/moodle-filter_ally/actions/workflows/moodle-ci.yml/badge.svg)
+
 The Ally filter provides accessibility scores and tools for files uploaded to Moodle by teachers. It also provides
 alternative download types to enhance accessibility - e.g. audio, braille, etc
 
@@ -7,7 +9,7 @@ alternative download types to enhance accessibility - e.g. audio, braille, etc
 
 The Ally filter can be downloaded from:
 
-https://github.com/blackboard-open-source/moodle-filter_ally
+https://github.com/anthology-ally/moodle-filter_ally
 
 The filter should be located and named as:
  [yourmoodledir]/filter/ally
@@ -16,7 +18,7 @@ The filter should be located and named as:
 
 For the filter to function it is necessary to download and configure the Ally admin tool:
  
-https://github.com/blackboard-open-source/moodle-tool_ally
+https://github.com/anthology-ally/moodle-tool_ally
  
 Instructions on how to do so are available in the README.md file for the admin tool.
 
@@ -63,7 +65,7 @@ When clicked, a modal appears where a student can select the alternative version
 
 ## License for Ally filter
 
-© Open LMS 2017
+© 2017 Open LMS / 2023 Anthology Inc. and its affiliates
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

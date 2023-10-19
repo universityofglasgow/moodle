@@ -51,10 +51,13 @@ function formulas_format_check() {
 
     // The list of allowable (single parameter) function and their evaluation replacement.
     var funclist = {'sin': 1, 'cos': 1, 'tan': 1, 'asin': 1, 'acos': 1, 'atan': 1, 'exp': 1,
-        'log10': 1, 'ln': 1, 'sqrt': 1, 'abs': 1, 'ceil': 1, 'floor': 1, 'fact':1};
+        'log10': 1, 'ln': 1, 'sqrt': 1, 'abs': 1, 'ceil': 1, 'floor': 1, 'fact': 1};
 
     // The replacement list used when preform trial evaluation, note it is not the same as dispreplacelist
-    var evalreplacelist = {'ln': 'log', 'log10': '(1./log(10.))*log'}; // Natural log and log with base 10, no log allowed to avoid ambiguity.
+    // Replace 'fact' (factorial) by 'abs', because JS does not have a factorial function and
+    // therefore, an expression containing fact() will always be considered as invalid. We use abs(),
+    // because we just need some replacement function and are not interested in the actual result.
+    var evalreplacelist = {'ln': 'log', 'log10': '(1./log(10.))*log', 'fact': 'abs'}; // Natural log and log with base 10, no log allowed to avoid ambiguity.
 
     // The replacement list used when the formula is displayed on the screen.
     var dispreplacelist = {'log10': 'log<sub>10</sub>', '3.14159265358979323846': '<i>π</i>'};
@@ -340,20 +343,25 @@ function formulas_format_check() {
             return splitted.join('');
         },
 
-        // replace the expression x^y by pow(x,y)
+        // replace the expression x^y or x**y by pow(x,y)
         replace_caret_by_power : function(fn, vstack, text) {
             while (true){
                 var loc = text.lastIndexOf('^');    // from right to left
+                var oplen = 1;
+                if (loc < 0) {
+                    loc = text.lastIndexOf('**');
+                    oplen = 2;
+                }
                 if (loc < 0)  break;
 
                 // search for the expression of the exponent
                 var rloc = loc;
-                if (rloc+1 < text.length && text[rloc+1] == '-')  rloc += 1;
-                var r = fn.get_next_variable(fn, vstack, text, rloc+1);
-                if (r != null)  rloc = r.endloc-1;
+                if (rloc+oplen < text.length && text[rloc+oplen] == '-')  rloc += 1;
+                var r = fn.get_next_variable(fn, vstack, text, rloc+oplen);
+                if (r != null)  rloc = r.endloc-oplen;
                 if (r == null || (r != null && r.variable.type == 'f')) {
-                    var rtmp = fn.get_expressions_in_bracket(text, rloc+1, '(', {'(': ')'});
-                    if (rtmp == null || rtmp.openloc != rloc+1)  throw 'Expression expected';
+                    var rtmp = fn.get_expressions_in_bracket(text, rloc+oplen, '(', {'(': ')'});
+                    if (rtmp == null || rtmp.openloc != rloc+oplen)  throw 'Expression expected';
                     rloc = rtmp.closeloc;
                 }
 
@@ -364,16 +372,16 @@ function formulas_format_check() {
                     lloc = l.startloc;
                 else {
                     var reverse = text.split('').reverse().join('');
-                    var ltmp = fn.get_expressions_in_bracket(reverse, text.length-1-loc+1, ')', {')': '('});
-                    if (ltmp == null || ltmp.openloc != text.length-1-loc+1)  throw 'Expression expected';
-                    var lfunc = fn.get_previous_variable(fn, vstack, text, text.length-1-ltmp.closeloc);
-                    lloc = (lfunc==null || lfunc.variable.type!='f') ? text.length-1-ltmp.closeloc : lfunc.startloc;
+                    var ltmp = fn.get_expressions_in_bracket(reverse, text.length-loc, ')', {')': '('});
+                    if (ltmp == null || ltmp.openloc != text.length-loc)  throw 'Expression expected';
+                    var lfunc = fn.get_previous_variable(fn, vstack, text, text.length-oplen-ltmp.closeloc);
+                    lloc = (lfunc==null || lfunc.variable.type!='f') ? text.length-oplen-ltmp.closeloc : lfunc.startloc;
                 }
 
                 // replace the exponent notation by the pow function
                 var name = fn.vstack_add_temporary_variable(vstack, 'f', 'pow');
                 text = text.substr(0,lloc) + name + '(' + text.substr(lloc,loc-lloc) + ', '
-                    + text.substr(loc+1, rloc-loc) + ')' + text.substr(rloc+1);
+                    + text.substr(loc+oplen, rloc-loc) + ')' + text.substr(rloc+oplen);
             }
             return text;
         },

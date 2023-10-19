@@ -25,6 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot. '/course/format/lib.php');
 
+use format_flexsections\constants;
 use core\output\inplace_editable;
 
 define('FORMAT_FLEXSECTIONS_COLLAPSED', 1);
@@ -54,7 +55,16 @@ class format_flexsections extends core_courseformat\base {
      * @return bool
      */
     public function uses_course_index() {
-        return true;
+        return $this->get_course_index_display() != constants::COURSEINDEX_NONE;
+    }
+
+    /**
+     * Type of course index display
+     *
+     * @return int
+     */
+    public function get_course_index_display(): int {
+        return (int)$this->get_course()->courseindexdisplay;
     }
 
     /**
@@ -74,6 +84,15 @@ class format_flexsections extends core_courseformat\base {
     public function get_max_section_depth(): int {
         $limit = (int)get_config('format_flexsections', 'maxsectiondepth');
         return max(1, min($limit, 100));
+    }
+
+    /**
+     * Accordion effect
+     *
+     * @return bool
+     */
+    public function get_accordion_setting(): bool {
+        return (bool)$this->get_course()->accordion;
     }
 
     /**
@@ -192,11 +211,6 @@ class format_flexsections extends core_courseformat\base {
                 $url->param('section', $parent);
             }
             $url->set_anchor('section-'.$sectionno);
-            return $url;
-        } else {
-            // General section.
-            $url->set_anchor('section-'.$sectionno);
-            return $url;
         }
         return $url;
     }
@@ -416,6 +430,69 @@ class format_flexsections extends core_courseformat\base {
     }
 
     /**
+     * Definitions of the additional options that this course format uses for course.
+     *
+     * Flexsections format uses the following options:
+     * - showsection0title
+     *
+     * @param bool $foreditform
+     * @return array of options
+     */
+    public function course_format_options($foreditform = false) {
+        static $courseformatoptions = false;
+        if ($courseformatoptions === false) {
+            $courseformatoptions = [
+                'showsection0title' => [
+                    'default' => get_config('format_flexsections', 'showsection0titledefault') ?? 0,
+                    'type' => PARAM_BOOL,
+                ],
+                'courseindexdisplay' => [
+                    'default' => get_config('format_flexsections', 'courseindexdisplay') ?? 0,
+                    'type' => PARAM_INT,
+                ],
+                'accordion' => [
+                    'default' => (bool)get_config('format_flexsections', 'accordion'),
+                    'type' => PARAM_BOOL,
+                ],
+                'cmbacklink' => [
+                    'default' => (bool)get_config('format_flexsections', 'cmbacklink'),
+                    'type' => PARAM_BOOL,
+                ],
+            ];
+        }
+        if ($foreditform && !isset($courseformatoptions['showsection0title']['label'])) {
+            $options = [
+                constants::COURSEINDEX_FULL => get_string('courseindexfull', 'format_flexsections'),
+                constants::COURSEINDEX_SECTIONS => get_string('courseindexsections', 'format_flexsections'),
+                constants::COURSEINDEX_NONE => get_string('courseindexnone', 'format_flexsections'),
+            ];
+            $courseformatoptionsedit = [
+                'showsection0title' => [
+                    'label' => new lang_string('showsection0title', 'format_flexsections'),
+                    'help' => 'showsection0title',
+                    'help_component' => 'format_flexsections',
+                    'element_type' => 'advcheckbox',
+                ],
+                'courseindexdisplay' => [
+                    'label' => new lang_string('courseindexdisplay', 'format_flexsections'),
+                    'element_type' => 'select',
+                    'element_attributes' => [$options],
+                ],
+                'accordion' => [
+                    'label' => new lang_string('accordion', 'format_flexsections'),
+                    'element_type' => 'advcheckbox',
+                ],
+                'cmbacklink' => [
+                    'label' => new lang_string('cmbacklink', 'format_flexsections'),
+                    'element_type' => 'advcheckbox',
+                ],
+            ];
+            $courseformatoptions = array_merge_recursive($courseformatoptions, $courseformatoptionsedit);
+        }
+        return $courseformatoptions;
+    }
+
+    /**
      * Adds format options elements to the course/section edit form.
      *
      * This function is called from {@see course_edit_form::definition_after_data()}.
@@ -466,7 +543,7 @@ class format_flexsections extends core_courseformat\base {
      * @param bool $editable
      * @param null|lang_string|string $edithint
      * @param null|lang_string|string $editlabel
-     * @return inplace_editable
+     * @return inplace_editable|void
      */
     public function inplace_editable_render_section_name($section, $linkifneeded = true,
             $editable = null, $edithint = null, $editlabel = null) {
@@ -1256,6 +1333,44 @@ class format_flexsections extends core_courseformat\base {
         // Partial rebuild section cache that has been purged.
         rebuild_course_cache($this->courseid, true, true);
     }
+
+    /**
+     * Display 'Add section' as a link on the page and not as a "Add subsection" menu item
+     *
+     * @param int $sectionnum
+     * @return bool
+     */
+    public function should_display_add_sub_section_link(int $sectionnum): bool {
+        // Display for the top-level sections and for the sections that are displayed as a link.
+        if (!$sectionnum) {
+            return true;
+        }
+        $section = $this->get_section($sectionnum);
+        return (bool)$section->collapsed;
+    }
+
+    /**
+     * Method used to get the maximum number of sections for this course format.
+     *
+     * Flexsections does not have a limit for the total number of the sections.
+     *
+     * @return int
+     */
+    public function get_max_sections() {
+        return 9999999;
+    }
+
+    /**
+     * Method used to get the maximum number of sections on the top level.
+     * @return int
+     */
+    public function get_max_toplevel_sections() {
+        $maxsections = get_config('moodlecourse', 'maxsections');
+        if (!isset($maxsections) || !is_numeric($maxsections)) {
+            $maxsections = 52;
+        }
+        return $maxsections;
+    }
 }
 
 /**
@@ -1285,4 +1400,43 @@ function format_flexsections_get_fontawesome_icon_map() {
     return [
         'format_flexsections:mergeup' => 'fa-level-up',
     ];
+}
+
+/**
+ * If we are on an activity page inside the course in the 'flexsections' format - return the activity
+ *
+ * @return cm_info|null
+ */
+function format_flexsections_add_back_link_to_cm(): ?cm_info {
+    global $PAGE, $CFG;
+    if ($PAGE->course
+            && $PAGE->cm
+            && $PAGE->course->format === 'flexsections' // Only modules in 'flexsections' courses.
+            && course_get_format($PAGE->course)->get_course()->cmbacklink
+            && $PAGE->pagelayout === 'incourse' // Only view pages with the incourse layout (not popup, embedded, etc).
+            && $PAGE->cm->sectionnum // Do not display in activities in General section.
+            && $PAGE->url->out_omit_querystring() === $CFG->wwwroot . "/mod/{$PAGE->cm->modname}/view.php") {
+        return $PAGE->cm;
+    }
+    return null;
+}
+
+/**
+ * Callback allowing to add contetnt inside the region-main, in the very end
+ *
+ * If we are on activity page, add the "Back to section" link
+ *
+ * @return string
+ */
+function format_flexsections_before_footer() {
+    global $OUTPUT;
+    if ($cm = format_flexsections_add_back_link_to_cm()) {
+        return $OUTPUT->render_from_template('format_flexsections/back_link_in_cms', [
+            'backtosection' => [
+                'url' => course_get_url($cm->course, $cm->sectionnum)->out(false),
+                'sectionname' => get_section_name($cm->course, $cm->sectionnum),
+            ]
+        ]);
+    }
+    return '';
 }

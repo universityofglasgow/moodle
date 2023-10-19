@@ -48,6 +48,15 @@ class addon {
     }
 
     /**
+     * Get the version difference.
+     *
+     * @return int
+     */
+    public function get_version_diff() {
+        return 0;
+    }
+
+    /**
      * Whether the plugin is activated.
      *
      * @return bool
@@ -80,6 +89,17 @@ class addon {
     public function is_installed_and_upgraded() {
         return $this->is_legacy_version_present()
             && static::get_plugin_info()->is_installed_and_upgraded();
+    }
+
+    /**
+     * Whether the addon is older than.
+     *
+     * @param int $version The version to test against.
+     * @return bool
+     */
+    public function is_older_than($version) {
+        $localxp = static::get_plugin_info();
+        return !empty($localxp) && $localxp->versiondb < $version;
     }
 
     /**

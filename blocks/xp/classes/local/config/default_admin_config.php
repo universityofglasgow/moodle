@@ -58,8 +58,10 @@ class default_admin_config extends immutable_config {
     public function __construct() {
         parent::__construct(new static_config([
             'context' => CONTEXT_COURSE,
+            'adminscanearnxp' => 0,
             'enablepromoincourses' => 1,
             'keeplogs' => 3,
+            'navbardisplay' => 0,
 
             'enablecheatguard' => 1,
             'enableinfos' => 1,

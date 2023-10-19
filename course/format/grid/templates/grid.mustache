@@ -20,6 +20,7 @@
     Displays the grid.
 
     Context variables required for this template:
+    * gridjustify - The justification for the grid.
     * gridsections - The array of sections.
     * showcompletion - If completion is on and shown.
     * sectionbreak - There is a section break for this section.
@@ -35,6 +36,7 @@
 
     Example context (json):
     {
+        "gridjustification" : "space-between",
         "gridsections": [
             {
                 "sectionbreak": false,
@@ -62,26 +64,33 @@
         "showcompletion": true
     }
 }}
-<div class="thegrid d-flex flex-wrap justify-content-between mt-2">
+<div class="thegrid d-flex flex-wrap grid-justify-{{gridjustification}} mt-2">
     {{#gridsections}}
     {{#sectionbreak}}
     </div>
     {{#sectionbreakheading}}
     <div id="gridsectionbreak-{{number}}" class="gridsectionbreakheading mb-1 mt-1">{{{sectionbreakheading}}}</div>
     {{/sectionbreakheading}}
-    <div class="thegrid d-flex flex-wrap justify-content-between">
+    <div class="thegrid d-flex flex-wrap grid-justify-{{gridjustification}}">
     {{/sectionbreak}}
     <div id="section-{{number}}" class="grid-section card{{#currentsection}} currentgridsection{{/currentsection}}">
         {{^popup}}
-        <a href="{{sectionurl}}">
+        {{#notavailable}}<div class="grid-section-inner">{{/notavailable}}
+        {{^notavailable}}<a class="grid-section-inner" href="{{sectionurl}}">{{/notavailable}}
         {{/popup}}
         {{#popup}}
-        <div data-toggle="modal" data-target="#gridPopup" data-section="{{number}}">
+        <div class="grid-modal grid-section-inner" data-toggle="modal" data-target="#gridPopup" data-section="{{number}}" tabindex="0">
         {{/popup}}
-            <div class="card-header text-truncate">{{{sectionname}}}</div>
+            <div class="card-header text-truncate" title="{{sectionname}}">{{{sectionname}}}{{#notavailable}}
+                <div data-region="sectionbadges" class="sectionbadges d-flex">
+                    {{$ core_courseformat/local/content/section/badges }}
+                        {{> core_courseformat/local/content/section/badges }}
+                    {{/ core_courseformat/local/content/section/badges }}
+                </div>
+            {{/notavailable}}</div>
             {{#imageuri}}
             <div class="grid-image card-img-bottom text-center">
-                <img src="{{imageuri}}" alt="{{imagealttext}}">
+                <img src="{{imageuri}}" alt="{{imagealttext}}" loading="lazy">
                 {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
             </div>
             {{/imageuri}}
@@ -91,7 +100,8 @@
             </div>
             {{/generatedimageuri}}
         {{^popup}}
-        </a>
+        {{#notavailable}}</div>{{/notavailable}}
+        {{^notavailable}}</a>{{/notavailable}}
         {{/popup}}
         {{#popup}}
         </div>
@@ -114,7 +124,7 @@
                 <div id="gridPopupCarousel" class="carousel slide" data-interval="false">
                     <div class="carousel-inner">
                         {{#popupsections}}
-                        <div id="gridpopupsection-{{num}}" data-sectiontitle="{{#header}}{{name}}{{/header}}" class="carousel-item gridcarousel-item">
+                        <div id="gridpopupsection-{{num}}" data-section="{{num}}" data-sectiontitle="{{#header}}{{name}}{{/header}}" class="carousel-item gridcarousel-item">
                             {{#restrictionlock}}
                             <div class="align-self-center ml-2">
                                 {{#pix}}t/unlock, core{{/pix}}
@@ -153,12 +163,12 @@
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
-                <button class="btn btn-light" type="button" data-target="#gridPopupCarousel" data-slide="prev">
+                <button id="gridPopupCarouselLeft" class="btn btn-light" type="button" data-target="#gridPopupCarousel" data-slide="prev">
                     <span class="fa fa-chevron-left" aria-hidden="true"></span>
                     <span class="sr-only">{{#str}}previoussection{{/str}}</span>
                 </button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{#str}}close, form{{/str}}</button>
-                <button class="btn btn-light" type="button" data-target="#gridPopupCarousel" data-slide="next">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">{{#str}}close, form{{/str}}</button>
+                <button id="gridPopupCarouselRight" class="btn btn-light" type="button" data-target="#gridPopupCarousel" data-slide="next">
                     <span class="fa fa-chevron-right" aria-hidden="true"></span>
                     <span class="sr-only">{{#str}}nextsection{{/str}}</span>
                 </button>
@@ -166,9 +176,10 @@
         </div>
     </div>
 </div>
+{{/popup}}
 {{#js}}
-require(['format_grid/popup'], function(popuphandler) {
-    popuphandler.init({{#showcompletion}}true{{/showcompletion}}{{^showcompletion}}false{{/showcompletion}});
+require(['format_grid/thegrid'], function(gridhandler) {
+    var sectionnumbers = [{{gridsectionnumbers}}];
+    gridhandler.init(sectionnumbers, {{#popup}}true, {{#showcompletion}}true{{/showcompletion}}{{^showcompletion}}false{{/showcompletion}}{{/popup}}{{^popup}}false, false{{/popup}});
 });
 {{/js}}
-{{/popup}}

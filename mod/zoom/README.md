@@ -39,12 +39,6 @@ Optional functionality can be enabled by granting additional scopes:
     - webinar:read:admin
     - webinar:write:admin
 
-### JWT
-JWT will be deprecated in June 2023. To create an account-level JWT app the 'JWT' permission is
-required.
-
-You will need to [create a JWT app](https://developers.zoom.us/docs/platform/build/jwt-app/) and that will generate the API key and secret.
-
 ## Installation
 
 1. [Install plugin](https://docs.moodle.org/en/Installing_plugins#Installing_a_plugin) to the /mod/zoom folder in Moodle.
@@ -54,17 +48,36 @@ You will need to [create a JWT app](https://developers.zoom.us/docs/platform/bui
 - Zoom client ID (mod_zoom | clientid)
 - Zoom client secret (mod_zoom | clientsecret)
 
-JWT will be deprecated in June 2023. For a JWT app, you need to set the following settings to enable the plugin:
-
-- Zoom API key (mod_zoom | apikey)
-- Zoom API secret (mod_zoom | apisecret)
-
-Please note that the API key and secret are not the same as the LTI key/secret.
-
 If you get "Access token is expired" errors, make sure the date/time on your
 server is properly synchronized with the time servers.
 
 ## Changelog
+
+v5.1.0
+
+- Feature: Show activity date/time directly on course page #509 (thanks @cdipe)
+- Regression: Auto recording was forced off by default #505 (thanks @emmarichardson)
+  - Introduced in v4.7.0 when adding automatic recording settings.
+- Bugfix: Validate meeting name length using Zoom's 200 character limit #512 (thanks @lcollong)
+- Bugfix: Resolve database inconsistencies #505 (thanks @fabianbatioja, @foxlapinou)
+- Bugfix: Skip grading/completion during pre-registration #507 (thanks @tbeachy)
+- Bugfix: Correct error message handling #503 (thanks @jwalits)
+- Bugfix: Provide prescribed Promise parameters #499 (thanks @fmido88)
+
+v5.0.0
+
+- Backward incompatible: Drop support for JWT authentication (thanks @aspark21)
+  - Zoom requires everyone to use Server-to-Server OAuth by September 1, 2023
+- Backward incompatible: Require PHP 7.1+ (Moodle 3.7+) (thanks @rlaneIT)
+- Backward incompatible: Drop Moodle 3.4 mobile support
+
+v4.10.3
+
+- Bugfix: Also use proxy settings for OAuth token request #494 (thanks @adnbes)
+- Bugfix: Clean up exception handling to avoid notice #482 (thanks @andremenrath)
+- Bugfix: Avoid course/activity completion form overhead #481 (thanks @phette23)
+- Regression: PHP 7.0 class constant visibility errors #495 (thanks @rlaneIT)
+  - Introduced in v4.10.1 when aligning with PSR-12 coding standards.
 
 v4.10.2
 

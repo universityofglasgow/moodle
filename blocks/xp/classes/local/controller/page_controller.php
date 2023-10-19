@@ -120,7 +120,17 @@ abstract class page_controller extends course_route_controller {
         $links = $this->navfactory->get_course_navigation($this->world);
         foreach ($links as $link) {
             if ($link['id'] === $routename) {
-                return !empty($link['children']) ? $link['children'] : [];
+                $children = !empty($link['children']) ? $link['children'] : [];
+
+                // Remove potential duplicates.
+                $seen = [];
+                return array_values(array_filter($children, function($child) use (&$seen) {
+                    if (in_array($child['id'], $seen)) {
+                        return false;
+                    }
+                    $seen[] = $child['id'];
+                    return true;
+                }));
             }
         }
         return [];
@@ -138,7 +148,7 @@ abstract class page_controller extends course_route_controller {
     /**
      * The content of the page.
      *
-     * You probably want to look at {@link self::page_content} instead.
+     * You probably want to look at {@see self::page_content} instead.
      *
      * @return void
      */

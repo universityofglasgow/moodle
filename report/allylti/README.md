@@ -6,7 +6,7 @@ The Ally reporting tool (report_allylti) provides a site wide accessibility repo
 
 The Ally accessibility report can be downloaded from:
  
-https://github.com/blackboard-open-source/moodle-report_allylti
+https://github.com/anthology-ally/moodle-report_allylti
 
 The reporting tool should be located and named as:
  [yourmoodledir]/report/allylti
@@ -15,7 +15,7 @@ The reporting tool should be located and named as:
 
 For the reporting tool to function it is necessary to download and configure the Ally admin tool:
 
-https://github.com/blackboard-open-source/moodle-tool_ally
+https://github.com/anthology-ally/moodle-tool_ally
 
 Instructions on how to do so are available in the README.md file for the admin tool.
 
@@ -36,7 +36,7 @@ Site administration > Reports > Accessibility
 
 ## License for Ally accessibility report
 
-© Open LMS 2017
+© 2017 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

@@ -36,6 +36,7 @@ use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_configtextarea;
+use block_xp\di;
 use block_xp\local\config\config;
 use block_xp\local\config\course_world_config;
 use block_xp\local\routing\url_resolver;
@@ -64,7 +65,6 @@ class default_settings_maker implements settings_maker {
      * @param config $defaults The config object to get the defaults from.
      * @param url_resolver $urlresolver The URL resolver.
      * @param config|null $configlocked The repository of locked config.
-     * @param moodle_database|null $db The database.
      */
     public function __construct(config $defaults, url_resolver $urlresolver, config $configlocked = null) {
         $this->defaults = $defaults;
@@ -111,19 +111,19 @@ class default_settings_maker implements settings_maker {
         // Add the default levels page.
         $settingspage = new admin_externalpage('block_xp_default_levels',
             get_string('defaultlevels', 'block_xp'),
-            $this->urlresolver->reverse('admin/levels'));
+            $this->urlresolver->reverse('admin/levels')->get_compatible_url());
         $settings->add($catname, $settingspage);
 
         // Add the default rules page.
         $settingspage = new admin_externalpage('block_xp_default_rules',
             get_string('defaultrules', 'block_xp'),
-            $this->urlresolver->reverse('admin/rules'));
+            $this->urlresolver->reverse('admin/rules')->get_compatible_url());
         $settings->add($catname, $settingspage);
 
         // Add the default visuals page.
         $settingspage = new admin_externalpage('block_xp_default_visuals',
             get_string('defaultvisuals', 'block_xp'),
-            $this->urlresolver->reverse('admin/visuals'));
+            $this->urlresolver->reverse('admin/visuals')->get_compatible_url());
         $settings->add($catname, $settingspage);
 
         // Add the promo page.
@@ -131,7 +131,7 @@ class default_settings_maker implements settings_maker {
         $localxp = $pluginman->get_plugin_info('local_xp');
         $settingspage = new admin_externalpage('block_xp_promo',
             ($localxp ? '' : '⭐ ') . get_string('navpromo', 'block_xp'),
-            $this->urlresolver->reverse('admin/promo'));
+            $this->urlresolver->reverse('admin/promo')->get_compatible_url());
         $settings->add($catname, $settingspage);
 
         return $settings;
@@ -145,6 +145,9 @@ class default_settings_maker implements settings_maker {
     protected function get_general_settings() {
         $settings = [];
 
+        // Display the compatibility check.
+        $settings[] = new compatibility_check_setting();
+
         // Display a list of recommended plugins.
         $settings[] = new recommended_plugins_setting();
 
@@ -157,6 +160,26 @@ class default_settings_maker implements settings_maker {
             [
                 CONTEXT_COURSE => get_string('incourses', 'block_xp'),
                 CONTEXT_SYSTEM => get_string('forthewholesite', 'block_xp')
+            ]
+        ));
+
+        // Whether to show level in navbar.
+        $settings[] = (new admin_setting_configselect('block_xp/navbardisplay',
+            get_string('navbardisplay', 'block_xp'),
+            get_string('navbardisplay_desc', 'block_xp'),
+            $this->defaults->get('navbardisplay'), [
+                '0' => get_string('no', 'core'),
+                '1' => get_string('yes', 'core'),
+            ]
+        ));
+
+        // Whether admins can earn points.
+        $settings[] = (new admin_setting_configselect('block_xp/adminscanearnxp',
+            get_string('adminscanearnxp', 'block_xp'),
+            get_string('adminscanearnxp_desc', 'block_xp'),
+            $this->defaults->get('adminscanearnxp'), [
+                '0' => get_string('no', 'core'),
+                '1' => get_string('yes', 'core'),
             ]
         ));
 
@@ -200,6 +223,21 @@ class default_settings_maker implements settings_maker {
     protected function get_default_settings() {
         $defaults = $this->defaults->get_all();
         $settings = [];
+
+        // Default settings warning.
+        $settings[] = (new freeform_setting('block_xp/hdreditingdefaultsnotice', function() {
+            // Use DI directly as an exception.
+            if (di::get('config')->get('context') != CONTEXT_SYSTEM) {
+                return;
+            }
+            $url = $this->urlresolver->reverse('config', ['courseid' => SITEID]);
+            return di::get('renderer')->notification_without_close(strip_tags(
+                markdown_to_html(get_string('editingdefaultsettingsinwholesitemodenotice', 'block_xp', [
+                    'url' => $url->out(false)
+                ])),
+                '<a><em><strong>'
+            ), \core\output\notification::NOTIFY_WARNING);
+        }));
 
         // Intro.
         $settings[] = (new admin_setting_heading('block_xp/hdrintro', '', get_string('admindefaultsettingsintro', 'block_xp')));

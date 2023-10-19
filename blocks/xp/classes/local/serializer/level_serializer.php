@@ -25,8 +25,8 @@
 
 namespace block_xp\local\serializer;
 
-use external_single_structure;
-use external_value;
+use block_xp\external\external_single_structure;
+use block_xp\external\external_value;
 use block_xp\local\xp\level_with_badge;
 use block_xp\local\xp\level_with_description;
 use block_xp\local\xp\level_with_name;
@@ -46,6 +46,8 @@ class level_serializer implements serializer_with_read_structure {
 
     /**
      * Constructor.
+     *
+     * @param url_serializer $urlserializer The URL serializer.
      */
     public function __construct(url_serializer $urlserializer) {
         $this->urlserializer = $urlserializer;

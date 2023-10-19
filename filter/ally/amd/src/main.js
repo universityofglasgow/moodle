@@ -18,7 +18,7 @@
  *
  * @package
  * @author    Guy Thomas
- * @copyright Copyright (c) 2016 Open LMS
+ * @copyright Copyright (c) 2016 Open LMS / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -382,9 +382,6 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
                 if ($('body').hasClass('theme-snap') && !$('body').hasClass('format-tiles')) {
                     var moduleEl = $('#module-' + moduleId + ':not(.snap-native) .activityinstance ' +
                         '.snap-asset-link a:first-of-type:not(.clickable-region)');
-                } else if ($('body').hasClass('format-tiles')) {
-                    var moduleEl = $('#module-' + moduleId + ' .activityinstance ' +
-                        'a:first-of-type:not(.clickable-region,.editing_move)');
                 } else {
                     var moduleEl = $('#module-' + moduleId + ' .activity-instance ' +
                         'a:first-of-type:not(.clickable-region,.editing_move)');
@@ -888,6 +885,27 @@ function($, Templates, Strings, Ally, ImageCover, Util) {
                     }
                     debounceApplyPlaceHolders();
                 });
+                // For Snap theme.
+                if ($('body.theme-snap').length) {
+                    $(document).ajaxComplete(function(event, xhr, settings) {
+                        // Search ally server response.
+                        if (settings.url.includes('ally.js')) {
+                            setTimeout(function() {
+                                // Show score icons that are hidden, see INT-18688.
+                                $('.ally-feedback.ally-active.ally-score-indicator-embedded span').each(function () {
+                                    if (this.style.display == 'none') {
+                                        this.style.display = 'block';
+                                        if (this.getAttribute('class') == 'ally-scoreindicator-container') {
+                                            this.style.display = 'inline-block';
+                                            this.children[0].style.display = 'inline-block';
+                                        }
+                                    }
+                                });
+                            }, 5000);
+                            $(document).off('ajaxComplete');
+                        }
+                    });
+                }
             }
         };
 

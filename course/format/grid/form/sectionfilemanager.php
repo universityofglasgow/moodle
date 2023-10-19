@@ -26,16 +26,15 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->dirroot."/lib/form/filemanager.php");
+require_once($CFG->dirroot . "/lib/form/filemanager.php");
 
 class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager implements templatable {
-
-    private static $options = array(
+    private static $options = [
         'maxfiles' => 1,
         'subdirs' => 0,
-        'accepted_types' => array('gif', 'jpe', 'jpeg', 'jpg', 'png', 'webp'),
-        'return_types' => FILE_INTERNAL
-    );
+        'accepted_types' => ['gif', 'jpe', 'jpeg', 'jpg', 'png', 'webp'],
+        'return_types' => FILE_INTERNAL,
+    ];
 
     /**
      * Constructor
@@ -66,7 +65,7 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
             $lock = true;
             if (!defined('BEHAT_SITE_RUNNING')) {
                 $lockfactory = \core\lock\lock_config::get_lock_factory('format_grid');
-                $lock = $lockfactory->get_lock('sectionid'.$sectionid, 5);
+                $lock = $lockfactory->get_lock('sectionid' . $sectionid, 5);
             }
             if ($lock) {
                 $fs = get_file_storage();
@@ -74,8 +73,14 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
                 $indata->sectionimage_filemanager = $value;
                 // The file manager deals with the files table when the image is deleted.
                 $outdata = file_postupdate_standard_filemanager(
-                    $indata, 'sectionimage', self::$options, $coursecontext,
-                    'format_grid', 'sectionimage', $sectionid);
+                    $indata,
+                    'sectionimage',
+                    self::$options,
+                    $coursecontext,
+                    'format_grid',
+                    'sectionimage',
+                    $sectionid
+                );
                 global $DB;
                 if ($outdata->sectionimage == '1') {
                     // We have draft file(s), however they could also be left over ones!
@@ -84,7 +89,7 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
                     $sectionimage = $DB->get_record_select(
                         'format_grid_image',
                         'courseid = ? AND sectionid = ?',
-                        array($course->id, $sectionid)
+                        [$course->id, $sectionid]
                     );
                     $havefiles = false;
                     $havechangedfiles = false;
@@ -129,7 +134,14 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
                             }
                             if ($havechangedfiles) {
                                 $toolbox = \format_grid\toolbox::get_instance();
-                                $toolbox->setup_displayed_image($sectionimage, $file, $course->id, $sectionid, $format);
+                                try {
+                                    $toolbox->setup_displayed_image($sectionimage, $file, $course->id, $sectionid, $format);
+                                } catch (\Exception $e) {
+                                    if (!defined('BEHAT_SITE_RUNNING')) {
+                                        $lock->release();
+                                    }
+                                    throw $e;
+                                }
                             }
                         }
                     }
@@ -145,7 +157,10 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
                     $lock->release();
                 }
             } else {
-                throw new \moodle_exception('cannotgetimagelock', 'format_grid', '',
+                throw new \moodle_exception(
+                    'cannotgetimagelock',
+                    'format_grid',
+                    '',
                     get_string('cannotgetmanagesectionimagelock', 'format_grid')
                 );
             }
@@ -168,7 +183,7 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
         global $DB;
 
         try {
-            $DB->delete_records('format_grid_image', array('courseid' => $courseid, 'sectionid' => $sectionid));
+            $DB->delete_records('format_grid_image', ['courseid' => $courseid, 'sectionid' => $sectionid]);
         } catch (\Exception $e) {
             if (!defined('BEHAT_SITE_RUNNING')) {
                 $lock->release();
@@ -203,7 +218,14 @@ class MoodleQuickForm_sectionfilemanager extends MoodleQuickForm_filemanager imp
 
         $coursecontext = context_course::instance($course->id);
         $fmd = file_prepare_standard_filemanager(
-            $course, 'sectionimage', self::$options, $coursecontext, 'format_grid', 'sectionimage', $sectionid);
+            $course,
+            'sectionimage',
+            self::$options,
+            $coursecontext,
+            'format_grid',
+            'sectionimage',
+            $sectionid
+        );
         $this->setValue($fmd->sectionimage_filemanager);
     }
 }

@@ -17,7 +17,7 @@
 /**
  * Test filter lib.
  * @author    Guy Thomas
- * @copyright Copyright (c) 2017 Open LMS
+ * @copyright Copyright (c) 2017 Open LMS / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace filter_ally;
@@ -37,6 +37,7 @@ class filter_test extends \advanced_testcase {
         filter_set_global_state('ally', TEXTFILTER_ON);
 
         require_once(__DIR__.'/../filter.php');
+        require_once($CFG->dirroot.'/mod/forum/lib.php');
         $PAGE->set_url($CFG->wwwroot.'/course/view.php');
         $this->filter = $this->call_filter_setup();
     }

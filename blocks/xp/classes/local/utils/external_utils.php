@@ -25,6 +25,8 @@
 
 namespace block_xp\local\utils;
 
+use context;
+
 /**
  * External utils.
  *
@@ -36,6 +38,33 @@ namespace block_xp\local\utils;
 class external_utils {
 
     /**
+     * External format text.
+     *
+     * Convenient method to handle calls for different Moodle versions.
+     *
+     * @param string $text The content.
+     * @param int $format The text format.
+     * @param context|int $contextorid The context.
+     * @param string $component The component.
+     * @param string $filearea The file area.
+     * @param int $itemid The file area item ID.
+     * @param array $options Text formatting options.
+     * @return array Containing [text, format].
+     */
+    public static function format_text($text, $format, $contextorid, $component = null, $filearea = null,
+            $itemid = null, $options = null) {
+
+        global $CFG;
+        if ($CFG->branch >= 402) {
+            $context = $contextorid instanceof context ? $contextorid : context::instance_by_id($contextorid);
+            return \core_external\util::format_text($text, $format, $context, $component, $filearea, $itemid, $options);
+        }
+
+        static::load_libs();
+        return external_format_text($text, $format, $contextorid, $component, $filearea, $itemid, $options);
+    }
+
+    /**
      * External format strings.
      *
      * Compatibility with PHP Units from Moodle 4.2 where external libs should no longer be
@@ -43,7 +72,7 @@ class external_utils {
      * class or function.
      *
      * @param string $str The string to be filtered.
-     * @param context|int $contextorid The context.
+     * @param context|int $context The context, or its ID.
      * @param boolean $striplinks Whether to strip links.
      * @param array $options Options.
      * @return string
@@ -56,7 +85,7 @@ class external_utils {
         static::load_libs();
 
         // Older implementations of external_format_string expected an ID.
-        $contextid = $context instanceof \context ? $context->id : $context;
+        $contextid = $context instanceof context ? $context->id : $context;
         return external_format_string($str, $contextid, $striplinks, $options);
     }
 

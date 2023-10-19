@@ -16,9 +16,9 @@ The Grid format is 'free' software under the terms of the GNU GPLv3 License, ple
 The primary source for downloading this branch of the format is https://moodle.org/plugins/view.php?plugin=format_grid
 with 'Your Moodle version:' set at 'Moodle 4.1'.
 
-The secondary source is https://github.com/gjb2048/moodle-format_grid/tags
+The secondary source is https://github.com/gjbarnard/moodle-format_grid/tags
 
-If you download from the development area - https://github.com/gjb2048/moodle-format_grid - consider that the code is unstable and
+If you download from the development area - https://github.com/gjbarnard/moodle-format_grid - consider that the code is unstable and
 not for use in production environments.  This is because I develop the next release in stages and use GitHub as a means of backup.
 Therefore the code is not finished, subject to alteration and requires testing.
 
@@ -28,7 +28,7 @@ FAQ - http://www.gnu.org/licenses/gpl-faq.html - is a good place to look.
 If you reuse any of the code then I kindly ask that you make reference to the format.
 
 If you make improvements or bug fixes then I would appreciate if you would send them back to me by forking from
-https://github.com/gjb2048/moodle-format_grid and doing a 'Pull Request' so that the rest of the Moodle community benefits.
+https://github.com/gjbarnard/moodle-format_grid and doing a 'Pull Request' so that the rest of the Moodle community benefits.
 
 Support
 =======
@@ -138,9 +138,7 @@ Parked
 
 Known issues
 =============
-All listed on:
-1. https://github.com/gjb2048/moodle-format_grid/issues
-2. https://tracker.moodle.org/browse/CONTRIB/component/11231
+Listed on: https://github.com/gjbarnard/moodle-format_grid/issues
 
 History
 =============
@@ -151,6 +149,6 @@ Developed and maintained by
 G J Barnard MSc. BSc(Hons)(Sndw). MBCS. CEng. CITP. PGCE.
 
 - Moodle profile | [Moodle.org](https://moodle.org/user/profile.php?id=442195)
-- @gjbarnard     | [Twitter](https://twitter.com/gjbarnard)
+- @gjbarnard     | [X](https://twitter.com/gjbarnard)
 - Web profile    | [About.me](https://about.me/gjbarnard)
 - Website        | [Website](https://gjbarnard.co.uk)

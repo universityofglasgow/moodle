@@ -18,7 +18,7 @@
  * Plugin version and other meta-data are defined here.
  *
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Open LMS (https://www.openlms.net)
+ * @copyright Copyright (c) 2017 Open LMS (https://www.openlms.net) / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,11 +26,11 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var stdClass $plugin */
 $plugin->component = 'filter_ally';
-$plugin->release   = '4.0.5';
-$plugin->version   = 2023012400;
+$plugin->release   = '4.1.0';
+$plugin->version   = 2023061500;
 $plugin->requires  = 2022041900;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->dependencies = [
-    'tool_ally'      => 2023012400,
-    'report_allylti' => 2023012400,
+    'tool_ally'      => 2023041100,
+    'report_allylti' => 2023041100,
 ];
