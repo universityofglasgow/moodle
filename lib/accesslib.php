@@ -135,17 +135,17 @@ define('CONTEXT_MODULE', 70);
  */
 define('CONTEXT_BLOCK', 80);
 
-/** Capability allow management of trusts - NOT IMPLEMENTED YET - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+/** Capability allow management of trusts - NOT IMPLEMENTED YET - see {@link https://moodledev.io/docs/apis/subsystems/roles} */
 define('RISK_MANAGETRUST', 0x0001);
-/** Capability allows changes in system configuration - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+/** Capability allows changes in system configuration - see {@link https://moodledev.io/docs/apis/subsystems/roles} */
 define('RISK_CONFIG',      0x0002);
-/** Capability allows user to add scripted content - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+/** Capability allows user to add scripted content - see {@link https://moodledev.io/docs/apis/subsystems/roles} */
 define('RISK_XSS',         0x0004);
-/** Capability allows access to personal user information - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+/** Capability allows access to personal user information - see {@link https://moodledev.io/docs/apis/subsystems/roles} */
 define('RISK_PERSONAL',    0x0008);
-/** Capability allows users to add content others may see - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+/** Capability allows users to add content others may see - see {@link https://moodledev.io/docs/apis/subsystems/roles} */
 define('RISK_SPAM',        0x0010);
-/** capability allows mass delete of data belonging to other users - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+/** capability allows mass delete of data belonging to other users - see {@link https://moodledev.io/docs/apis/subsystems/roles} */
 define('RISK_DATALOSS',    0x0020);
 
 /** rolename displays - the name as defined in the role definition, localised if name empty */
@@ -2555,13 +2555,10 @@ function get_capability_info($capabilityname) {
  * @return stdClass|null with deprecation message and potential replacement if not null
  */
 function get_deprecated_capability_info($capabilityname) {
-    // Here if we do like get_all_capabilities, we run into performance issues as the full array is unserialised each time.
-    // We could have used an adhoc task but this also had performance issue. Last solution was to create a cache using
-    // the official caches.php file. The performance issue shows in test_permission_evaluation.
-    $cache = cache::make('core', 'deprecatedcapabilities');
-    // Cache has not be initialised.
-    if (!$cache->get('deprecated_capabilities_initialised')) {
-        // Look for deprecated capabilities in each components.
+    $cache = cache::make('core', 'capabilities');
+    $alldeprecatedcaps = $cache->get('deprecated_capabilities');
+    if ($alldeprecatedcaps === false) {
+        // Look for deprecated capabilities in each component.
         $allcaps = get_all_capabilities();
         $components = [];
         $alldeprecatedcaps = [];
@@ -2574,18 +2571,19 @@ function get_deprecated_capability_info($capabilityname) {
                     require($defpath);
                     if (!empty($deprecatedcapabilities)) {
                         foreach ($deprecatedcapabilities as $cname => $cdef) {
-                            $cache->set($cname, $cdef);
+                            $alldeprecatedcaps[$cname] = $cdef;
                         }
                     }
                 }
             }
         }
-        $cache->set('deprecated_capabilities_initialised', true);
+        $cache->set('deprecated_capabilities', $alldeprecatedcaps);
     }
-    if (!$cache->has($capabilityname)) {
+
+    if (!isset($alldeprecatedcaps[$capabilityname])) {
         return null;
     }
-    $deprecatedinfo = $cache->get($capabilityname);
+    $deprecatedinfo = $alldeprecatedcaps[$capabilityname];
     $deprecatedinfo['fullmessage'] = "The capability '{$capabilityname}' is deprecated.";
     if (!empty($deprecatedinfo['message'])) {
         $deprecatedinfo['fullmessage'] .= $deprecatedinfo['message'];
