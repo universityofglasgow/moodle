@@ -1,0 +1,198 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+{{!
+    @template format_tiles/course_module
+
+    Tiles course module template.
+
+    The purpose of this template is to render a li activity element
+    representing a single course module.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+        * cmid - course module id
+        * modname - course module name (type)
+        * modnameDisplay - module name to display to user on sub tile or course mod
+        * activityname - title to display on this sub tile or course mod
+        * modtitle_inplaceeditable - in place editable version of the title
+        * modResourceType - resource type e.g. pdf,
+        * is_label - is this a label
+        * hasSpacersBefore - does this sub tile need spacer sub tiles before it?
+        * previouswaslabel - was the previous sub tile a label?
+        * useSubtiles - are we usign sub tiles here (or standard list form)?
+        * isEmbeddedResource - is this a resource whcih launces a modal when clicked?
+        * clickable - is this item clickable by user (or click disabled?)
+        * extraclasses - any extra classes
+        * editing - is the user editing?
+        * content - some activities have content e.g. labels and pages, to be displayed in modal
+        * modinstance - ID from the module table
+        * url - URL for the link to launch the module,
+        * description - Description entered on the course module edit page
+        * cmeditmenu - HTML for course module edit menu
+        * cmmove - move icon
+        * availabilityinfo - availability information to display to user about this cm
+        * hascompletion - are we using completion for this cm?
+        * completionIsManual - is completion manual?
+        * completionstring - what to display when hover over the completion icon
+        * completionstate - is the item marked as complete
+        * completionstateInverse - invers of completionstate
+
+    Example context (json):
+    {
+        "cmid": 123456,
+        "modname": "label",
+        "modnameDisplay": "",
+        "activityname": "",
+        "modtitle_inplaceeditable": "",
+        "modResourceType": "",
+        "is_label": 1,
+        "hasSpacersBefore": 0,
+        "previouswaslabel": 0,
+        "useSubtiles": 1,
+        "isEmbeddedResource": 0,
+        "clickable": 1,
+        "extraclasses": "",
+        "editing": 1,
+        "content": "This is a label",
+        "modinstance": "",
+        "url": "",
+        "description": "",
+        "cmeditmenu": "",
+        "cmmove": "",
+        "availabilityinfo": "",
+        "hascompletion": 1,
+        "completionIsManual": 1,
+        "completionstring": "Click to toggle completion status",
+        "completionstate": 1,
+        "completionstateInverse": "0"
+    }
+}}
+
+{{! if this is a label (except first one in section) we need spacer activities before it so that the previous row of subtiles has correct flexbox width }}
+
+{{^useSubtiles}}
+    {{>format_tiles/local/content/section/cmitem}}
+{{/useSubtiles}}
+{{#useSubtiles}}
+    <li class="activity{{^is_label}} subtile{{/is_label}} {{#is_label}}fullwidth{{/is_label}} {{modname}} modtype_{{modname}} {{modResourceType}}{{^clickable}} unclickable {{/clickable}} launch-tiles-{{launchtype}}{{#photourl}} hasphoto{{/photourl}} {{#phototilesaltstyle}} altstyle{{/phototilesaltstyle}} {{extraclasses}}"
+        id="module-{{cmid}}" data-modtype="{{modname}}{{#modResourceType}}_{{{modResourceType}}}{{/modResourceType}}"
+        tabindex="3"
+        data-cmid="{{cmid}}"
+        data-modinstance="{{modinstance}}"
+        {{#photourl}} style="background-image: url({{photourl}});" {{/photourl}}
+        {{#pluginfileUrl}}data-url="{{{pluginfileUrl}}}" {{/pluginfileUrl}}
+        {{#secondaryurl}}data-url-secondary="{{{secondaryurl}}}" {{/secondaryurl}}
+        data-title="{{{activityname}}}"
+        {{#subtileicon}}
+        style="background-image: none;"
+        {{/subtileicon}}
+        {{#hascompletion}}data-completion-state="{{completionstate}}"{{/hascompletion}}
+    >
+        <div class="subtile-bg" {{^subtileicon}}style="display: none;"{{/subtileicon}}>
+            {{#subtileicon}}{{#pix}}tileicon/{{subtileicon}}, format_tiles{{/pix}}{{/subtileicon}}
+        </div>
+
+        {{#editing}}
+            <div class="tile-editing-top">
+            <span class="actions">
+                {{{cmeditmenu}}}
+            </span>
+                <span class="subtilecontrols">
+                    {{{cmmove}}}
+                </span>
+                {{^is_label}}
+                    {{#hascompletion}}
+                        {{#completionenabled}}
+                            {{>format_tiles/completion_button}}
+                        {{/completionenabled}}
+                    {{/hascompletion}}
+                {{/is_label}}
+            </div>
+        {{/editing}}
+
+        {{^is_label}}
+            {{#clickable}}
+                {{^editing}}
+                    <a href="{{url}}" {{#isEmbeddedResource}} data-action="launch-tiles-resource-modal"{{/isEmbeddedResource}}{{#isEmbeddedModule}}
+                       data-action="launch-tiles-module-modal"{{/isEmbeddedModule}}{{#onclick}} onclick="{{onclick}}"{{/onclick}}
+                       data-title="{{{activityname}}}" class="instancename {{{extraclasses}}}"  data-action="launch-tiles-{{launchtype}}">
+                        {{> format_tiles/course_module_subtile_inner}}
+                    </a>
+                {{/editing}}
+                {{#editing}}
+                    <div class="cm-inner">
+                        {{> format_tiles/course_module_subtile_inner}}
+                    </div>
+                {{/editing}}
+            {{/clickable}}
+            {{^clickable}}
+                <div class="cm-inner">
+                    {{> format_tiles/course_module_subtile_inner}}
+                </div>
+            {{/clickable}}
+            {{#hascompletion}}
+                {{#completionenabled}}
+                    {{>format_tiles/completion_button}}
+                {{/completionenabled}}
+            {{/hascompletion}}
+        {{/is_label}}
+
+        {{#is_label}}
+            <div class="cm-inner">
+                {{#hascompletion}}
+                    {{#completionenabled}}
+                        {{>format_tiles/completion_button}}
+                    {{/completionenabled}}
+                {{/hascompletion}}
+                {{> format_tiles/course_module_subtile_inner}}
+            </div>
+        {{/is_label}}
+
+        {{#dimmed}}
+            {{#clickable}}
+                <a href="{{url}}" class="dim-overlay"
+                    {{#isEmbeddedResource}} data-action="launch-tiles-resource-modal"{{/isEmbeddedResource}}
+                    {{#isEmbeddedModule}} data-action="launch-tiles-module-modal"{{/isEmbeddedModule}}
+                    {{#onclick}} onclick="{{onclick}}"{{/onclick}}>
+                </a>
+            {{/clickable}}
+            {{^clickable}}
+                <div href="{{url}}" class="dim-overlay"></div>
+            {{/clickable}}
+        {{/dimmed}}
+
+        {{^is_label}}
+            <div class="contentafterlink">
+                {{#visible}}
+                    {{#availabilitymessage}}
+                        {{#stealth}}{{{availabilitymessage}}}{{/stealth}}
+                        {{^stealth}}{{>format_tiles/availability_info}}{{/stealth}}
+                    {{/availabilitymessage}}
+                {{/visible}}
+                {{^visible}}
+                    {{>format_tiles/availability_info}}
+                {{/visible}}
+            </div>
+        {{/is_label}}
+    </li>
+{{/useSubtiles}}

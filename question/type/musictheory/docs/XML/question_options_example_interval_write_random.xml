@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <interval-write-random>
+    <clef-random>
+      <clef>treble</clef>
+      <clef>bass</clef>
+    </clef-random>
+    <direction-random>
+      <direction>above</direction>
+      <direction>below</direction>
+    </direction-random>
+    <size-random>
+      <size>3</size>
+      <size>5</size>
+    </size-random>
+    <quality-random>
+      <quality>M</quality>
+      <quality>m</quality>
+    </quality-random>
+  </interval-write-random>
+</options>

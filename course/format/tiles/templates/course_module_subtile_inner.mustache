@@ -1,0 +1,36 @@
+{{#is_label}}
+    {{#clickable}}
+    {{! clickable really means user is allowed to see content - }}
+        <div class="label_content {{extraclasses}}"
+              id="label_content_{{cmid}}">{{{content}}}</div>
+    {{/clickable}}
+    {{#availabilitymessage}}
+        {{{availabilitymessage}}}
+    {{/availabilitymessage}}
+{{/is_label}}
+
+{{^is_label}}
+    {{^editing}}
+        <div class="activityname">
+            <div class="activitytype">{{modnameDisplay}}</div>
+            {{#completionInUseForCm}}
+                {{#completionenabled}}
+                    <div class="completion-spacer pull-right"></div>
+                {{/completionenabled}}
+            {{/completionInUseForCm}}
+            <h4>{{{activityname}}}</h4>
+        </div>
+    {{/editing}}
+
+    {{#editing}}
+        <div class="editable-title">
+            {{#modtitle_inplaceeditable}}
+                {{>format_tiles/inplace_editable}}
+            {{/modtitle_inplaceeditable}}
+            {{^modtitle_inplaceeditable}}
+                {{{activityname}}}
+            {{/modtitle_inplaceeditable}}
+        </div>
+    {{/editing}}
+
+{{/is_label}}

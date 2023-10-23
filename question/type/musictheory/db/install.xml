@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="question/type/musictheory/db" VERSION="20121010" COMMENT="XMLDB file for Moodle question/type/musictheory"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="qtype_musictheory" COMMENT="Options for musictheory questions">
+      <FIELDS>
+
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"
+               NEXT="questionid"/>
+
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0"
+               SEQUENCE="false" PREVIOUS="id" NEXT="musictheory_musicqtype"/>
+
+        <FIELD NAME="musictheory_musicqtype" TYPE="char" LENGTH="150" NOTNULL="true"
+               SEQUENCE="false" PREVIOUS="questionid" NEXT="musictheory_gradingstrategy"/>
+
+        <FIELD NAME="musictheory_gradingstrategy" TYPE="char" LENGTH="150" NOTNULL="true"
+               SEQUENCE="false" PREVIOUS="musictheory_musicqtype" NEXT="musictheory_optionsxml"/>
+
+        <FIELD NAME="musictheory_optionsxml" TYPE="text" NOTNULL="false"
+               SEQUENCE="false" PREVIOUS="musictheory_gradingstrategy" NEXT="musictheory_randomoptionsxml"/>
+
+        <FIELD NAME="musictheory_randomoptionsxml" TYPE="text" NOTNULL="false"
+               SEQUENCE="false" PREVIOUS="musictheory_optionsxml"/>
+
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="questionid"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id" PREVIOUS="primary"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

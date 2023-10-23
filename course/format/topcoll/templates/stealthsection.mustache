@@ -1,0 +1,70 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_topcoll/stealthsection
+
+    Collapsed Topics stealth section template.
+
+    Context variables required for this template:
+    * columnclass - Additional classes used when the format has a column layout.
+    * columnwidth - Column layout width.
+    * cscml - Course section course module list.
+    * heading - The heading.
+    * rightcontent - Right column content.
+    * rtl - Right to left?
+    * sectionid - Section id.
+    * sectionno - Section number.
+
+    Example context (json):
+    {
+        "columnclass": "col-lg-3",
+        "columnwidth": "",
+        "cmcontrols": "[Add an activity or resource]",
+        "cscml": "",
+        "heading": '<h3 id="sectionid-124-title" class="section-title">Section 1</h3>',
+        "rightcontent": "",
+        "rtl": false,
+        "sectionid": "124",
+        "sectionno": "1"
+    }
+}}
+<li id="section-{{sectionno}}" class="section main course-section clearfix orphaned hidden{{#columnclass}} {{columnclass}}{{/columnclass}}"{{#columnwidth}} style="width: {{columnwidth}}%;"{{/columnwidth}} role="region" aria-labeled-by="sectionid-{{sectionid}}-title" data-sectionid="{{sectionno}}" data-for="section">
+{{^rtl}}
+    <div class="left side"></div>
+{{/rtl}}
+{{#rtl}}
+    <div class="right side">{{{rightcontent}}}</div>
+{{/rtl}}
+    <div class="content">
+        {{{heading}}}
+        {{#sectionvisibility}}
+        <div data-region="sectionbadges" class="sectionbadges d-inline-block align-items-center">
+            {{$ core_courseformat/local/content/section/badges }}
+                {{> core_courseformat/local/content/section/badges }}
+            {{/ core_courseformat/local/content/section/badges }}
+        </div>
+        {{/sectionvisibility}}
+        {{{cscml}}}
+        {{{cmcontrols}}}
+    </div>
+{{^rtl}}
+    <div class="right side">{{{rightcontent}}}</div>
+{{/rtl}}
+{{#rtl}}
+    <div class="left side"></div>
+{{/rtl}}
+</li>

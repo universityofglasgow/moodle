@@ -1,0 +1,157 @@
+
+.mform-container label, .form-container label, .title, .col-form-label{
+    font-weight: bold;
+}
+
+.form-container{
+    padding: 1em 0 0;
+}
+
+.mform-container, .form-container{
+    max-width: 80%;
+    padding-left: 1em;
+}
+
+.mform-container{
+    position: relative;
+}
+
+.mform select{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: block;
+    padding: 0px 20px 0 10px;
+    line-height: 1.75;
+    color: #333;
+    background-color: #ffffff;
+    background-image: none;
+    border-radius: .25rem;
+    border: 1px solid #8c8c8c;
+    -ms-word-break: normal;
+    word-break: normal;
+    outline: none;
+}
+
+.mform-custom-select:not(.has-danger) > div.felement:after,
+.form-group.mform-custom-select-grouped:after {
+    content: '\f078';
+    background-color: inherit;
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    height: 12px;
+    padding: 0px 5px;
+    pointer-events: none;
+    position: relative;
+    margin-left: -24px;
+}
+
+.mform-custom-select.has-danger > div.felement:after {
+    content: '\f078';
+    background-color: white;
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #ca3120;
+    height: 12px;
+    padding: 0px 5px;
+    pointer-events: none;
+    position: relative;
+    margin-left: 125px;
+    margin-top: -77px;
+}
+
+.mform-grades {
+    position: absolute;
+    left: 45%;
+    top: 0px;
+    width: 85%;
+}
+
+.input-percent > [data-fieldtype="text"]:after{
+    content: '\f295';
+    font: normal normal normal 12px/1 FontAwesome;
+    color: #005c8a;
+    position: relative;
+    height: 12px;
+    padding: 0px 5px;
+    margin-left: -24px;
+}
+
+.input-percent > [data-fieldtype="text"].no-after:after{
+    content: none;
+}
+
+.mform-override {
+    color: #9393A0
+}
+
+.form-inline .input-group, .form-inline .custom-select {
+    width: 150px;
+}
+
+#select-template, #select-alt-grade{
+    width: auto;
+}
+
+#fitem_id_submitbutton .btn{
+    border-radius: .5em;
+    margin-left: auto;
+    margin-right: 1em;
+}
+
+textarea#id_notes.form-control {
+    width: 350px;
+    height: 100px;
+}
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+    .mform-grades {
+        position: revert;
+    }
+
+    .input-percent > div.felement:after {
+        left: calc(100% - 40px);
+    }
+}
+
+[name="hiddensubmitform"], .fdescription{
+    display: none;
+}
+
+[data-groupname="buttonarr"] > .form-inline {
+    justify-content: flex-end;
+    padding-right: 2em;
+}
+
+abbr > .fa-asterisk {
+    color: #f04e69!important;
+}
+
+/* Form buttons */
+button.btn-blue, .btn-blue > .form-inline > .btn{
+    margin-left: auto !important;
+    margin-right: 15px;
+    border-color: #005c8a;
+    background-color: #005c8a;
+    color: white;
+}
+
+.mform-container ~ div > div input[type="submit"]:not(input[name="cancel"]),
+.mform-container ~ div > div button[name="savealtbutton"],
+.mform-container ~ div > div button[name="convertbutton"] {
+    border-color: #005c8a;
+    background-color: #005c8a;
+    color: white;
+}
+
+label.checkbox-field{
+    width: 160px;
+    justify-content: start;
+}
+
+.merit-note{
+    color: gray;
+    font-size: smaller;
+    font-style: italic;
+    font-weight: normal;
+}

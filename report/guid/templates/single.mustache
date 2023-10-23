@@ -1,0 +1,241 @@
+<div class="mb-2">
+    {{{ picture }}} 
+</div>
+
+<div class="alert alert-primary m-t-1">
+    {{# str }}resultfor, report_guid, {{{ displayname }}}{{/ str }}
+</div>
+
+{{# noemail }}
+    <div class="alert alert-danger">
+        {{# str }}noemail, report_guid{{/ str }}
+    </div>
+{{/ noemail }}
+
+{{# createlink }}
+    <a class="btn btn-success" href="{{{ createlink }}}">{{# str }}create, report_guid, {{ fullname }}{{/ str }}</a>
+{{/ createlink }}
+
+{{# ldapconfigured }}
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}ldapresults, report_guid{{/ str }}</h5>
+            <p class="card-text">{{{ formattedldap }}}</p>
+        </div>
+    </div>
+{{/ ldapconfigured }}
+
+{{^ ldapconfigured }}
+    <div class="alert alert-danger my-3">
+        {{# str }}ldapnotconfigured, report_guid{{/ str }}
+    </div>
+{{/ ldapconfigured }}
+
+{{# gudatabaseerror }}
+    <div class="alert alert-danger my-3">
+        {{# str }}nogudatabase, report_guid{{/ str }}
+    </div>
+{{/ gudatabaseerror }}
+
+<div class="card mt-2">
+  <div class="card-body">
+    <h5 class="card-title">{{# str }}enrolments, report_guid, {{ fullname }}{{/ str }}</h5>
+    <p class="card-text">
+        {{# noenrolments }}
+            {{# str }}noenrolments, report_guid{{/ str }}
+        {{/ noenrolments }}
+        {{^ noenrolments }}
+            <ul>
+                {{# formattedenrolments }}
+                    <li>
+                        {{# courselink }}
+                            <a href="{{{ courselink }}}"><b>{{ name }}</b></a>
+                        {{/ courselink }}
+                        {{^ courselink }}
+                            <b>{{ name }}</b>
+                        {{/ courselink }}
+                        <i>({{# str }}accessed, report_guid, {{ lastaccess }}{{/ str}})</i>
+                        {{# ended }}<span class="badge badge-danger">{{# str }}ended, report_guid{{/ str }}</span>{{/ ended }}
+                        {{# notstarted }}<span class="badge badge-primary">{{# str }}notstarted, report_guid{{/ str }}</span>{{/ notstarted }}
+                        {{# hidden }}<span class="badge badge-info">{{# str }}hidden, report_guid{{/ str }}</span>{{/ hidden }}
+                        {{# gcatenabled }}<span class="badge badge-success">{{# str }}gcat, report_guid{{/ str }}{{/ gcatenabled }}
+                    </li>
+                {{/ formattedenrolments }}
+            </ul>
+        {{/ noenrolments}}
+    </p>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <div class="card-body">
+    <h5 class="card-title">{{# str }}mycampus, report_guid{{/ str }}</h5>
+    <p class="card-text">
+        {{# nocourses }}
+            {{# str }}nomycampus, report_guid{{/ str }}
+        {{/ nocourses }}
+        {{^ nocourses }}
+            <ul>
+                {{# formattedcourses }}
+                    <li>
+                        <b>{{ code }}</b>
+                        {{# isnamed }}
+                            {{ name }} => {{ ou }}
+                        {{/ isnamed }}
+                        {{# usernamemismatch }}
+                            <span class="text-danger">{{# str }}guidnomatch, report_guid{{/ str }}</span>
+                        {{/ usernamemismatch }}
+                        {{# isgucourses }}
+                            <small><ul>
+                                {{# gucourses }}
+                                    <li>
+                                        <a {{^ visible }}class="text-muted"{{/ visible }} href="{{{ link }}}">{{ fullname }}<a>
+                                        {{# enrolled }}<span class="badge badge-info">{{# str }}enrolled, report_guid{{/ str }}</span>{{/ enrolled }}
+                                    </li>
+                                {{/ gucourses }}
+                            </ul></small>
+                        {{/ isgucourses }}
+                    </li>    
+                {{/ formattedcourses }}
+            </ul>
+        {{/ nocourses }}
+    </p>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <div class="card-body">
+    <h4 class="card-title">{{# str }}turnitin, report_guid{{/ str }}</h5>
+    {{# tiieula }}
+        <div class="alert alert-success">
+            {{# str }}tiieulaaccepted, report_guid{{/ str }}
+        </div>
+    {{/ tiieula }}
+    {{^ tiieula }}
+        <div class="alert alert-danger">
+            {{# str }}tiieulanotaccepted, report_guid{{/ str }}
+        </div>
+    {{/ tiieula }}
+    <p class="card-text">
+        {{# notiifiles }}
+            {{# str }}notiifiles, report_guid{{/ str }}
+        {{/ notiifiles }}
+        {{^ notiifiles }}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{{# str }}tiiid, report_guid{{/ str }}</th>
+                        <th>{{# str }}module, report_guid{{/ str}}</th>
+                        <th>{{# str }}tiistatus, report_guid{{/ str }}</th>
+                        <th>{{# str }}tiiscore, report_guid{{/ str }}</th>
+                        <th>{{# str }}tiierror, report_guid{{/ str }}</th>
+                        <th>{{# str }}attempt, report_guid{{/ str }}</th>
+                        <th>{{# str }}tiitime, report_guid{{/ str }}<th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{# tiifiles }}
+                        <tr>
+                            <th>{{ formattedexternalid }}</th>
+                            <td><a href="{{{ link }}}">{{ cm }}</a></td>
+                            <td>{{ statuscode }}</th>
+                            <td>{{ formattedsimilarityscore }}</th>
+                            <td>{{ errorcode }}</td>
+                            <td>{{ attempt }}</td>
+                            <td>{{ formattedlastmodified }}</td>
+                            <td>
+                                {{# oktoresend }}
+                                    <a class="btn btn-info" href="{{{ resendlink }}}">{{# str }}tiiresend, report_guid{{/ str }}</a>
+                                {{/ oktoresend }}
+                            </td>
+                        </tr>
+                    {{/ tiifiles }}
+                </tbody>
+            </table>
+        {{/ notiifiles }}
+    </p>
+  </div>
+</div>
+
+{{^ isstudent }}
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}corehrresults, report_guid{{/ str }}</h5>
+            <p class="card-text">
+                {{# iscorehr }}
+                    {{{ corehr }}}
+                {{/ iscorehr }}
+                {{^ iscorehr }}
+                    <div class="alert alert-info">{{# str }}nomoodleprofile, report_guid{{/ str }}</div>
+                {{/ iscorehr }}    
+            </p>
+        </div>
+    </div>
+{{/ isstudent }}
+
+{{^ nocorehrcompletion }}
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}corehrcompletion, report_guid{{/ str }}</h5>
+            <p class="card-text">
+                <table class="table table-striped">
+                    <thead>
+                        <th>{{# str }}hrcode, report_guid{{/ str }}</th>
+                        <th>{{# str }}coursename, report_guid{{/ str }}</th>
+                        <th>{{# str }}timesent, report_guid{{/ str }}</th>
+                        <th>{{# str }}retrycount, report_guid{{/ str }}</th>
+                        <th>{{# str }}status, report_guid{{/ str }}</th>
+                    </thead>
+                    <tbody>
+                        {{# corehrcompletion }}
+                            <tr>
+                                <td>{{ coursecode }}</td>
+                                <td>{{ coursename }}</td>
+                                <td>{{ formattedtime }}</td>
+                                <td>{{ retrycount }}</td>
+                                <td>{{ status }} {{ error }}</td>
+                            </tr>
+                        {{/ corehrcompletion }}                    
+                    </tbody>
+                </table>   
+            </p>
+        </div>
+    </div>
+{{/ nocorehrcompletion}}
+
+{{# nocorehrcompletion }}
+        <div class="alert alert-warning">
+            {{# str }}nocorehrcompletion, report_guid{{/ str }}
+        </div>
+{{/ nocorehrcompletion }}
+
+{{^ noportalcourses }}
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">{{# str }}portalcourses, report_guid{{/ str }}</h5>
+            <p class="card-text">
+                <table class="table table-striped">
+                    <thead>
+                        <th>{{# str }}coursename, report_guid{{/ str }}</th>
+                        <th>{{# str }}starred, report_guid{{/ str }}</th>
+                        <th>{{# str }}visible, report_guid{{/ str }}</th>
+                        <th>{{# str }}lastvisit, report_guid{{/ str }}</th>
+                    </thead>
+                    <tbody>
+                        {{# portalcourses }}
+                            <tr>
+                                <td>{{ fullname }}</td>
+                                <td>{{# starred }}{{# str }}yes{{/ str }}{{/ starred }}{{^ starred }}{{# str }}no{{/ str }}{{/ starred }}</td>
+                                <td>{{# visible }}{{# str }}yes{{/ str }}{{/ visible }}{{^ visible }}{{# str }}no{{/ str }}{{/ visible }}</td>
+                                <td>{{ formattedlastaccess }}</td>
+                            </tr>
+                        {{/ portalcourses }}                    
+                    </tbody>
+                </table>   
+            </p>
+        </div>
+    </div>
+{{/ noportalcourses }}
+
+<a class="mt-2 btn btn-primary" href="{{{ backlink }}}">{{# str }}back{{/ str }}</a>

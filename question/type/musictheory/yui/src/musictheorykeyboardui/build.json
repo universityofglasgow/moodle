@@ -1,0 +1,21 @@
+{
+  "name": "moodle-qtype_musictheory-musictheorykeyboardui",
+  "builds": {
+    "moodle-qtype_musictheory-musictheorykeyboardui": {
+      "jsfiles": [
+        "YUI_init.js",
+        "./KeyboardInput/KeyboardInput.js",
+        "./KeyboardInput/GUIState.js",
+        "./KeyboardInput/Render.js",
+        "./KeyboardInput/Renderer.js",
+        "./KeyboardInput/Control.js",
+        "./KeyboardInput/Controller.js",
+        "./KeyboardInput/CoordManager.js",
+        "./KeyboardInput/Keyboard.js",
+        "./KeyboardInput/Key.js",
+        "./KeyboardInput/State.js",
+        "./KeyboardInput/KeyRend.js"
+      ]
+    }
+  }
+}

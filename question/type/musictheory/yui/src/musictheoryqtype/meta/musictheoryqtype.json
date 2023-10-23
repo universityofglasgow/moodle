@@ -1,0 +1,10 @@
+{
+  "moodle-qtype_musictheory-musictheoryqtype": {
+    "requires": [
+        "base",
+        "node",
+        "datatype",
+        "node-event-simulate"
+    ]
+  }
+}

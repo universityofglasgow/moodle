@@ -1,0 +1,5 @@
+This directory contains an XML schema file specifying the XML structure of the
+database fields 'musictheory_optionsxml' and 'musictheory_randomoptionsxml'.
+
+A number of XML files are also included as examples, demonstrating how the question
+options for various music question subtypes are stored in the database.

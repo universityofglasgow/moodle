@@ -1,0 +1,68 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_template/stepper-footer
+
+    Moodle notification template.
+
+    The purpose of this template is to render a success notification.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * message A cleaned string (use clean_text()) to display.
+    * extraclasses Additional classes to apply to the notification.
+    * closebutton Whether a close button should be displayed to dismiss the message.
+    * icon Which icon should be displayed.
+    * level Which level this notification is (e.g. warning, success).
+
+    Example context (json):
+    {categoryname, categoryid, courses}
+}}
+<div class="slider-container"> <!--  category-heading -->
+    <h1 class="slider-heading category-heading collapsed{{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_slick-slider-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} {{#str}} invisiblecategory, local_template {{/str}}{{/visible}}</h1>
+    <div id="block_slick-spinner-1" class="text-center spinner">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <!-- lastload progressive -->
+    <section id="local_template_slick-slider-{{categoryid}}" class="responsive slider card-deck collapse" data-adaptive-height="true"
+         data-slick='{
+            "arrows": true,
+            "dots": true,
+            "infinite": false,
+            "slidesToShow": 4,
+            "slidesToScroll": 4,
+            "lazyLoad": "progressive",
+            "responsive": [
+                {"breakpoint": 1200, "settings": {"lazyLoad": "progressive", "slidesToShow": 3, "slidesToScroll": 3}},
+                {"breakpoint": 1024, "settings": {"lazyLoad": "ondemand", "slidesToShow": 2, "slidesToScroll": 2}},
+                {"breakpoint":  600, "settings": {"lazyLoad": "ondemand", "slidesToShow": 1, "slidesToScroll": 1}},
+                {"breakpoint":  480, "settings": {"lazyLoad": "ondemand", "slidesToShow": 1, "slidesToScroll": 1}}
+                ]
+        }'>
+        {{#courses}}
+            {{> local_template/card }}
+        {{/courses}}
+    </section>
+</div>

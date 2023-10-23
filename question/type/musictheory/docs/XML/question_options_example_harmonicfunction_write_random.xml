@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <harmonicfunction-write-random>
+    <clef-random>
+      <clef>treble</clef>
+    </clef-random>
+    <displaykeysignature>true</displaykeysignature>
+    <mode-random>
+      <mode>M</mode>
+    </mode-random>
+    <harmonicfunction-random>
+      <harmonicfunctiontype>DiatonicTriad</harmonicfunctiontype>
+      <harmonicfunctiontype>Dominant7th</harmonicfunctiontype>
+    </harmonicfunction-random>
+  </harmonicfunction-write-random>
+
+</options>

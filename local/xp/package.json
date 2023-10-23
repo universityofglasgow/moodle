@@ -1,0 +1,17 @@
+{
+  "name": "local_xp",
+  "version": "1.12.0",
+  "description": "Level Up XP+ plugin for Moodle",
+  "author": "Frédéric Massart <fred@branchup.tech>",
+  "license": "GPLv3",
+  "private": true,
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "gulp-replace": "^1.1.3"
+  },
+  "scripts": {
+    "dist": "NODE_ENV=production npx gulp dist",
+    "watch": "NODE_ENV=development npx gulp watch"
+  }
+}

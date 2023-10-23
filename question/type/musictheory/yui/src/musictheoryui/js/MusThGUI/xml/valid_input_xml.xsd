@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+
+<xs:schema version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!-- ELEMENTS -->
+
+  <xs:element name="MusThGUI" type="MusThGUI"/>
+
+  <!-- COMPLEX TYPES -->
+
+  <xs:complexType name="MusThGUI">
+    <xs:all>
+      <xs:element name="StaffSystem" type="StaffSystem" />
+      <xs:element name="Toolbars" type="Toolbars" minOccurs="0" />
+      <xs:element name="InputDialog" type="InputDialog" minOccurs="0" />
+    </xs:all>
+    <xs:attribute name="canvasEditable" type="xs:boolean" use="required" />
+    <xs:attribute name="accidentalCarryOver" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="StaffSystem">
+    <xs:sequence>
+      <xs:element name="Staff" type="Staff" minOccurs="1" maxOccurs="2" />
+    </xs:sequence>
+    <xs:attribute name="maxLedgerLines" type="maxLedgerLines" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="Staff">
+    <xs:all>
+      <xs:element name="KeySign" type="KeySignature" />
+      <xs:element name="NoteColumns" type="NoteColumns" minOccurs="0" />
+    </xs:all>
+    <xs:attribute name="clef" type="clef" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="KeySignature">
+    <xs:sequence>
+      <xs:element name="Accidental" type="KeySignAccidental" minOccurs="0" maxOccurs="7"/>
+    </xs:sequence>
+    <xs:attribute name="totalAccColumns" type="totalAccColumns" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="KeySignAccidental">
+    <xs:attribute name="type" type="accidental" use="required" />
+    <xs:attribute name="letter" type="lettername" use="required" />
+    <xs:attribute name="register" type="register" use="required" />
+    <xs:attribute name="editable" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="NoteColumns">
+    <xs:sequence>
+      <xs:element name="NoteColumn" type="NoteColumn" minOccurs="0" maxOccurs="25"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NoteColumn">
+    <xs:sequence>
+      <xs:element name="Note" type="Note" minOccurs="0" maxOccurs="10"/>
+      <xs:element name="FiguredBass" type="FiguredBass" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="TextInput" type="TextInput" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="maxNotes" type="xs:integer" use="required" />
+    <xs:attribute name="type" type="noteColumnType" />
+  </xs:complexType>
+
+  <xs:complexType name="Note">
+    <xs:attribute name="letter" type="lettername" use="required" />
+    <xs:attribute name="register" type="register" use="required" />
+    <xs:attribute name="accidental" type="accidental" use="required" />
+    <xs:attribute name="noteValue" type="noteValue" use="required" />
+    <xs:attribute name="editable" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="FiguredBass">
+    <xs:sequence>
+      <xs:element name="Row" type="FiguredBassRow" minOccurs="1" maxOccurs="3"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FiguredBassRow">
+    <xs:attribute name="text" type="figuredBassRowText" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="TextInput">
+    <xs:attribute name="value" type="xs:string" use="required" />
+    <xs:attribute name="editable" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="Toolbars">
+    <xs:all>
+      <xs:element name="AccidentalToolbar" type="AccidentalToolbar" minOccurs="0" />
+      <xs:element name="NoteValueToolbar" type="NoteValueToolbar" minOccurs="0" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="AccidentalToolbar">
+    <xs:sequence>
+      <xs:element name="Button" type="AccidentalToolbarButton" minOccurs="2" maxOccurs="5"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AccidentalToolbarButton">
+    <xs:attribute name="symbol" type="accidental" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="NoteValueToolbar">
+    <xs:sequence>
+      <xs:element name="Button" type="NoteValueToolbarButton" minOccurs="2" maxOccurs="3"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NoteValueToolbarButton">
+    <xs:attribute name="symbol" type="noteValue" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="InputDialog">
+    <xs:all>
+      <xs:element name="DialogHTML" type="xs:string" minOccurs="1"/>
+    </xs:all>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="OKButtonText" type="xs:string" use="required" />
+    <xs:attribute name="cancelButtonText" type="xs:string" use="required" />
+    <xs:attribute name="width" type="xs:integer" use="required" />
+    <xs:attribute name="height" type="xs:integer" use="required" />
+    <xs:attribute name="headerContent" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <!-- SIMPLE TYPES -->
+
+  <xs:simpleType name="maxLedgerLines">
+    <xs:restriction base="xs:integer">
+      <xs:pattern value="[0-6]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="clef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="treble|bass|alto|tenor"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="totalAccColumns">
+    <xs:restriction base="xs:integer">
+      <xs:pattern value="[0-7]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="lettername">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-G]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="accidental">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="n|#|b|x|bb"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="register">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="7"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="noteColumnType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="two-voice"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="noteValue">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="whole|quarter_stem_up|quarter_stem_down"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="figuredBassRowText">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(\/|\#|b|n|[0-9a-zA-Z])*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
