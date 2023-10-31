@@ -2,10 +2,10 @@
 
 Feature: Add a wordselect quiz
     In order to evaluate students
-    As a teacher
-    I need to create a quiz with wordselect questions
-
-  Background:
+    As a teacher I need to create a quiz with wordselect questions
+  @javascript
+  Scenario: Add and configure small quiz and perform an attempt as a student with Javascript enabled
+        Background:
 
     Given the following "users" exist:
         | username | firstname | lastname | email                |
@@ -50,12 +50,5 @@ Feature: Add a wordselect quiz
     And I click on "bigcat" "text"
     And I click on "cow" "text"
 
-    #And I press "Check"
     And I press "Finish attempt"
     And I press "Submit all and finish"
-
- # @javascript
-  Scenario: Add and configure small quiz and perform an attempt as a student with Javascript enabled
-    Then I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
-    And I follow "Finish review"
-    And I log out

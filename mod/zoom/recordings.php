@@ -27,7 +27,7 @@ require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once(__DIR__ . '/locallib.php');
 
-list($course, $cm, $zoom) = zoom_get_instance_setup();
+[$course, $cm, $zoom] = zoom_get_instance_setup();
 
 require_login($course, true, $cm);
 
@@ -60,14 +60,14 @@ if ($iszoommanager) {
         get_string('recordingdate', 'mod_zoom'),
         get_string('recordinglink', 'mod_zoom'),
         get_string('recordingpasscode', 'mod_zoom'),
-        get_string('recordingshowtoggle', 'mod_zoom')
+        get_string('recordingshowtoggle', 'mod_zoom'),
     ];
 } else {
     $table->align = ['left', 'left', 'left'];
     $table->head = [
         get_string('recordingdate', 'mod_zoom'),
         get_string('recordinglink', 'mod_zoom'),
-        get_string('recordingpasscode', 'mod_zoom')
+        get_string('recordingpasscode', 'mod_zoom'),
     ];
 }
 
