@@ -365,3 +365,13 @@ Other
 4.1.0.2 (2023030500)
 ====================
 - Fix issue 145 Return to current tile after editing
+
+4.2.0.0 (2023053100)
+====================
+- Minor adjustments to styles/tests for Moodle 4.2 incl completion icons.
+- Avoid PHP 8.1 warning (issue #154).
+
+4.2.0.1 (2023060200)
+====================
+- Fixes issue #152 filter buttons
+- Fixes issue #153 glossary multiple windows

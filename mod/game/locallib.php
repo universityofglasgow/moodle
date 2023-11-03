@@ -235,7 +235,7 @@ function game_question_shortanswer_quiz( $game, $allowspaces, $userepetitions) {
             " AND qqi.question=q.id";
         $table = "{question} q,{quiz_question_instances} qqi";
     } else if (game_get_moodle_version() >= '04.00') {
-        $select = "qs.quizid='$game->quizid' AND qs.id=qr.id ";
+        $select = "qs.quizid='$game->quizid' AND qs.id=qr.itemid ";
         $table = "{quiz_slots} qs,{$CFG->prefix}question_references qr";
         $sql = "SELECT qr.questionbankentryid FROM $table WHERE $select";
         $recs = $DB->get_records_sql( $sql);
@@ -475,6 +475,8 @@ function game_update_repetitions( $gameid, $userid, $questionid, $glossaryentryi
 function game_questions_selectrandom( $game, $count=1) {
     global $CFG, $DB;
 
+    $useversion = false;
+
     switch( $game->sourcemodule)
     {
         case 'quiz':
@@ -487,7 +489,7 @@ function game_questions_selectrandom( $game, $count=1) {
                     " AND qqi.question=q.id ".
                     " AND q.qtype in ('shortanswer', 'truefalse', 'multichoice')";
             } else if (game_get_moodle_version() >= '04.00') {
-                $select = "qs.quizid='$game->quizid' AND qs.id=qr.id ";
+                $select = "qs.quizid='$game->quizid' AND qs.id=qr.itemid ";
                 $table = "{quiz_slots} qs,{$CFG->prefix}question_references qr";
                 $sql = "SELECT qr.questionbankentryid FROM $table WHERE $select";
                 $recs = $DB->get_records_sql( $sql);
@@ -543,6 +545,7 @@ function game_questions_selectrandom( $game, $count=1) {
 
             // Include subcategories.
             if (game_get_moodle_version() >= '04.00') {
+                $useversion = true;
                 $table .= ",{$CFG->prefix}question_bank_entries qbe,{$CFG->prefix}question_versions qv ";
                 $select = 'qbe.id=qv.questionbankentryid AND q.id=qv.questionid '.
                     ' AND qbe.questioncategoryid='.$game->questioncategoryid;
@@ -577,7 +580,7 @@ function game_questions_selectrandom( $game, $count=1) {
             break;
     }
 
-    $ids = game_questions_selectrandom_detail( $table, $select, $field, $count);
+    $ids = game_questions_selectrandom_detail( $table, $select, $field, $count, $useversion);
     if ($ids === false) {
         throw new moodle_exception( 'no_questions', 'game');
     }
@@ -607,13 +610,14 @@ function game_questions_selectrandom( $game, $count=1) {
  * @param string $select
  * @param int $idfield
  * @param int $count
+ * @param boolean $useversion
  *
  * @return stdClass the random record(s)
  */
-function game_questions_selectrandom_detail( $table, $select, $idfield="id", $count=1) {
+function game_questions_selectrandom_detail( $table, $select, $idfield="id", $count=1, $useversion = true) {
     global $DB;
 
-    $versions = game_get_moodle_version() >= '04.00';
+    $versions = $useversion ? game_get_moodle_version() >= '04.00' : false;
     $fields = $versions ? ',qv.questionbankentryid,qv.version' : '';
     $order = $versions ? ' ORDER BY qv.questionbankentryid,qv.version DESC' : '';
 
@@ -825,7 +829,7 @@ function game_questions_shortanswer_quiz( $game) {
             "qa.answer as answertext, q.id as questionid,".
             " 0 as glossaryentryid,'' as attachment";
     } else if (game_get_moodle_version() >= '04.00') {
-        $select = "qs.quizid='$game->quizid' AND qs.id=qr.id ";
+        $select = "qs.quizid='$game->quizid' AND qs.id=qr.itemid ";
         $table = "{quiz_slots} qs,{$CFG->prefix}question_references qr";
         $sql = "SELECT qr.questionbankentryid FROM $table WHERE $select";
         $recs = $DB->get_records_sql( $sql);
@@ -839,7 +843,7 @@ function game_questions_shortanswer_quiz( $game) {
             }
         }
 
-        if (count( $a) == 0) {
+        if ($a == null || count( $a) == 0) {
             $a = array( 0);
         }
         $select = "qtype='shortanswer' AND q.id IN (".implode( ',', $a).')'.
@@ -859,7 +863,7 @@ function game_questions_shortanswer_quiz( $game) {
             " 0 as glossaryentryid,'' as attachment";
     }
 
-    return game_questions_shortanswer_question_fraction( $table, $fields, $select);
+    return game_questions_shortanswer_question_fraction( $table, $fields, $select, false);
 }
 
 /**
@@ -914,13 +918,14 @@ function game_questions_shortanswer_question( $game) {
  * @param string $table
  * @param string $fields
  * @param string $select
+ * @param boolean $useversion
  *
  * @return the record
  */
-function game_questions_shortanswer_question_fraction( $table, $fields, $select) {
+function game_questions_shortanswer_question_fraction( $table, $fields, $select, $useversion = true) {
     global $DB;
 
-    $versions = game_get_moodle_version() >= '04.00';
+    $versions = $useversion ? game_get_moodle_version() >= '04.00' : false;
 
     $order = ($versions ? 'version DESC,' : '').'fraction';
     $sql = "SELECT $fields FROM $table WHERE $select ORDER BY $order DESC";
@@ -1271,7 +1276,7 @@ function game_get_best_grade($game, $userid) {
     $score = game_get_best_score( $game, $userid);
 
     if (is_numeric( $score)) {
-        return round( $score * $game->grade, $game->decimalpoints);
+        return round( $score * $game->grade, $game->decimalpoints === null ? 2 : $game->decimalpoints);
     } else {
         return null;
     }
@@ -1287,7 +1292,7 @@ function game_get_best_grade($game, $userid) {
  */
 function game_score_to_grade($score, $game) {
     if ($score) {
-        return round($score * $game->grade, $game->decimalpoints);
+        return round($score * $game->grade, $game->decimalpoints === null ? 2 : $game->decimalpoints);
     } else {
         return 0;
     }
@@ -2640,22 +2645,23 @@ function game_substr() {
     $num = func_num_args();
     $a = func_get_args();
 
+    $pos = $a[ 1] === null ? 0 : $a[ 1];
     if ($num == 3) {
         if (game_get_moodle_version() >= '02.08') {
-            return core_text::substr( $a[0], $a[1], $a[2]);
+            return core_text::substr( $a[0], $pos, $a[2]);
         } else if (game_get_moodle_version() >= '02.04') {
-            return textlib::substr( $a[0], $a[1], $a[2]);
+            return textlib::substr( $a[0], $pos, $a[2]);
         } else {
-            return textlib_get_instance()->substr( $a[0], $a[1], $a[2]);
+            return textlib_get_instance()->substr( $a[0], $pos, $a[2]);
         }
     } else if ($num == 2) {
         if (game_get_moodle_version() >= '02.08') {
-            return core_text::substr( $a[0], $a[1]);
+            return core_text::substr( $a[0], $pos);
         }
         if (game_get_moodle_version() >= '02.04') {
-            return textlib::substr( $a[0], $a[1]);
+            return textlib::substr( $a[0], $pos);
         } else {
-            return textlib_get_instance()->substr( $a[0], $a[1]);
+            return textlib_get_instance()->substr( $a[0], $pos);
         }
     } else {
         die( 'Substr requires 2 or 3 parameters');

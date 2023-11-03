@@ -23,7 +23,7 @@
         "section_zero_show": "1",
         "is_multi_section": "1",
         "has_filter_buttons": "1",
-        "fiternumberedbuttons": [{
+        "filternumberedbuttons": [{
             "id": 12345,
             "buttonnum": 2,
             "sections": [3,4,5],
@@ -40,12 +40,12 @@
                         <span id="filterintro">
                             {{#pix}}filter, format_tiles{{/pix}}
                         </span>
-                    {{#fiternumberedbuttons}}
+                    {{#filternumberedbuttons}}
                         {{> format_tiles/filterbutton}}
-                    {{/fiternumberedbuttons}}
-                    {{#fiteroutcomebuttons}}
+                    {{/filternumberedbuttons}}
+                    {{#filteroutcomebuttons}}
                         {{> format_tiles/filterbutton}}
-                    {{/fiteroutcomebuttons}}
+                    {{/filteroutcomebuttons}}
                     <div id="filterbutton-all" class="filterbutton" data-buttonid="all" data-sections="[all]">
                         {{#str}}all, format_tiles{{/str}}
                     </div>

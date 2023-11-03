@@ -377,7 +377,7 @@ function game_millionaire_selectquestion( &$aanswer, $game, $attempt, &$milliona
             $table = "{quiz_question_instances} qqi,{question} q, {qtype_multichoice_options} qmo";
             $order = '';
         } else if (game_get_moodle_version() >= '04.00') {
-            $select = "qs.quizid='{$game->quizid}' AND qs.id=qr.id ";
+            $select = "qs.quizid='{$game->quizid}' AND qs.id=qr.itemid ";
             $table = "{quiz_slots} qs,{$CFG->prefix}question_references qr";
             $sql = "SELECT qr.questionbankentryid FROM $table WHERE $select";
             $recs = $DB->get_records_sql( $sql);
@@ -424,7 +424,8 @@ function game_millionaire_selectquestion( &$aanswer, $game, $attempt, &$milliona
             if ($game->subcategories) {
                 $cats = question_categorylist( $game->questioncategoryid);
                 if (count( $cats) > 0) {
-                    $select2 = ' qbe.questioncategoryid in ('.implode( ',', $cats).')';
+                    $select2 = 'qbe.id=qv.questionbankentryid AND q.id=qv.questionid AND '.
+                        ' qbe.questioncategoryid in ('.implode( ',', $cats).')';
                 }
             }
         } else {

@@ -596,7 +596,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 useJavascriptNav, // Set by site admin see settings.php.
                 isMobileInit,
                 sectionNum,
-                useFilterButtons,
+                useFilterButtons, // If > 0 then are using filters (value depends on filter type).
                 assumeDataStoreConsent, // Set by site admin see settings.php.
                 reopenLastSectionInit, // Set by site admin see settings.php.
                 userId,
@@ -607,7 +607,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 isMobile = isMobileInit;
                 // Some args are strings or ints but we prefer bool.  Change to bool now as they are passed on elsewhere.
                 reopenLastVisitedSection = reopenLastSectionInit === "1";
-                useFilterButtons = useFilterButtons === 1;
                 assumeDataStoreConsent = assumeDataStoreConsent === "1";
                 enableCompletion = enableCompletionInit === "1";
                  // We want to initialise the browser storage JS module for storing user settings.
@@ -733,6 +732,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                     // If this event is triggered, user has updated a completion check box.
                     // We need to retrieve section content from server in case availability of items has changed.
+                    // Will also be triggered on focus change e.g. user has returned to this tab from a new window.
                     $(document).on('format-tiles-completion-changed', function(e, data) {
                         const allSectionNums = $(Selector.TILE).not(Selector.SPACER).map((i, t) => {
                             return parseInt($(t).attr('data-section'));

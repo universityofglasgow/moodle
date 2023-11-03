@@ -1,3 +1,21 @@
+Changes in version 2023-11-02
+* Fix:  Wrong questions is shown in Moodle 4.0+ for quizzes.
+
+Changes in version 2023-11-01-3
+* Fix: Millionaire performance bug in Moodle 4 when there are subcategories.
+
+Changes in version 2023-11-01-2
+* Fix: Crossword shows message wrong character instead of there are no words.
+
+Changes in version 2023-11-01
+* Fix: Problem in Snakes and Ladders & Cryptex with Moodle 4
+
+Changes in version 2023-09-11-01
+* Fix: Warnings in PHP 8.
+
+Changes in version 2023-09-11
+* Fix: Exception count(*) in locallib(842)
+
 Changes in version 2023-08-16-06
 * Fix: In Snakes and Ladders uses last version of questions.
 

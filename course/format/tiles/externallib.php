@@ -329,7 +329,8 @@ class format_tiles_external extends external_api {
         // validate_context() below ends up calling require_login($courseid).
         $context = context_course::instance($params['courseid']);
         self::validate_context($context);
-
+        // Issue #153 avoid multiple glossary auto link JS onclick events.
+        $PAGE->requires->set_one_time_item_created('filter_glossary_autolinker');
         $course = get_course($params['courseid']);
         $renderer = $PAGE->get_renderer('format_tiles');
         $templateable = new \format_tiles\output\course_output($course, true, $params['sectionid']);
@@ -337,7 +338,7 @@ class format_tiles_external extends external_api {
         $template = $params['sectionid'] == 0 ? 'format_tiles/section_zero' : 'format_tiles/single_section';
         $result = array(
             'html' => $renderer->render_from_template($template, $data),
-            'js' => $data['jsfooter']
+            'js' => $data['jsfooter'] // Needed for Mathjax in this section.
         );
         // This session var is used later, when user revisits main course page, or a single section, for a course using this format.
         // If set to true, the page can safely be rendered from PHP in the javascript friendly format.
@@ -431,7 +432,7 @@ class format_tiles_external extends external_api {
 
     /**
      * Generate html for course module content
-     * (i.e. for the time being, the content of a page
+     * (i.e. for the time being, the content of a page).
      * Necessary to ensure that references to src="@@PLUGINFILE@@..." in $record->content
      * are re-written to the correct URL
      *

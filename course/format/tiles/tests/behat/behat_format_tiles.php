@@ -456,4 +456,29 @@ class behat_format_tiles extends behat_base {
         }
         return $node->getAttribute("style");
     }
+
+    // @codingStandardsIgnoreStart.
+    /**
+     * Check the "This will delete Tile x" message.
+     * Moodle 4.1 and earlier has a different message, so we have this function to avoid separate plugin versions.
+     * E.g. "This will delete Tile 5 and all the activities it contains".
+     * @Then /^I should see section confirm delete message for "(?P<text_string>(?:[^"]|\\")*)"$/
+     * @param string $sectionname
+     * @return bool
+     * @throws coding_exception
+     */
+    public function should_see_section_confirm_delete($sectionname) {
+        // @codingStandardsIgnoreEnd.
+        global $CFG;
+        $moodlerelease = $CFG->release;
+        if (preg_match('/^(\d+\.\d)/', $moodlerelease, $matches)) {
+            $moodlerelease = $matches[1];
+        }
+        $expectedstring = is_numeric($moodlerelease) && (float)$moodlerelease < 4.2
+            ? get_string('confirmdeletesection', 'moodle', $sectionname)
+            : get_string('sectiondelete_info', 'courseformat', (object)['name' => $sectionname]);
+
+        $this->execute('behat_general::assert_page_contains_text', [$expectedstring]);
+        return true;
+    }
 }

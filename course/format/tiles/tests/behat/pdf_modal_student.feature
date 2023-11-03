@@ -13,8 +13,9 @@ Feature: PDFs can be set to open in modal windows
       | fullname | shortname | format | coursedisplay | numsections | enablecompletion |
       | Course 1 | C1        | tiles  | 0             | 5           | 1                |
     And the following "activities" exist:
-      | activity | name           | intro                 | course | idnumber | section | visible |
-      | page     | Test page name | Test page description | C1     | page1    | 1       | 1       |
+      | activity | name           | intro                 | course | idnumber | section | visible | completion | defaultfilename                             | uploaded |
+      | page     | Test page name | Test page description | C1     | page1    | 1       | 1       | 0          |                                             | 0        |
+      | resource | Test PDF       | File description      | C1     | pdf1     | 1       | 1       | 1          | course/format/tiles/tests/fixtures/test.pdf | 1        |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | student1 | C1     | student        |
@@ -28,29 +29,9 @@ Feature: PDFs can be set to open in modal windows
       | reopenlastsection      | 0        | format_tiles |
       | usejavascriptnav       | 1        | format_tiles |
 
-    # Add PDF to course so student can see it in test
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I wait until the page is ready
-    And I follow "Collapse all"
-    And I wait until the page is ready
-    And I wait "1" seconds
-    And I expand section "1" for edit
-    And I wait until the page is ready
-    And I wait "2" seconds
-    And I add a "File" to section "1"
-    And I wait until the page is ready
-    And I wait "2" seconds
-    And I set the following fields to these values:
-      | Name        | Test PDF         |
-      | Description | File description |
-    And I set the field "Completion tracking" to "Students can manually mark the activity as completed"
-    And I upload "course/format/tiles/tests/fixtures/test.pdf" file to "Select files" filemanager
-    And I expand all fieldsets
-    And I set the field "Show type" to "1"
-    And I press "Save and return to course"
     Then I should see "Test PDF"
-    And I wait "2" seconds
     And I log out tiles
 
     # First with subtiles off as student

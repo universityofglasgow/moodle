@@ -104,8 +104,12 @@ class inline_css_output implements \renderable, \templatable {
             // The best values here vary by theme and browser, so mostly come from admin setting.
             // If the site admin sets background opacity to solid then it doesn't matter if the lines overlap.
             $outputdata['phototilefontsize'] = 20;
-            $outputdata['phototiletextpadding'] = (float)get_config('format_tiles', 'phototitletitlepadding') / 10;
-            $outputdata['phototiletextlineheight'] = (float)get_config('format_tiles', 'phototitletitlelineheight') / 10;
+            $outputdata['phototiletextpadding'] = number_format(
+                (float)get_config('format_tiles', 'phototitletitlepadding') / 10, 1
+            );
+            $outputdata['phototiletextlineheight'] = number_format(
+                (float)get_config('format_tiles', 'phototitletitlelineheight') / 10, 1
+            );
         }
 
         if ($this->course->courseusebarforheadings != 0 && $this->course->courseusebarforheadings != 'standard') {

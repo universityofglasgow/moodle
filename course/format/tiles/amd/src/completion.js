@@ -248,7 +248,7 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                         const currentTarget = $(e.currentTarget);
                         if (currentTarget.closest('.section').hasClass('subtiles')) {
                             currentTarget.replaceWith(
-                                '<div class="spinner-grow spinner-grow-sm text-secondary mt-2 mr-2 pull-right"'
+                                '<div class="completionspinner spinner-grow spinner-grow-sm text-secondary mt-2 mr-2"'
                                 + ' role="status"><span class="sr-only">' + loadingString + '</span></div>'
                             );
                         }

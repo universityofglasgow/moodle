@@ -79,27 +79,28 @@
             {{#str}}notavailable{{/str}}
         {{/hidden_section}}
         <div class="left side"></div>
-        <div class="right side"></div>
-        {{^hidden_section}}
+        <div class="right side">
             {{^usingjsnav}}
                 {{>format_tiles/single_section_nav}}
             {{/usingjsnav}}
             {{#usingjsnav}}
                 <div class="sectionbuttons">
-                        <span class="sectionbutton closesectionbtn pull-right" id="closesectionbtn-{{tileid}}"
-                              title="{{#str}}close, format_tiles{{/str}}" tabindex="3" data-section="{{tileid}}">
-                            {{#pix}}close, format_tiles, {{#str}}close, format_tiles{{/str}}{{/pix}}
-                        </span>
                     {{#canedit}}
                         {{^editing}}
-                            <a class="sectionbutton pull-right" id="editsectiontbtn-{{tileid}}"
+                            <a class="sectionbutton" id="editsectiontbtn-{{tileid}}"
                                href="{{{ config.wwwroot }}}/course/view.php?id={{courseid}}&sesskey={{sesskey}}&edit=on#section-{{tileid}}">
                             {{#pix}}pencil, format_tiles, {{#str}}edit{{/str}}{{/pix}}
                             </a>
                         {{/editing}}
                     {{/canedit}}
+                    <span class="sectionbutton closesectionbtn" id="closesectionbtn-{{tileid}}"
+                          title="{{#str}}close, format_tiles{{/str}}" tabindex="3" data-section="{{tileid}}">
+                        {{#pix}}close, format_tiles, {{#str}}close, format_tiles{{/str}}{{/pix}}
+                    </span>
                 </div>
             {{/usingjsnav}}
+        </div>
+        {{^hidden_section}}
             {{^hastilephoto}}
                 <div class="tileiconcontainer" id="tileicon_single_{{tileid}}"
                 {{#editing}}data-toggle="tooltip" data-placement="left"

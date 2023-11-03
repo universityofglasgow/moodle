@@ -195,7 +195,7 @@ if ($ADMIN->fulltree) {
     // Tile title line height.
     $choices = [];
     for ($x = 30.0; $x <= 33.0; $x += 0.1) {
-        $choices[$x * 10] = $x;
+        $choices[(int)($x * 10)] = $x;
     }
     $setting = new admin_setting_configselect(
         'format_tiles/phototitletitlelineheight',
@@ -208,7 +208,7 @@ if ($ADMIN->fulltree) {
     // Tile title line line padding.
     $choices = [];
     for ($x = 0.0; $x <= 6.0; $x += 0.5) {
-        $choices[$x * 10] = $x;
+        $choices[(int)($x * 10)] = $x;
     }
     $setting = new admin_setting_configselect(
         'format_tiles/phototitletitlepadding',
