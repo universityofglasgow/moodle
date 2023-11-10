@@ -28,12 +28,7 @@ Check
  * Execute `doc/maintenance.php` to search for broken links etc.
 * Run `php cli/unicode_data_process.php` to update unicode mappings.
 * Run `php cli/ast_test_generator.php` to confirm if auto-generated tests have not changed.
-* Run Maxima unit tests of contributed packages by re-defining `stacklocation` and running `s_test_case.mac` in the sandbox.  E.g.
-
-    stacklocation:"/var/www/html/m40/question/type/stack"$
-    load("s_test_case.mac");
-
-* Run PHP [unit tests](Unit_tests.md).
+* Run [unit tests](Unit_tests.md).
 * Run code checker.
 
 Version numbers

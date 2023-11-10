@@ -141,7 +141,7 @@ if ($question->options->get_option('simplify')) {
     $simp = '';
 }
 
-$questionvarsinputs = '';
+$questionvarsinputs = $question->questionvariables;
 foreach ($question->get_correct_response() as $key => $val) {
     if (substr($key, -4, 4) !== '_val') {
         $questionvarsinputs .= "\n{$key}:{$val};";
@@ -150,8 +150,7 @@ foreach ($question->get_correct_response() as $key => $val) {
 
 // We've chosen not to send a specific seed since it is helpful to test the general feedback in a random context.
 $chatparams = $urlparams;
-$chatparams['maximavars'] = $question->questionvariables;
-$chatparams['inputs'] = $questionvarsinputs;
+$chatparams['maximavars'] = $questionvarsinputs;
 $chatparams['simp'] = $simp;
 $chatparams['cas'] = $question->generalfeedback;
 $chatlink = new moodle_url('/question/type/stack/adminui/caschat.php', $chatparams);

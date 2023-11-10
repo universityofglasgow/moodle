@@ -29,7 +29,6 @@ class stack_notes_input extends stack_input {
 
     protected $extraoptions = array(
         'hideanswer' => false,
-        'allowempty' => false,
         'manualgraded' => false,
     );
 

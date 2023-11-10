@@ -22,9 +22,6 @@ require_once(__DIR__ . '/root.specialblock.php');
 require_once(__DIR__ . '/stack_translate.specialblock.php');
 require_once(__DIR__ . '/../../../../vle_specific.php');
 
-require_once(__DIR__ . '/iframe.block.php');
-stack_cas_castext2_iframe::register_counter('///JSXGRAPH_COUNT///');
-
 class stack_cas_castext2_jsxgraph extends stack_cas_castext2_block {
 
     /* This is not something we want people to edit in general. */
@@ -40,6 +37,9 @@ class stack_cas_castext2_jsxgraph extends stack_cas_castext2_block {
             'js' => 'cors://jsxgraphcore.min.js',
         ]
     ];
+
+    /* We still count the graphs. */
+    public static $countgraphs = 1;
 
     public function compile($format, $options):  ? MP_Node {
         $r = new MP_List([new MP_String('iframe')]);
@@ -70,7 +70,8 @@ class stack_cas_castext2_jsxgraph extends stack_cas_castext2_block {
         // Disable scrolling for this.
         $xpars['scrolling'] = false;
         // Set a title.
-        $xpars['title'] = 'STACK JSXGraph ///JSXGRAPH_COUNT///';
+        $xpars['title'] = 'STACK JSXGraph ' . self::$countgraphs;
+        self::$countgraphs = self::$countgraphs + 1;
 
         // Figure out what scripts we serve.
         $css = self::$namedversions['local']['css'];
