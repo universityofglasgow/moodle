@@ -15,33 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capabilities for database enrolment plugin.
- *
- * @package    enrol
- * @subpackage gudatabase
- * @copyright  2012 Howard Miller
+ * @package    enrol_gudatabase
+ * @copyright  2023 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace enrol_gudatabase\task;
+
 defined('MOODLE_INTERNAL') || die;
 
-$tasks = [
-    [
-        'classname' => 'enrol_gudatabase\task\sync_enrolments',
-        'blocking' => 0,
-        'minute' => '*/15',
-        'hour' => '*',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*',
-    ],
-    [
-        'classname' => 'enrol_gudatabase\task\clear_unused_codes',
-        'blocking' => 0,
-        'minute' => '*/15',
-        'hour' => '*',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*',
-    ],
-];
+class clear_unused_codes extends \core\task\scheduled_task {
+
+    public function get_name() {
+        return get_string('clearunusedcodes', 'enrol_gudatabase');
+    }
+
+    public function execute() {
+        global $DB;
+
+        $sql = "DELETE FROM {enrol_gudatabase_codes}
+            WHERE id IN
+                (SELECT * FROM (SELECT gc.id FROM {enrol_gudatabase_codes} gc
+                LEFT JOIN {enrol} er ON er.id = gc.instanceid
+                WHERE er.id IS NULL
+                AND location='plugin') AS cid)";
+        $DB->execute($sql);
+    }
+
+}
