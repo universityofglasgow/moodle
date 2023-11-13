@@ -121,7 +121,7 @@ class lib {
             $courselink = new \moodle_url('/course/view.php', ['id' => $course->id]);
             $ended = ($course->enddate) && (time() > $course->enddate);
             $notstarted = time() < $course->startdate;
-    
+
             if (!$lastaccess = $DB->get_record('user_lastaccess', ['userid' => $userid, 'courseid' => $course->id])) {
                 $lasttime = get_string('never');
             } else {
@@ -398,7 +398,7 @@ class lib {
 
         if ($tiiuser = $DB->get_record('plagiarism_turnitin_users', ['userid' => $userid])) {
             return $tiiuser->user_agreement_accepted == 1;
-        } else { 
+        } else {
             return false;
         }
     }
@@ -419,6 +419,21 @@ class lib {
         }
 
         return $link;
+    }
+
+    /**
+     * Get 'plagiarism_show_student_report'
+     * @param int $cmid
+     * @return bool
+     */
+    protected static function get_show_student_report(int $cmid) {
+        global $DB;
+
+        if ($tiiconfig = $DB->get_record('plagiarism_turnitin_config', ['cm' => $cmid, 'name' => 'plagiarism_student_report'])) {
+            return $tiiconfig->value == 1;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -443,6 +458,7 @@ class lib {
                     'tid' => $tiifile->id,
                 ]);
                 $tiifile->link = self::get_cm_link($tiifile->cm);
+                $tiifile->studentreport = self::get_show_student_report($tiifile->cm);
             }
             return array_values($tiifiles);
         } else {
