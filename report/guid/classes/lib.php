@@ -429,7 +429,7 @@ class lib {
     protected static function get_show_student_report(int $cmid) {
         global $DB;
 
-        if ($tiiconfig = $DB->get_record('plagiarism_turnitin_config', ['cm' => $cmid, 'name' => 'plagiarism_student_report'])) {
+        if ($tiiconfig = $DB->get_record('plagiarism_turnitin_config', ['cm' => $cmid, 'name' => 'plagiarism_show_student_report'])) {
             return $tiiconfig->value == 1;
         } else {
             return false;
