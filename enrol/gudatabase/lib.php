@@ -197,6 +197,50 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     }
 
     /**
+     * Can the student unenrol themselves.
+     * Only if their codes are not defined in this instance
+     * @param int $courseid
+     * @return bool
+     */
+    public function can_student_unenrolself($courseid) {
+        global $USER, $DB;
+
+        // Get list of stored codes for this course
+        $gudatabasecodes = $DB->get_records('enrol_gudatabase_codes', ['courseid' => $courseid]);
+        $codes = array_column($gudatabasecodes, 'code');
+
+        // Is user allowed to unenrol?
+        // They must not be in the MyCampus feed.
+        $usercourses = $this->get_user_courses($USER->username);
+        foreach ($usercourses as $uc) {
+            if (in_array($uc->courses, $codes)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Override parent function to get unenrol self link
+     * @param object $instance
+     * @return moodle_url or NULL if self unenrolment not supported
+     */
+    public function get_unenrolself_link($instance) {
+
+        // Get the URL from the parent.
+        $url = parent::get_unenrolself_link($instance);
+
+        // Can they use it?
+        if ($this->can_student_unenrolself($instance->courseid)) {
+            return $url;
+        } else {
+            return null;
+        }
+    }
+
+
+    /**
      * synchronise enrollments for particular course
      * @param object $course
      */

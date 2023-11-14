@@ -45,15 +45,11 @@ if (!$plugin->get_unenrolself_link($instance)) {
 $PAGE->set_url('/enrol/gudatabase/unenrolself.php', array('enrolid' => $instance->id));
 $PAGE->set_title($plugin->get_instance_name($instance));
 
-// Get list of stored codes for this course
-$gudatabasecodes = $DB->get_records('enrol_gudatabase_codes', ['courseid' => $instance->courseid]);
-$codes = array_column($gudatabasecodes, 'code');
-
 // Is user allowed to unenrol?
 // They must not be in the MyCampus feed.
 $usercourses = $plugin->get_user_courses($USER->username);
 foreach ($usercourses as $uc) {
-    if (in_array($uc->courses, $codes)) {
+    if (!$plugin->can_student_unenrol_self($instance))) {
         echo $OUTPUT->header();
         echo $OUTPUT->notification(get_string('cannotunenrol', 'enrol_gudatabase'), 'alert alert-error');
         $conurl = new moodle_url('/course/view.php', array('id' => $course->id));
