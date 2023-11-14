@@ -217,7 +217,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
     public function split_code($code) {
 
         // Split on comma or space.
-        $codes = preg_split("/[\s,]+/", $code, null, PREG_SPLIT_NO_EMPTY );
+        $codes = preg_split("/[\s,]+/", $code, -1, PREG_SPLIT_NO_EMPTY );
 
         return $codes;
     }
@@ -506,7 +506,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
 
         // Get connection details.
-        $table = $this->get_config('programtable');   
+        $table = $this->get_config('programtable');
         if (!$table) {
             return false;
         }
@@ -1485,7 +1485,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
     /**
      * Group cleanup.
-     * If group removal is enabled, check for class groups that have been removed or disabled 
+     * If group removal is enabled, check for class groups that have been removed or disabled
      * and remove users as required
      * @param object $course
      * @param object $instance
@@ -1508,7 +1508,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         $sql = "select distinct substring_index(originalname, ' ', 1) from {enrol_gudatabase_groups} where courseid=:courseid";
         if ($coursecodes = $DB->get_records_sql($sql, ['courseid' => $course->id])) {
             foreach ($coursecodes as $code => $junk) {
-                
+
                 // Is this course code valid?
                 if (array_key_exists($code, $selectedgroups)) {
                     continue;
@@ -1521,14 +1521,14 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         groups_delete_group($groupid);
                         $DB->delete_records('enrol_gudatabase_groups', ['groupid' => $groupid]);
                     }
-                } 
+                }
             }
         }
 
         // Find any groups in the database that are no longer selected
         if ($savedgroups = $DB->get_records('enrol_gudatabase_groups', ['courseid' => $course->id])) {
             foreach ($savedgroups as $savedgroup) {
-            
+
                 // if it's just a coursecode then it's a classgroup
                 // don't touch those.
                 if (strpos($savedgroup->originalname, ' ') === false) {
@@ -1596,7 +1596,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
 
         mtrace('gudatabase: Processing enrolments for user ' . fullname($user));
 
-        // If the external DB is down for any reason, we don't want to 
+        // If the external DB is down for any reason, we don't want to
         // kill logins
         if (!$extdb = $this->db_init()) {
             mtrace('enrol_gudatabase: unable to access external enrolment database');
@@ -1670,7 +1670,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
                         continue;
                     }
 
-                    // check if enrolment is possible 
+                    // check if enrolment is possible
                     if (!$this->enrolment_possible($course, $instance)) {
                         continue;
                     }
