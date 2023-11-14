@@ -36,7 +36,7 @@ function local_gumenu_extend_navigation_course($navigation, $course, $context) {
     if (has_capability('report/guenrol:view', $context)) {
 
         // Sync
-        $url = new moodle_url('/report/guid/sync.php', ['id' => $course->id]);
+        $url = new \moodle_url('/report/guenrol/index.php', ['id' => $course->id, 'action' => 'sync']);
         $name = get_string('syncenrolments', 'local_gumenu');
         $icon = new pix_icon('i/report', '');
         $navigation->add($name, $url, navigation_node::NODETYPE_LEAF, 'guenrol', null, $icon);
