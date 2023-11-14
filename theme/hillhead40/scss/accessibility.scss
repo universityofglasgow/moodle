@@ -64,7 +64,7 @@ body.hillhead40-spacing * {
     background: $background !important;
   }
 
-  body.hillhead40-#{$class} * {
+  body.hillhead40-#{$class} *:not([class^="ally"]) {
     background: $background !important;
     color: $foreground;
     border-color: $foreground !important;
