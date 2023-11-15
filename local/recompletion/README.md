@@ -1,3 +1,7 @@
+<a href="https://github.com/danmarsden/moodle-local_recompletion/actions/workflows/ci.yml?query=branch%3AMOODLE_311_STABLE">
+    <img src="https://github.com/danmarsden/moodle-local_recompletion/workflows/ci/badge.svg?branch=MOODLE_311_STABLE">
+</a>
+
 The recompletion plugin is supported and maintained by Dan Marsden
 
 Branches
@@ -9,7 +13,8 @@ The git branches here support the following versions.
 | Mooodle 3.5 - 3.7  | MOODLE_37_STABLE |
 | Mooodle 3.8  | MOODLE_38_STABLE |
 | Mooodle 3.9 - 3.10  | MOODLE_39_STABLE |
-| Moodle 3.11 and higher | MOODLE_311_STABLE |
+| Moodle 3.11 - 4.0   | MOODLE_311_STABLE |
+| Moodle 4.1 and higher | MOODLE_401_STABLE |
 
 This plugin adds course level settings for recompletion - clearing all course, activity completion and all other related moodle plugins data for a user based on the duration set notifying the student they need to return to the course and recomplete it.
 

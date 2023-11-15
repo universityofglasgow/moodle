@@ -48,6 +48,15 @@ class restore_local_recompletion_plugin extends restore_local_plugin {
         $paths[] = new restore_path_element('recompletion_qg', $elepath.'/quizgrades/grade');
         $paths[] = new restore_path_element('recompletion_sst', $elepath.'/scormtracks/sco_track');
         $paths[] = new restore_path_element('recompletion_cha', $elepath.'/choiceanswers/choiceanswer');
+        $paths[] = new restore_path_element('recompletion_hvp', $elepath.'/hvpattempts/hvpattempt');
+        $paths[] = new restore_path_element('recompletion_h5p', $elepath.'/h5ps/h5p');
+        $paths[] = new restore_path_element('recompletion_h5pr', $elepath.'/h5ps/h5p/h5presults/h5presult');
+        $paths[] = new restore_path_element('recompletion_lessonattempt', $elepath.'/lessonattempts/lessonattempt');
+        $paths[] = new restore_path_element('recompletion_lessongrade', $elepath.'/lessongrades/lessongrade');
+        $paths[] = new restore_path_element('recompletion_lessontimer', $elepath.'/lessontimers/lessontimer');
+        $paths[] = new restore_path_element('recompletion_lessonbrach', $elepath.'/lessonbraches/lessonbrach');
+        $paths[] = new restore_path_element('recompletion_lessonoverride', $elepath.'/lessonoverrides/lessonoverride');
+        $paths[] = new restore_path_element('recompletion_hpa', $elepath.'/hotpotattempts/hotpotattempt');
 
         return $paths;
     }
@@ -165,6 +174,143 @@ class restore_local_recompletion_plugin extends restore_local_plugin {
     }
 
     /**
+     * Process local_recompletion_hvp table.
+     * @param stdClass $data
+     */
+    public function process_recompletion_hvp($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $data->course = $this->task->get_courseid();
+        $data->user_id = $this->get_mappingid('user', $data->user_id);
+
+        $DB->insert_record('local_recompletion_hvp', $data);
+    }
+
+    /**
+     * Process local_recompletion_h5p table.
+     * @param stdClass $data
+     */
+    public function process_recompletion_h5p($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('local_recompletion_h5p', $data);
+        $this->set_mapping('recompletion_h5p', $oldid, $newitemid);
+    }
+
+    /**
+     * Process local_recompletion_h5pr table.
+     * @param stdClass $data
+     */
+    public function process_recompletion_h5pr($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $data->course = $this->task->get_courseid();
+        $data->attemptid = $this->get_new_parentid('recompletion_h5p');
+        $DB->insert_record('local_recompletion_h5pr', $data);
+    }
+
+    /**
+     * Process local_recompletion_lessonattempt.
+     * @param stdClass $data
+     */
+    public function process_recompletion_lessonattempt($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('local_recompletion_la', $data);
+        $this->set_mapping('recompletion_lessonattempt', $oldid, $newitemid);
+    }
+
+    /**
+     * Process local_recompletion_lessongrade.
+     * @param stdClass $data
+     */
+    public function process_recompletion_lessongrade($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('local_recompletion_lg', $data);
+        $this->set_mapping('recompletion_lessongrade', $oldid, $newitemid);
+    }
+
+    /**
+     * Process local_recompletion_lessontimer.
+     * @param stdClass $data
+     */
+    public function process_recompletion_lessontimer($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('local_recompletion_lt', $data);
+        $this->set_mapping('recompletion_lessontimer', $oldid, $newitemid);
+    }
+
+    /**
+     * Process local_recompletion_lessonbrach.
+     * @param stdClass $data
+     */
+    public function process_recompletion_lessonbrach($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('local_recompletion_lb', $data);
+        $this->set_mapping('recompletion_lessonbrach', $oldid, $newitemid);
+    }
+
+    /**
+     * Process local_recompletion_lessonoverride.
+     * @param stdClass $data
+     */
+    public function process_recompletion_lessonoverride($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('local_recompletion_lo', $data);
+        $this->set_mapping('recompletion_lessonoverride', $oldid, $newitemid);
+    }
+
+    /**
+     * Process local_recompletion_hpa table.
+     * @param stdClass $data
+     */
+    public function process_recompletion_hpa($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $data->course = $this->task->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $DB->insert_record('local_recompletion_hpa', $data);
+    }
+
+    /**
      * We call the after restore_course to update the coursemodule ids we didn't know when creating.
      */
     protected function after_restore_course() {
@@ -210,5 +356,43 @@ class restore_local_recompletion_plugin extends restore_local_plugin {
         }
         $rcm->close();
 
+        // Fix hvp attempts.
+        $rcm = $DB->get_recordset('local_recompletion_hvp', array('course' => $this->task->get_courseid()));
+        foreach ($rcm as $rc) {
+            $rc->hvp_id = $this->get_mappingid('hvp', $rc->hvp_id);
+            $DB->update_record('local_recompletion_hvp', $rc);
+        }
+        $rcm->close();
+
+        // Fix h5p attempts.
+        $rcm = $DB->get_recordset('local_recompletion_h5p', array('course' => $this->task->get_courseid()));
+        foreach ($rcm as $rc) {
+            $rc->h5pactivityid = $this->get_mappingid('h5pactivity', $rc->h5pactivityid);
+            $rc->originalattemptid = 0; // Don't restore orginal attempt id.
+
+            $DB->update_record('local_recompletion_h5p', $rc);
+        }
+        $rcm->close();
+
+        // Fix lesson tables.
+        $tables = array('local_recompletion_la', 'local_recompletion_lg', 'local_recompletion_lt',
+            'local_recompletion_lb', 'local_recompletion_lo');
+
+        foreach ($tables as $table) {
+            $rcm = $DB->get_recordset($table, array('course' => $this->task->get_courseid()));
+            foreach ($rcm as $rc) {
+                $rc->lessonid = $this->get_mappingid('lesson', $rc->lessonid);
+                $DB->update_record($table, $rc);
+            }
+            $rcm->close();
+        }
+
+        // Fix hotpot attempts.
+        $rcm = $DB->get_recordset('local_recompletion_hpa', array('course' => $this->task->get_courseid()));
+        foreach ($rcm as $rc) {
+            $rc->hotpotid = $this->get_mappingid('hotpot', $rc->hotpotid);
+            $DB->update_record('local_recompletion_hpa', $rc);
+        }
+        $rcm->close();
     }
 }

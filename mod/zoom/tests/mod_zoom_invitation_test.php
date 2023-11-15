@@ -53,12 +53,12 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test zoom invitation display message for user with all capabilities.
      */
-    public function test_display_message_when_user_has_all_capabilities() {
+    public function test_display_message_when_user_has_all_capabilities(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -112,7 +112,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test zoom invitation display message for user with only the mod/zoom:viewjoinurl capability.
      */
-    public function test_display_message_when_user_has_viewjoinurl_capability() {
+    public function test_display_message_when_user_has_viewjoinurl_capability(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
@@ -121,7 +121,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         assign_capability('mod/zoom:viewjoinurl', CAP_ALLOW, $role, context_system::instance()->id);
         role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -140,7 +140,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test zoom invitation display message for user with only the mod/zoom:viewdialin capability.
      */
-    public function test_display_message_when_user_has_viewdialin_capability() {
+    public function test_display_message_when_user_has_viewdialin_capability(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
@@ -149,7 +149,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         assign_capability('mod/zoom:viewdialin', CAP_ALLOW, $role, context_system::instance());
         role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -197,7 +197,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test zoom invitation display message for user has no capabilities.
      */
-    public function test_display_message_when_user_has_no_capabilities() {
+    public function test_display_message_when_user_has_no_capabilities(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $user = $this->getDataGenerator()->create_user();
@@ -205,7 +205,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $role = $this->getDataGenerator()->create_role();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -218,7 +218,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test message if regex pattern is intentionally set to empty for an element.
      */
-    public function test_display_message_when_a_regex_pattern_is_empty() {
+    public function test_display_message_when_a_regex_pattern_is_empty(): void {
         global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -230,7 +230,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         role_assign($role, $user->id, context_course::instance($course->id));
         // Set mock zoom activity URL for page as exception messages expect it.
         $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $this->assertDebuggingNotCalled();
@@ -239,7 +239,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test debug message if regex pattern is not valid for an element.
      */
-    public function test_display_message_when_a_regex_pattern_is_invalid() {
+    public function test_display_message_when_a_regex_pattern_is_invalid(): void {
         global $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -251,7 +251,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         role_assign($role, $user->id, context_course::instance($course->id));
         // Set mock zoom activity URL for page as exception messages expect it.
         $PAGE->set_url(new moodle_url('/mod/zoom/view.php?id=123'));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $this->assertDebuggingCalled('Error in regex for zoom invitation element: "joinurl" with pattern: "~".');
@@ -260,7 +260,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test debug message if no match is found using regex pattern for an element.
      */
-    public function test_display_message_when_a_regex_pattern_is_finds_no_match() {
+    public function test_display_message_when_a_regex_pattern_is_finds_no_match(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         set_config('invitation_joinurl', '/nomatch/mi', 'zoom');
@@ -269,7 +269,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $role = $this->getDataGenerator()->create_role();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $this->assertDebuggingCalled('No match found in zoom invitation for element: "joinurl" with pattern: "/nomatch/mi".');
@@ -278,13 +278,13 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test removing the invite sentence from the zoom meeting message.
      */
-    public function test_display_message_has_invite_removed_if_setting_enabled() {
+    public function test_display_message_has_invite_removed_if_setting_enabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         set_config('invitationremoveinvite', '1', 'zoom');
         $course = $this->getDataGenerator()->create_course();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Topic: Zoom Meeting\r\n"
@@ -336,13 +336,13 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test not removing the invite sentence from the zoom meeting message.
      */
-    public function test_display_message_does_not_have_invite_removed_if_setting_disabled() {
+    public function test_display_message_does_not_have_invite_removed_if_setting_disabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         set_config('invitationremoveinvite', '0', 'zoom');
         $course = $this->getDataGenerator()->create_course();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -396,7 +396,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test removing the iCal link from the zoom meeting message.
      */
-    public function test_display_message_has_icallink_removed_if_setting_enabled() {
+    public function test_display_message_has_icallink_removed_if_setting_enabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         set_config('invitationremoveicallink', '1', 'zoom');
@@ -404,7 +404,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
 
         // Test a scheduled meeting.
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -455,7 +455,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $this->assertEquals($expectedmessage, $message);
 
         // Test a recurring meeting with no fixed time.
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_recurringnofixed()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -506,7 +506,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $this->assertEquals($expectedmessage, $message);
 
         // Test a recurring meeting with fixed time.
-        $message = (new \mod_zoom\invitation($this->get_mock_invitation_message_recurringfixed()))->get_display_string($zoom->cmid);
+        $message = (new invitation($this->get_mock_invitation_message_recurringfixed()))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
             . "\r\n"
             . "Topic: Zoom Meeting\r\n"
@@ -569,7 +569,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test not removing the iCal link from the zoom meeting message.
      */
-    public function test_display_message_does_not_have_icallink_removed_if_setting_disabled() {
+    public function test_display_message_does_not_have_icallink_removed_if_setting_disabled(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         set_config('invitationremoveicallink', '0', 'zoom');
@@ -577,7 +577,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
 
         // Test a scheduled meeting.
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -628,7 +628,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $this->assertEquals($expectedmessage, $message);
 
         // Test a recurring meeting with no fixed time.
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_recurringnofixed()
         ))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
@@ -679,7 +679,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $this->assertEquals($expectedmessage, $message);
 
         // Test a recurring meeting with fixed time.
-        $message = (new \mod_zoom\invitation($this->get_mock_invitation_message_recurringfixed()))->get_display_string($zoom->cmid);
+        $message = (new invitation($this->get_mock_invitation_message_recurringfixed()))->get_display_string($zoom->cmid);
         $expectedmessage = "Organization is inviting you to a scheduled Zoom meeting.\r\n"
             . "\r\n"
             . "Topic: Zoom Meeting\r\n"
@@ -738,19 +738,19 @@ class mod_zoom_invitation_test extends advanced_testcase {
     /**
      * Test get_display_string returns null without throwing an error if the invitation string provided is null.
      */
-    public function test_display_message_when_instantiated_with_null_zoom_meeting_invitation() {
+    public function test_display_message_when_instantiated_with_null_zoom_meeting_invitation(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
-        $message = (new \mod_zoom\invitation(null))->get_display_string($zoom->cmid);
+        $message = (new invitation(null))->get_display_string($zoom->cmid);
         $this->assertNull($message);
     }
 
     /**
      * Test display message is returned in full regardless of capabilities if regex patterns are disabled.
      */
-    public function test_display_message_when_user_has_no_capabilities_with_regex_disabled() {
+    public function test_display_message_when_user_has_no_capabilities_with_regex_disabled(): void {
         set_config('invitationregexenabled', 0, 'zoom');
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -759,7 +759,7 @@ class mod_zoom_invitation_test extends advanced_testcase {
         $role = $this->getDataGenerator()->create_role();
         $zoom = $this->getDataGenerator()->create_module('zoom', ['course' => $course]);
         role_assign($role, $user->id, context_course::instance($course->id));
-        $message = (new \mod_zoom\invitation(
+        $message = (new invitation(
             $this->get_mock_invitation_message_scheduledmeeting()
         ))->get_display_string($zoom->cmid, $user->id);
         $expectedmessage = $this->get_mock_invitation_message_scheduledmeeting();

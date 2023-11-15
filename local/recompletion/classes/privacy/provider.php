@@ -67,6 +67,12 @@ class provider implements
             'timemodified' => 'privacy:metadata:timemodified'
         ], 'privacy:metadata:local_recompletion_cmc');
 
+        $collection->add_database_table('local_recompletion_cmv', [
+            'userid' => 'privacy:metadata:userid',
+            'coursemoduleid' => 'privacy:metadata:coursemoduleid',
+            'timemodified' => 'privacy:metadata:timemodified'
+        ], 'privacy:metadata:local_recompletion_cmv');
+
         $collection->add_database_table('local_recompletion_cc_cc', [
             'userid' => 'privacy:metadata:userid',
             'course' => 'privacy:metadata:course',
@@ -126,6 +132,65 @@ class provider implements
             'timemodified' => 'privacy:metadata:timemodified'
         ], 'privacy:metadata:local_recompletion_cha');
 
+        $collection->add_database_table('local_recompletion_ccert_is', [
+            'userid' => 'privacy:metadata:userid',
+            'emailed' => 'privacy:metadata:local_recompletion_ccert_is:emailed',
+            'timecreated' => 'privacy:metadata:local_recompletion_ccert_is:timecreated',
+            'course' => 'privacy:metadata:course',
+        ], 'privacy:metadata:local_recompletion_ccert_is');
+
+        $collection->add_database_table('local_recompletion_hvp', [
+            'user_id' => 'privacy:metadata:userid',
+            'hvp_id' => 'privacy:metadata:local_recompletion_hvp:hvp_id',
+            'data' => 'privacy:metadata:local_recompletion_hvp:data',
+            'course' => 'privacy:metadata:course',
+        ], 'privacy:metadata:local_recompletion_hvp');
+
+        $collection->add_database_table('local_recompletion_h5p', [
+            'userid' => 'privacy:metadata:userid',
+            'attempt' => 'privacy:metadata:attempt',
+            'timecreated' => 'privacy:metadata:timecreated',
+            'timemodified' => 'privacy:metadata:timemodified',
+            'rawscore' => 'privacy:metadata:rawscore',
+        ], 'privacy:metadata:local_recompletion_h5p');
+
+        $collection->add_database_table('local_recompletion_h5pr', [
+            'attempt' => 'privacy:metadata:attempt',
+            'timecreated' => 'privacy:metadata:timecreated',
+            'rawscore' => 'privacy:metadata:rawscore',
+        ], 'privacy:metadata:local_recompletion_h5pr');
+
+        $collection->add_database_table('local_recompletion_la', [
+            'correct' => 'privacy:metadata:correct',
+            'useranswer' => 'privacy:metadata:useranswer',
+        ], 'privacy:metadata:local_recompletion_la');
+
+        $collection->add_database_table('local_recompletion_lg', [
+            'grade' => 'privacy:metadata:grade',
+        ], 'privacy:metadata:local_recompletion_lg');
+
+        $collection->add_database_table('local_recompletion_lt', [
+            'starttime' => 'privacy:metadata:starttime',
+            'lessontime' => 'privacy:metadata:lessontime',
+        ], 'privacy:metadata:local_recompletion_lt');
+
+        $collection->add_database_table('local_recompletion_lb', [
+            'flag' => 'privacy:metadata:flag',
+        ], 'privacy:metadata:local_recompletion_lb');
+
+        $collection->add_database_table('local_recompletion_lo', [
+            'deadline' => 'privacy:metadata:deadline',
+            'maxattempts' => 'privacy:metadata:maxattempts',
+            'retake' => 'privacy:metadata:retake',
+        ], 'privacy:metadata:local_recompletion_lo');
+
+        $collection->add_database_table('local_recompletion_hpa', [
+            'userid' => 'privacy:metadata:userid',
+            'starttime' => 'privacy:metadata:starttime',
+            'endtime' => 'privacy:metadata:endtime',
+            'score' => 'privacy:metadata:score',
+        ], 'privacy:metadata:local_recompletion_hpa');
+
         return $collection;
     }
 
@@ -160,6 +225,14 @@ class provider implements
             }
 
             $records = $DB->get_records('local_recompletion_cmc', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'course_module_completion'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_cmv', $params);
             foreach ($records as $record) {
                 $context = \context_course::instance($record->course);
                 writer::with_context($context)->export_data(
@@ -214,6 +287,86 @@ class provider implements
                     [get_string('recompletion', 'local_recompletion'), 'recompletion_cha'],
                     (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
             }
+
+            $records = $DB->get_records('local_recompletion_hvp', array('user_id' => $userid, 'course' => $context->instanceid));
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'recompletion_hvp'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $record)]);
+            }
+
+            $sql = "SELECT har.id,
+                       ha.attempt,
+                       har.description,
+                       har.interactiontype,
+                       har.response,
+                       har.additionals,
+                       har.rawscore,
+                       har.maxscore,
+                       har.duration,
+                       har.timecreated,
+                       ha.course
+                  FROM {local_recompletion_h5pr} har
+                  JOIN {local_recompletion_h5p} ha ON har.attemptid = ha.id
+                 WHERE ha.course = :course
+                   AND ha.userid = :userid";
+
+            $records = $DB->get_records($sql, $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'recompletion_h5pr'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $record)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_la', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'lesson_attempts'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_lg', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'lesson_grades'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_lt', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'lesson_timer'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_lb', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'lesson_branch'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_lo', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'lesson_overrides'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
+
+            $records = $DB->get_records('local_recompletion_hpa', $params);
+            foreach ($records as $record) {
+                $context = \context_course::instance($record->course);
+                writer::with_context($context)->export_data(
+                    [get_string('recompletion', 'local_recompletion'), 'hotpot_attempts'],
+                    (object)[array_map([self::class, 'transform_db_row_to_session_data'], $records)]);
+            }
         }
     }
 
@@ -228,7 +381,7 @@ class provider implements
      */
     private static function transform_db_row_to_session_data(stdClass $dbrow) : stdClass {
         $times = array('timeenrolled', 'timestarted', 'timecompleted', 'timemodified', 'timemodifiedoffline',
-            'timestart', 'timefinish');
+            'timestart', 'timefinish', 'timeseen', 'starttime', 'endtime');
         foreach ($times as $time) {
             if (isset($dbrow->$time) && (!empty($dbrow->$time))) {
                 $dbrow->$time = transform::datetime($dbrow->$time);
@@ -255,11 +408,21 @@ class provider implements
         $DB->delete_records('local_recompletion_cc', $params);
         $DB->delete_records('local_recompletion_cc_cc', $params);
         $DB->delete_records('local_recompletion_cmc', $params);
+        $DB->delete_records('local_recompletion_cmv', $params);
         $DB->delete_records('local_recompletion_qa', $params);
         $DB->delete_records('local_recompletion_qg', $params);
         $DB->delete_records('local_recompletion_sst', $params);
         $DB->delete_records('local_recompletion_qr', $params);
         $DB->delete_records('local_recompletion_cha', $params);
+        $DB->delete_records('local_recompletion_hvp', $params);
+        $DB->delete_records('local_recompletion_la', $params);
+        $DB->delete_records('local_recompletion_lg', $params);
+        $DB->delete_records('local_recompletion_lt', $params);
+        $DB->delete_records('local_recompletion_lb', $params);
+        $DB->delete_records('local_recompletion_lo', $params);
+        $DB->delete_records('local_recompletion_hpa', $params);
+
+        self::delete_hp5_activity_records($courseid);
     }
 
     /**
@@ -279,12 +442,21 @@ class provider implements
             $DB->delete_records('local_recompletion_cc', $params);
             $DB->delete_records('local_recompletion_cc_cc', $params);
             $DB->delete_records('local_recompletion_cmc', $params);
+            $DB->delete_records('local_recompletion_cmv', $params);
             $DB->delete_records('local_recompletion_qa', $params);
             $DB->delete_records('local_recompletion_qg', $params);
             $DB->delete_records('local_recompletion_sst', $params);
             $DB->delete_records('local_recompletion_ltia', ['userid' => $userid]);
             $DB->delete_records('local_recompletion_qr', $params);
             $DB->delete_records('local_recompletion_cha', $params);
+            $DB->delete_records('local_recompletion_hvp', ['user_id' => $userid, 'course' => $courseid]);
+            self::delete_hp5_activity_records($courseid, $userid);
+            $DB->delete_records('local_recompletion_la', $params);
+            $DB->delete_records('local_recompletion_lg', $params);
+            $DB->delete_records('local_recompletion_lt', $params);
+            $DB->delete_records('local_recompletion_lb', $params);
+            $DB->delete_records('local_recompletion_lo', $params);
+            $DB->delete_records('local_recompletion_hpa', $params);
         }
     }
 
@@ -338,6 +510,53 @@ class provider implements
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   JOIN {local_recompletion_cha} rc ON rc.course = c.id and rc.userid = :userid";
         $contextlist->add_from_sql($sql, $params);
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_hvp} rc ON rc.course = c.id and rc.user_id = :userid";
+        $contextlist->add_from_sql($sql, $params);
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_h5p} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_la} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_lg} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_lt} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_lb} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_lo} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        $sql = "SELECT ctx.id
+                  FROM {course} c
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {local_recompletion_hpa} rc ON rc.course = c.id and rc.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
         return $contextlist;
     }
     /**
@@ -407,6 +626,62 @@ class provider implements
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid";
         $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.user_id
+                  FROM {local_recompletion_hvp} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('user_id', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_h5p} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_la} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_lg} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_lt} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_lb} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_lo} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $sql = "SELECT rc.userid
+                  FROM {local_recompletion_hpa} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid";
+        $userlist->add_from_sql('userid', $sql, $params);
     }
     /**
      * Delete multiple users within a single context.
@@ -422,6 +697,7 @@ class provider implements
         // Prepare SQL to gather all completed IDs.
         $userids = $userlist->get_userids();
         list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        $params = array_merge($inparams, ['contextlevel' => CONTEXT_COURSE, 'contextid' => $context->id]);
 
         // Should probably make this simpler using some helper functions... but for now...
 
@@ -430,7 +706,6 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_cc', "id $sql", $params);
 
         $sql = "SELECT rc.id
@@ -438,7 +713,6 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_cc_cc', "id $sql", $params);
 
         $sql = "SELECT rc.id
@@ -446,15 +720,20 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_cmc', "id $sql", $params);
+
+        $sql = "SELECT rv.id
+                  FROM {local_recompletion_cmv} rv
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rv.userid $insql";
+        $DB->delete_records_select('local_recompletion_cmv', "id $sql", $params);
 
         $sql = "SELECT rc.id
                   FROM {local_recompletion_qa} rc
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_qa', "id $sql", $params);
 
         $sql = "SELECT rc.id
@@ -462,7 +741,6 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_qg', "id $sql", $params);
 
         $sql = "SELECT rc.id
@@ -470,7 +748,6 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_sst', "id $sql", $params);
 
         $sql = "SELECT rc.id
@@ -483,7 +760,6 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_qr', "id $sql", $params);
 
         $sql = "SELECT rc.id
@@ -491,7 +767,84 @@ class provider implements
                   JOIN {course} c ON rc.course = c.id
                   JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
                   WHERE ctx.id = :contextid AND rc.userid $insql";
-        $params = array_merge($inparams, ['contextid' => $context->id]);
         $DB->delete_records_select('local_recompletion_cha', "id $sql", $params);
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_hvp} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.user_id $insql";
+        $params = array_merge($inparams, ['contextlevel' => CONTEXT_COURSE, 'contextid' => $context->id]);
+        $DB->delete_records_select('local_recompletion_hvp', "id $sql", $params);
+
+        foreach ($userids as $userid) {
+            self::delete_hp5_activity_records($context->instanceid, $userid);
+        }
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_la} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.userid $insql";
+        $DB->delete_records_select('local_recompletion_la', "id $sql", $params);
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_lg} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.userid $insql";
+        $DB->delete_records_select('local_recompletion_lg', "id $sql", $params);
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_lt} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.userid $insql";
+        $DB->delete_records_select('local_recompletion_lt', "id $sql", $params);
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_lb} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.userid $insql";
+        $DB->delete_records_select('local_recompletion_lb', "id $sql", $params);
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_lo} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.userid $insql";
+        $DB->delete_records_select('local_recompletion_lo', "id $sql", $params);
+
+        $sql = "SELECT rc.id
+                  FROM {local_recompletion_hpa} rc
+                  JOIN {course} c ON rc.course = c.id
+                  JOIN {context} ctx ON c.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  WHERE ctx.id = :contextid AND rc.userid $insql";
+        $DB->delete_records_select('local_recompletion_lo', "id $sql", $params);
+    }
+
+    /**
+     * Wipe all attempt data for specific course and an optional user.
+     *
+     * @param int $courseid a course_id
+     * @param int|null $userid a user id
+     */
+    private static function delete_hp5_activity_records(int $courseid, int $userid = null): void {
+        global $DB;
+
+        $where = 'a.course = :course';
+        $conditions = ['course' => $courseid];
+        if (!empty($user)) {
+            $where .= ' AND a.userid = :userid';
+            $conditions['userid'] = $userid;
+        }
+
+        $DB->delete_records_select('local_recompletion_h5pr', "attemptid IN (
+                SELECT a.id
+                FROM {local_recompletion_h5p} a
+                WHERE $where)", $conditions);
+
+        $DB->delete_records('local_recompletion_h5p', $conditions);
     }
 }
