@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capabilities for database enrolment plugin.
+ * Tasks for database enrolment plugin.
  *
  * @package    enrol
  * @subpackage gudatabase

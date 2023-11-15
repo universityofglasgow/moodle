@@ -126,7 +126,7 @@ class api {
             $urltogo = $CFG->wwwroot.'/';
             unset($SESSION->wantsurl);
         }
-    
+
         // If the url to go to is the same as the site page, check for default homepage.
         if ($urltogo == ($CFG->wwwroot . '/')) {
             $homepage = get_home_page();
@@ -146,6 +146,10 @@ class api {
      */
     public static function login_actions($user) {
         global $CFG, $DB;
+
+        // Clear emailstop option if they have logged in
+        $user->emailstop = 0;
+        $DB->update_record('user', $user);
 
         // Get CoreHR data and check for 'known as' name.
         // only if not a student

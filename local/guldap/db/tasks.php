@@ -15,17 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * LDAP API for student data
+ * Define tasks for local_guldap
  *
- * @package    local_guldap
- * @copyright  2022 Howard Miller
+ * @package    local
+ * @subpackage ldap
+ * @copyright  2012 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2023111501;
-$plugin->requires = 2021051700; // 3.11.0
-$plugin->component = 'local_guldap';
-$plugin->description = 'UofG LDAP API';
-$plugin->dependencies = array(
-    'auth_ldap' => ANY_VERSION,
-);
+defined('MOODLE_INTERNAL') || die;
+
+$tasks = [
+    [
+        'classname' => 'local_guldap\task\clear_expired_notifications',
+        'blocking' => 0,
+        'minute' => '*/15',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
+];

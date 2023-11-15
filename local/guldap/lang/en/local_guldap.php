@@ -25,6 +25,7 @@ $string['binddn_help'] = 'If you want to use bind-user to search users, specify 
 $string['bindpw'] = 'Bind password';
 $string['bindpw_help'] = 'Password for bind-user.';
 $string['bindsettings'] = 'Bind settings';
+$string['clearexpirednotifications'] = 'Clear expired notifications';
 $string['closed'] = 'LDAP closed';
 $string['connected'] = 'LDAP connected';
 $string['contexts'] = 'Contexts';
