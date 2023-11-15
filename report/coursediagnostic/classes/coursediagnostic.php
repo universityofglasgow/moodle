@@ -67,6 +67,7 @@ class coursediagnostic {
 
     /**
      * @return bool
+     * @throws \dml_exception
      */
     public static function cfg_settings_check(): bool {
 

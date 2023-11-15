@@ -100,8 +100,10 @@ class observer {
                         \report_coursediagnostic\coursediagnostic::prepare_cache($diagnosticdata, $event->courseid);
                     }
 
-                    // Now hide/show the alert on the page that links to the report.
-                    if ($failedtests > 0) {
+                    // Now show the alert on the page that links to the report...
+                    // But only if the user ^wants^ to see the warnings...
+                    $ignore_warnings = get_config('core', 'iw_cid_' . $event->courseid);
+                    if ($failedtests > 0 && $ignore_warnings == 0) {
                         \report_coursediagnostic\coursediagnostic::diagnostic_notification($failedtests, $event->courseid);
 
                         return true;

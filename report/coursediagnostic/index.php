@@ -30,6 +30,19 @@
 require('../../config.php');
 
 $courseid = required_param('courseid', PARAM_INT);// Course ID.
+$submitted = optional_param('submitted', 0, PARAM_INT);
+$ignore_warnings = optional_param('iw_cid_' . $courseid, 0, PARAM_INT);
+
+if ($submitted) {
+    if ($ignore_warnings == 0) {
+        set_config('iw_cid_' . $courseid, 0);
+    } elseif ($ignore_warnings == 1) {
+        set_config('iw_cid_' . $courseid, 1);
+    }
+}
+
+$ignore_warnings = get_config('core', 'iw_cid_' . $courseid);
+
 $context = context_course::instance($courseid);
 
 $url = new moodle_url('/report/coursediagnostic/index.php', ['courseid' => $courseid]);
@@ -207,7 +220,29 @@ if ($cfgsettings) {
 
             $reportinfo = html_writer::div(get_string('report_summary', 'report_coursediagnostic'),'',['id' => 'report_desc']);
             $tabledata = html_writer::table($table);
-            $diagnosticcontent = $reportinfo . $tabledata;
+            $diagnosticcontent = $reportinfo;
+
+            $formcontent = html_writer::tag('h2', get_string('ignore_warnings_header', 'report_coursediagnostic'));
+            $formcontent .= html_writer::div(html_writer::tag('p', get_string('ignore_warnings_summary', 'report_coursediagnostic')),
+                '',['id' => 'warning_summary']);
+            $formcontent .= html_writer::checkbox('iw_cid_' . $courseid, 1, $ignore_warnings,
+                get_string('ignore_warnings', 'report_coursediagnostic'), ['id' => 'iw_cid' . $courseid]);
+            $button = html_writer::tag('button', get_string('savechanges'), ['type' => 'submit', 'class' => 'btn btn-primary']);
+            $formcontent .= html_writer::tag('div', $button);
+
+            $actionurl = new moodle_url($url);
+            $urlparams = new moodle_url('/report/coursediagnostic/index.php', ['courseid' => $courseid, 'submitted' => true]);
+            $formcontent .= html_writer::input_hidden_params($urlparams);
+            $divbody = html_writer::tag('form', $formcontent,[
+                'id' => 'ignore_warnings_form',
+                'action' => $actionurl,
+                'method' => 'post'
+            ]);
+            $div = html_writer::tag('p', $divbody);
+            $divcontent = html_writer::tag( 'div', $div);
+
+            $diagnosticcontent .= $divcontent;
+            $diagnosticcontent .= $tabledata;
 
         } else {
             $url = new moodle_url('/course/edit.php', ['id' => $courseid]);
