@@ -166,6 +166,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      * @param stdClass $ue A user enrolment object
      * @return array An array of user_enrolment_actions
      */
+    /**
+     * Commenting this out as I think that the default implementation is just fine.
+     * No idea why I wrote this.
     public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
         $actions = array();
         $context = $manager->get_context();
@@ -179,6 +182,7 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         }
         return $actions;
     }
+    */
 
     /**
      * Check if this appears to be configured
