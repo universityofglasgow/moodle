@@ -37,7 +37,7 @@
     Example context (json):
     {categoryname, categoryid, courses}
 }}
-<h1 class="category-heading show {{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_category-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} <small>({{#str}} invisiblecategory, local_template {{/str}}){{/visible}}</small></h1>
+<h1 class="category-heading collapse show {{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_category-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} <small>({{#str}} invisiblecategory, local_template {{/str}}){{/visible}}</small></h1>
 <div class="container">
     <section id="local_template_category-{{categoryid}}" class="responsive card-deck dashboard-card-deck collapse">
         {{#courses}}
