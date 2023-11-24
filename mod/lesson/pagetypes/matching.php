@@ -79,11 +79,15 @@ class lesson_page_type_matching extends lesson_page {
             $answers[$getanswer->id] = $getanswer;
         }
 
+        $formattextdefoptions = new stdClass();
+        $formattextdefoptions->noclean = true;
+        $formattextdefoptions->para = false;
+
         $responses = array();
         foreach ($answers as $answer) {
             // get all the response
             if ($answer->response != null) {
-                $responses[] = format_text(trim($answer->response));
+                $responses[] = format_text(trim($answer->response), $answer->answerformat, $formattextdefoptions);
             }
         }
 

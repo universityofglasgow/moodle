@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capabilities for database enrolment plugin.
+ * Tasks for database enrolment plugin.
  *
  * @package    enrol
  * @subpackage gudatabase
@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$tasks = array(
-    array(
+$tasks = [
+    [
         'classname' => 'enrol_gudatabase\task\sync_enrolments',
         'blocking' => 0,
         'minute' => '*/15',
@@ -34,5 +34,14 @@ $tasks = array(
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*',
-    )
-);
+    ],
+    [
+        'classname' => 'enrol_gudatabase\task\clear_unused_codes',
+        'blocking' => 0,
+        'minute' => '*/15',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
+];

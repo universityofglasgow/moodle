@@ -1,5 +1,5 @@
 <div class="mb-2">
-    {{{ picture }}} 
+    {{{ picture }}}
 </div>
 
 <div class="alert alert-primary m-t-1">
@@ -95,7 +95,7 @@
                                 {{/ gucourses }}
                             </ul></small>
                         {{/ isgucourses }}
-                    </li>    
+                    </li>
                 {{/ formattedcourses }}
             </ul>
         {{/ nocourses }}
@@ -125,7 +125,8 @@
                 <thead>
                     <tr>
                         <th>{{# str }}tiiid, report_guid{{/ str }}</th>
-                        <th>{{# str }}module, report_guid{{/ str}}</th>
+                        <th>{{# str }}module, report_guid{{/ str }}</th>
+                        <th>{{# str }}hidden, report_guid{{/ str }}</th>
                         <th>{{# str }}tiistatus, report_guid{{/ str }}</th>
                         <th>{{# str }}tiiscore, report_guid{{/ str }}</th>
                         <th>{{# str }}tiierror, report_guid{{/ str }}</th>
@@ -139,6 +140,7 @@
                         <tr>
                             <th>{{ formattedexternalid }}</th>
                             <td><a href="{{{ link }}}">{{ cm }}</a></td>
+                            <td>{{^ studentreport }}<span class="badge badge-danger">{{# str }}hidden, report_guid{{/ str }}</span>{{/ studentreport }}</td>
                             <td>{{ statuscode }}</th>
                             <td>{{ formattedsimilarityscore }}</th>
                             <td>{{ errorcode }}</td>
@@ -168,7 +170,7 @@
                 {{/ iscorehr }}
                 {{^ iscorehr }}
                     <div class="alert alert-info">{{# str }}nomoodleprofile, report_guid{{/ str }}</div>
-                {{/ iscorehr }}    
+                {{/ iscorehr }}
             </p>
         </div>
     </div>
@@ -196,9 +198,9 @@
                                 <td>{{ retrycount }}</td>
                                 <td>{{ status }} {{ error }}</td>
                             </tr>
-                        {{/ corehrcompletion }}                    
+                        {{/ corehrcompletion }}
                     </tbody>
-                </table>   
+                </table>
             </p>
         </div>
     </div>
@@ -230,9 +232,9 @@
                                 <td>{{# visible }}{{# str }}yes{{/ str }}{{/ visible }}{{^ visible }}{{# str }}no{{/ str }}{{/ visible }}</td>
                                 <td>{{ formattedlastaccess }}</td>
                             </tr>
-                        {{/ portalcourses }}                    
+                        {{/ portalcourses }}
                     </tbody>
-                </table>   
+                </table>
             </p>
         </div>
     </div>

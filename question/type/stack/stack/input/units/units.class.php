@@ -28,8 +28,6 @@ class stack_units_input extends stack_input {
      * @var array
      */
     protected $extraoptions = array(
-        'hideanswer' => false,
-        'allowempty' => false,
         'simp' => false,
         'negpow' => false,
         // Require min/max number of decimal places?
@@ -38,6 +36,7 @@ class stack_units_input extends stack_input {
         // Require min/max number of significant figures?
         'minsf' => false,
         'maxsf' => false,
+        'allowempty' => false,
         'align' => 'left',
         'consolidatesubscripts' => false,
         'validator' => false
@@ -152,9 +151,6 @@ class stack_units_input extends stack_input {
      * @return string the teacher's answer, displayed to the student in the general feedback.
      */
     public function get_teacher_answer_display($value, $display) {
-        if ($this->get_extra_option('hideanswer')) {
-            return '';
-        }
         if (trim($value) == 'EMPTYANSWER') {
             return stack_string('teacheranswerempty');
         }

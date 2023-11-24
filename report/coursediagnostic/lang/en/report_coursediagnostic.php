@@ -157,3 +157,6 @@ $string['admin_link_text'] = 'course diagnostic settings page';
 $string['scheduledname'] = 'Course diagnostic task';
 $string['timelimit'] = 'Cron time limit';
 $string['timelimit_desc'] = 'Maximum time (in seconds) that the cron process may run for.';
+$string['ignore_warnings_header'] = 'Course page warnings';
+$string['ignore_warnings_summary'] = 'If you wish to hide or show the diagnostic notification on the main course page, toggle the checkbox below and click <strong>\'Save changes\'</strong>.';
+$string['ignore_warnings'] = 'Don\'t notify me about Course Diagnostic warnings.';

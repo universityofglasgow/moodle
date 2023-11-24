@@ -33,6 +33,7 @@ $string['cannotunenrol'] = 'You are not permitted to unenrol yourself from this 
     least 24 hours before trying again.';
 $string['classlisttable'] = 'Class list table';
 $string['classlisttable_desc'] = 'Table containing information about group enrolments within courses';
+$string['clearunusedcodes'] = 'Clear unused codes';
 $string['codelist'] = 'More codes (one per line)';
 $string['codelist_help'] = 'You can add more codes for this course here. Add one code per line then press Save';
 $string['codes'] = 'Codes';

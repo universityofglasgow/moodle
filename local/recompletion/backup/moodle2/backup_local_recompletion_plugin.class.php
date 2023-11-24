@@ -144,6 +144,122 @@ class backup_local_recompletion_plugin extends backup_local_plugin {
         }
         $choiceanswer->annotate_ids('user', 'userid');
 
+        // Now deal with hvp archive tables.
+        $hvpattempts = new backup_nested_element('hvpattempts');
+        $hvpattempt = new backup_nested_element('hvpattempt', array('id'), array(
+            'user_id', 'hvp_id', 'sub_content_id', 'data_id', 'data', 'preloaded', 'delete_on_content_change', 'course'));
+
+        $recompletion->add_child($hvpattempts);
+        $hvpattempts->add_child($hvpattempt);
+
+        if ($usercompletion) {
+            $hvpattempt->set_source_table('local_recompletion_hvp', array('course' => backup::VAR_COURSEID));
+        }
+        $hvpattempt->annotate_ids('user', 'user_id');
+
+        // Now deal with h5p table.
+        $h5ps = new backup_nested_element('h5ps');
+        $h5p = new backup_nested_element('h5p', array('id'), array(
+            'originalattemptid', 'h5pactivityid', 'userid', 'timecreated', 'timemodified',
+            'rawscore', 'maxscore', 'scaled', 'duration', 'completion', 'success', 'course'));
+
+        // Now deal with h5p results table.
+        $h5presults = new backup_nested_element('h5presults');
+        $h5presult = new backup_nested_element('h5presult', array('id'), array(
+            'attemptid', 'subcontent', 'timecreated', 'interactiontype', 'description',
+            'correctpattern', 'response', 'additionals', 'rawscore', 'maxscore', 'duration', 'completion', 'success', 'course'));
+
+        $recompletion->add_child($h5ps);
+        $h5ps->add_child($h5p);
+        $h5p->add_child($h5presults);
+        $h5presults->add_child($h5presult);
+
+        if ($usercompletion) {
+            $h5p->set_source_table('local_recompletion_h5p', array('course' => backup::VAR_COURSEID));
+            $h5presult->set_source_table(
+                'local_recompletion_h5pr',
+                array('course' => backup::VAR_COURSEID, 'attemptid' => backup::VAR_PARENTID)
+            );
+        }
+
+        $h5p->annotate_ids('user', 'userid');
+
+        // Now deal with lesson archive tables.
+        $lessonattempts = new backup_nested_element('lessonattempts');
+        $lessonattempt = new backup_nested_element('lessonattempt', array('id'), array(
+            'lessonid', 'pageid', 'userid', 'answerid', 'retry', 'correct', 'useranswer', 'timeseen', 'course'));
+
+        $recompletion->add_child($lessonattempts);
+        $lessonattempts->add_child($lessonattempt);
+
+        if ($usercompletion) {
+            $lessonattempt->set_source_table('local_recompletion_la', array('course' => backup::VAR_COURSEID));
+        }
+        $lessonattempt->annotate_ids('user', 'userid');
+
+        $lessongrades = new backup_nested_element('lessongrades');
+        $lessongrade = new backup_nested_element('lessongrade', array('id'), array(
+            'lessonid', 'userid', 'grade', 'late', 'completed', 'course'));
+
+        $recompletion->add_child($lessongrades);
+        $lessongrades->add_child($lessongrade);
+
+        if ($usercompletion) {
+            $lessongrade->set_source_table('local_recompletion_lg', array('course' => backup::VAR_COURSEID));
+        }
+        $lessongrade->annotate_ids('user', 'userid');
+
+        $lessontimers = new backup_nested_element('lessontimers');
+        $lessontimer = new backup_nested_element('lessontimer', array('id'), array(
+            'lessonid', 'userid', 'starttime', 'lessontime', 'completed', 'timemodifiedoffline', 'course'));
+
+        $recompletion->add_child($lessontimers);
+        $lessontimers->add_child($lessontimer);
+
+        if ($usercompletion) {
+            $lessontimer->set_source_table('local_recompletion_lt', array('course' => backup::VAR_COURSEID));
+        }
+        $lessontimer->annotate_ids('user', 'userid');
+
+        $lessonbraches = new backup_nested_element('lessonbraches');
+        $lessonbranch = new backup_nested_element('lessonbranch', array('id'), array(
+            'lessonid', 'userid', 'pageid', 'retry', 'flag', 'timeseen', 'nextpageid', 'course'));
+
+        $recompletion->add_child($lessonbraches);
+        $lessonbraches->add_child($lessonbranch);
+
+        if ($usercompletion) {
+            $lessonbranch->set_source_table('local_recompletion_lb', array('course' => backup::VAR_COURSEID));
+        }
+        $lessonbranch->annotate_ids('user', 'userid');
+
+        $lessonoverrides = new backup_nested_element('lessonoverrides');
+        $lessonoverride = new backup_nested_element('lessonoverride', array('id'), array(
+            'lessonid', 'groupid', 'userid', 'available', 'deadline', 'timelimit',
+            'review', 'maxattempts', 'retake', 'password', 'course'));
+
+        $recompletion->add_child($lessonoverrides);
+        $lessonoverrides->add_child($lessonoverride);
+
+        if ($usercompletion) {
+            $lessonoverride->set_source_table('local_recompletion_lo', array('course' => backup::VAR_COURSEID));
+        }
+        $lessonoverride->annotate_ids('user', 'userid');
+
+        // Now deal with hvp archive tables.
+        $hotpotattempts = new backup_nested_element('hotpotattempts');
+        $hotpotattempt = new backup_nested_element('hotpotattempt', array('id'), array(
+            'hotpotid', 'userid', 'starttime', 'endtime', 'score', 'penalties', 'attempt', 'timestart',
+            'timefinish', 'status', 'clickreportid', 'timemodified', 'course'));
+
+        $recompletion->add_child($hotpotattempts);
+        $hotpotattempts->add_child($hotpotattempt);
+
+        if ($usercompletion) {
+            $hotpotattempt->set_source_table('local_recompletion_hpa', array('course' => backup::VAR_COURSEID));
+        }
+        $hotpotattempt->annotate_ids('user', 'userid');
+
         return $plugin;
     }
 

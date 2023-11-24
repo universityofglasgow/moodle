@@ -88,10 +88,7 @@ abstract class stack_input {
      * For examples see the numerical input.
      * @var array
      */
-    protected $extraoptions = array(
-        'hideanswer' => false,
-        'allowempty' => false
-    );
+    protected $extraoptions = array();
 
     /**
      * The question level options for CAS sessions.
@@ -165,14 +162,14 @@ abstract class stack_input {
             }
         }
 
-        $this->internal_construct();
+        $this->internal_contruct();
     }
 
     /**
      * This allows each input type to adapt to the values of parameters.  For example, the dropdown and units
      * use this to sort out options.
      */
-    protected function internal_construct() {
+    protected function internal_contruct() {
         $options = $this->get_parameter('options');
         if (trim($options ?? '') != '') {
             $options = explode(',', $options);
@@ -457,7 +454,7 @@ abstract class stack_input {
         if ($parameter == 'insertStars') {
             $this->parameters['grammarAutofixes'] = stack_input_factory::convert_legacy_insert_stars($value);
         }
-        $this->internal_construct();
+        $this->internal_contruct();
     }
 
     /**

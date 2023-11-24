@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2022093000;
+$plugin->version = 2023111501;
 $plugin->requires = 2021051700; // 3.11.0
 $plugin->component = 'local_guldap';
 $plugin->description = 'UofG LDAP API';

@@ -527,7 +527,7 @@ class api {
     public static function send($status) {
         global $DB;
 
-        self::mtrace('Sending to corehr for userid = ' . $status->userid . ', coursecode = ' . $status->coursecode . ', retry = ' . $status->retrycount . ' statusid = ' . $status->id);
+        //self::mtrace('Sending to corehr for userid = ' . $status->userid . ', coursecode = ' . $status->coursecode . ', retry = ' . $status->retrycount . ' statusid = ' . $status->id);
 
         // staffTrainingRecord
         $staffTrainingRecord = new staffTrainingRecord(
@@ -541,11 +541,11 @@ class api {
         // Call CoreHR API to log completion.
         // We'll skip this if there is no personnel number
         if (empty($status->personnelno)) {
-            self::mtrace("local_corehr: skipping web service for userid = {$status->userid} with no personnel number");
+            //self::mtrace("local_corehr: skipping web service for userid = {$status->userid} with no personnel number");
             $message = "PERSON_NUMBER_EMPTY";
         } else {
             $message = self::add($staffTrainingRecord);
-            self::mtrace("local_corehr: data sent to web service, status is $message");
+            //self::mtrace("local_corehr: data sent to web service, status is $message");
         }
 
         // Record the details
@@ -559,7 +559,7 @@ class api {
         $corehr->enddate = date('dmY', time());
         $corehr->wsstatus = $message;
 
-        self::mtrace('local_corehr: Message returned for userid = ' . $status->userid . ' is ' . $message);
+        //self::mtrace('local_corehr: Message returned for userid = ' . $status->userid . ' is ' . $message);
 
         return $message;
     }

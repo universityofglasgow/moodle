@@ -106,7 +106,9 @@ if ($mform->is_cancelled()) {
         if (!$user = $DB->get_record( 'user', ['username' => strtolower($guid)] )) {
 
             // Need to find them in ldap.
-            $result = report_guid\lib::ldapsearch( $config, "{$config->user_attribute}=$guid" );
+            $ldap = new \local_guldap\ldap();
+            $resource = $ldap->connect();
+            $result = $ldap->search($resource, "{$config->user_attribute}=$guid");
             if (empty($result)) {
                 echo "<span class=\"label label-warning\">" . get_string('nouser', 'report_guid') . "</span> ";
                 $errorcount++;

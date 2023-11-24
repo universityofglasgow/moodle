@@ -44,8 +44,8 @@ $string['countnewaccounts'] = '{$a} new accounts created';
 $string['countunenrol'] = '{$a} users unenrolled';
 $string['coursename'] = 'Course name';
 $string['courseupload'] = 'Upload users and groups to course';
-$string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (= matric number for students) or email as selected below. 
-    Remaining columns (if present) contain the names of groups those students should be added to. 
+$string['courseuploadinstructions'] = 'Upload your CSV file. First column is either GUID, ID number (= matric number for students) or email as selected below.
+    Remaining columns (if present) contain the names of groups those students should be added to.
     Users will be created, enrolled on the course and added to groups as required<br /><br />
     <b>NOTE:</b> First line is for headers and is always ignored.';
 $string['create'] = 'Create a Moodle profile for {$a}';

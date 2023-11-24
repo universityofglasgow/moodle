@@ -33,10 +33,9 @@ class stack_varmatrix_input extends stack_input {
     );
 
     protected $extraoptions = array(
-        'hideanswer' => false,
-        'allowempty' => false,
         'simp' => false,
         'rationalized' => false,
+        'allowempty' => false,
         'consolidatesubscripts' => false,
         'checkvars' => 0,
         'validator' => false
@@ -63,10 +62,6 @@ class stack_varmatrix_input extends stack_input {
 
         if ($this->is_blank_response($state->contents)) {
             $current = $this->maxima_to_raw_input($this->parameters['syntaxHint']);
-            if ($this->parameters['syntaxAttribute'] == '1') {
-                $attributes['placeholder'] = $current;
-                $current = '';
-            }
         } else {
             $current = array();
             foreach ($state->contents as $row) {
@@ -79,11 +74,7 @@ class stack_varmatrix_input extends stack_input {
         }
 
         // Sort out size of text area.
-        $sizecontent = $current;
-        if ($this->is_blank_response($state->contents) && $this->parameters['syntaxAttribute'] == '1') {
-            $sizecontent = $attributes['placeholder'];
-        }
-        $rows = stack_utils::list_to_array($sizecontent, false);
+        $rows = stack_utils::list_to_array($current, false);
         $attributes['rows'] = max(5, count($rows) + 1);
 
         $boxwidth = $this->parameters['boxWidth'];
@@ -163,7 +154,7 @@ class stack_varmatrix_input extends stack_input {
         $vals = array();
         foreach ($caslines as $line) {
             if ($line->get_valid()) {
-                $vals[] = $line->get_inputform();
+                $vals[] = $line->get_evaluationform();
             } else {
                 // This is an empty place holder for an invalid expression.
                 $vals[] = 'EMPTYCHAR';
