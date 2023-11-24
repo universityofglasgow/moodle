@@ -22,16 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Course template selector';
+$string['pluginname'] = 'Moodle Course Template Wizard';
 
 $string['addnewcourse'] = 'Add new course with template';
 $string['usedefaultmoodlefunctions'] = 'Create Course Manually';
 
 $string['addnewcoursehook'] = 'Add new course hook';
-$string['addnewcoursehook_desc'] = 'Enable add new course redirection to course template selector';
+$string['addnewcoursehook_desc'] = 'Enable add new course redirection to Moodle Course Template Wizard';
 
 $string['addnewcoursenavigation'] = 'Add new course to category navigation';
-$string['addnewcoursenavigation_desc'] = 'Add additional Course Template Selector option to category navigation menu';
+$string['addnewcoursenavigation_desc'] = 'Add additional Moodle Course Template Wizard option to category navigation menu';
 
 $string['addnewcoursecategoryactionbar'] = 'Add new course to category action bar';
 $string['addnewcoursecategoryactionbar_desc'] = 'Add additional Add new course via template option to category page options dropdown (performed by theme)';
@@ -83,7 +83,7 @@ $string['copyrestore'] = 'Copy Restore';
 $string['importbackup'] = 'Import Backup';
 $string['importrestore'] = 'Import Restore';
 
-$string['addtemplate'] = 'Reset Course Template Selector';
+$string['addtemplate'] = 'Reset Moodle Course Template Wizard';
 $string['timemodified'] = 'Time Modified';
 $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';

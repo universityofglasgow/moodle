@@ -38,7 +38,7 @@
     {categoryname, categoryid, courses}
 }}
 <div class="slider-container"> <!--  category-heading -->
-    <h1 class="slider-heading category-heading collapsed{{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_slick-slider-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} {{#str}} invisiblecategory, local_template {{/str}}{{/visible}}</h1>
+    <h1 class="slider-heading category-heading {{^visible}} text-muted{{/visible}}" data-toggle="collapse" href="#local_template_slick-slider-{{categoryid}}" tabindex="0"> {{categoryname}}{{^visible}} {{#str}} invisiblecategory, local_template {{/str}}{{/visible}}</h1>
     <div id="block_slick-spinner-1" class="text-center spinner">
         <div class="spinner-border" role="status">
             <span class="sr-only">Loading...</span>

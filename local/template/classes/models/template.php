@@ -685,8 +685,8 @@ class template extends \core\persistent implements renderable, templatable {
         global $PAGE;
         $configavailableviews = self::get_available_views();
 
+        $availableviews = [];
         if (count($configavailableviews) > 1) {
-            $availableviews = [];
             foreach ($configavailableviews as $configavailableview) {
                 $moodleurl = $PAGE->url;
                 $moodleurl->param('view', $configavailableview);
@@ -749,7 +749,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function get_addnewcourselink() {
         global $CFG;
-        $categoryid = optional_param('category', 0, PARAM_INT);
+        $categoryid = optional_param('categoryid', 0, PARAM_INT);
         $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
         $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
@@ -767,32 +767,6 @@ class template extends \core\persistent implements renderable, templatable {
 
     }
 
-
-    /*
-        public function get_file_url() {
-            $file = $this->get_file();
-            if (!empty($file)) {
-                return \moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename(), false);
-            } else {
-                return '';
-            }
-        }
-
-        public function get_file_link() {
-            $file = $this->get_file();
-            if (empty($file)) {
-                return get_string('importfilemissing','local_template');
-            }
-
-            $url = $this->get_file_url();
-            if (empty($url)) {
-                return get_string('importfilemissing','local_template');
-            }
-
-            $filename = $file->get_filename();
-            return \html_writer::link($url, $filename, ['title' => $filename]);
-        }
-    */
     public function cascadedelete() {
 
         // 1. Delete all backupcontrollers
