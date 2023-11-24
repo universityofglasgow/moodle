@@ -85,8 +85,7 @@ function local_template_initSliders() {
         // Hide the sliders and show the loading spinner.
         slider.css('opacity', 0.01).slideUp();
         $.when(slider.not('.slick-initialized').slick()).then(
-            local_template_showSlider(slider),
-            slider.slideUp()
+            local_template_showSlider(slider) //, slider.slideUp()
         );
 
         /*
