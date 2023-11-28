@@ -87,6 +87,7 @@ function local_template_initSliders() {
         $.when(slider.not('.slick-initialized').slick()).then(
             local_template_showSlider(slider) //, slider.slideUp()
         );
+        slider.slideDown();
 
         /*
                 $.when(slider.not('.slick-initialized').slick()).then(
@@ -145,16 +146,13 @@ function local_template_registerEvents() {
         if (!carddeck.hasClass('slider')) return;
 
         if (categoryheading.hasClass('collapsed')) {
-            categoryheading.removeClass('collapsed');
             if (carddeck.hasClass('slider')) {
                 local_template_showSlider(carddeck);
             } else {
                 carddeck.show();
             }
         } else {
-            categoryheading.addClass('collapsed');
             carddeck.slideUp();
-            carddeck.hide();
         }
     });
 }
@@ -189,9 +187,12 @@ var waitForFinalEvent = (function() {
 */
 
 function local_template_resizeFixes(slider, animate) {
-    slider.find('.slick-track').each(function() {
-        local_template_fixTrackHeight(this, animate);
-    });
+    var tracks = slider.find('.slick-track');
+    if (typeof tracks !== "undefined") {
+        tracks.each(function() {
+            local_template_fixTrackHeight(this, animate);
+        });
+    }
 }
 
 function local_template_showSlider(slider) {
@@ -201,7 +202,7 @@ function local_template_showSlider(slider) {
     slider[0].slick.refresh();
     local_template_resizeFixes(slider, false);
 
-    spinner.hide();
+    if (typeof spinner !== "undefined") spinner.hide();
     slider.css('opacity', 1).hide();
     slider.slideDown({
         queue: false,
@@ -209,13 +210,16 @@ function local_template_showSlider(slider) {
     });
 
     // For each card in the slider, hide the body and footer.
-    slider.find('.card').each(function() {
-        var card = $(this);
-        var cardbody = card.find('div.card-body');
-        var cardoverlay = card.find('div.card-img-overlay');
-        cardbody.hide();
-        cardoverlay.fadeIn();
-    });
+    var cards = slider.find('.card');
+    if (typeof cards !== "undefined") {
+        slider.find('.card').each(function () {
+            var card = $(this);
+            var cardbody = card.find('div.card-body');
+            var cardoverlay = card.find('div.card-img-overlay');
+            cardbody.hide();
+            cardoverlay.fadeIn();
+        });
+    }
 }
 
 function local_template_registerSliderEvents(track) {
