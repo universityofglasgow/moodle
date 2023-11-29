@@ -272,11 +272,4 @@
         <licenseversion>3.0+</licenseversion>
     </library>
 
-    <library>
-        <location>amd/build/jsxgraphcore-v0.82-lazy.js</location>
-        <name>JSXGraph 0.82</name>
-        <version>0.82</version>
-        <license>LGPL</license>
-        <licenseversion>3.0+</licenseversion>
-    </library>
 </libraries>
