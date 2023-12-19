@@ -149,7 +149,7 @@ class persistentcollection implements Countable, renderable, templatable {
         return $this->totalcount;
     }
 
-    public function count() {
+    public function count(): int {
         return count($this->collection);
     }
 
