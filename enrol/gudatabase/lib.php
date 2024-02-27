@@ -2134,7 +2134,8 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
      */
     private function error($message) {
         if (defined('CLI_SCRIPT') and CLI_SCRIPT) {
-            $this->trace->output($message);
+            $trace = new text_progress_trace();
+            $trace->output($message);
         } else {
             throw new \moodle_exception('autherror', 'enrol_gudatabase', '', $message);
         }
