@@ -310,7 +310,6 @@ class qtype_stack_question extends question_graded_automatically_with_countback
     }
 
     public function start_attempt(question_attempt_step $step, $variant) {
-
         // @codingStandardsIgnoreStart
         // Work out the right seed to use.
         if (!is_null($this->seed)) {
@@ -345,9 +344,6 @@ class qtype_stack_question extends question_graded_automatically_with_countback
             // 1. question variables.
             $session = new stack_cas_session2([], $this->options, $this->seed);
 
-            // Construct the security object. But first units declaration into the session.
-            $units = (boolean) $this->get_cached('units');
-
             // If we are using localisation we should tell the CAS side logic about it.
             // For castext rendering and other tasks.
             if (count($this->get_cached('langs')) > 0) {
@@ -356,6 +352,9 @@ class qtype_stack_question extends question_graded_automatically_with_countback
                 $session->add_statement(new stack_secure_loader('%_STACK_LANG:' .
                     stack_utils::php_string_to_maxima_string($selected), 'language setting'), false);
             }
+
+            // Construct the security object. But first units declaration into the session.
+            $units = (boolean) $this->get_cached('units');
 
             // If we have units we might as well include the units declaration in the session.
             // To simplify authors work and remove the need to call that long function.
@@ -512,7 +511,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
             // So we have this logic where a raw string needs to turn to a CASText2 object.
             // As we do not know what it contains we escape it.
             $this->questiontextinstantiated = castext2_evaluatable::make_from_source('[[escape]]' . $s . '[[/escape]]', '/qt');
-            // It is a stateic string and by calling this we make it look like it was evaluated.
+            // It is a static string and by calling this we make it look like it was evaluated.
             $this->questiontextinstantiated->requires_evaluation();
 
             // Do some setup for the features that do not work.
@@ -560,6 +559,12 @@ class qtype_stack_question extends question_graded_automatically_with_countback
             $session = new stack_cas_session2([], $this->options, $this->seed);
         } else {
             $session = new stack_cas_session2($this->session->get_session(), $this->options, $this->seed);
+        }
+        if (count($this->get_cached('langs')) > 0) {
+            $ml = new stack_multilang();
+            $selected = $ml->pick_lang($this->get_cached('langs'));
+            $session->add_statement(new stack_secure_loader('%_STACK_LANG:' .
+                stack_utils::php_string_to_maxima_string($selected), 'language setting'), false);
         }
         $session->add_statement($hinttext);
         $session->instantiate();
@@ -783,6 +788,12 @@ class qtype_stack_question extends question_graded_automatically_with_countback
             return $this->inputstates[$name];
         }
 
+        $lang = null;
+        if ($this->get_cached('langs') !== null && count($this->get_cached('langs')) > 0) {
+            $ml = new stack_multilang();
+            $lang = $ml->pick_lang($this->get_cached('langs'));
+        }
+
         // TODO: we should probably give the whole ast_container to the input.
         // Direct access to LaTeX and the AST might be handy.
         $teacheranswer = '';
@@ -799,7 +810,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
 
             $this->inputstates[$name] = $this->inputs[$name]->validate_student_response(
                 $response, $this->options, $teacheranswer, $this->security, $rawinput,
-                $this->castextprocessor, $qv);
+                $this->castextprocessor, $qv, $lang);
             return $this->inputstates[$name];
         }
         return '';
@@ -1144,6 +1155,12 @@ class qtype_stack_question extends question_graded_automatically_with_countback
 
         // So now we build a session to evaluate all the PRTs.
         $session = new stack_cas_session2([], $this->options, $this->seed);
+        if (count($this->get_cached('langs')) > 0) {
+            $ml = new stack_multilang();
+            $selected = $ml->pick_lang($this->get_cached('langs'));
+            $session->add_statement(new stack_secure_loader('%_STACK_LANG:' .
+                stack_utils::php_string_to_maxima_string($selected), 'language setting'), false);
+        }
 
         // Construct the security object. But first units declaration into the session.
         $units = (boolean) $this->get_cached('units');
@@ -1265,18 +1282,19 @@ class qtype_stack_question extends question_graded_automatically_with_countback
     }
 
     /**
-     * @return bool Whether this question uses randomisation.
+     * @return bool whether this question uses randomisation.
      */
     public function has_random_variants() {
         return $this->random_variants_check($this->questionvariables);
     }
 
     /**
-     * @param string Input text (raw keyvals) to check for random functions.
+     * @param string Input text (raw keyvals) to check for random functions, or use of stack_seed.
      * @return bool Actual test of whether text uses randomisation.
      */
     public static function random_variants_check($text) {
-        return preg_match('~\brand~', $text) || preg_match('~\bmultiselqn~', $text);
+        return preg_match('~\brand~', $text) || preg_match('~\bmultiselqn~', $text)
+            || preg_match('~\bstack_seed~', $text);
     }
 
     public function get_num_variants() {
@@ -1459,7 +1477,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
         foreach ($patterns as $checkpat) {
             if ($stackversion < $checkpat['ver']) {
                 foreach ($qfields as $field) {
-                    if (strstr($this->$field, $checkpat['pat'])) {
+                    if (strstr($this->$field ?? '', $checkpat['pat'])) {
                         $a = array('pat' => $checkpat['pat'], 'ver' => $checkpat['ver'], 'qfield' => stack_string($field));
                         $err = stack_string('stackversionerror', $a);
                         if (array_key_exists('alt', $checkpat)) {
@@ -1493,7 +1511,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
             }
 
             $options = $input->get_parameter('options');
-            if (trim($options) !== '') {
+            if (trim($options ?? '') !== '') {
                 $options = explode(',', $options);
                 foreach ($options as $opt) {
                     $opt = strtolower(trim($opt));
@@ -1517,7 +1535,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
         $fields = array('questiontext', 'specificfeedback', 'generalfeedback', 'questiondescription');
         foreach ($fields as $field) {
             $text = $this->$field;
-            $filesexpected = preg_match($pat, $text);
+            $filesexpected = preg_match($pat, $text ?? '');
             $filesfound    = $fs->get_area_files($context->id, 'question', $field, $this->id);
             if (!$filesexpected && $filesfound != array()) {
                 $errors[] = stack_string('stackfileuseerror', stack_string($field));
@@ -1556,7 +1574,6 @@ class qtype_stack_question extends question_graded_automatically_with_countback
 
         // 2. Check alt-text exists.
         // Reminder: previous approach in Oct 2021 tried to use libxml_use_internal_errors, but this was a dead end.
-
         $tocheck = array();
         $text = '';
         if ($this->questiontextinstantiated !== null) {
@@ -1588,7 +1605,26 @@ class qtype_stack_question extends question_graded_automatically_with_countback
             }
         }
 
-        // 3. Language warning checks.
+        // 3. Check for todo blocks.
+        $tocheck = array();
+        $fields = array('questiontext', 'specificfeedback', 'generalfeedback', 'questiondescription');
+        foreach ($fields as $field) {
+            $tocheck[stack_string($field)] = $this->$field;
+        }
+        foreach ($this->prts as $prt) {
+            $text = trim($prt->get_feedback_test());
+            if ($text !== '') {
+                $tocheck[$prt->get_name()] = $text;
+            }
+        }
+        $pat = '/\[\[todo/';
+        foreach ($tocheck as $field => $text) {
+            if (preg_match($pat, $text ?? '')) {
+                $warnings[] = stack_string_error('todowarning', array('field' => $field));
+            }
+        }
+
+        // 4. Language warning checks.
         // Put language warning checks last (see guard clause below).
         // Check multi-language versions all have the same languages.
         $ml = new stack_multilang();
@@ -1711,7 +1747,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
 
                     // Invalidate the question definition cache.
                     // First from the next sessions.
-                    cache::make('core', 'questiondata')->delete($this->id);
+                    stack_clear_vle_question_cache($this->id);
                 }
             } catch (stack_exception $e) {
                 // TODO: what exactly do we use here as the key
@@ -1744,7 +1780,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
      * Currently the cache contains the following keys:
      *  'units' for declaring the units-mode.
      *  'forbiddenkeys' for the lsit of those.
-     *  'contextvariable-qv' the pre-validated question-variables which are context variables.
+     *  'contextvariables-qv' the pre-validated question-variables which are context variables.
      *  'statement-qv' the pre-validated question-variables.
      *  'preamble-qv' the matching blockexternals.
      *  'required' the lists of inputs required by given PRTs an array by PRT-name.
@@ -1809,7 +1845,7 @@ class qtype_stack_question extends question_graded_automatically_with_countback
         if ($questionvariables === null || trim($questionvariables) === '') {
             $cc['statement-qv'] = null;
             $cc['preamble-qv'] = null;
-            $cc['contextvariable-qv'] = null;
+            $cc['contextvariables-qv'] = null;
             $cc['security-context'] = [];
         } else {
             $kv = new stack_cas_keyval($questionvariables, $options);
