@@ -749,7 +749,7 @@ class template extends \core\persistent implements renderable, templatable {
 
     public static function get_addnewcourselink() {
         global $CFG;
-        $categoryid = optional_param('categoryid', 0, PARAM_INT);
+        $categoryid = optional_param('category', 0, PARAM_INT);
         $returnto = optional_param('returnto', 0, PARAM_ALPHANUM);
         $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
