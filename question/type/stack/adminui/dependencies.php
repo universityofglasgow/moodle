@@ -98,6 +98,9 @@ echo $OUTPUT->single_button(
     new moodle_url($PAGE->url, array('jsxgraphs' => 1, 'sesskey' => sesskey())),
     'Find "jsxgraphs"');
 echo $OUTPUT->single_button(
+    new moodle_url($PAGE->url, array('geogebras' => 1, 'sesskey' => sesskey())),
+    'Find "geogebra"');
+echo $OUTPUT->single_button(
     new moodle_url($PAGE->url, array('script' => 1, 'sesskey' => sesskey())),
     'Find "<script"');
 echo $OUTPUT->single_button(
@@ -106,6 +109,9 @@ echo $OUTPUT->single_button(
 echo $OUTPUT->single_button(
     new moodle_url($PAGE->url, array('langs' => 1, 'sesskey' => sesskey())),
     'Find "langs"');
+echo $OUTPUT->single_button(
+    new moodle_url($PAGE->url, array('todo' => 1, 'sesskey' => sesskey())),
+    'Find "todo"');
 
 if (data_submitted() && optional_param('includes', false, PARAM_BOOL)) {
     /*
@@ -205,6 +211,55 @@ if (data_submitted() && optional_param('jsxgraphs', false, PARAM_BOOL)) {
     echo '</tbody></table>';
 }
 
+if (data_submitted() && optional_param('geogebras', false, PARAM_BOOL)) {
+    /*
+     * GeoGebra Graphs are spotted from the compiled cache, finding '["geogebra",'
+     * means that there are STACK block based GeoGebra. '</geogebra>' would
+     * mean that the official filter is in play, if we find "geogebra" in any other
+     * form then we probably have something else in play or a "TODO" note.
+     */
+    $qs = $DB->get_recordset_sql('SELECT q.id as questionid FROM {question} q, {qtype_stack_options} o WHERE ' .
+        'q.id = o.questionid AND ' .
+        $DB->sql_like('o.compiledcache', ':trg', false) . ';', ['trg' => '%geogebra%']);
+    echo '<h4>Questions containing GeogGebra related terms</h4>';
+    echo '<table><thead><tr><th>Question</th>' .
+        '<th>[[geogebra]]</th><th>&lt;geogebra</th><th>Other</th></tr></thead><tbody>';
+    // Load the whole question, simpler to get the contexts correct that way.
+    foreach ($qs as $item) {
+        $q = question_bank::load_question($item->questionid);
+        $block = 'false';
+        $filter = 'false';
+        $other = 'false';
+        $json = json_encode($q->compiledcache);
+        if (mb_strpos($json, '[\\"geogebra\\",') !== false) {
+            $block = 'true';
+            $json = str_replace('[\\"geogebra\\",', '', $json);
+        }
+        if (mb_strpos($json, '</geogebra>') !== false) {
+            $filter = 'true';
+            $json = str_replace('</geogebra>', '', $json);
+            $json = str_replace('<geogebra', '', $json);
+        }
+        if (mb_stripos($json, 'geogebra') !== false) {
+            $other = 'true';
+        }
+        // Confirm that it does have these.
+        if ($block || $filter || $other) {
+            list($context, $seed, $urlparams) = qtype_stack_setup_question_test_page($q);
+            if (stack_determine_moodle_version() < 400) {
+                $qurl = question_preview_url($item->questionid, null, null, null, null, $context);
+            } else {
+                $qurl = qbank_previewquestion\helper::question_preview_url($item->questionid,
+                    null, null, null, null, $context);
+            }
+            echo "<tr><td>" . $q->name . ' ' .
+                $OUTPUT->action_icon($qurl, new pix_icon('t/preview', get_string('preview'))) . '</td>';
+            echo "<td>$block</td><td>$filter</td><td>$other</td></tr>";
+        }
+    }
+    echo '</tbody></table>';
+}
+
 if (data_submitted() && optional_param('script', false, PARAM_BOOL)) {
     /*
      * <script present in the question
@@ -262,7 +317,7 @@ if (data_submitted() && optional_param('langs', false, PARAM_BOOL)) {
     $qs = $DB->get_recordset_sql('SELECT q.id as questionid FROM {question} q, {qtype_stack_options} o WHERE ' .
         'q.id = o.questionid AND ' . $DB->sql_like('o.compiledcache', ':trg') . ' AND NOT ' .
         $DB->sql_like('o.compiledcache', ':other') . ';', ['trg' => '%"langs":[%', 'other' => '%"langs":[]%']);
-    echo '<h4>Questions containing that have localisation using means we understand.</h4>';
+    echo '<h4>Questions containing localisation using means we understand.</h4>';
     echo '<table><thead><tr><th>Question</th><th>Langs</th></thead><tbody>';
     // Load the whole question, simpler to get the contexts correct that way.
     foreach ($qs as $item) {
@@ -278,6 +333,31 @@ if (data_submitted() && optional_param('langs', false, PARAM_BOOL)) {
             $OUTPUT->action_icon($qurl, new pix_icon('t/preview', get_string('preview'))) . '</td><td>';
         echo implode(', ', $q->get_cached('langs'));
         echo '</td></tr>';
+    }
+    echo '</tbody></table>';
+}
+
+if (data_submitted() && optional_param('todo', false, PARAM_BOOL)) {
+    /*
+     * Todo blocks present in the question.
+     */
+    $qs = $DB->get_recordset_sql('SELECT q.id as questionid FROM {question} q, {qtype_stack_options} o WHERE ' .
+        'q.id = o.questionid AND ' .
+        $DB->sql_like('o.compiledcache', ':trg') . ';', ['trg' => '%stack_todo%']);
+    echo '<h4>Questions containing [[todo]] blocks</h4>';
+    echo '<table><thead><tr><th>Question</th></thead><tbody>';
+    // Load the whole question, simpler to get the contexts correct that way.
+    foreach ($qs as $item) {
+        $q = question_bank::load_question($item->questionid);
+        list($context, $seed, $urlparams) = qtype_stack_setup_question_test_page($q);
+        if (stack_determine_moodle_version() < 400) {
+            $qurl = question_preview_url($item->questionid, null, null, null, null, $context);
+        } else {
+            $qurl = qbank_previewquestion\helper::question_preview_url($item->questionid,
+                null, null, null, null, $context);
+        }
+        echo "<tr><td>" . $q->name . ' ' .
+            $OUTPUT->action_icon($qurl, new pix_icon('t/preview', get_string('preview'))) . '</td></tr>';
     }
     echo '</tbody></table>';
 }
