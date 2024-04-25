@@ -20,7 +20,9 @@
                 <th>{{# str }}name{{/ str }}</th>
                 <th>{{# str }}status{{/ str }}</th>
                 <th>{{# str }}submitted, report_assign{{/ str }}</th>
+                <th>{{# str }}released, report_assign{{/ str }}</th>
                 <th>{{# str }}groupmode{{/ str }}</th>
+                
                 {{# enableplagiarism }}
                     <th>{{# str }}plagiarism, report_assign{{/ str }}</th>
                 {{/ enableplagiarism }}
@@ -49,6 +51,7 @@
                         {{/ groupsubmission }}
                     </td>
                     <td>{{ submitcount }}</td>
+                    <td>{{ gradecount }}</td>
                     <td>{{ groupmode }}</td>
                     {{# enableplagiarism }}
                         <td>
