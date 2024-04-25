@@ -1,0 +1,13 @@
+{{=<% %>=}}
+<div class="mma-xp-progress">
+    <progress min="0" max="100" value="<% percentage %>" class="mma-xp-progress-bar">
+        <div class="progress-bar-fallback" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<% percentage %>">
+            <span style="width: <% percentage %>%;"></span>
+        </div>
+    </progress>
+    <div class="togo">
+        <%#xptogo%>
+            <%> local_xp/mobile-xp %>
+        <%/xptogo%>
+    </div>
+</div>

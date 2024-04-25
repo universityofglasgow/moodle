@@ -1,0 +1,17 @@
+
+.modal-body {
+    color: black;
+}
+
+.modal-header {
+    display: none;
+}
+
+.modal-footer {
+    border-top-color: white;
+    justify-content: space-between;
+}
+
+.btn-modal-cancel {
+    height: 40px;
+}

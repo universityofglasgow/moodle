@@ -1,0 +1,169 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+{{!
+    @template format_tiles/dynamic_styles
+
+    Dynamic styles for individual course colours.
+
+    The purpose of this template is to render extra styles e.g. to change the colour
+    of various items according to plugin or course settings
+    These can be changed by the user so have to be included dynamically rather than
+    in a status css file
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+        * base_colour_rgb - base colour for this course (i.e. tile top border colour)
+        * shade_heading_bar - do we add a coloured bar to left of headings? (course setting)
+        * isstyle1or2 - Is this tile style 1 or 2 (admin setting)
+        * allowphototiles - Photo tiles allowed? (admin setting)
+        * phototiletextpadding - Photo tile text padding (admin setting)
+        * phototiletextlineheight - Photo tile test line height (admin setting)
+        * photo_tile_text_bg_opacity - Photo tile text bg opacity (admin setting)
+
+    Example context (json):
+    {
+        "base_colour_rgb": "119,37,131",
+        "shade_heading_bar": 0,
+        "isstyle1or2": 1,
+        "allowphototiles": 1,
+        "phototiletextpadding": 0,
+        "phototiletextlineheight": 30,
+        "photo_tile_text_bg_opacity": 0
+    }
+}}
+
+.format-tiles .course-content ul.tiles .tile.tilestyle-1,
+.format-tiles .course-content ul.tiles .tile.tilestyle-2,
+.format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
+.format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
+    border-top-color: rgb({{base_colour_rgb}});
+    border-radius: 0;
+}
+.format-tiles .course-content ul.tiles .tile.tilestyle-1,
+.format-tiles .course-content ul.tiles .tile.tilestyle-2 {
+    border-top-color: rgb({{base_colour_rgb}});
+    transition: border-top-color 0s;
+}
+.format-tiles .tile-bg,
+.format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
+.format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
+    background-color: rgba({{base_colour_rgb}},0.05);
+}
+.format-tiles ul.tiles .tile-clickable.tilestyle-1:hover,
+.format-tiles ul.tiles .tile-clickable.tilestyle-1.current:hover,
+.format-tiles ul.tiles .tile-clickable.tilestyle-2:hover,
+.format-tiles ul.tiles .tile-clickable.tilestyle-2.current:hover {
+    border-top-color: rgba({{base_colour_rgb}},0.5);
+    transition: border-top-color 0s, transform .2s ease-in-out;
+}
+.format-tiles ul.tiles .tile.selected {
+    border-top-color: rgba({{base_colour_rgb}},0.5);
+}
+.format-tiles ul.tiles .current .sectiontitle::after {
+    background-color: red;
+}
+.format-tiles ul.tiles .headerabovetiles button.selected,
+.headerabovetiles button:active, .headerabovetiles button:focus,
+.format-tiles .embed_cm_modal .modal-header {
+    background-color: rgb({{base_colour_rgb}});
+}
+.format-tiles .embed_cm_modal .modal-header h5,
+.format-tiles .embed_cm_modal .modal-header h4 {
+    color: #fff;
+}
+.format-tiles .embed_cm_modal .modal-header .close {
+    color: #fff;
+    opacity: 0.8;
+}
+.format-tiles .sectiontitle::after,
+.format-tiles .badge-info {
+    background-color: rgb({{base_colour_rgb}});
+}
+.format-tiles ul.tiles .headerabovetiles button:hover {
+    border-color: rgba({{base_colour_rgb}},0.5);
+}
+
+.format-tiles .course-content .single-section .navigation-arrows .navigation-arrow:not(.dimmed):hover,
+.format-tiles .embed_cm_modal .embed_file_button:hover {
+    background-color: rgba({{base_colour_rgb}},0.1);
+}
+
+.format-tiles .filterbutton:hover,
+.sectionbutton:hover {
+    background-color: rgba({{base_colour_rgb}},0.1);
+    transition: all 0.1s ease-in-out;
+}
+
+.format-tiles .filterbutton.selected{
+    background-color: rgba({{base_colour_rgb}},0.1);
+}
+
+.format-tiles button.tiles-top-button:hover {
+    background-color: rgba({{base_colour_rgb}},0.1);
+}
+.format-tiles .background-course-base {
+    background-color: rgb({{base_colour_rgb}});
+}
+{{#shade_heading_bar}}
+    .format-tiles .course-content li.activity.label h1,
+    .format-tiles .course-content .section li.activity.label h2,
+    .format-tiles .course-content li.activity.label h3,
+    .format-tiles .course-content li.activity.label h4,
+    .format-tiles .editor_atto_content_wrap h1,
+    .format-tiles .editor_atto_content_wrap h2,
+    .format-tiles .editor_atto_content_wrap h3,
+    .format-tiles .editor_atto_content_wrap h4 {
+        border-left-color: rgb({{base_colour_rgb}});
+        border-left-style: solid;
+        padding-left: 0.4em;
+        border-left-width: 10px;
+    }
+{{/shade_heading_bar}}
+
+{{#isstyle1or2}}
+    {{#allowphototiles}}
+        .format-tiles .course-content ul.tiles .tile.phototile .photo-tile-text h3 {
+            background-color: rgba({{base_colour_rgb}},{{photo_tile_text_bg_opacity}});
+            line-height: {{phototiletextlineheight}}px;
+            padding: {{phototiletextpadding}}px 7px;
+        }
+        .format-tiles .phototile .progress-indic,
+        .format-tiles .subtile.hasphoto .activitytype,
+        .format-tiles.editing .subtile.hasphoto .editable-title {
+            background-color: rgba({{base_colour_rgb}},{{photo_tile_text_bg_opacity}});
+        }
+        .format-tiles li.activity.subtile.hasphoto {
+            border-top-color: rgb({{base_colour_rgb}});
+        }
+
+    {{/allowphototiles}}
+{{/isstyle1or2}}
+{{#ismoodle42minus}}
+{{!Moodle 4.3+ does not need this but 4.1/4.2 do. If missing it prevents scrolling when tile open see issue 178.}}
+    .format-tiles.path-course-view #page {overflow-y: visible;}
+{{/ismoodle42minus}}
+
+.format-tiles li.activity .activityiconcontainer.content {
+    {{! Make the "content" activity icon container have a slightly lighter version of main tile colour. }}
+    background-color: rgba({{base_colour_rgb}},0.8);
+}

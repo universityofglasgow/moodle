@@ -1,0 +1,40 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_massaction/duplicateto_select
+    Duplicate To select template
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    * number, title
+    Example context (json):
+    {
+        "sections": {
+            "number": "0",
+            "title": "Test"
+        }
+    }
+}}
+<select id="block-massaction-control-section-list-duplicateto"
+        name="target_section_duplicating"
+        aria-label="{{#str}} action_duplicatetosection, block_massaction {{/str}}">
+    <option value="">
+        {{#str}} action_duplicatetosection, block_massaction {{/str}}
+    </option>
+    {{#sections}}
+        <option value="{{number}}">{{{title}}}</option>
+    {{/sections}}
+</select>

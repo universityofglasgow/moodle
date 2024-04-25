@@ -1,0 +1,37 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_xp/drop
+
+    Drop.
+
+    Example context (json):
+    {
+        "id": 1,
+        "courseid": 2,
+        "secret": "abcdef"
+    }
+}}
+<a id="block_xp-drop-{{uniqid}}" data-id="{{ id }}" data-courseid="{{ courseid }}" data-secret="{{ secret }}">
+    Click me
+</a>
+{{#js}}
+require(['local_xp/drop'], function(DropHandler) {
+    const selector = '#block_xp-drop-{{uniqid}}';
+    DropHandler.init($(selector));
+});
+{{/js}}

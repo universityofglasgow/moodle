@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<keyboardinput maxkeys="2" canvasEditable="true"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+               xsi:noNamespaceSchemaLocation='valid_input_xml.xsd'>
+  <givenkeys>
+    <givenkey pitchclass="4" register="4" />
+  </givenkeys>
+  <selectedkeys>
+    <selectedkey pitchclass="11" register="5" />
+    <selectedkey pitchclass="6" register="2" />
+  </selectedkeys>
+</keyboardinput>

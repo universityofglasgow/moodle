@@ -1,0 +1,7 @@
+/* stylelint-disable declaration-no-important  */
+.qtype-mtf .mtfspecificfeedback {
+    background: #fff3bf !important;
+    color: #64450a;
+    display: inline;
+}
+/* stylelint-enable declaration-no-important  */

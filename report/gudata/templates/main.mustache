@@ -1,0 +1,10 @@
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {{# isuserdownload }}active{{/ isuserdownload }}" href="{{{ userdownloadlink }}}">{{# str }}userdownload, report_gudata{{/ str }}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{# islogsdownload }}active{{/ islogsdownload }}" href="{{{ logsdownloadlink }}}">{{# str }}logsdownload, report_gudata{{/ str }}</a>
+    </li>
+</ul>
+
+<div class="p-t-3">{{{ form }}}</div>

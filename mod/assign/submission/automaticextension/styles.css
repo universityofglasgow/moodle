@@ -1,0 +1,62 @@
+@media (min-width: 576px) {
+    .path-mod-assign-submission-automaticextension .modal-dialog.modal-extension-request {
+        max-width: 560px;
+    }
+}
+
+#page-mod-assign-view .plugincontentsummary .requestextensionbutton form {
+    margin-bottom: 0;
+}
+
+.path-mod-assign-submission-automaticextension .modal-dialog.modal-extension-request {
+    top: 0;
+}
+
+#page-admin-setting-assignsubmission_automaticextension .editor_atto_content table,
+.path-mod-assign-submission-automaticextension .modal-dialog.modal-extension-request .modal-body table {
+    width: 100%;
+    font-size: 15px;
+    line-height: 19px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#page-admin-setting-assignsubmission_automaticextension .editor_atto_content table caption,
+.path-mod-assign-submission-automaticextension .modal-dialog.modal-extension-request .modal-body table caption {
+    font-size: 15px;
+    line-height: 19px;
+    border: 1px solid rgba(0, 0, 0, .2);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 6px;
+    color: inherit;
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+#page-admin-setting-assignsubmission_automaticextension .editor_atto_content table tr th,
+.path-mod-assign-submission-automaticextension .modal-extension-request .modal-body table tr th {
+    width: 40%;
+    border-right: 1px solid rgba(0, 0, 0, .2);
+    border-bottom: 1px solid rgba(0, 0, 0, .2);
+    border-left: 1px solid rgba(0, 0, 0, .2);
+    padding: 6px;
+}
+
+#page-admin-setting-assignsubmission_automaticextension .editor_atto_content table td,
+.path-mod-assign-submission-automaticextension .modal-extension-request .modal-body table td {
+    border-right: 1px solid rgba(0, 0, 0, .2);
+    border-bottom: 1px solid rgba(0, 0, 0, .2);
+    padding: 6px;
+}
+
+/* Bottom left corner */
+#page-admin-setting-assignsubmission_automaticextension .editor_atto_content table tr:last-child th:first-child,
+.path-mod-assign-submission-automaticextension .modal-extension-request .modal-body table tr:last-child th:first-child {
+    border-bottom-left-radius: 6px;
+}
+
+/* Bottom right corner */
+#page-admin-setting-assignsubmission_automaticextension .editor_atto_content table tr:last-child td:last-child,
+.path-mod-assign-submission-automaticextension .modal-extension-request .modal-body table tr:last-child td:last-child {
+    border-bottom-right-radius: 6px;
+}

@@ -1,0 +1,201 @@
+This script describes steps to test OU Blog socialmedia functionality.
+It is intended to cover just the UI features.
+
+NOTE: In this test case, the word 'blog' always refers to the OU blog.
+
+Some test steps in this script follow on from each other and aren't independent.
+In these cases the prerequisite steps are listed.
+
+Initial setup
+=============
+
+This test case requires:
+
+- a text file 'post1.txt' for attachment-upload.
+- a user with administration rights
+- access to the personal blog.
+- access to accounts on each of the social media systems.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+Note: With Javascript enabled a Twitter "Tweet" widget button will be provided,
+without Javascript a "Tweet" link will be provided.
+
+Note: With Javascript enabled a Facebook "Share" widget button will be provided,
+without Javascript no "Share" link will be provided.
+
+Note: With Javascript enabled a Google+ "Share" widget button will be provided,
+without Javascript no "Share" link will be provided.
+
+TCR Creating blog data
+======================
+
+TCR01 / admin.
+   Log in and access the 'Personal Blog'.
+   Select the 'New blog post' button.
+   Enter 'TCR01 tweet a titled post' into the 'Title' field.
+   Enter some text into the 'Message' field.
+   Change 'Who can read this?' to the 'Visible to anyone in the world' setting.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify post created is displayed at the top of the posts area.
+-- Confirm that the post has a dark grey box in its top right corner,
+   with the label 'Share this post' with a 'Tweet', an 'f Share' and a 'g+ Share'
+   button/link beneath.
+
+TCR02 / admin.
+   Select the 'New blog post' button.
+   Leave the 'Title' field empty.
+   Enter 'TCR02 tweet an untitled post' into the 'Message' field.
+-- Attach the text file to the post.
+   Change 'Who can read this?' to the 'Visible to anyone in the world' setting.
+   Select 'Add post' button to save the new post and return to main blog view.
+-- Verify this new post created is displayed at the top of the posts area.
+-- Confirm that the post has a light grey box in its top right corner, with the label
+   'Attachments' with an icon and 'post1.txt' download link beneath.
+-- Confirm that beneath the 'Attachments' box is the dark grey box, with the label
+   'Share this post' with a 'Tweet', an 'f Share' and a 'g+ Share' button/link beneath.
+
+TCR03 / admin.
+   Select the 'New blog post' button.
+   Enter 'TCR03 can only tweet a public post' into the 'Title' field.
+   Enter some text into the 'Message' field.
+   Change 'Who can read this?' to 'Visible to everyone who is logged in to the system'.
+-- Verify that the post does not have the dark grey box, with the label
+   'Share this post' with a 'Tweet', an 'f Share' and a 'g+ Share' button/link beneath.
+
+TWT Testing Tweet button
+========================
+
+TWT01 / admin
+   On the post titled "TCR01 tweet a titled post".
+   Click 'Permalink' link, to open the post in another tab.
+Note the post=id in the viewpost.php page URL.
+
+   Return to the post "TCR01" on the blog main page.
+
+TWT02a / admin
+   Click the 'Tweet' button/link for post "TCR01 tweet a titled post".
+-- Confirm that a new 'Share a link on Twitter' window pops up.
+-- Verify that the text box 'Share a link with your followers' contains
+   'TCR01 tweet a titled post {Admin user's blog}'
+-- Confirm that this is followed by the URL of the viewpost.php page for the post "TCR01".
+-- Confirm that beneath this is are text boxes for user name and password and the
+   'Sign in and Tweet' button.
+   Close the popup window.
+
+TWT02b / admin
+   Click the 'f Share' link for post "TCR01 tweet a titled post".
+-- Confirm that a new 'Facebook' window pops up.
+   After successful login the window will change to 'Share on Facebook'.
+-- Confirm that there is a dropdown selector with options for sharing to timelines.
+-- Verify that there is a text box which contains 'Say something about this..'
+   beneath which is a box containing 'TCR01 tweet a titled post' with the domain url beneath.
+-- Confirm that this is followed by 'Public' a dropdown selector with options for
+   privacy, a 'Cancel' and 'Share link' buttons.
+   Close the popup window.
+
+TWT02c / admin
+   Click the 'g+ Share' link for post "TCR01 tweet a titled post".
+-- Confirm that a new 'login to Google' window pops up.
+   After successful login the window will disappear.
+   Click the "TCR01 tweet a titled post" 'g+ Share' button/link again.
+-- Confirm that a 'Share this on Google+ as {G+ User}' popup appears.
+-- Verify that there is a text box which contains 'Add a comment..'
+   Beneath which is a box containing the URL of the viewpost.php page for the post "TCR01".
+-- Confirm that this is followed by a dropdown selector with options for privacy,
+   and a 'Share' button.
+   Close the popup window.
+
+TWT03 / admin
+   On the Untitled post "TCR02".
+   Click 'Permalink' link, to open this post in another tab.
+Note the post=id in the viewpost.php page URL.
+
+   Return to the post "TCR02" on the blog main page.
+
+TWT04a / admin
+   Click the 'Tweet' button/link for the Untitled post "TCR02".
+-- Confirm that a new 'Share a link on Twitter' window pops up.
+-- Verify that the text box 'Share a link with your followers' contains
+   'Untitled post {Admin user's blog}'
+-- Confirm that this is followed by the URL of the viewpost.php page for the post "TCR02".
+-- Confirm that beneath this is are text boxes for user name and password and the
+   'Sign in and Tweet' button.
+   Close the popup window.
+
+TWT04b / admin
+   Click the 'f Share' link for the Untitled post "TCR02".
+-- Confirm that a new 'Facebook' window pops up.
+   After successful login the window will change to 'Share on Facebook'.
+-- Confirm that there is a dropdown selector with options for sharing to timelines.
+-- Verify that there is a text box which contains 'Say something about this..'
+   beneath which is a box containing 'Untitled post TCR02' with the domain url beneath.
+-- Confirm that this is followed by 'Public' a dropdown selector with options for
+   privacy, a 'Cancel' and 'Share link' buttons.
+   Close the popup window.
+
+TWT04c / admin
+   Click the 'g+ Share' link for Untitled post "TCR02".
+-- Confirm that a 'Share this on Google+ as {G+ User}' popup appears.
+-- Verify that there is a text box which contains 'Add a comment..'
+   Beneath which is a box containing the URL of the viewpost.php page for the post "TCR02".
+-- Confirm that this is followed by a dropdown selector with options for privacy,
+   and a 'Share' button.
+   Close the popup window.
+
+TWT05a / admin
+   On the post titled "TCR01 tweet a titled post".
+   Click 'Permalink' link, to open the post in the viewpost.php page.
+   Click the 'Tweet' button/link for the post.
+-- Confirm that a new 'Share a link on Twitter' window pops up.
+-- Verify that the text box 'Share a link with your followers' contains
+   'TCR01 tweet a titled post {Admin user's blog}'
+-- Confirm that this is followed by the URL of this viewpost.php page for the post "TCR01".
+   Close the popup window.
+
+TWT05b / admin
+   Click the 'Share' link for post "TCR01 tweet a titled post".
+-- Confirm that a new 'Share on Facebook' window pops up.
+-- Confirm that there is a dropdown selector with options for sharing to timelines.
+-- Verify that there is a text box which contains 'Say something about this..'
+   Beneath which is a box containing
+   'TCR01 tweet a titled post' with the domain url beneath.
+-- Confirm that this is followed by 'Public' a dropdown selector with options for
+   privacy, a 'Cancel' and 'Share link' buttons.
+   Close the popup window.
+
+TWT05c / admin
+   Click the 'g+ Share' link for post "TCR01 tweet a titled post".
+-- Confirm that a 'Share this on Google+ as {G+ User}' popup appears.
+-- Verify that there is a text box which contains 'Add a comment..'
+   Beneath which is a box containing the URL of the viewpost.php page for the post "TCR02".
+-- Confirm that this is followed by a dropdown selector with options for privacy,
+   and a 'Share' button.
+   Close the popup window.
+   Return to the blog main page.
+
+TWT06 / admin
+   In the Blog summary block.
+   Click the 'View site entries' link.
+-- Verify the the allposts.php page opens showing 'Personal blogs'
+-- Confirm that only posts 'Visible to anyone in the world' have the dark grey box,
+   with the label 'Share this post' with a 'Tweet', an 'f Share' and a 'g+ Share'
+   button/link beneath.
+
+TWT07 / admin
+   Repeat steps TWT01-TWT05c to confirm functionality for allposts.php, the 'Personal blogs' page.
+   Return to the blog main page.
+
+TWT08 / Not logged in user
+   Log out or open a different browser.
+   Go to the {Admin user's blog} in 'Personal Blogs'.
+-- Confirm that only posts 'Visible to anyone in the world' are available.
+-- Confirm that they have the dark grey box, with the label 'Share this post'
+   with a 'Tweet', an 'f Share' and a 'g+ Share' button/link beneath.
+
+TWT09 / Not logged in user
+   Repeat steps TWT01-TWT05c to confirm functionality for 'Non logged in user'.
+
+Test ends.

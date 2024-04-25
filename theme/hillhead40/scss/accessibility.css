@@ -1,0 +1,1279 @@
+.accessibility-tools .block-body {
+  padding-top: 0;
+}
+
+body.hillhead40-font-comic {
+  font-family: "Hillhead Comic", "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important;
+}
+
+body.hillhead40-font-modern {
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif !important;
+}
+
+body.hillhead40-font-classic {
+  font-family: "Palatino", "Times New Roman", serif !important;
+}
+
+body.hillhead40-font-mono {
+  font-family: "Hillhead Mono", "Menlo", "Courier New", monospace !important;
+}
+
+body.hillhead40-font-dyslexic {
+  font-family: "OpenDyslexic", "Helvetica", "Arial", sans-serif !important;
+}
+
+body.hillhead40-size-120 {
+  font-size: 120%;
+}
+
+body.hillhead40-size-140 {
+  font-size: 140%;
+}
+
+body.hillhead40-size-160 {
+  font-size: 160%;
+}
+
+body.hillhead40-size-180 {
+  font-size: 180%;
+}
+
+body.hillhead40-size-120 .choosercontainer #chooseform .option label, body.hillhead40-size-140 .choosercontainer #chooseform .option label, body.hillhead40-size-160 .choosercontainer #chooseform .option label, body.hillhead40-size-180 .choosercontainer #chooseform .option label {
+  font-size: inherit;
+}
+
+body.hillhead40-size-120 .choosercontainer #chooseform .option .typename, body.hillhead40-size-140 .choosercontainer #chooseform .option .typename, body.hillhead40-size-160 .choosercontainer #chooseform .option .typename, body.hillhead40-size-180 .choosercontainer #chooseform .option .typename {
+  width: inherit;
+  padding-left: 0.5em;
+}
+
+body.hillhead40-size-120 .choosercontainer #chooseform .option .modicon, body.hillhead40-size-140 .choosercontainer #chooseform .option .modicon, body.hillhead40-size-160 .choosercontainer #chooseform .option .modicon, body.hillhead40-size-180 .choosercontainer #chooseform .option .modicon {
+  display: none;
+}
+
+body.hillhead40-spacing * {
+  line-height: 2rem;
+}
+
+body.hillhead40-contrast-yb {
+  background: #000 !important;
+}
+
+body.hillhead40-contrast-yb *:not([class^=ally]) {
+  background: #000 !important;
+  color: #ee6;
+  border-color: #ee6 !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-yb nav.navbar.fixed-top {
+  background-color: #000 !important;
+}
+
+body.hillhead40-contrast-yb .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #ee6 !important;
+}
+
+body.hillhead40-contrast-yb #user-menu-toggle {
+  color: #ee6 !important;
+}
+
+body.hillhead40-contrast-yb .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-yb .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-yb .btn-primary:hover {
+  background-color: #000 !important;
+  border-bottom-color: #ee6 !important;
+}
+
+body.hillhead40-contrast-yb .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-yb .block-header {
+  border-bottom: 1px solid #000;
+}
+
+body.hillhead40-contrast-yb .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-yb .video-js,
+body.hillhead40-contrast-yb .vjs-poster,
+body.hillhead40-contrast-yb .vjs-video,
+body.hillhead40-contrast-yb .vjs-text-track-display,
+body.hillhead40-contrast-yb .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-yb.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-yb.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-yb.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #ee6;
+}
+
+body.hillhead40-contrast-yb .activityiconcontainer .activityicon, body.hillhead40-contrast-yb .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-yb .activityiconcontainer .activityicon, body.hillhead40-contrast-yb .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+  background-color: #ee6 !important;
+}
+
+body.hillhead40-contrast-by {
+  background: #ee6 !important;
+}
+
+body.hillhead40-contrast-by *:not([class^=ally]) {
+  background: #ee6 !important;
+  color: #111;
+  border-color: #111 !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-by nav.navbar.fixed-top {
+  background-color: #ee6 !important;
+}
+
+body.hillhead40-contrast-by .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-by #user-menu-toggle {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-by .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-by .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-by .btn-primary:hover {
+  background-color: #ee6 !important;
+  border-bottom-color: #111 !important;
+}
+
+body.hillhead40-contrast-by .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-by .block-header {
+  border-bottom: 1px solid #ee6;
+}
+
+body.hillhead40-contrast-by .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-by .video-js,
+body.hillhead40-contrast-by .vjs-poster,
+body.hillhead40-contrast-by .vjs-video,
+body.hillhead40-contrast-by .vjs-text-track-display,
+body.hillhead40-contrast-by .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-by.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-by.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-by.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #111;
+}
+
+body.hillhead40-contrast-by .activityiconcontainer .activityicon, body.hillhead40-contrast-by .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-wg {
+  background: #666 !important;
+}
+
+body.hillhead40-contrast-wg *:not([class^=ally]) {
+  background: #666 !important;
+  color: #eee;
+  border-color: #eee !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-wg nav.navbar.fixed-top {
+  background-color: #666 !important;
+}
+
+body.hillhead40-contrast-wg .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #eee !important;
+}
+
+body.hillhead40-contrast-wg #user-menu-toggle {
+  color: #eee !important;
+}
+
+body.hillhead40-contrast-wg .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-wg .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-wg .btn-primary:hover {
+  background-color: #666 !important;
+  border-bottom-color: #eee !important;
+}
+
+body.hillhead40-contrast-wg .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-wg .block-header {
+  border-bottom: 1px solid #666;
+}
+
+body.hillhead40-contrast-wg .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-wg .video-js,
+body.hillhead40-contrast-wg .vjs-poster,
+body.hillhead40-contrast-wg .vjs-video,
+body.hillhead40-contrast-wg .vjs-text-track-display,
+body.hillhead40-contrast-wg .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-wg.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-wg.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-wg.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #eee;
+}
+
+body.hillhead40-contrast-wg .activityiconcontainer .activityicon, body.hillhead40-contrast-wg .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-bb {
+  background: #B9D9EE !important;
+}
+
+body.hillhead40-contrast-bb *:not([class^=ally]) {
+  background: #B9D9EE !important;
+  color: #111;
+  border-color: #111 !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-bb nav.navbar.fixed-top {
+  background-color: #B9D9EE !important;
+}
+
+body.hillhead40-contrast-bb .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-bb #user-menu-toggle {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-bb .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-bb .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-bb .btn-primary:hover {
+  background-color: #B9D9EE !important;
+  border-bottom-color: #111 !important;
+}
+
+body.hillhead40-contrast-bb .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-bb .block-header {
+  border-bottom: 1px solid #B9D9EE;
+}
+
+body.hillhead40-contrast-bb .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-bb .video-js,
+body.hillhead40-contrast-bb .vjs-poster,
+body.hillhead40-contrast-bb .vjs-video,
+body.hillhead40-contrast-bb .vjs-text-track-display,
+body.hillhead40-contrast-bb .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-bb.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-bb.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-bb.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #111;
+}
+
+body.hillhead40-contrast-bb .activityiconcontainer .activityicon, body.hillhead40-contrast-bb .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-br {
+  background: #EEB9B9 !important;
+}
+
+body.hillhead40-contrast-br *:not([class^=ally]) {
+  background: #EEB9B9 !important;
+  color: #111;
+  border-color: #111 !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-br nav.navbar.fixed-top {
+  background-color: #EEB9B9 !important;
+}
+
+body.hillhead40-contrast-br .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-br #user-menu-toggle {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-br .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-br .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-br .btn-primary:hover {
+  background-color: #EEB9B9 !important;
+  border-bottom-color: #111 !important;
+}
+
+body.hillhead40-contrast-br .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-br .block-header {
+  border-bottom: 1px solid #EEB9B9;
+}
+
+body.hillhead40-contrast-br .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-br .video-js,
+body.hillhead40-contrast-br .vjs-poster,
+body.hillhead40-contrast-br .vjs-video,
+body.hillhead40-contrast-br .vjs-text-track-display,
+body.hillhead40-contrast-br .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-br.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-br.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-br.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #111;
+}
+
+body.hillhead40-contrast-br .activityiconcontainer .activityicon, body.hillhead40-contrast-br .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-bw {
+  background: #f6f6f6 !important;
+}
+
+body.hillhead40-contrast-bw *:not([class^=ally]) {
+  background: #f6f6f6 !important;
+  color: #111;
+  border-color: #111 !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-bw nav.navbar.fixed-top {
+  background-color: #f6f6f6 !important;
+}
+
+body.hillhead40-contrast-bw .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-bw #user-menu-toggle {
+  color: #111 !important;
+}
+
+body.hillhead40-contrast-bw .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-bw .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-bw .btn-primary:hover {
+  background-color: #f6f6f6 !important;
+  border-bottom-color: #111 !important;
+}
+
+body.hillhead40-contrast-bw .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-bw .block-header {
+  border-bottom: 1px solid #f6f6f6;
+}
+
+body.hillhead40-contrast-bw .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-bw .video-js,
+body.hillhead40-contrast-bw .vjs-poster,
+body.hillhead40-contrast-bw .vjs-video,
+body.hillhead40-contrast-bw .vjs-text-track-display,
+body.hillhead40-contrast-bw .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-bw.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-bw.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-bw.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #111;
+}
+
+body.hillhead40-contrast-bw .activityiconcontainer .activityicon, body.hillhead40-contrast-bw .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-wb {
+  background: #111 !important;
+}
+
+body.hillhead40-contrast-wb *:not([class^=ally]) {
+  background: #111 !important;
+  color: #f6f6f6;
+  border-color: #f6f6f6 !important;
+  border-radius: 0 !important;
+  text-shadow: none !important;
+}
+
+body.hillhead40-contrast-wb nav.navbar.fixed-top {
+  background-color: #111 !important;
+}
+
+body.hillhead40-contrast-wb .primary-navigation > nav > ul > li > a.nav-link,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:active,
+.input-group .mr-2 {
+  color: #f6f6f6 !important;
+}
+
+body.hillhead40-contrast-wb #user-menu-toggle {
+  color: #f6f6f6 !important;
+}
+
+body.hillhead40-contrast-wb .primary-navigation .moremenu .nav-link.active,
+body.hillhead40-contrast-wb .primary-navigation .moremenu .nav-link:hover,
+body.hillhead40-contrast-wb .btn-primary:hover {
+  background-color: #111 !important;
+  border-bottom-color: #f6f6f6 !important;
+}
+
+body.hillhead40-contrast-wb .block {
+  padding: 19px;
+}
+
+body.hillhead40-contrast-wb .block-header {
+  border-bottom: 1px solid #111;
+}
+
+body.hillhead40-contrast-wb .card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+body.hillhead40-contrast-wb .video-js,
+body.hillhead40-contrast-wb .vjs-poster,
+body.hillhead40-contrast-wb .vjs-video,
+body.hillhead40-contrast-wb .vjs-text-track-display,
+body.hillhead40-contrast-wb .vjs-text-track-display > div {
+  background: transparent !important;
+}
+
+body.hillhead40-contrast-wb.path-mod-quiz #mod_quiz_navblock .qnbutton.complete .trafficlight,
+body.hillhead40-contrast-wb.path-mod-quiz #mod_quiz_navblock .qnbutton.answersaved .trafficlight,
+body.hillhead40-contrast-wb.path-mod-quiz #mod_quiz_navblock .qnbutton.requiresgrading .trafficlight {
+  background-color: #f6f6f6;
+}
+
+body.hillhead40-contrast-wb .activityiconcontainer .activityicon, body.hillhead40-contrast-wb .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+}
+
+body.hillhead40-contrast-wb .activityiconcontainer .activityicon, body.hillhead40-contrast-wb .activityiconcontainer .icon {
+  filter: brightness(1) invert(0) !important;
+  background-color: #fff !important;
+}
+
+body.hillhead40-contrast header .navbar-brand {
+  background-image: none;
+}
+
+body.hillhead40-contrast header .navbar-brand span.site-name {
+  text-indent: 0;
+}
+
+body.hillhead40-contrast.path-mod-quiz #mod_quiz_navblock .thispageholder,
+body.hillhead40-contrast.path-mod-quiz #mod_quiz_navblock .trafficlight {
+  background: transparent !important;
+}
+
+.navbar .popover-region-container {
+  top: 2.9rem !important;
+}
+
+.card.accessibility-tools {
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+.accessibility-tools .accessibility-group h4 {
+  font-size: 1rem !important;
+  font-weight: 500;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e6eb;
+  line-height: 30px !important;
+  padding: 3px 10px;
+  margin-bottom: 5px;
+  margin-top: 20px;
+}
+
+.list-group.accessibility-toggle {
+  margin-bottom: 20px;
+}
+
+body.hillhead40-bold * {
+  font-weight: bold !important;
+}
+
+.accessibility-features {
+  margin: 0;
+  padding-left: 0;
+}
+
+.accessibility-features li {
+  display: block;
+  padding-left: 0;
+}
+
+.hh-acc {
+  display: block;
+  line-height: 30px !important;
+  padding: 3px 10px;
+  margin-bottom: 5px;
+}
+
+.hh-acc i {
+  display: inline-block;
+  width: 26px;
+  text-align: center;
+  margin-right: 8px;
+}
+
+#hh-acc-ft-de {
+  font-family: "Hillhead", "Ubuntu", "Trebuchet MS", Arial, sans-serif;
+}
+
+#hh-acc-ft-mo {
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif !important;
+}
+
+#hh-acc-ft-cl {
+  font-family: "Palatino", "Times New Roman", serif !important;
+}
+
+#hh-acc-ft-co {
+  font-family: "Hillhead Comic", "Chalkboard", "Comic Sans", "Comic Sans MS", sans-serif !important;
+}
+
+#hh-acc-ft-mn {
+  font-family: "Hillhead Mono", "Menlo", "Courier New", monospace !important;
+}
+
+#hh-acc-ft-dx {
+  font-family: "OpenDyslexic", "Helvetica", "Arial", sans-serif !important;
+}
+
+#hh-acc-fs-10 {
+  font-size: 1rem;
+}
+
+#hh-acc-fs-12 {
+  font-size: 1.2rem;
+}
+
+#hh-acc-fs-14 {
+  font-size: 1.4rem;
+}
+
+#hh-acc-fs-16 {
+  font-size: 1.6rem;
+}
+
+#hh-acc-fs-18 {
+  font-size: 1.8rem;
+}
+
+#hh-acc-th-de, #hh-acc-th-de i {
+  background-color: #EBF1F5 !important;
+  color: #3a3a3a !important;
+}
+
+#hh-acc-th-yb, #hh-acc-th-yb i {
+  background-color: #000 !important;
+  color: #cc0 !important;
+}
+
+#hh-acc-th-by, #hh-acc-th-by i {
+  background-color: #ee6 !important;
+  color: #111 !important;
+}
+
+#hh-acc-th-wg, #hh-acc-th-wg i {
+  background-color: #666 !important;
+  color: #eee !important;
+}
+
+#hh-acc-th-br, #hh-acc-th-br i {
+  background-color: #EEB9B9 !important;
+  color: #111 !important;
+}
+
+#hh-acc-th-bb, #hh-acc-th-bb i {
+  background-color: #B9D9EE !important;
+  color: #111 !important;
+}
+
+#hh-acc-th-bw, #hh-acc-th-bw i {
+  background-color: #f6f6f6 !important;
+  color: #111 !important;
+}
+
+#hh-acc-th-nt, #hh-acc-th-nt i {
+  background-color: #121E30 !important;
+  color: #eee !important;
+}
+
+#hh-acc-th-wb, #hh-acc-th-wb i {
+  background-color: #111 !important;
+  color: #f6f6f6 !important;
+}
+
+#hh-acc-fb-on {
+  font-weight: 700 !important;
+}
+
+#hh-acc-fb-of {
+  font-weight: 300 !important;
+}
+
+.currentlySpeakingHighlight {
+  text-decoration: underline overline !important;
+}
+
+body.hillhead40-night, #page-my-index.hillhead40-night {
+  background-color: #132030;
+  color: #95B7E6 !important;
+}
+
+body.hillhead40-night #page.drawers .main-inner, body.hillhead40-night #searchform-navbar {
+  background-color: #274163 !important;
+}
+
+body.hillhead40-night .modal-content {
+  background-color: #132030;
+  border-color: #121E30;
+}
+
+body.hillhead40-night .modal-header, body.hillhead40-night .modal-footer {
+  border-color: #182941;
+}
+
+body.hillhead40-night nav.navbar.fixed-top {
+  background-color: #274163 !important;
+  border-bottom-color: #121E30 !important;
+}
+
+body.hillhead40-night .secondary-navigation .navigation {
+  background-color: #274163 !important;
+  border-bottom-color: #274163 !important;
+}
+
+body.hillhead40-night nav .navbar-nav li.nav-item a.nav-link, body.hillhead40-night .secondary-navigation .more-nav .nav-item a.active {
+  color: #95B7E6 !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav {
+  background-color: #182941;
+  border-bottom-color: #121E30 !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav .nav-item .nav-link, body.hillhead40-night .secondary-navigation .more-nav .nav-item a:active {
+  color: #789BCA !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav .nav-item a:visited {
+  background-color: #274163;
+  border-bottom-color: #121E30 !important;
+}
+
+body.hillhead40-night .secondary-navigation .more-nav .nav-item a:hover {
+  background-color: #182941;
+  border-bottom-color: #463c72 !important;
+}
+
+body.hillhead40-night #nav-drawer {
+  background-color: #182941;
+  border-right-color: #121E30;
+}
+
+body.hillhead40-night .drawer {
+  background-color: #182941 !important;
+}
+
+body.hillhead40-night nav.navbar.fixed-top a:hover, body.hillhead40-night nav.navbar.fixed-top a:visited, body.hillhead40-night .state-visible {
+  background-color: #121E30 !important;
+}
+
+body.hillhead40-night nav.navbar.fixed-top ul li a, body.hillhead40-night nav.navbar.fixed-top ul li a:hover {
+  color: #789BCA !important;
+}
+
+body.hillhead40-night .icon {
+  color: #789BCA;
+}
+
+body.hillhead40-night #nav-drawer a {
+  color: #C4D6EE;
+}
+
+body.hillhead40-night #nav-drawer h2 {
+  color: #789bca;
+}
+
+body.hillhead40-night h1:not(page-header-headings), body.hillhead40-night h2, body.hillhead40-night h3:not(body.hillhead40-night .que), body.hillhead40-night h4, body.hillhead40-night h5, body.hillhead40-night h6 {
+  color: #617591;
+}
+
+body.hillhead40-night div > h1, body.hillhead40-night div > h2, body.hillhead40-night div > section > h2, body.hillhead40-night div > h3, body.hillhead40-night div > h5 {
+  color: inherit;
+}
+
+body.hillhead40-night .accessibility-tools .accessibility-group h4 {
+  color: #789bca;
+}
+
+body.hillhead40-night .card, body.hillhead40-night.path-course-view .course-content > ul > li.section {
+  border-color: #121E30 !important;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night .card .block-header, body.hillhead40-night.format-weeks .course-content > ul > li.section .sectionname, body.hillhead40-night .block .block-cards .course-summaryitem {
+  border-color: #121E30;
+  background-color: #274163;
+}
+
+body.hillhead40-night.format-tiles #page .course-content ul li.section.main[data-section="0"] {
+  border-color: #121E30;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night .card-body, body.hillhead40-night .message-app {
+  border-radius: 0.5rem;
+}
+
+body.hillhead40-night#page-course-view-topics .course-content ul.topics li.section {
+  background-color: #182941;
+  border-color: #121E30;
+}
+
+body.hillhead40-night .course-content > ul > li.section .section-modchooser {
+  border-color: #121E30;
+}
+
+body.hillhead40-night .accessibility-tools .accessibility-group h4 {
+  border-color: #121E30;
+  background-color: #274163;
+}
+
+body.hillhead40-night #region-main,
+body.hillhead40-night#page-user-profile #region-main .description,
+body.hillhead40-night.path-course.path-user #region-main .description,
+body.hillhead40-night.path-course.path-user #region-main .page-context-header,
+body.hillhead40-night .course-content .single-section,
+body.hillhead40-night.path-admin #region-main .card-block,
+body.hillhead40-night.path-admin #region-main #page-enrol-users #filterform,
+#page-enrol-users body.hillhead40-night.path-admin #region-main #filterform {
+  border-color: #121E30;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night #nav-drawer .list-group-item {
+  border-color: #182941;
+  background-color: #121E2D;
+  color: #C4D6EE;
+}
+
+body.hillhead40-night .alert, body.hillhead40-night .alert a {
+  color: #132030;
+}
+
+body.hillhead40-night pre {
+  color: #C4D6EE;
+}
+
+body.hillhead40-night .footer-links h4, body.hillhead40-night footer h3.glasgow {
+  color: #3F69A0 !important;
+}
+
+body.hillhead40-night footer#page-footer p {
+  color: #A6B5CA !important;
+}
+
+body.hillhead40-night footer#page-footer a {
+  color: #789BCA !important;
+}
+
+body.hillhead40-night a:not(body.hillhead40-night .que a):not(body.hillhead40-night .btn-primary):not(body.hillhead40-night .btn-secondary):not([aria-selected=true]):not(body.hillhead40-night .courseindex-item.dimmed.pageitem a), body.hillhead40-night a.nav-link, body.hillhead40-night .description .course-description-item {
+  color: #95B7E6;
+}
+
+body.hillhead40-night .drawercontent li.pageitem[aria-selected=false] > a.courseindex-link {
+  color: inherit !important;
+}
+
+body.hillhead40-night .courseindex .courseindex-item.dimmed.pageitem a {
+  color: #fff !important;
+}
+
+body.hillhead40-night .description .course-description-item, body.hillhead40-night.path-mod .activity-header:not(:empty) {
+  background-color: #121E2D;
+}
+
+body.hillhead40-night .nav-tabs {
+  border-color: #274163;
+}
+
+body.hillhead40-night .nav-tabs .nav-link {
+  color: #789BCA;
+}
+
+body.hillhead40-night .nav-tabs .nav-link.active, body.hillhead40-night .nav-tabs .nav-item.show .nav-link {
+  color: #86B1EA !important;
+  background-color: #274163;
+  border-color: #274163;
+}
+
+body.hillhead40-night .nav-tabs .nav-link:hover, body.hillhead40-night .nav-tabs .nav-link:focus {
+  border-color: #274163;
+}
+
+body.hillhead40-night table.grading-details th, body.hillhead40-night table.personal-deadline-details th, body.hillhead40-night table.grading-details td, body.hillhead40-night table.personal-deadline-details, body.hillhead40-night td {
+  border-color: #274163;
+}
+
+body.hillhead40-night .block-course-overview .courseovbox {
+  border-color: #274163;
+}
+
+body.hillhead40-night #page-header .context-header-settings-menu a {
+  color: #C4D6EE;
+}
+
+body.hillhead40-night .submissionnotgraded {
+  background-color: #efefef;
+}
+
+body.hillhead40-night .drawercontent a {
+  color: #C4D6EE !important;
+}
+
+body.hillhead40-night .drawercontent li[aria-selected=false] > a.courseindex-link[aria-selected=true] {
+  color: white !important;
+}
+
+body.hillhead40-night .alert {
+  color: #c4d6ee;
+  background-color: #132030;
+}
+
+body.hillhead40-night .alert.alert-danger {
+  background-color: #CF6679 !important;
+  border-color: #4D1F20 !important;
+  color: #000 !important;
+}
+
+body.hillhead40-night .alert.alert-danger a {
+  color: #000 !important;
+  text-decoration: underline;
+}
+
+body.hillhead40-night .alert.alert-danger h3 {
+  color: white;
+}
+
+body.hillhead40-night .alert.alert-warning, body.hillhead40-night .adminwarning {
+  background-color: #956A31 !important;
+  border-color: #735326 !important;
+  color: #F6BD70 !important;
+}
+
+body.hillhead40-night .alert.alert-warning a, body.hillhead40-night .adminwarning a {
+  color: #F6BD70;
+  text-decoration: underline;
+}
+
+body.hillhead40-night .alert.alert-info {
+  border-color: #243C62 !important;
+  color: #c4d6ee !important;
+}
+
+body.hillhead40-night .alert.alert-info a {
+  color: #c4d6ee;
+  text-decoration: underline;
+}
+
+body.hillhead40-night .alert.alert-info h3 {
+  color: #c4d6ee;
+}
+
+body.hillhead40-night .alert.alert-success {
+  background-color: #547D44 !important;
+  border-color: #436336 !important;
+  color: #fff !important;
+}
+
+body.hillhead40-night .alert-success, body.hillhead40-night .environmenttable .ok {
+  background-color: #7465af;
+}
+
+body.hillhead40-night.path-mod .automatic-completion-conditions .badge {
+  mix-blend-mode: revert;
+}
+
+body.hillhead40-night .alert.alert-success a {
+  color: #A4F284;
+  text-decoration: underline;
+}
+
+body.hillhead40-night .alert.alert-success h3 {
+  color: #A4F284;
+}
+
+.alert a.close {
+  text-decoration: none !important;
+}
+
+body.hillhead40-night a.close, body.hillhead40-night button.close {
+  color: #fff !important;
+}
+
+body.hillhead40-night .breadcrumb-item + .breadcrumb-item::before {
+  color: #274163;
+}
+
+body.hillhead40-night .filepicker-filelist, body.hillhead40-night .filemanager, body.hillhead40-night .filemanager .card {
+  background-color: #fff;
+  color: #132030;
+  border: none !important;
+}
+
+body.hillhead40-night .page-item a {
+  border-color: #274163;
+  background-color: transparent;
+}
+
+body.hillhead40-night .page-item.active a {
+  background-color: #274163;
+  border-color: #274163;
+}
+
+body.hillhead40-night .page-item.disabled span, body.hillhead40-night .page-item.disabled .page-link {
+  background: transparent;
+  color: #274163;
+  border-color: #274163;
+}
+
+body.hillhead40-night table {
+  border-color: #274162;
+  color: #c4d6ee;
+}
+
+body.hillhead40-night .btn-primary, .navitem .btn-primary {
+  background-color: #406BAF !important;
+  border-color: #243C62 !important;
+  color: white !important;
+}
+
+body.hillhead40-night .btn-secondary {
+  color: white !important;
+}
+
+body.hillhead40-night .btn-primary:hover {
+  background-color: #243C62 !important;
+}
+
+body.hillhead40-night .btn-success {
+  background-color: #547D44 !important;
+  border-color: #436336 !important;
+  color: #A4F284 !important;
+}
+
+body.hillhead40-night .btn-success:hover {
+  background-color: #436336 !important;
+}
+
+body.hillhead40-night .btn-warning {
+  background-color: #956A31 !important;
+  border-color: #735326 !important;
+  color: #F6BD70 !important;
+}
+
+body.hillhead40-night .btn-warning:hover {
+  background-color: #735326 !important;
+}
+
+body.hillhead40-night .btn-danger {
+  background-color: #6B292B !important;
+  border-color: #4D1F20 !important;
+  color: #E57A7E !important;
+}
+
+body.hillhead40-night .btn-danger:hover {
+  background-color: #4D1F20 !important;
+}
+
+body.hillhead40-night .btn-secondary {
+  background-color: #555658 !important;
+  border-color: #474849 !important;
+  color: white !important;
+}
+
+body.hillhead40-night .btn-secondary:hover {
+  background-color: #474849 !important;
+}
+
+body.hillhead40-night .btn-info {
+  background-color: #0D6858 !important;
+  border-color: #09453B !important;
+  color: #76CABD !important;
+}
+
+body.hillhead40-night .btn-info:hover {
+  background-color: #09453B !important;
+}
+
+body.hillhead40-night nav.navbar .input-group-btn .btn-secondary {
+  background-color: #182941 !important;
+  border-color: #121E30 !important;
+  color: #c4d6ee !important;
+}
+
+body.hillhead40-night nav.navbar .input-group-btn .btn-secondary:hover {
+  background-color: #121E30 !important;
+}
+
+body.hillhead40-night #gridmiddle-column {
+  border-color: #121E30 !important;
+  background-color: #1A2B41 !important;
+}
+
+body.hillhead40-night #gridshadebox_content {
+  border-color: #1A2B41 !important;
+  background-color: #121E30 !important;
+}
+
+body.hillhead40-night .course-content ul.ctopics li.section .content .toggle, body.hillhead40-night .course-content ul.ctopics li.section .content.sectionhidden {
+  background-color: #132030 !important;
+}
+
+body.hillhead40-night .tabBar {
+  background-color: #1A2B41;
+  border: 1px solid #121E30;
+}
+
+body.hillhead40-night .tabBar li {
+  border-color: #121E30;
+}
+
+body.hillhead40-night .tabBar a {
+  color: #789BCA;
+}
+
+body.hillhead40-night .mform fieldset {
+  border-bottom-color: #132030;
+}
+
+body.hillhead40-night .choosercontainer #chooseform .option label, body.hillhead40-night .choosercontainer #chooseform .options {
+  border-bottom-color: #1A2B41;
+}
+
+body.hillhead40-night .choosercontainer #chooseform .selected {
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night .chooserdialogue .moodle-dialogue-wrap .moodle-dialogue-bd {
+  background-color: #121E30;
+}
+
+body.hillhead40-night.jschooser .choosercontainer #chooseform .instruction, body.hillhead40-night.jschooser .choosercontainer #chooseform .typesummary {
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night .moodle-dialogue-base .moodle-dialogue-wrap .moodle-dialogue-hd.yui3-widget-hd {
+  color: #C4D6EE;
+}
+
+body.hillhead40-night .text-muted, body.hillhead40-night a.dimmed, body.hillhead40-night a.dimmed:link, body.hillhead40-night a.dimmed:visited, body.hillhead40-night a.dimmed_text, body.hillhead40-night a.dimmed_text:link, body.hillhead40-night a.dimmed_text:visited, body.hillhead40-night .dimmed_text, body.hillhead40-night .dimmed_text a, body.hillhead40-night .dimmed_text a:link, body.hillhead40-night .dimmed_text a:visited, body.hillhead40-night .usersuspended, body.hillhead40-night .usersuspended a, body.hillhead40-night .usersuspended a:link, body.hillhead40-night .usersuspended a:visited, body.hillhead40-night .dimmed_category, body.hillhead40-night .dimmed_category a, body.hillhead40-night .tag_feed .media .muted a, body.hillhead40-night #page-admin-qtypes .disabled, body.hillhead40-night #page-admin-qbehaviours .disabled, body.hillhead40-night #page-admin-plugins #plugins-control-panel .pluginname .componentname, body.hillhead40-night #page-admin-plugins #plugins-control-panel .version .versionnumber, body.hillhead40-night #page-admin-plugins #plugins-control-panel .notes .requiredby, body.hillhead40-night #plugins-check-page .page-description, body.hillhead40-night #plugins-check-page #plugins-check .requires-ok, body.hillhead40-night #plugins-check-page #plugins-check .displayname .plugindir, body.hillhead40-night #plugins-check-page #plugins-check-available-dependencies .displayname .component, body.hillhead40-night #page-admin-search .adminpagepath li, body.hillhead40-night .block .minicalendar td.weekend, body.hillhead40-night .section .activity .stealth, body.hillhead40-night .course-content .section-summary .section-summary-activities .activity-count, body.hillhead40-night .course-content ul li.section.hidden .sectionname > span, body.hillhead40-night .course-content ul li.section.hidden .content > div.summary, body.hillhead40-night .course-content ul li.section.hidden .activity .activityinstance, body.hillhead40-night #course-category-listings .listitem[data-visible="0"], body.hillhead40-night #course-category-listings .listitem[data-visible="0"] > div > a, body.hillhead40-night #course-category-listings .listing-pagination-totals.dimmed, body.hillhead40-night .fitem.disabled .fp-btn-choose, body.hillhead40-night .form-defaultinfo, body.hillhead40-night .form-label .form-shortname, body.hillhead40-night .formsettingheading .form-horizontal, body.hillhead40-night .no-felement.fstatic, body.hillhead40-night .path-backup .backup_progress .backup_stage {
+  color: #9CB0C8 !important;
+}
+
+body.hillhead40-stripstyles i {
+  font-style: normal !important;
+}
+
+body.hillhead40-stripstyles strong {
+  font-weight: inherit !important;
+}
+
+body.hillhead40-night .bg-white {
+  background: transparent !important;
+}
+
+body.hillhead40-night .btn-outline-secondary {
+  color: #c4d6ee;
+  border-color: #c4d6ee;
+}
+
+body.hillhead40-night .btn-outline-secondary:hover {
+  background-color: #c4d6ee;
+  border-color: #1A2B41;
+  color: #1A2B41;
+}
+
+body.hillhead40-night .dropdown-menu {
+  color: #c4d6ee;
+  border-color: #c4d6ee;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night .dropdown-item {
+  color: #c4d6ee !important;
+}
+
+body.hillhead40-night .dropdown-item:hover, body.hillhead40-night .dropdown-item:focus {
+  background-color: #132030;
+}
+
+body.hillhead40-night #page-footer {
+  border-top-color: #1A2B41;
+}
+
+body.hillhead40-night .popover-region-container {
+  color: #c4d6ee;
+  border-color: #c4d6ee;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night .generaltable tbody tr:hover {
+  color: #c4d6ee;
+}
+
+body.hillhead40-night .block .block-cards a.coursename,
+body.hillhead40-night .block .block-cards span.categoryname,
+body.hillhead40-night .block .block-cards .btn-link,
+body.hillhead40-night .block .block-cards .progress-text,
+body.hillhead40-night .block_recentlyaccesseditems a.dashboard-card small {
+  color: inherit;
+}
+
+body.hillhead40-night .courses.frontpage-course-list-all a {
+  text-decoration: underline;
+}
+
+body.hillhead40-night .que h3, body.hillhead40-night .que div.info {
+  color: #526d91 !important;
+}
+
+body.hillhead40-night .que a {
+  color: #5E6A7B !important;
+}
+
+body.hillhead40-night .message-app {
+  display: flex;
+  flex-direction: column;
+  background-color: #1A2B41;
+}
+
+body.hillhead40-night table.quizreviewsummary th.cell {
+  padding: 1px 0.5em 1px 1em;
+  font-weight: bold;
+  text-align: right;
+  width: 10em;
+  background-color: inherit;
+}
+
+body.hillhead40-night table.quizreviewsummary td.cell {
+  padding: 1px 1em 1px 0.5em;
+  text-align: left;
+  background: inherit;
+}
+
+#page-mod-quiz-view.hillhead40-night table.quizattemptsummary tr.bestrow td {
+  border-color: #bce8f1;
+  background-color: #555658 !important;
+  color: white;
+}
+
+#page-mod-quiz-view.hillhead40-night table.quizattemptsummary a {
+  color: #ced4da;
+  text-decoration: underline;
+}
+
+body.hillhead40-night #courseindex > div > div > div > .courseindex-section-title.pageitem a.courseindex-link {
+  color: inherit !important;
+}
+
+body.hillhead40-night.path-mod-quiz #mod_quiz_navblock .qnbutton, body.hillhead40-night.path-mod-quiz #mod_quiz_navblock .qnbutton.notyetanswered .trafficlight {
+  background-color: #555658;
+}
+
+body.hillhead40-night img {
+  filter: brightness(0.8) contrast(1.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  img {
+    filter: brightness(1) contrast(1);
+  }
+  body.hillhead40-night img {
+    filter: brightness(0.8) contrast(1.2);
+  }
+}
+@media (prefers-color-scheme: light) {
+  /* Light theme styles go here */
+}
+
+/*# sourceMappingURL=accessibility.css.map */

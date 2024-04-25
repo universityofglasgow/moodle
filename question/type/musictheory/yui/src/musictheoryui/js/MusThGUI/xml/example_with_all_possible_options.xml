@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<MusThGUI
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='valid_input_xml.xsd' canvasEditable="true" accidentalCarryOver="true">
+  <StaffSystem maxLedgerLines="4">
+    <Staff clef="treble">
+      <KeySign totalAccColumns="3">
+        <Accidental type="#" letter="F" register="5" editable="false"></Accidental>
+        <Accidental type="#" letter="C" register="5" editable="false"></Accidental>
+        <Accidental type="#" letter="G" register="5" editable="false"></Accidental>
+      </KeySign>
+      <NoteColumns>
+        <NoteColumn  maxNotes="25">
+          <Note letter="A" register="4" accidental="n" noteValue="whole" editable="true" />
+          <Note letter="A" register="4" accidental="n" noteValue="whole" editable="true" />
+          <FiguredBass>
+            <Row text="/6t"></Row>
+          </FiguredBass>
+          <TextInput value="V65/IV" editable="true" />
+        </NoteColumn>
+      </NoteColumns>
+    </Staff>
+  </StaffSystem>
+  <Toolbars>
+    <AccidentalToolbar>
+      <Button symbol="n"></Button>
+      <Button symbol="#"></Button>
+      <Button symbol="b"></Button>
+      <Button symbol="x"></Button>
+      <Button symbol="bb"></Button>
+    </AccidentalToolbar>
+    <NoteValueToolbar>
+      <Button symbol="whole"></Button>
+      <Button symbol="whole"></Button>
+    </NoteValueToolbar>
+  </Toolbars>
+  <InputDialog id="MusicInputDialogVoiceLeading" OKButtonText="OK" cancelButtonText="Cancel" width="300" height="130" headerContent="Input for Harmonic Functions">
+    <DialogHTML><![CDATA[
+      <div id="dialog-form-voice-leading">
+        <div style="padding:15px; ">
+          <form>
+            <fieldset style="border:none">
+              <select>
+                <option value=""></option>
+                <option value="I">I</option>
+                <option value="ii">ii</option>
+                <option value="iii">iii</option>
+                <option value="IV">IV</option>
+                <option value="V">V</option>
+                <option value="vi">vi</option>
+                <option value="viio">viio</option>
+              </select>
+              <select>
+                <option value=""></option>
+                <option value="6">6</option>
+                <option value="64">64</option>
+                <option value="65">65</option>
+                <option value="43">43</option>
+                <option value="42">42</option>
+              </select>
+              <select>
+                <option value=""></option>
+                <option value="/ii">/ii</option>
+                <option value="/iii">/iii</option>
+                <option value="/IV">/IV</option>
+                <option value="/V">/V</option>
+                <option value="/vi">/vi</option>
+              </select>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+      ]]>
+    </DialogHTML>
+  </InputDialog>
+
+</MusThGUI>
