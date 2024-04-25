@@ -29,7 +29,7 @@ function local_template_add_new_course_hook() {
 
                         $courseurl = new moodle_url('/local/template', [
                             'id' => $id,
-                            'categoryid' => $categoryid,
+                            'category' => $categoryid,
                             'returnto' => $returnto,
                             'returnurl' => $returnurl,
                         ]);
