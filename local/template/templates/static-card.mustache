@@ -55,7 +55,7 @@
 </div>
 -->
 
-<div class="card dashboard-card" data-toggle="modal" data-target="#course-modal-{{courseid}}">
+<div class="card dashboard-card" data-toggle="modal" data-target="#course-modal-{{courseid}}" style="margin-right: 2px; margin-left: 2px;">
     <div class="card-header">
         <img class="card-img-top w-100" alt="{{fullname}}" src="{{image}}"> <!--  dashboard-card-img -->
     </div>
@@ -65,7 +65,7 @@
         <p class="card-text">{{{summary}}}</p>
     </div>
     <div class="card-footer dashboard-card-footer">
-        <button type="button" class="btn btn-success add-template" data-id="{{courseid}}">Use template &nbsp;<i class="fa fa-plus"></i></button>
+        <button type="button" class="btn btn-success add-template" data-id="{{courseid}}">Use Template &nbsp;<i class="fa fa-plus"></i></button>
         <a type="button" href="{{url}}" class="btn btn-success" target="_blank">Open Course &nbsp;<i class="fa fa-search-plus"></i></a><br>
         <small class="text-muted">
             {{# format}}<i class="fa fa-cog" title="format"></i> {{format}}{{/ format}}
