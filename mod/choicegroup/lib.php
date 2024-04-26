@@ -198,12 +198,12 @@ function choicegroup_add_instance($choicegroup) {
 
     //insert answers
     $choicegroup->id = $DB->insert_record("choicegroup", $choicegroup);
-    
+
     // deserialize the selected groups
-    
+
     $groupIDs = explode(';', $choicegroup->serializedselectedgroups);
     $groupIDs = array_diff( $groupIDs, array( '' ) );
-    
+
     foreach ($groupIDs as $groupID) {
         $groupID = trim($groupID);
         if (isset($groupID) && $groupID != '') {
@@ -216,7 +216,7 @@ function choicegroup_add_instance($choicegroup) {
             }
             $option->timemodified = time();
             $DB->insert_record("choicegroup_options", $option);
-        }	
+        }
     }
 
     if (class_exists('\core_completion\api')) {
@@ -252,10 +252,10 @@ function choicegroup_update_instance($choicegroup) {
     if (empty($choicegroup->multipleenrollmentspossible)) {
         $choicegroup->multipleenrollmentspossible = 0;
     }
-    
-    
+
+
     // deserialize the selected groups
-    
+
     $groupIDs = explode(';', $choicegroup->serializedselectedgroups);
     $groupIDs = array_diff( $groupIDs, array( '' ) );
 
@@ -285,9 +285,9 @@ function choicegroup_update_instance($choicegroup) {
     				continue 2; // continue the big loop
     			}
     		}
-    		$DB->insert_record("choicegroup_options", $option);	
+    		$DB->insert_record("choicegroup_options", $option);
     	}
-    	 
+
     }
     // remove all remaining pre-existing groups which did not appear in the form (and are thus assumed to have been deleted)
     foreach ($preExistingGroups as $preExistingGroup) {
@@ -413,13 +413,13 @@ function choicegroup_user_submit_response($formanswer, $choicegroup, $userid, $c
 
     $countanswers=0;
     groups_add_member($selected_option->groupid, $userid);
-    $groupmember_added = true;    
+    $groupmember_added = true;
     if ($choicegroup->limitanswers) {
         $groupmember = $DB->get_record('groups_members', array('groupid' => $selected_option->groupid, 'userid'=>$userid));
         $select_count = 'groupid='.$selected_option->groupid.' and id<='.$groupmember->id;
         $countanswers = $DB->count_records_select('groups_members', $select_count);
         $maxans = $choicegroup->maxanswers[$formanswer];
-        if ($countanswers > $maxans) {    
+        if ($countanswers > $maxans) {
            groups_remove_member($selected_option->groupid, $userid);
            $groupmember_added = false;
       }
@@ -454,7 +454,7 @@ function choicegroup_user_submit_response($formanswer, $choicegroup, $userid, $c
         }
     } else {
         if (!$current || !($current->id==$selected_option->groupid)) { //check to see if current choicegroup already selected - if not display error
-            print_error('choicegroupfull', 'choicegroup', $CFG->wwwroot.'/mod/choicegroup/view.php?id='.$cm->id);
+            throw new moodle_exception('choicegroupfull', 'choicegroup', $CFG->wwwroot.'/mod/choicegroup/view.php?id='.$cm->id);
         }
     }
 }
@@ -960,13 +960,13 @@ function choicegroup_get_response_data($choicegroup, $cm, $groupmode, $onlyactiv
    return $allresponses;
 }
 
-/* Return an array with the options selected of users of the $choicegroup 
- * 
+/* Return an array with the options selected of users of the $choicegroup
+ *
  * @param object $choicegroup choicegroup record
  * @param context_module $ctx Context instance
  * @param int $currentgroup Current group
  * @param bool $onlyactive Whether to get responses for active users only
- * @return array of selected options by all users 
+ * @return array of selected options by all users
 */
 function choicegroup_get_responses($choicegroup, $ctx, $currentgroup, $onlyactive) {
 
@@ -1035,21 +1035,21 @@ function choicegroup_supports($feature) {
  * @param navigation_node $choicegroupnode The node to add module settings to
  */
 function choicegroup_extend_settings_navigation(settings_navigation $settings, navigation_node $choicegroupnode) {
-    global $PAGE;
+    $cm = $settings->get_page()->cm;
 
-    if (has_capability('mod/choicegroup:readresponses', $PAGE->cm->context)) {
+    if (has_capability('mod/choicegroup:readresponses', $cm->context)) {
 
-        $groupmode = groups_get_activity_groupmode($PAGE->cm);
+        $groupmode = groups_get_activity_groupmode($cm);
         if ($groupmode) {
-            groups_get_activity_group($PAGE->cm, true);
+            groups_get_activity_group($cm, true);
         }
-        if (!$choicegroup = choicegroup_get_choicegroup($PAGE->cm->instance)) {
-            print_error('invalidcoursemodule');
+        if (!$choicegroup = choicegroup_get_choicegroup($cm->instance)) {
+            throw new moodle_exception('invalidcoursemodule');
             return false;
         }
 
         // Big function, approx 6 SQL calls per user.
-        $allresponses = choicegroup_get_response_data($choicegroup, $PAGE->cm, $groupmode, $choicegroup->onlyactive);
+        $allresponses = choicegroup_get_response_data($choicegroup, $cm, $groupmode, $choicegroup->onlyactive);
 
         $responsecount = 0;
         $respondents = array();
@@ -1069,7 +1069,7 @@ function choicegroup_extend_settings_navigation(settings_navigation $settings, n
         if ($choicegroup->multipleenrollmentspossible == 1) {
             $viewallresponsestext .= ' ' . get_string("byparticipants", "choicegroup", count($respondents));
         }
-        $choicegroupnode->add($viewallresponsestext, new moodle_url('/mod/choicegroup/report.php', array('id'=>$PAGE->cm->id)));
+        $choicegroupnode->add($viewallresponsestext, new moodle_url('/mod/choicegroup/report.php', array('id'=>$cm->id)));
     }
 }
 
