@@ -773,7 +773,7 @@ function xmldb_attendance_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2023020100, 'attendance');
     }
 
-    if ($oldversion < 2023020102) {
+    if ($oldversion < 2023021700) {
 
         // Define field studentavailability to be added to attendance_statuses.
         $table = new xmldb_table('attendance_sessions');
@@ -785,10 +785,10 @@ function xmldb_attendance_upgrade($oldversion=0) {
         }
 
         // Attendance savepoint reached.
-        upgrade_mod_savepoint(true, 2023020102, 'attendance');
+        upgrade_mod_savepoint(true, 2023021700, 'attendance');
     }
 
-    if ($oldversion < 2023020106) {
+    if ($oldversion < 2023032800) {
         // Update any records with null values and set to 0;
         $sql = 'UPDATE {attendance_sessions} set allowupdatestatus = 0 WHERE allowupdatestatus is null';
         $DB->execute($sql);
@@ -803,7 +803,7 @@ function xmldb_attendance_upgrade($oldversion=0) {
         $dbman->change_field_notnull($table, $field);
 
         // Attendance savepoint reached.
-        upgrade_mod_savepoint(true, 2023020106, 'attendance');
+        upgrade_mod_savepoint(true, 2023032800, 'attendance');
     }
 
     return true;
