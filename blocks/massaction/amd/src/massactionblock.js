@@ -22,20 +22,24 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import * as checkboxmanager from './checkboxmanager';
+import * as checkboxmanager from 'block_massaction/checkboxmanager';
 import * as Str from 'core/str';
 import Log from 'core/log';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
 import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
+import events from "core_course/events";
 
 export const usedMoodleCssClasses = {
     ACTIVITY_ITEM: '.activity-item',
     SECTION_NAME: 'sectionname',
     MODULE_ID_PREFIX: 'module-',
+    BOX_ID_PREFIX: 'cmCheckbox'
 };
 
 export const cssIds = {
+    BLOCK_CONTENT: 'block-massaction',
+    BULK_EDITING_DISABLED: 'block-massaction-bulk-editing-disabled',
     SELECT_ALL_LINK: 'block-massaction-control-selectall',
     DESELECT_ALL_LINK: 'block-massaction-control-deselectall',
     HIDE_LINK: 'block-massaction-action-hide',
@@ -54,8 +58,6 @@ export const cssIds = {
     SECTION_SELECT: 'block-massaction-control-section-list-select',
     MOVETO_SELECT: 'block-massaction-control-section-list-moveto',
     DUPLICATETO_SELECT: 'block-massaction-control-section-list-duplicateto',
-    BOX_ID_PREFIX: 'block-massaction-module-selector-',
-    CHECKBOX_CLASS: 'block-massaction-checkbox',
     HIDDEN_FIELD_REQUEST_INFORMATION: 'block-massaction-control-request',
     ACTION_FORM: 'block-massaction-control-form',
 };
@@ -63,7 +65,6 @@ export const cssIds = {
 export const constants = {
     SECTION_SELECT_DESCRIPTION_VALUE: 'description',
     SECTION_NUMBER_ALL_PLACEHOLDER: 'all',
-    CHECKBOX_DESCRIPTION_SUFFIX: ' Checkbox'
 };
 
 const actions = {
@@ -90,9 +91,29 @@ export const init = async(sectionsRestricted) => {
     const pendingPromise = new Pending('block_massaction/init');
 
     const editor = getCurrentCourseEditor();
-    // Initialize the checkbox manager as soon as the courseeditor is ready.
+    // As soon as courseeditor is available, do some initial setup.
     editor.stateManager.getInitialPromise()
-        .then(() => checkboxmanager.initCheckboxManager(sectionsRestricted))
+        .then(() => {
+            // Initialize the checkbox manager.
+            checkboxmanager.initCheckboxManager(sectionsRestricted);
+
+            // Show block depending on if the moodle bulk editing util has been activated.
+            editor.stateManager.target.addEventListener(events.stateChanged, (event) => {
+                // Listen to the event that bulk editing mode has been enabled/disabled.
+                if (event.detail.action === 'bulk.enabled:updated') {
+                    // Hide/show block content depending on the bulk editing enabled state.
+                    document.getElementById(cssIds.BLOCK_CONTENT)?.classList.toggle('d-none');
+                    document.getElementById(cssIds.BULK_EDITING_DISABLED)?.classList.toggle('d-none');
+                }
+            });
+
+            // Register click handler for the button in the placeholder text if bulk editing is still disabled.
+            const enableBulkButton = document.getElementById('block-massaction-enable-bulk-editing');
+            // Remove the initial disabled attribute which is there to avoid too early clicks by users.
+            enableBulkButton.disabled = false;
+            enableBulkButton?.addEventListener('click', () => editor.dispatch('bulkEnable', true));
+            return true;
+        })
         .catch(error => Log.debug(error));
 
     document.getElementById(cssIds.SELECT_ALL_LINK)?.addEventListener('click',

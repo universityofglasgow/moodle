@@ -98,7 +98,7 @@ const rebuildLocalState = sectionsRestricted => {
     const sectionsUnfiltered = sections;
     sections = filterVisibleSections(sections);
     updateSelectionAndMoveToDropdowns(sections, sectionsUnfiltered, sectionsRestricted);
-    addCheckboxes();
+    addCheckboxesToDataStructure();
     localStateUpdating = false;
 };
 
@@ -154,64 +154,23 @@ export const setSectionSelection = (value, sectionNumber) => {
 };
 
 /**
- * Add checkboxes to all sections.
+ * Scan all available checkboxes and add them to the data structure.
  */
-const addCheckboxes = () => {
+const addCheckboxesToDataStructure = () => {
     sections.forEach(section => {
         sectionBoxes[section.number] = [];
         const moduleIds = section.cmlist;
         if (moduleIds && moduleIds.length > 0 && moduleIds[0] !== '') {
             const moduleNamesFiltered = moduleNames.filter(modinfo => moduleIds.includes(modinfo.id.toString()));
             moduleNamesFiltered.forEach(modinfo => {
-                addCheckboxToModule(section.number, modinfo.id.toString(), modinfo.name);
+                // Checkbox should already be created by moodle massactions. Just add it to our data structure.
+                const boxId = usedMoodleCssClasses.BOX_ID_PREFIX + modinfo.id.toString();
+                sectionBoxes[section.number].push({
+                    'moduleId': modinfo.id.toString(),
+                    'boxId': boxId,
+                });
             });
         }
-    });
-};
-
-/**
- * Add a checkbox to a module element
- *
- * @param {number} sectionNumber number of the section of the current course module
- * @param {number} moduleId id of the current course module
- * @param {string} moduleName name of the course module specified by moduleId
- */
-const addCheckboxToModule = (sectionNumber, moduleId, moduleName) => {
-    const boxId = cssIds.BOX_ID_PREFIX + moduleId;
-    let moduleElement = document.getElementById(usedMoodleCssClasses.MODULE_ID_PREFIX + moduleId)
-        .querySelector(usedMoodleCssClasses.ACTIVITY_ITEM);
-    // This additional class is only needed when we are using a legacy (pre moodle 4.0) course format.
-    let additionalCssClass;
-    if (!moduleElement) {
-        // Should only happen in legacy formats (pre moodle 4.0).
-        moduleElement = document.getElementById(usedMoodleCssClasses.MODULE_ID_PREFIX + moduleId);
-        additionalCssClass = 'block-massaction-checkbox-legacy';
-    }
-
-    // Avoid creating duplicate checkboxes.
-    if (document.getElementById(boxId) === null) {
-        // Add the checkbox.
-        const checkBoxElement = document.createElement('input');
-        checkBoxElement.type = 'checkbox';
-        checkBoxElement.className = cssIds.CHECKBOX_CLASS;
-        if (additionalCssClass) {
-            checkBoxElement.classList.add(additionalCssClass);
-        }
-        checkBoxElement.id = boxId;
-
-        if (moduleElement !== null) {
-            const checkboxDescription = moduleName + constants.CHECKBOX_DESCRIPTION_SUFFIX;
-            checkBoxElement.ariaLabel = checkboxDescription;
-            checkBoxElement.name = checkboxDescription;
-            // Finally add the created checkbox element.
-            moduleElement.insertBefore(checkBoxElement, moduleElement.firstChild);
-        }
-    }
-
-    // Add the newly created checkbox to our data structure.
-    sectionBoxes[sectionNumber].push({
-        'moduleId': moduleId,
-        'boxId': boxId,
     });
 };
 
@@ -307,12 +266,14 @@ const disableInvisibleAndEmptySections = (sections) => {
  * @param {[]} sectionsRestricted the sections which are restrected for the course format
  */
 const disableRestrictedSections = (elementId, sectionsRestricted) => {
-    Array.prototype.forEach.call(document.getElementById(elementId).options, option => {
-        // Disable every element which is in the sectionsRestricted list.
-        if (sectionsRestricted.includes(parseInt(option.value))) {
-            option.disabled = true;
-        } else {
-            option.disabled = false;
-        }
-    });
+    if (document.getElementById(elementId) !== null) {
+        Array.prototype.forEach.call(document.getElementById(elementId).options, option => {
+            // Disable every element which is in the sectionsRestricted list.
+            if (sectionsRestricted.includes(parseInt(option.value))) {
+                option.disabled = true;
+            } else {
+                option.disabled = false;
+            }
+        });
+    }
 };

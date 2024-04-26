@@ -64,6 +64,7 @@ $string['action_show'] = 'Show';
 $string['action_showdescription'] = 'Show description';
 $string['action_hidedescription'] = 'Hide description';
 $string['backgroundtaskinformation'] = 'The action you demanded is being executed in the background. You can continue your work while waiting for it to finish.';
+$string['bulkeditingdisabled'] = 'To use this block, you need to enable bulk editing mode.';
 $string['choosecoursetoduplicateto'] = 'Choose the course you want to duplicate the selected course modules to';
 $string['choosesectiontoduplicateto'] = 'Choose the section you want the selected course modules to be duplicated to.';
 $string['choosetargetcourse'] = 'Choose target course';

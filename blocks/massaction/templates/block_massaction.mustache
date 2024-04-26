@@ -35,7 +35,13 @@
         "helpicon": "help.gif"
     }
 }}
-<div id="block-massaction" class="block-massaction" aria-label="{{#str}} pluginname, block_massaction {{/str}}">
+<div id="block-massaction-bulk-editing-disabled">
+    <p>{{#str}} bulkeditingdisabled, block_massaction{{/str}}</p>
+    <div class="d-flex justify-content-center">
+        <button id="block-massaction-enable-bulk-editing" class="btn btn-secondary" disabled>{{#str}} enablebulkediting, block_massaction{{/str}}</button>
+    </div>
+</div>
+<div id="block-massaction" class="block-massaction d-none" aria-label="{{#str}} pluginname, block_massaction {{/str}}">
     {{! Only display, if there are any actions available or if we at least can move items }}
     {{#actions.0.action}}
         <button class="btn btn-link btn-sm" id="block-massaction-control-selectall">

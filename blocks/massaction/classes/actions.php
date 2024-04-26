@@ -147,6 +147,7 @@ class actions {
         // sorted by their id:
         // Let order of mods in a section be mod1, mod2, mod3, mod4, mod5. If we duplicate mod2, mod4, the order afterwards will be
         // mod1, mod2, mod3, mod4, mod5, mod2(dup), mod4(dup).
+
         $cms = [];
         $errors = [];
         $duplicatedmods = [];
@@ -562,7 +563,8 @@ class actions {
         require_once($CFG->dirroot . '/course/lib.php');
 
         $idsincourseorder = self::sort_course_order($modules);
-        if (!empty($idsincourseorder)) {
+        $sectionsrestricted = [];
+        if (!empty($modules)) {
             $targetformat = course_get_format(reset($modules)->course);
             $sectionsrestricted = massactionutils::get_restricted_sections(reset($modules)->course, $targetformat->get_format());
         }
