@@ -18,7 +18,7 @@
  *  Sharing Cart
  *
  * @package    block_sharing_cart
- * @copyright  2021 (C) Don Hinkelman and others
+ * @copyright  2023 (c) Don Hinkelman, moxis and others
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,6 +32,26 @@ require_once __DIR__ . '/lib/settingslib.php';
  */
 
 if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_configselect(
+        'block_sharing_cart/backup_mode',
+        get_string('settings:backup_mode', 'block_sharing_cart'),
+        get_string('settings:backup_mode_desc', 'block_sharing_cart'),
+        'immediate',
+        [
+            'immediate' => get_string('settings:backup_restore_mode_immediate', 'block_sharing_cart'),
+            'async' => get_string('settings:backup_restore_mode_async', 'block_sharing_cart'),
+        ]
+    ));
+    $settings->add(new admin_setting_configselect(
+        'block_sharing_cart/restore_mode',
+        get_string('settings:restore_mode', 'block_sharing_cart'),
+        get_string('settings:restore_mode_desc', 'block_sharing_cart'),
+        'immediate',
+        [
+            'immediate' => get_string('settings:backup_restore_mode_immediate', 'block_sharing_cart'),
+            'async' => get_string('settings:backup_restore_mode_async', 'block_sharing_cart'),
+        ]
+    ));
     $settings->add(
             new admin_setting_configmulticheckboxmodtypes(
                     'block_sharing_cart/userdata_copyable_modtypes',
@@ -62,6 +82,14 @@ if ($ADMIN->fulltree) {
             'block_sharing_cart/show_copy_section_in_block',
             get_string('settings:show_copy_section_in_block', 'block_sharing_cart'),
             get_string('settings:show_copy_section_in_block_desc', 'block_sharing_cart'),
+            1,
+        )
+    );
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'block_sharing_cart/show_copy_activity_in_block',
+            get_string('settings:show_copy_activity_in_block', 'block_sharing_cart'),
+            get_string('settings:show_copy_activity_in_block_desc', 'block_sharing_cart'),
             1,
         )
     );
