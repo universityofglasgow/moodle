@@ -64,10 +64,10 @@ function zoom_supports($feature) {
  * will create a new instance and return the id number of the new instance.
  *
  * @param stdClass $zoom Submitted data from the form in mod_form.php
- * @param mod_zoom_mod_form $mform The form instance (included because the function is used as a callback)
+ * @param mod_zoom_mod_form|null $mform The form instance (included because the function is used as a callback)
  * @return int The id of the newly inserted zoom record
  */
-function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
+function zoom_add_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
@@ -143,10 +143,10 @@ function zoom_add_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
  * will update an existing instance with new data.
  *
  * @param stdClass $zoom An object from the form in mod_form.php
- * @param mod_zoom_mod_form $mform The form instance (included because the function is used as a callback)
+ * @param mod_zoom_mod_form|null $mform The form instance (included because the function is used as a callback)
  * @return boolean Success/Failure
  */
-function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
+function zoom_update_instance(stdClass $zoom, ?mod_zoom_mod_form $mform = null) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/mod/zoom/locallib.php');
 
@@ -202,6 +202,7 @@ function zoom_update_instance(stdClass $zoom, mod_zoom_mod_form $mform = null) {
     // Get the updated meeting info from zoom, before updating calendar events.
     $response = zoom_webservice()->get_meeting_webinar_info($zoom->meeting_id, $zoom->webinar);
     $zoom = populate_zoom_from_response($zoom, $response);
+    $DB->update_record('zoom', $zoom);
 
     // Update tracking field data for meeting.
     zoom_sync_meeting_tracking_fields($zoom->id, $response->tracking_fields ?? []);
@@ -586,10 +587,10 @@ function zoom_get_monthweek_options() {
  * Populate the calendar event object, based on the zoom instance
  *
  * @param stdClass $zoom The zoom instance.
- * @param stdClass $occurrence The occurrence object passed from the zoom api.
+ * @param stdClass|null $occurrence The occurrence object passed from the zoom api.
  * @return stdClass The calendar event object.
  */
-function zoom_populate_calender_item(stdClass $zoom, stdClass $occurrence = null) {
+function zoom_populate_calender_item(stdClass $zoom, ?stdClass $occurrence = null) {
     $event = new stdClass();
     $event->type = CALENDAR_EVENT_TYPE_ACTION;
     $event->modulename = 'zoom';
@@ -873,7 +874,7 @@ function zoom_reset_userdata($data) {
  *
  * @param object $mform the course reset form that is being built.
  */
-function zoom_reset_course_form_definition(&$mform) {
+function zoom_reset_course_form_definition($mform) {
     $mform->addElement('header', 'zoomheader', get_string('modulenameplural', 'zoom'));
 
     $mform->addElement('checkbox', 'reset_zoom_all', get_string('resetzoomsall', 'zoom'));
@@ -973,9 +974,9 @@ function zoom_extend_navigation(navigation_node $navref, stdClass $course, stdCl
  * so it is safe to rely on the $PAGE.
  *
  * @param settings_navigation $settingsnav complete settings navigation tree
- * @param navigation_node $zoomnode zoom administration node
+ * @param navigation_node|null $zoomnode zoom administration node
  */
-function zoom_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $zoomnode = null) {
+function zoom_extend_settings_navigation(settings_navigation $settingsnav, ?navigation_node $zoomnode = null) {
 }
 
 /**
