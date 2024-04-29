@@ -56,3 +56,8 @@ moodle-plugin-ci.phar
 .hugo_build.lock
 phpcs.xml
 jsconfig.json
+# New GCAT extensions
+/local/gugrades
+/blocks/newgu_spdetails
+/local/gustaffview
+/admin/tool/upgradecopy
