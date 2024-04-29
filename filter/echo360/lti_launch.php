@@ -46,6 +46,9 @@ if ($width != null && $height != null) {
 }
 
 try {
+    // There are some scenarios where we set $cmid to 0 on filter.php. For those cases,
+    // the exception block is called, where a course is instantiated by using the courseId
+    // value read from the URL.
     $cm = get_coursemodule_from_id('', $cmid, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
     $context = context_course::instance($course->id);

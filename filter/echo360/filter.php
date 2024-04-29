@@ -30,6 +30,21 @@ class filter_echo360 extends moodle_text_filter {
     const FILTER_PATH = '/filter/echo360/lti_launch.php';
 
     /**
+     * Look for a module id in an array of modules.
+     * @param $cmid the key to look for.
+     * @param $modinfos the array of mod_info where to search.
+     * @return bool true if the item exists, false otherwise.
+     */
+    function cm_exists($cmid, $modinfos) {
+        foreach ($modinfos->cms as $cm) {
+            if ($cmid === $cm->id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Replaces an "embed link" with an iframe for LTI launch.
      *
      * @param  string $text
@@ -80,7 +95,17 @@ class filter_echo360 extends moodle_text_filter {
                 if ($PAGE->cm) {
                     $cmid = $PAGE->cm->id;
                 } else {
-                    $cmid = $result['cmid'][$i];
+                    $modinfos = get_fast_modinfo($PAGE->course);
+                    // make sure the cmid exists in this course. It might not exist within
+                    // the course if the course was cloned, and a cloned link contains the
+                    // cmid from a previous course, and we cannot update its value
+                    // from $PAGE->cm->id because we're in a non-module page, like the
+                    // course's main page.
+                    if ($this->cm_exists($result['cmid'][$i], $modinfos)) {
+                        $cmid = $result['cmid'][$i];
+                    } else {
+                        $cmid = 0;
+                    }
                 }
 
                 $searchfilter = '~<a[\s]+[^>]*?href[\s]?=[\s]?"' .
