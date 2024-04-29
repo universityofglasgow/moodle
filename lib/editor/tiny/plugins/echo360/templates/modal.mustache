@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tiny_echo360/modal
+
+    Modal to manage a link within the Tiny Editor.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+
+    Example context (json):
+    {
+        "element_id": "exampleId",
+        "lti_version" : "99",
+        "lti_message_type" : "basic-lti-launch-request",
+        "resource_link_id" : "99",
+        "ext_content_intended_use" : "embed",
+        "tool_consumer_info_product_family_code" : "moodle",
+        "tool_consumer_info_version" : "6",
+        "selection_directive" : "",
+        "launch_url" : "localhost",
+        "context_id" : "99",
+        "context_title" : "Course fullname",
+        "context_label" : "Course shortname",
+        "user_id" : "99",
+        "lis_person_name_full" : "User full name",
+        "lis_person_name_family" : "User family name",
+        "lis_person_name_given" : "User given name",
+        "lis_person_contact_email_primary" : "email@example.com",
+        "roles" : "admin",
+        "oauth_callback" : "Not used",
+        "oauth_consumer_key" : "OAuth consumer key",
+        "oauth_version" : "1",
+        "oauth_nonce" : "99",
+        "oauth_timestamp" : "99",
+        "oauth_signature_method" : "sha1",
+        "oauth_signature" : ":)",
+    }
+}}
+{{< core/modal }}
+
+    {{$title}}
+        {{#str}} dialogtitle, tiny_echo360 {{/str}}
+    {{/title}}
+
+    {{$body}}
+        <form class="mform" id="echo360-form-{{element_id}}" method="post" target="echo360-library-{{element_id}}" hidden="true" action="{{launch_url}}">
+            <input type="text" name="lti_version" value="{{lti_version}}"/>
+			<input type="text" name="lti_message_type" value="{{lti_message_type}}"/>
+			<input type="text" name="resource_link_id" value="{{resource_link_id}}"/>
+			<input type="text" name="ext_content_intended_use" value="{{ext_content_intended_use}}"/>
+			<input type="text" name="tool_consumer_info_product_family_code" value="{{tool_consumer_info_product_family_code}}"/>
+			<input type="text" name="tool_consumer_info_version" value="{{tool_consumer_info_version}}"/>
+			<input type="text" name="selection_directive" value="{{selection_directive}}"/>
+			<input type="text" name="launch_url" value="{{launch_url}}"/>
+			<input type="text" name="context_id" value="{{context_id}}"/>
+			<input type="text" name="context_title" value="{{context_title}}"/>
+			<input type="text" name="context_label" value="{{context_label}}"/>
+            <input type="text" name="custom_echo360_plugin_version" value="{{custom_echo360_plugin_version}}"/>
+			<input type="text" name="user_id" value="{{user_id}}"/>
+			<input type="text" name="lis_person_name_full" value="{{lis_person_name_full}}"/>
+			<input type="text" name="lis_person_name_family" value="{{lis_person_name_family}}"/>
+			<input type="text" name="lis_person_name_given" value="{{lis_person_name_given}}"/>
+			<input type="text" name="lis_person_contact_email_primary" value="{{lis_person_contact_email_primary}}"/>
+			<input type="text" name="roles" value="{{roles}}"/>
+			<input type="text" name="oauth_callback" value="{{oauth_callback}}"/>
+			<input type="text" name="oauth_consumer_key" value="{{oauth_consumer_key}}"/>
+			<input type="text" name="oauth_version" value="{{oauth_version}}"/>
+			<input type="text" name="oauth_nonce" value="{{oauth_nonce}}"/>
+			<input type="text" name="oauth_timestamp" value="{{oauth_timestamp}}"/>
+			<input type="text" name="oauth_signature_method" value="{{oauth_signature_method}}"/>
+			<input type="text" name="oauth_signature" value="{{oauth_signature}}"/>
+        </form>
+        <iframe id="echo360-library-{{element_id}}" name="echo360-library-{{element_id}}" style="height: 500px; width: 100%;">
+        </iframe>
+    {{/body}}
+
+{{/ core/modal }}
