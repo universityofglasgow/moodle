@@ -1,7 +1,7 @@
 History
 =============
 
-Version 401.2.3 - 08/04/2024
+Version 403.1.2 - 08/04/2024
 ----------------------------
 1. Fix 'Orphaned Section still appear in Index Drawer'.
 2. Fix 'Restrict access can cause no content in other sections to be shown.' - #202.
@@ -9,7 +9,7 @@ Version 401.2.3 - 08/04/2024
 4. Improved solution to 'Problems with creating multiple courses from template via CSV in Grid Format' - #189, related to #203.
 5. Fix 'Html entities in section titles are not being decoded' - #205.
 
-Version 401.2.2 - 22/01/2024
+Version 403.1.1 - 22/01/2024
 ----------------------------
 1. Fix 'Import a format_grid course into a format_topics course fails and produces "undefined method"' - #193,
    thanks to @Syxton(Matt Davidson).
@@ -17,7 +17,11 @@ Version 401.2.2 - 22/01/2024
 3. Improved backup and restore logic.
 4. Show warning if there is a stealth section with content, related to #196.
 
-Version 401.2.1b - 14/10/2023
+Version 403.1.0 - 15/10/2023
+----------------------------
+1. First version for Moodle 4.3.
+
+Version 402.2.1b - 14/10/2023
 -----------------------------
 1. Fix 'Webp image causes an error and makes course unaccessible' - #190.
 2. Fix "Hidden sections are shown as not available" doesn't seem to work. - #192.
@@ -32,20 +36,30 @@ Version 401.2.1b - 14/10/2023
    the Enter key will open the modal.  On the modal itself, the same keys will navigate the slider controls and the two
    close buttons, as well as the modules within the section. #191.  Sponsored by AAU.
 
-Version 401.2.0 - 16/08/2023
+Version 402.2.0 - 16/08/2023
+----------------------------
+1. Fix 'No sections showing when creating a course with the default number of sections'.
+2. Fix 'Images are missing in the grid boxes when restoring a course' - #172.
+
+Version 402.1.2 - 18/07/2023
+----------------------------
+1. Fix 'Undefined property' - #186.
+
+Version 402.1.1 - 15/06/2023
 ----------------------------
 1. Fix 'Previous/Next section arrows are incorrect for RTL languages' - #183.
 2. Fix 'Last section not showing its image when editing'.
 3. Convert 'numsections' to 'gnumsections' to facilitate both a course setting and flexible section management when editing.
-4. Fix 'Undefined property' - #186.
-5. Fix 'No sections showing when creating a course with the default number of sections'.
-6. Fix 'Images are missing in the grid boxes when restoring a course' - #172.
+
+Version 402.1.0 - 11/05/2023
+----------------------------
+1. Improve single section navigation appearance.
+2. Add bulk editing tools.
 
 Version 401.1.1 - 11/05/2023
 ----------------------------
 1. Fix 'Better way to calculate completion progress' - #180.
 2. Fix 'Better scrolling experience using popup Modal' - #179.
-3. Improve single section navigation appearance.
 
 Version 401.1.0 - 01/04/2023
 ----------------------------

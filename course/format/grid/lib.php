@@ -89,10 +89,12 @@ class format_grid extends core_courseformat\base {
             foreach ($this->settings as $settingname => $settingvalue) {
                 if (isset($settingvalue)) {
                     $settingvtype = gettype($settingvalue);
-                    if ((($settingvtype == 'string') && ($settingvalue === '-')) ||
-                        (($settingvtype == 'integer') && ($settingvalue === 0))) {
+                    if (
+                        (($settingvtype == 'string') && ($settingvalue === '-')) ||
+                        (($settingvtype == 'integer') && ($settingvalue === 0))
+                    ) {
                         // Default value indicator is a hyphen or a number equal to 0.
-                        $this->settings[$settingname] = get_config('format_grid', 'default'.$settingname);
+                        $this->settings[$settingname] = get_config('format_grid', 'default' . $settingname);
                     }
                 }
             }
@@ -159,8 +161,11 @@ class format_grid extends core_courseformat\base {
     public function get_section_name($section) {
         $thesection = $this->get_section($section);
         if ((string)$thesection->name !== '') {
-            return format_string($thesection->name, true,
-                ['context' => context_course::instance($this->courseid)]);
+            return format_string(
+                $thesection->name,
+                true,
+                ['context' => context_course::instance($this->courseid)]
+            );
         } else {
             return $this->get_default_section_name($thesection);
         }
@@ -261,7 +266,7 @@ class format_grid extends core_courseformat\base {
                 if (empty($CFG->linkcoursesections) && !empty($options['navigation'])) {
                     return null;
                 }
-                $url->set_anchor('section-'.$sectionno);
+                $url->set_anchor('section-' . $sectionno);
             }
         }
         return $url;
@@ -303,8 +308,10 @@ class format_grid extends core_courseformat\base {
         // If section is specified in course/view.php, make sure it is expanded in navigation.
         if ($navigation->includesectionnum === false) {
             $selectedsection = optional_param('section', null, PARAM_INT);
-            if ($selectedsection !== null && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0') &&
-                    $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)) {
+            if (
+                $selectedsection !== null && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0') &&
+                    $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)
+            ) {
                 $navigation->includesectionnum = $selectedsection;
             }
         }
@@ -512,7 +519,7 @@ class format_grid extends core_courseformat\base {
                 0,
                 [
                     1 => new lang_string('scale', 'format_grid'), // Scale.
-                    2 => new lang_string('crop', 'format_grid'),  // Crop.
+                    2 => new lang_string('crop', 'format_grid'), // Crop.
                 ],
             );
             $courseformatoptionsedit['imageresizemethod'] = [
@@ -572,7 +579,7 @@ class format_grid extends core_courseformat\base {
      * @return array Updated value array with the added default entry.
      */
     private function generate_default_entry($settingname, $defaultindex, $values) {
-        $defaultvalue = get_config('format_grid', 'default'.$settingname);
+        $defaultvalue = get_config('format_grid', 'default' . $settingname);
         $defarray = [$defaultindex => new lang_string('default', 'format_grid', $values[$defaultvalue])];
 
         return array_replace($defarray, $values);
@@ -592,7 +599,8 @@ class format_grid extends core_courseformat\base {
         MoodleQuickForm::registerElementType(
             'sectionfilemanager',
             "$CFG->dirroot/course/format/grid/form/sectionfilemanager.php",
-            'MoodleQuickForm_sectionfilemanager');
+            'MoodleQuickForm_sectionfilemanager'
+        );
 
         $elements = parent::create_edit_form_elements($mform, $forsection);
 
@@ -684,14 +692,16 @@ class format_grid extends core_courseformat\base {
             } else if ($numsections > $maxsection) {
                 // The setting gnumsections has increased then create the sections.
                 $course = $this->get_course();
-                course_create_sections_if_missing($course, range(0, $numsections ));
+                course_create_sections_if_missing($course, range(0, $numsections));
             }
         }
 
         $newsettings = $this->get_settings(true); // Ensure we get the new values.
 
-        if (($currentsettings['imagecontainerwidth'] != $newsettings['imagecontainerwidth']) ||
-            ($currentsettings['imagecontainerratio'] != $newsettings['imagecontainerratio'])) {
+        if (
+            ($currentsettings['imagecontainerwidth'] != $newsettings['imagecontainerwidth']) ||
+            ($currentsettings['imagecontainerratio'] != $newsettings['imagecontainerratio'])
+        ) {
             $performimagecontainersize = true;
         } else {
             $performimagecontainersize = false;
@@ -818,8 +828,11 @@ class format_grid extends core_courseformat\base {
         }
         if (!is_object($section)) {
             global $DB;
-            $section = $DB->get_record('course_sections', ['course' => $this->get_courseid(), 'section' => $section],
-                'id,section,sequence,summary');
+            $section = $DB->get_record(
+                'course_sections',
+                ['course' => $this->get_courseid(), 'section' => $section],
+                'id,section,sequence,summary'
+            );
         }
         if (!$section || !$section->section) {
             // Not possible to delete 0-section.
@@ -858,8 +871,13 @@ class format_grid extends core_courseformat\base {
      * @param null|lang_string|string $editlabel
      * @return \core\output\inplace_editable
      */
-    public function inplace_editable_render_section_name($section, $linkifneeded = true,
-            $editable = null, $edithint = null, $editlabel = null) {
+    public function inplace_editable_render_section_name(
+        $section,
+        $linkifneeded = true,
+        $editable = null,
+        $edithint = null,
+        $editlabel = null
+    ) {
         if (empty($edithint)) {
             $edithint = new lang_string('editsectionname', 'format_grid');
         }
@@ -991,7 +1009,7 @@ class format_grid extends core_courseformat\base {
  * @param array $options additional options affecting the file serving
  * @return bool
  */
-function format_grid_pluginfile($course, $birecordorcm, $context, $filearea, $args, $forcedownload, array $options=[]) {
+function format_grid_pluginfile($course, $birecordorcm, $context, $filearea, $args, $forcedownload, array $options = []) {
     if ($context->contextlevel != CONTEXT_COURSE) {
         send_file_not_found();
     }
@@ -1035,7 +1053,9 @@ function format_grid_inplace_editable($itemtype, $itemid, $newvalue) {
     if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
         $section = $DB->get_record_sql(
             'SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?',
-            [$itemid, 'grid'], MUST_EXIST);
+            [$itemid, 'grid'],
+            MUST_EXIST
+        );
         return course_get_format($section->course)->inplace_editable_update_section_name($section, $itemtype, $newvalue);
     }
 }

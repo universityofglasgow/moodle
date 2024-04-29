@@ -132,14 +132,19 @@ function xmldb_format_grid_upgrade($oldversion = 0) {
                                                         $filerecord->filearea,
                                                         $filerecord->itemid,
                                                         $filerecord->filepath,
-                                                        $filerecord->filename);
+                                                        $filerecord->filename
+                                                    );
                                                 }
                                                 if ($thefile === false) {
                                                     $thefile = $fs->create_file_from_storedfile($filerecord, $file);
                                                 }
                                                 if ($thefile !== false) {
-                                                    $DB->set_field('format_grid_image', 'contenthash',
-                                                        $thefile->get_contenthash(), ['sectionid' => $filesectionid]);
+                                                    $DB->set_field(
+                                                        'format_grid_image',
+                                                        'contenthash',
+                                                        $thefile->get_contenthash(),
+                                                        ['sectionid' => $filesectionid]
+                                                    );
                                                     // Don't delete the section file in case used in the summary.
                                                 }
                                             }
@@ -173,21 +178,37 @@ function xmldb_format_grid_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2022072200, 'format', 'grid');
     }
 
-    if ($oldversion < 2022112605) {
-        $records = $DB->get_records('course_format_options',
+    if ($oldversion < 2023051001) {
+        // Has the upgrade already happened?  Thus in versions for Moodle 4.1.
+        $records = $DB->get_records(
+            'course_format_options',
             [
                 'format' => 'grid',
-                'name' => 'numsections',
-            ], '', 'id'
+                'name' => 'gnumsections',
+            ],
+            '',
+            'id'
         );
 
-        $records = array_keys($records);
-        foreach ($records as $id) {
-            $DB->set_field('course_format_options', 'name', 'gnumsections', ['id' => $id]);
+        if (empty($records)) {
+            $records = $DB->get_records(
+                'course_format_options',
+                [
+                    'format' => 'grid',
+                    'name' => 'numsections',
+                ],
+                '',
+                'id'
+            );
+
+            $records = array_keys($records);
+            foreach ($records as $id) {
+                $DB->set_field('course_format_options', 'name', 'gnumsections', ['id' => $id]);
+            }
         }
 
         // Grid savepoint reached.
-        upgrade_plugin_savepoint(true, 2022112605, 'format', 'grid');
+        upgrade_plugin_savepoint(true, 2023051001, 'format', 'grid');
     }
 
     // Automatic 'Purge all caches'....

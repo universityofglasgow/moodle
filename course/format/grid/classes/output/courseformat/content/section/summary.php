@@ -42,7 +42,6 @@ use stdClass;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class summary extends summary_base {
-
     /** @var section_info the course section class - core is 'private' */
     private $thesection;
 
@@ -91,8 +90,8 @@ class summary extends summary_base {
             $o = $summary;
             $coursesettings = $this->format->get_settings();
             if ($coursesettings['singlepagesummaryimage'] > 1) { // I.e. not 'off'.
-                $data = new stdClass;
-                switch($coursesettings['singlepagesummaryimage']) {
+                $data = new stdClass();
+                switch ($coursesettings['singlepagesummaryimage']) {
                     case 2:
                         $data->left = true;
                         break;
@@ -116,8 +115,14 @@ class summary extends summary_base {
                     $fs = get_file_storage();
                     $coursecontext = \context_course::instance($courseid);
                     $toolbox = \format_grid\toolbox::get_instance();
-                    $replacement = $toolbox->check_displayed_image($coursesectionimage, $courseid, $coursecontext->id, $sectionid,
-                        $this->format, $fs);
+                    $replacement = $toolbox->check_displayed_image(
+                        $coursesectionimage,
+                        $courseid,
+                        $coursecontext->id,
+                        $sectionid,
+                        $this->format,
+                        $fs
+                    );
                     if (!empty($replacement)) {
                         $coursesectionimage = $replacement;
                     }
@@ -126,7 +131,11 @@ class summary extends summary_base {
                         // Yes.
                         $displayediswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
                         $data->imageuri = $toolbox->get_displayed_image_uri(
-                            $coursesectionimage, $coursecontext->id, $sectionid, $displayediswebp);
+                            $coursesectionimage,
+                            $coursecontext->id,
+                            $sectionid,
+                            $displayediswebp
+                        );
                         $sectionformatoptions = $this->format->get_format_options($this->thesection);
                         $data->alttext = $sectionformatoptions['sectionimagealttext'];
 
