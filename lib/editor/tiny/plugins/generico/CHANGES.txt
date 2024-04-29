@@ -1,0 +1,7 @@
+
+Version 1.0.1 (Build: 2023100800 )
+- Added missing CSS declarations
+- Added plugin name to icon declaration so it did not bat with Poodll
+
+Version 1.0.0 (Build: 2023100700 )
+-First release of Tiny Generico

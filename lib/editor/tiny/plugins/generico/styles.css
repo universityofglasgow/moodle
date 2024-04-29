@@ -1,0 +1,45 @@
+.tiny_generico_button .dropdown-menu {
+    min-width: inherit;
+}
+
+div.tiny_generico_widget_buttons {
+    display: inline-block;
+    margin: 5px;
+}
+.tiny_generico_widgetlabel {
+    padding: 10px;
+}
+.tiny_generico_widget_field {
+    margin-top: 5px;
+}
+/* widget options CSS */
+#tiny_generico_widgets_selectorpanel {
+   /* width: 300px; */
+   /* height: 200px; */
+    /* position: absolute; */
+    top: 0;
+    left: 0;
+    transition: left 0.8s ease-in-out, right 0.8s ease-in-out;
+}
+
+#tiny_generico_widgets_optionspanel {
+    /* width: 300px; */
+    /* height: 200px; */
+    /* position: absolute; */
+    top: 0;
+    left: 0;
+    transition: left 0.8s ease-in-out, right 0.8s ease-in-out;
+}
+
+.tiny_generico_widgetoptionsbuttons_cont{
+    margin: 10px;
+    margin-left: 100px;
+}
+.tiny_generico_widgetoptionlabel {
+    padding: 10px;
+    width: 100px;
+}
+
+.tiny_generico_hidden {
+    display: none;
+}
