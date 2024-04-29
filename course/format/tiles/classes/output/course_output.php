@@ -73,7 +73,7 @@ class course_output implements \renderable, \templatable {
 
     /**
      * The course format.
-     * @var string
+     * @var
      */
     private $format;
 
@@ -133,8 +133,8 @@ class course_output implements \renderable, \templatable {
      * course_output constructor.
      * @param \stdClass $course the course object.
      * @param bool $fromajax Whether we are rendering for AJAX request.
-     * @param int|null $sectionnum the id of the current section.
-     * @param \renderer_base|null $courserenderer the course renderer.
+     * @param int $sectionnum the id of the current section
+     * @param \renderer_base|null $courserenderer
      */
     public function __construct($course, $fromajax = false, $sectionnum = null, \renderer_base $courserenderer = null) {
         $this->course = $course;

@@ -42,8 +42,8 @@ class format_tiles extends core_courseformat\base {
      *
      * Please use {@see course_get_format($courseorid)} to get an instance of the format class
      *
-     * @param string $format the course format.
-     * @param int $courseid the course ID.
+     * @param string $format
+     * @param int $courseid
      */
     protected function __construct($format, $courseid) {
         if ($courseid === 0) {
