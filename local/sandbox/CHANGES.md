@@ -4,6 +4,14 @@ moodle-local_sandbox
 Changes
 -------
 
+### v4.3-r1
+
+* 2023-10-20 - Prepare compatibility for Moodle 4.3.
+
+### v4.2-r1
+
+* 2023-09-01 - Prepare compatibility for Moodle 4.2.
+
 ### v4.1-r2
 
 * 2023-10-14 - Add automated release to moodle.org/plugins
