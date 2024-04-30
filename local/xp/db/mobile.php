@@ -33,7 +33,7 @@ $addons = [
                     'name' => 'main',
                     'icon' => 'game-controller',
                     'title' => 'levelup',
-                    'class' => 'mma-xp-handler'
+                    'class' => 'mma-xp-handler',
                 ],
                 'delegate' => 'CoreMainMenuDelegate',
                 'method' => 'main_page',
@@ -44,15 +44,15 @@ $addons = [
                     'name' => 'main',
                     'icon' => 'game-controller',
                     'title' => 'levelup',
-                    'class' => 'mma-xp-handler'
+                    'class' => 'mma-xp-handler',
                 ],
                 'delegate' => 'CoreCourseOptionsDelegate',
                 'method' => 'main_page',
                 'init' => 'init_course_options',
-            ]
+            ],
         ],
         'lang' => [
-            ['levelup', 'local_xp']
-        ]
+            ['levelup', 'local_xp'],
+        ],
     ],
 ];

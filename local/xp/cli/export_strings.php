@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Export strings..
+ * Export strings.
  *
- * @package    core
+ * @package    local_xp
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -49,7 +49,7 @@ Examples:
 list($options, $unrecognised) = cli_get_params([
     'help' => false,
 ], [
-    'h' => 'help'
+    'h' => 'help',
 ]);
 
 if ($unrecognised) {
@@ -78,7 +78,7 @@ $writer->add_data($columns);
 foreach ($identifiers as $identifier) {
     $data = array_merge([
         $identifier,
-        $enstrings[$identifier]
+        $enstrings[$identifier],
     ], array_values(array_map(function($lang) use($identifier, $otherstrings) {
         return !empty($otherstrings[$lang][$identifier]) ? $otherstrings[$lang][$identifier] : '';
     }, $otherlangs)));

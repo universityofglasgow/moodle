@@ -24,8 +24,6 @@
  */
 
 namespace local_xp\output;
-defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * Grade filter renderable class.

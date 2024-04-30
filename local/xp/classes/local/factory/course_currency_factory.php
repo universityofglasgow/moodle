@@ -24,11 +24,10 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\di;
-use \local_xp\local\config\default_course_world_config;
-use \local_xp\local\currency\currency;
+use local_xp\local\config\default_course_world_config;
+use local_xp\local\currency\currency;
 
 /**
  * Course currency factory.
@@ -53,6 +52,7 @@ class course_currency_factory {
      * Constructor.
      *
      * @param course_world_factory $worldfactory World factory.
+     * @param currency $defaultcurrency Default currency.
      */
     public function __construct(course_world_factory $worldfactory, currency $defaultcurrency) {
         $this->worldfactory = $worldfactory;

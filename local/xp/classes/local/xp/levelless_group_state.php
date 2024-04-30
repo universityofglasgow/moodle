@@ -24,16 +24,12 @@
  */
 
 namespace local_xp\local\xp;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\utils\external_utils;
 use context_course;
 use moodle_url;
 use renderable;
 use stdClass;
-use block_xp\local\xp\described_level;
-use block_xp\local\xp\state;
-use block_xp\local\xp\state_with_subject;
 
 /**
  * Level-less group state.
@@ -45,7 +41,7 @@ use block_xp\local\xp\state_with_subject;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class levelless_group_state extends levelless_state implements renderable  {
+class levelless_group_state extends levelless_state implements renderable {
 
     /** @var stdClass The group object. */
     protected $group;
@@ -106,7 +102,7 @@ class levelless_group_state extends levelless_state implements renderable  {
         }
 
         // If picture is hidden, only show to those with course:managegroups.
-        if ($group->hidepicture and !has_capability('moodle/course:managegroups', $context)) {
+        if ($group->hidepicture && !has_capability('moodle/course:managegroups', $context)) {
             return;
         }
 

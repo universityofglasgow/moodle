@@ -25,8 +25,6 @@
 
 namespace local_xp\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use action_menu_link;
 use block_xp\di;
 use coding_exception;
@@ -62,7 +60,8 @@ class report_table extends \block_xp\output\report_table {
      * @param renderer_base $renderer The renderer.
      * @param course_state_store $store The store.
      * @param int $groupid The group ID.
-     * @param string $downloadformat The download format.
+     * @param string|null $downloadformat The download format.
+     * @param team_membership_resolver|null $teamresolver The team resolver.
      */
     public function __construct(
             moodle_database $db,
@@ -111,7 +110,7 @@ class report_table extends \block_xp\output\report_table {
             ]);
             $cols = array_merge([
                 'firstname' => get_string('firstname', 'core'),
-                'lastname' => get_string('lastname', 'core')
+                'lastname' => get_string('lastname', 'core'),
             ], $cols);
 
             // Additional identity fields.
@@ -171,7 +170,7 @@ class report_table extends \block_xp\output\report_table {
                 new moodle_url($this->baseurl, ['action' => 'add', 'userid' => $row->id]),
                 new pix_icon('t/add', get_string('add', 'core')),
                 get_string('awardpoints', 'local_xp')
-            )
+            ),
         ], $actions);
 
         return $actions;
@@ -236,7 +235,7 @@ class report_table extends \block_xp\output\report_table {
      * Set, or get, whether the table should be downloaded.
      *
      * We override this method to ensure it is not called after the table was
-     * initialised in {@link self::init()}. Setting the table to be downloaded
+     * initialised in {@see self::init()}. Setting the table to be downloaded
      * after the initialisation will cause unexpected results.
      *
      * @param string $download The download format.

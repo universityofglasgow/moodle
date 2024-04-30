@@ -26,13 +26,10 @@
 namespace local_xp\local\rule;
 defined('MOODLE_INTERNAL') || die();
 
-use backup;
 use base_logger;
 use block_xp\di;
 use block_xp_rule;
-use completion_info;
 use html_writer;
-use restore_dbops;
 
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -58,7 +55,6 @@ class section_completion extends block_xp_rule {
      * Constructor.
      *
      * @param int $courseid The course ID.
-     * @param int $contextid The context ID.
      */
     public function __construct($courseid = 0) {
         global $COURSE;
@@ -213,7 +209,9 @@ class section_completion extends block_xp_rule {
     /**
      * Update the rule after a restore.
      *
-     * @return void
+     * @param string|int $restoreid The restore ID.
+     * @param string|int $courseid The course ID.
+     * @param base_logger $logger The logger.
      */
     public function update_after_restore($restoreid, $courseid, base_logger $logger) {
         $this->courseid = (int) $courseid;

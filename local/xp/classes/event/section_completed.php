@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Section completed event class.

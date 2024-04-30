@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\xp;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\utils\user_utils;
 use block_xp\local\xp\anonymised_state;
@@ -61,6 +60,7 @@ class firstname_initial_lastname_anonymiser implements state_anonymiser {
     /**
      * Return an anonymised state.
      *
+     * @param state $state
      * @return state
      */
     public function anonymise_state(state $state) {

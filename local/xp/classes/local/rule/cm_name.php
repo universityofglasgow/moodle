@@ -24,10 +24,8 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp_rule_base;
-use context_course;
 use core_text;
 use html_writer;
 
@@ -63,10 +61,10 @@ class cm_name extends block_xp_rule_base {
      * @return string
      */
     protected function get_display_name() {
-        return get_string('rulecmnamedesc', 'local_xp', (object)array(
+        return get_string('rulecmnamedesc', 'local_xp', (object)[
             'compare' => get_string('rule:' . $this->compare, 'block_xp'),
-            'value' => $this->value
-        ));
+            'value' => $this->value,
+        ]);
     }
 
     /**
@@ -86,14 +84,18 @@ class cm_name extends block_xp_rule_base {
         $o .= get_string('rulecmname', 'local_xp');
         $o .= html_writer::end_div();
 
-        $operator = html_writer::select(array(
+        $operator = html_writer::select([
             self::EQ => get_string('rule:' . self::EQ, 'block_xp'),
             self::CT => get_string('rule:' . self::CT, 'block_xp'),
-        ), $basename . '[compare]', $this->compare, '', array('id' => '', 'class' => ''));
+        ], $basename . '[compare]', $this->compare, '', ['id' => '', 'class' => '']);
         $o .= html_writer::div($operator, 'xp-min-w-px');
 
-        $input = html_writer::empty_tag('input', array('type' => 'text', 'name' => $basename . '[value]',
-            'value' => s($this->value), 'class' => 'form-control block_xp-form-control-inline'));
+        $input = html_writer::empty_tag('input', [
+            'type' => 'text',
+            'name' => $basename . '[value]',
+            'value' => s($this->value),
+            'class' => 'form-control block_xp-form-control-inline',
+        ]);
         $helpicon = $output->help_icon('rulecmname', 'local_xp');
         $o .= html_writer::div($input . $helpicon, 'xp-min-w-px xp-max-w-[80%] xp-whitespace-nowrap');
 

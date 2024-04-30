@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\controller;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_exception;
 use local_xp\local\config\default_course_world_config;
@@ -39,14 +38,18 @@ use local_xp\local\config\default_course_world_config;
  */
 class group_ladder_controller extends \block_xp\local\controller\page_controller {
 
+    /** @var bool */
     protected $requiremanage = false;
+    /** @var bool */
     protected $supportsgroups = false;
+    /** @var string */
     protected $routename = 'group_ladder';
+    /** @var string */
     protected $navname = 'ladder';
 
     protected function define_optional_params() {
         return [
-            ['download', '', PARAM_ALPHA, false]
+            ['download', '', PARAM_ALPHA, false],
         ];
     }
 

@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\logger;
-defined('MOODLE_INTERNAL') || die();
 
 use DateTime;
 use block_xp\local\reason\reason;

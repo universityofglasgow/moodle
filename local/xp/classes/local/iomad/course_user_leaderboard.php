@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\iomad;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use block_xp\local\leaderboard\ranker;
@@ -47,8 +46,9 @@ class course_user_leaderboard extends \local_xp\local\leaderboard\course_user_le
      * @param levels_info $levelsinfo The levels info.
      * @param int $courseid The course ID.
      * @param string[] $columns The name of the columns.
-     * @param ranker $ranker An alternative ranker.
+     * @param ranker|null $ranker An alternative ranker.
      * @param int $groupid The group ID.
+     * @param Closure $userstatefactory The user state factory.
      * @param int $companyid The company ID.
      */
     public function __construct(

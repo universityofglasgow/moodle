@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_xp\local\activity\user_recent_activity_repository;
 use block_xp\local\logger\collection_logger_with_group_reset;
 use block_xp\local\logger\reason_collection_logger;
@@ -48,13 +46,18 @@ class local_xp_collection_logger_mock implements
         collection_counts_indicator,
         reason_collection_counts_indicator,
         reason_occurance_indicator,
-        user_recent_activity_repository
-    {
+        user_recent_activity_repository {
 
+
+    /** @var int */
     public $collectionssince = 0;
+    /** @var int */
     public $collectionswithreasonsince = 0;
+    /** @var bool */
     public $hasreasonhappenedsince = false;
+    /** @var int */
     public $pointscollectedsince = 0;
+    /** @var int */
     public $pointscollectedwithreasonsince = 0;
 
     public function count_collections_since($userid, DateTime $since) {

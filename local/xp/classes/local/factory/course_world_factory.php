@@ -24,10 +24,10 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use block_xp\local\factory\badge_url_resolver_course_world_factory;
+use block_xp\local\factory\levels_info_factory;
 use local_xp\local\strategy\collection_target_resolver_from_event;
 
 /**
@@ -40,6 +40,8 @@ use local_xp\local\strategy\collection_target_resolver_from_event;
  */
 class course_world_factory implements \block_xp\local\factory\course_world_factory {
 
+    /** @var moodle_database The DB. */
+    protected $db;
     /** @var coure_config_factory The config factory. */
     protected $configfactory;
     /** @var bool For the whole site? */
@@ -48,10 +50,12 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
     protected $worlds = [];
     /** @var collection_target_resolver_from_event The target resolver. */
     protected $usercolletiontargetresolver;
-    /** @var badge_url_resolver_course_world_factory The admin resolver. */
-    protected $urlresolverfactory;
     /** @var course_collection_logger_factory The course collection logger factory. */
     protected $collectionloggerfactory;
+    /** @var levels_info_factory The levels info factory. */
+    protected $levelsinfofactory;
+    /** @var badge_url_resolver_course_world_factory The badge URL resolver factory. */
+    protected $urlresolverfactory;
 
     /**
      * Constructor.
@@ -59,16 +63,23 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
      * @param int $contextmode The context mode.
      * @param moodle_database $db The DB.
      * @param course_config_factory $configfactory The factory.
+     * @param collection_target_resolver_from_event $usercolletiontargetresolver The collection target resolver.
+     * @param badge_url_resolver_course_world_factory $urlresolverfactory The badge URL resolver factory.
+     * @param course_collection_logger_factory $collectionloggerfactory Collection logger factory.
+     * @param levels_info_factory $levelsinfofactory The levels info factory.
      */
     public function __construct($contextmode, moodle_database $db, course_config_factory $configfactory,
             collection_target_resolver_from_event $usercolletiontargetresolver,
             badge_url_resolver_course_world_factory $urlresolverfactory,
-            course_collection_logger_factory $collectionloggerfactory) {
+            course_collection_logger_factory $collectionloggerfactory,
+            levels_info_factory $levelsinfofactory) {
+
         $this->db = $db;
         $this->configfactory = $configfactory;
         $this->usercolletiontargetresolver = $usercolletiontargetresolver;
         $this->urlresolverfactory = $urlresolverfactory;
         $this->collectionloggerfactory = $collectionloggerfactory;
+        $this->levelsinfofactory = $levelsinfofactory;
         if ($contextmode == CONTEXT_SYSTEM) {
             $this->forwholesite = true;
         }
@@ -97,7 +108,8 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
                 $this->db,
                 $courseid,
                 $this->usercolletiontargetresolver,
-                $this->urlresolverfactory
+                $this->urlresolverfactory,
+                $this->levelsinfofactory
             );
             $world->set_collection_logger($this->collectionloggerfactory->get_collection_logger($courseid));
             $this->worlds[$courseid] = $world;

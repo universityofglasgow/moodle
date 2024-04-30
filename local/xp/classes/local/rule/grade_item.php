@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 use backup;
 use base_logger;
@@ -142,7 +141,7 @@ class grade_item extends block_xp_rule_base {
             'name' => $basename . '[value]',
             'class' => 'grade-item-rule-itemid',
             'type' => 'hidden',
-            'value' => $this->value
+            'value' => $this->value,
         ]);
 
         if (!$hasgi) {
@@ -178,6 +177,9 @@ class grade_item extends block_xp_rule_base {
     /**
      * Update the rule after a restore.
      *
+     * @param string|int $restoreid The restore ID.
+     * @param string|int $courseid The course ID.
+     * @param base_logger $logger The logger.
      * @return void
      */
     public function update_after_restore($restoreid, $courseid, base_logger $logger) {
@@ -210,7 +212,8 @@ class grade_item extends block_xp_rule_base {
 
         // This currently has no effect as when we use one block per course, the page always has the system context.
         if (!$issiteid) {
-            $args[] = array_intersect_key((array) $COURSE, array_flip(['id', 'fullname', 'displayname', 'shortname', 'categoryid']));
+            $args[] = array_intersect_key((array) $COURSE,
+                array_flip(['id', 'fullname', 'displayname', 'shortname', 'categoryid']));
         } else {
             $args[] = null;
         }

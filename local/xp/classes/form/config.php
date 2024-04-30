@@ -80,7 +80,7 @@ class config extends \block_xp\form\config {
         $el = $mform->createElement('block_xp_form_itemspertime', 'maxactionspertime',
             get_string('maxactionspertime', 'block_xp'), [
                 'maxunit' => DAYSECS,
-                'itemlabel' => get_string('actions', 'block_xp')
+                'itemlabel' => get_string('actions', 'block_xp'),
             ]
         );
         $mform->insertElementBefore($el, 'timebetweensameactions');
@@ -100,7 +100,7 @@ class config extends \block_xp\form\config {
 
         // Local plugin specific option.
         $el = $mform->createElement('block_xp_form_itemspertime', 'maxpointspertime', get_string('maxpointspertime', 'local_xp'), [
-            'itemlabel' => get_string('points', 'local_xp')
+            'itemlabel' => get_string('points', 'local_xp'),
         ]);
         $mform->insertElementBefore($el, '__cheatguardend');
         unset($el);
@@ -126,7 +126,7 @@ class config extends \block_xp\form\config {
         $sources = [
             default_course_world_config::GROUP_LADDER_NONE => get_string('groupsourcenone', 'local_xp'),
             default_course_world_config::GROUP_LADDER_COURSE_GROUPS => get_string('groupsourcecoursegroups', 'local_xp'),
-            default_course_world_config::GROUP_LADDER_COHORTS => get_string('groupsourcecohorts', 'local_xp')
+            default_course_world_config::GROUP_LADDER_COHORTS => get_string('groupsourcecohorts', 'local_xp'),
         ];
         if ($iomad->exists()) {
             $sources[default_course_world_config::GROUP_LADDER_IOMAD_COMPANIES] = get_string(
@@ -214,6 +214,8 @@ class config extends \block_xp\form\config {
 
     /**
      * Set the data.
+     *
+     * @param array $data
      */
     public function set_data($data) {
         $data = (array) $data;
@@ -226,7 +228,7 @@ class config extends \block_xp\form\config {
         if (isset($data['maxpointspertime']) && isset($data['timeformaxpoints'])) {
             $data['maxpointspertime'] = [
                 'points' => (int) $data['maxpointspertime'],
-                'time' => (int) $data['timeformaxpoints']
+                'time' => (int) $data['timeformaxpoints'],
             ];
             unset($data['timeformaxpoints']);
         }

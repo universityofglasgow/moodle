@@ -24,22 +24,20 @@
  */
 
 namespace local_xp\local\strategy;
-defined('MOODLE_INTERNAL') || die();
 
+use block_xp\local\action\action;
 use context;
 use DateTime;
 use block_xp\local\config\config;
-use block_xp\local\logger\course_user_event_collection_logger;
 use block_xp\local\logger\reason_collection_logger;
 use block_xp\local\notification\course_level_up_notification_service;
 use block_xp\local\reason\reason;
+use block_xp\local\strategy\action_collection_strategy;
 use block_xp\local\strategy\event_collection_strategy;
-use block_xp\local\xp\course_filter_manager;
 use block_xp\local\xp\state_store_with_reason;
 use local_xp\local\logger\collection_counts_indicator;
 use local_xp\local\logger\reason_collection_counts_indicator;
 use local_xp\local\logger\reason_occurance_indicator;
-use local_xp\local\reason\event_reason;
 use local_xp\local\rule\calculator;
 use local_xp\local\rule\event_subject;
 use local_xp\local\rule\result_calculator;
@@ -53,7 +51,7 @@ use local_xp\local\rule\subject;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_world_collection_strategy implements event_collection_strategy {
+class course_world_collection_strategy implements action_collection_strategy, event_collection_strategy {
 
     /** @var context The context. */
     protected $context;
@@ -68,10 +66,18 @@ class course_world_collection_strategy implements event_collection_strategy {
     /** @var collection_target_resolver_from_event Target resolver. */
     protected $targetresolver;
 
+    /** @var action_collection_strategy The action collection strategy. */
+    protected $actioncollectionstrategy;
+
+    /** @var reason_collection_counts_indicator */
     protected $reasoncollectioncountsindicator;
+    /** @var reason_occurance_indicator */
     protected $reasonoccuranceindicator;
+    /** @var collection_counts_indicator */
     protected $collectioncountsindicator;
+    /** @var reason_collection_logger */
     protected $logger;
+    /** @var \local_xp\local\reason\maker_from_event */
     protected $reasonmaker;
 
     public function __construct(
@@ -98,6 +104,18 @@ class course_world_collection_strategy implements event_collection_strategy {
         $this->logger = $logger;
 
         $this->reasonmaker = new \local_xp\local\reason\maker_from_event();
+    }
+
+    /**
+     * Collection the action.
+     *
+     * @param action $action The action.
+     * @return void
+     */
+    public function collect_action(action $action) {
+        if ($this->actioncollectionstrategy) {
+            $this->actioncollectionstrategy->collect_action($action);
+        }
     }
 
     /**
@@ -304,4 +322,12 @@ class course_world_collection_strategy implements event_collection_strategy {
         return false;
     }
 
+    /**
+     * Set the action collection strategy.
+     *
+     * @param action_collection_strategy $strategy The strategy.
+     */
+    public function set_action_collection_strategy(action_collection_strategy $strategy) {
+        $this->actioncollectionstrategy = $strategy;
+    }
 }

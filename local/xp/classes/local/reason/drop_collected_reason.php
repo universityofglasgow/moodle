@@ -27,8 +27,6 @@ namespace local_xp\local\reason;
 
 use block_xp\local\reason\reason;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Drop collected reason.
  *

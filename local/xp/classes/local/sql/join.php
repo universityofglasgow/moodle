@@ -62,7 +62,7 @@ if (class_exists('core\dml\sql_join')) {
      * @author     Frédéric Massart <fred@branchup.tech>
      * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
      */
-    class join {
+    class join { // @codingStandardsIgnoreLine
 
         /**
          * @var string joins.

@@ -24,8 +24,8 @@
  */
 
 namespace local_xp\local\controller;
-defined('MOODLE_INTERNAL') || die();
 
+use block_xp\di;
 use context_system;
 use html_writer;
 use local_xp\local\config\default_course_world_config;
@@ -57,8 +57,8 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
     final protected function get_currency_filemanager_options() {
         return [
             'subdirs' => 0,
-            'accepted_types' => array('.jpg', '.png', '.svg'),
-            'maxfiles' => 1
+            'accepted_types' => ['.jpg', '.png', '.svg'],
+            'maxfiles' => 1,
         ];
     }
 
@@ -70,7 +70,7 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
     protected function define_form() {
         return new \local_xp\form\visuals($this->pageurl->out(false), [
             'fmoptions' => $this->get_filemanager_options(),
-            'currencyfmoptions' => $this->get_currency_filemanager_options()
+            'currencyfmoptions' => $this->get_currency_filemanager_options(),
         ]);
     }
 
@@ -115,6 +115,24 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
     }
 
     /**
+     * Reset visuals to defaults.
+     */
+    protected function reset_visuals_to_defaults() {
+        parent::reset_visuals_to_defaults();
+        $adminconfig = di::get('config');
+
+        $config = $this->world->get_config();
+        $config->set_many([
+            'badgetheme' => $adminconfig->get('badgetheme'),
+            'currencystate' => default_course_world_config::CURRENCY_USE_DEFAULT,
+            'currencytheme' => $adminconfig->get('currencytheme'),
+        ]);
+
+        $fs = get_file_storage();
+        $fs->delete_area_files($this->get_filemanager_context()->id, 'local_xp', 'currency', 0);
+    }
+
+    /**
      * Save the form data.
      *
      * @param stdClass $data The form data.
@@ -131,17 +149,8 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
         $config->set_many([
             'currencystate' => default_course_world_config::CURRENCY_IS_CUSTOMIED,
             'currencytheme' => $data->currencytheme,
-            'badgetheme' => $data->badgetheme
+            'badgetheme' => $data->badgetheme,
         ]);
-    }
-
-    /**
-     * Introduction.
-     *
-     * @return void
-     */
-    protected function intro() {
-        echo html_writer::tag('p', get_string('visualsintro', 'local_xp'));
     }
 
     /**
@@ -150,12 +159,9 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
      * @return void
      */
     protected function preview() {
-        $levelsinfo = $this->world->get_levels_info();
         $output = $this->get_renderer();
-        echo $output->heading(get_string('points', 'local_xp'), 4);
-        echo $output->xp_preview(rand(20, 9999), $this->world->get_courseid());
-        echo $output->heading(get_string('levels', 'block_xp'), 4);
-        echo $output->levels_preview($levelsinfo->get_levels());
+        echo html_writer::div($output->xp_preview(rand(20, 9999), $this->courseid), 'xp-mb-4');
+        parent::preview();
     }
 
 }

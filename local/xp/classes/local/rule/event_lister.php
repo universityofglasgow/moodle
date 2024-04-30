@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Event lister class.
@@ -54,7 +53,7 @@ class event_lister extends \block_xp\local\rule\event_lister {
                     '\\core\\event\\blog_comment_created',
                     '\\core\\event\\blog_entries_viewed',
                     '\\core\\event\\blog_entry_created',
-                    '\\core\\event\\blog_entry_updated'
+                    '\\core\\event\\blog_entry_updated',
                 ]));
             }
 
@@ -93,7 +92,7 @@ class event_lister extends \block_xp\local\rule\event_lister {
                 $events[$notifications] = [];
             }
             $events[$notifications] = array_unique(array_merge($events[$notifications], [
-                '\\core\\event\\notification_viewed'
+                '\\core\\event\\notification_viewed',
             ]));
 
             $user = get_string('user', 'core');

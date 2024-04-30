@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\provider;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use block_xp\local\reason\reason;

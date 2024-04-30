@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Local XP backup.
  *
@@ -129,14 +127,15 @@ class restore_local_xp_plugin extends restore_local_plugin {
         $oldid = $data['id'];
         $data['courseid'] = $this->task->get_courseid();
 
-        // When the secret is already found, we cannot proceed with the restore. It usually means that
+        // When the secret is already found, we have to generate a new secret. It usually means that
         // the secret is being restored in the same site as the original, either by duplicating the course
-        // or by merge. This is not a perfect solution as the content will still be restored, which would
-        // render another drop.
-        if ($DB->record_exists('local_xp_drops', ['secret' => $data['secret']])) {
-            $this->task->log("local_xp: drop '{$data['name']}' ({$data['id']}) not restored, " .
-                "secret already used", backup::LOG_INFO);
-            return;
+        // or by merge. Technically we should not care if drops share secrets, but as the shortcode used
+        // to only include the secret, we should try and keep it as is for restores on other sites. For
+        // restores on the same site, the secret will be regenerated which will cause the legacy xpdrop
+        // shortcode to point to the wrong shortcode, but that's the best we can do. For those using
+        // the new shortcodes including the ID, this won't have any impact.
+        while ($DB->record_exists('local_xp_drops', ['secret' => $data['secret']])) {
+            $data['secret'] = substr(bin2hex(random_bytes(128)), 0, 7);
         }
 
         $newid = $DB->insert_record('local_xp_drops', $data);

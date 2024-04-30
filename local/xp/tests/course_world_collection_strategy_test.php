@@ -23,10 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_xp;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once(__DIR__ . '/base_testcase.php');
+
 require_once(__DIR__ . '/mocks/calculator_mock.php');
 require_once(__DIR__ . '/mocks/collection_logger_mock.php');
 require_once(__DIR__ . '/mocks/state_store_mock.php');
@@ -50,8 +51,9 @@ use local_xp\local\strategy\user_collection_target_resolver;
  * @copyright  2020 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_xp\local\strategy\course_world_collection_strategy
  */
-class local_xp_course_world_collection_strategy_testcase extends local_xp_base_testcase {
+class course_world_collection_strategy_test extends base_testcase {
 
     protected function get_world($courseid) {
         $world = di::get('course_world_factory')->get_world($courseid);
@@ -60,9 +62,9 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
     }
 
     protected function get_collection_strategy($world) {
-        $calculator = new local_xp_calculator_mock();
-        $logger = new local_xp_collection_logger_mock();
-        $store = new local_xp_state_store_mock();
+        $calculator = new \local_xp_calculator_mock();
+        $logger = new \local_xp_collection_logger_mock();
+        $store = new \local_xp_state_store_mock();
         $cs = new course_world_collection_strategy(
             $world->get_context(),
             $world->get_config(),
@@ -76,7 +78,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
             $logger
         );
 
-        $method = new ReflectionMethod($cs, 'collect_for_user');
+        $method = new \ReflectionMethod($cs, 'collect_for_user');
         $method->setAccessible(true);
 
         $collectforuser = function() use ($method, $cs) {
@@ -91,11 +93,11 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $this->assertEquals(0, $store->get_state(1)->get_xp());
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(10, $store->get_state(1)->get_xp());
     }
 
@@ -104,12 +106,12 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $this->assertEquals(0, $store->get_state(1)->get_xp());
         $calculator->result = new static_result(10, true);
         $w->get_config()->set('enabled', false);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(0, $store->get_state(1)->get_xp());
     }
 
@@ -118,7 +120,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('timebetweensameactions', 10000);
 
@@ -126,25 +128,25 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
 
         $logger->hasreasonhappenedsince = false;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(10, $store->get_state(1)->get_xp());
 
         $logger->hasreasonhappenedsince = false;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(20, $store->get_state(1)->get_xp());
 
         // Now flag as already happened.
         $logger->hasreasonhappenedsince = time() - 10;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(20, $store->get_state(1)->get_xp());
 
         // With cheat guard disabled.
         $w->get_config()->set('enablecheatguard', false);
         $logger->hasreasonhappenedsince = time() - 10;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(30, $store->get_state(1)->get_xp());
     }
 
@@ -153,7 +155,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('maxactionspertime', 5);
         $w->get_config()->set('timeformaxactions', 1000);
@@ -162,25 +164,25 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
 
         $logger->collectionssince = 0;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(10, $store->get_state(1)->get_xp());
 
         $logger->collectionssince = 1;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(20, $store->get_state(1)->get_xp());
 
         // Now flag as happened more than allowed times.
         $logger->collectionssince = 6;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(20, $store->get_state(1)->get_xp());
 
         // With cheat guard disabled.
         $w->get_config()->set('enablecheatguard', false);
         $logger->collectionssince = 6;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(30, $store->get_state(1)->get_xp());
     }
 
@@ -189,7 +191,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('maxpointspertime', 20);
         $w->get_config()->set('timeformaxpoints', 1000);
@@ -198,37 +200,37 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
 
         $logger->pointscollectedsince = 0;
         $calculator->result = new static_result(5, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(5, $store->get_state(1)->get_xp());
 
         $logger->pointscollectedsince = 5;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(15, $store->get_state(1)->get_xp());
 
         // Now flag as points already exceed what's allowed.
         $logger->pointscollectedsince = 21;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(15, $store->get_state(1)->get_xp());
 
         // Now flag as points will exceed what's allowed.
         $logger->pointscollectedsince = 15;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(15, $store->get_state(1)->get_xp());
 
         // Now flag as points won't exceed what's allowed.
         $logger->pointscollectedsince = 15;
         $calculator->result = new static_result(1, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(16, $store->get_state(1)->get_xp());
 
         // With cheat guard disabled.
         $w->get_config()->set('enablecheatguard', false);
         $logger->pointscollectedsince = 100;
         $calculator->result = new static_result(10, true);
-        $collectforuser(1, new local_xp_subject_mock(), new unknown_reason());
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
         $this->assertEquals(26, $store->get_state(1)->get_xp());
     }
 
@@ -237,7 +239,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('timebetweensameactions', 10000);
         $w->get_config()->set('maxactionspertime', 999);
@@ -245,7 +247,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $w->get_config()->set('maxpointspertime', 999);
         $w->get_config()->set('timeformaxpoints', 999);
 
-        $subject = new local_xp_subject_mock();
+        $subject = new \local_xp_subject_mock();
         $reason = new activity_completion_reason(1, 1);
         $calculator->result = new static_result(10, true);
         $logger->pointscollectedwithreasonsince = 10000;   // Set to show it's got no effect.
@@ -294,7 +296,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('timebetweensameactions', 10000);
         $w->get_config()->set('maxactionspertime', 999);
@@ -302,7 +304,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $w->get_config()->set('maxpointspertime', 999);
         $w->get_config()->set('timeformaxpoints', 999);
 
-        $subject = new local_xp_subject_mock();
+        $subject = new \local_xp_subject_mock();
         $reason = new course_completed_reason(1);
         $calculator->result = new static_result(10, true);
         $logger->pointscollectedwithreasonsince = 10000;   // Set to show it's got no effect.
@@ -358,7 +360,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('timebetweensameactions', 999);
         $w->get_config()->set('maxactionspertime', 999);
@@ -366,7 +368,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $w->get_config()->set('maxpointspertime', 999);
         $w->get_config()->set('timeformaxpoints', 999);
 
-        $subject = new local_xp_subject_mock();
+        $subject = new \local_xp_subject_mock();
         $reason = new graded_reason(1, 1);
         $calculator->result = new static_result(10, true);
 
@@ -430,7 +432,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
 
-        extract($this->get_collection_strategy($w));
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
 
         $w->get_config()->set('timebetweensameactions', 999);
         $w->get_config()->set('maxactionspertime', 999);
@@ -438,7 +440,7 @@ class local_xp_course_world_collection_strategy_testcase extends local_xp_base_t
         $w->get_config()->set('maxpointspertime', 999);
         $w->get_config()->set('timeformaxpoints', 999);
 
-        $subject = new local_xp_subject_mock();
+        $subject = new \local_xp_subject_mock();
         $reason = new manual_reason(1);
         $calculator->result = new static_result(10, true);
 

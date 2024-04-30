@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\output;
-defined('MOODLE_INTERNAL') || die();
 
 use renderable;
 
@@ -50,7 +49,7 @@ class grade_filters_widget implements renderable {
      *
      * @param renderable $filter The default filter.
      * @param object[] $rules Objects containing name, and rule.
-     * @param renderable[] $filter The existing filters.
+     * @param renderable[] $filters The existing filters.
      */
     public function __construct(renderable $filter, array $rules = [], array $filters = []) {
         $this->filter = $filter;

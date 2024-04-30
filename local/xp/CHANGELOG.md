@@ -1,6 +1,76 @@
 Changelog
 =========
 
+v1.16.0
+-------
+
+New features
+
+- Brand new way to set rules for activity, section and course completion
+- Drops `xpdrop` can now be restored on the same site
+
+Quality of life
+
+- Added Finnish language
+
+Bug fixes
+
+- Some language strings were hardcoded in English
+- Other minor fixes and improvements
+
+Technical changes
+
+- Compatibility with Moodle 4.4
+- Raised minimum required version to Moodle 3.11
+- Removed unused drop-related factory classes
+
+Acknowledgements
+
+- We would like to thank the [University of Oulu](https:/oulu.fi) for providing the Finnish translation.
+
+Read our [release blog post](https://www.levelup.plus/blog/xp-release-3-16/) to learn more.
+
+v1.15.1
+-------
+
+Bug fixes
+
+- Language string was not translatable in drop setup modal
+
+Technical changes
+
+- Improved compatibility with PHP 8.2
+- Emptied unused drop renderer and Mustache template
+- Removed unused drop-related factory classes
+
+v1.15.0
+-------
+
+New features
+
+- Award a Moodle badge when users attain a particular level
+- Display a custom congratulation message when users level up
+- Webservice API function to award points from external services (Multi)
+
+Quality of life
+
+- Added Lithuanian language file
+
+Bug fixes
+
+- The team leaderboard could throw error when default grouping is empty
+- Other minor fixes and improvements
+
+Technical changes
+
+- Compatibility with Moodle 4.3
+
+Acknowledgements
+
+- We would like to thank the [Kaunas University of Technology](https:/ktu.edu) for providing the Lithuanian translation.
+
+Read our [release blog post](https://www.levelup.plus/blog/xp-release-3-15/) to learn more.
+
 v1.14.1
 -------
 

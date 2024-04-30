@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\theme;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 
@@ -36,7 +35,8 @@ use moodle_database;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class theme_repository {   // No interface for now.
+class theme_repository {
+    // No interface for now.
 
     /** @var moodle_database The moodle database. */
     protected $db;
@@ -69,7 +69,6 @@ class theme_repository {   // No interface for now.
     /**
      * Get a theme.
      *
-     * @param string $code The theme code.
      * @return void
      */
     public function get_themes() {

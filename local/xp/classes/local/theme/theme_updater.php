@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\theme;
-defined('MOODLE_INTERNAL') || die();
 
 use cache;
 use cache_store;
@@ -38,8 +37,11 @@ use moodle_database;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class theme_updater {   // No interface for now.
+class theme_updater {
+    // No interface for now.
 
+    /** @var cache The cache. */
+    protected $cache;
     /** @var moodle_database The moodle database. */
     protected $db;
     /** @var DirectoryIterator Ready to walk through the themes. */

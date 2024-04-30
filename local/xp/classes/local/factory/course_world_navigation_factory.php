@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\course_world;
 use block_xp\local\config\config;
@@ -102,19 +101,7 @@ class course_world_navigation_factory implements course_world_navigation_factory
                     'id' => 'group_ladder',
                     'url' => $urlresolver->reverse('group_ladder', ['courseid' => $courseid]),
                     'text' => get_string('teams', 'local_xp'),
-                ]
-            ];
-        }
-
-        if ($world->get_access_permissions()->can_manage()) {
-            $toadd[] = [
-                'in' => ['rules'],
-                'after' => [],
-                'link' => [
-                    'id' => 'drops',
-                    'url' => $urlresolver->reverse('drops', ['courseid' => $courseid]),
-                    'text' => get_string('navdrops', 'local_xp')
-                ]
+                ],
             ];
         }
 

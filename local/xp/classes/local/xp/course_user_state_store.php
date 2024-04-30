@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\xp;
-defined('MOODLE_INTERNAL') || die();
 
 use context_helper;
 use moodle_database;

@@ -31,7 +31,6 @@ require_once($CFG->libdir . '/csvlib.class.php');
 use coding_exception;
 use csv_import_reader;
 use html_writer;
-use moodle_url;
 use block_xp\di;
 use block_xp\local\controller\page_controller;
 use block_xp\local\routing\url;
@@ -39,6 +38,7 @@ use block_xp\local\xp\state_store_with_reason;
 use local_xp\local\reason\manual_reason;
 use local_xp\local\provider\user_resolver;
 use local_xp\local\provider\user_state_store_points;
+use single_button;
 
 /**
  * Import controller class.
@@ -50,9 +50,13 @@ use local_xp\local\provider\user_state_store_points;
  */
 class import_controller extends page_controller {
 
+    /** @var object */
     protected $confirmform;
+    /** @var object */
     protected $form;
-    protected $navname = 'report';
+    /** @var string */
+    protected $navname = 'rules';
+    /** @var string */
     protected $routename = 'import';
 
     protected function define_optional_params() {
@@ -74,7 +78,7 @@ class import_controller extends page_controller {
                 'cir' => $cir,
                 'makeimporter' => function($cir, $action) {
                     return $this->get_provider($cir, $action);
-                }
+                },
             ]);
         }
         return $this->form;
@@ -88,11 +92,11 @@ class import_controller extends page_controller {
     }
 
     protected function get_page_html_head_title() {
-        return get_string('importpoints', 'local_xp');
+        return get_string('importpoints', 'block_xp');
     }
 
     protected function get_page_heading() {
-        return get_string('importpoints', 'local_xp');
+        return get_string('importpoints', 'block_xp');
     }
 
     protected function pre_content() {
@@ -101,8 +105,12 @@ class import_controller extends page_controller {
             return redirect($this->urlresolver->reverse('report', ['courseid' => $this->courseid]));
 
         } else if ($data = $form->get_data()) {
-            $previewurl = new url($this->pageurl, ['iid' => $data->iid, 'action' => $data->resetoradd,
-                'notify' => $data->sendnotification, 'sesskey' => sesskey()]);
+            $previewurl = new url($this->pageurl, [
+                'iid' => $data->iid,
+                'action' => $data->resetoradd,
+                'notify' => $data->sendnotification,
+                'sesskey' => sesskey(),
+            ]);
             return redirect($previewurl->get_compatible_url());
         }
     }
@@ -148,7 +156,7 @@ class import_controller extends page_controller {
                 $rows[] = new \html_table_row([
                     $output->pix_icon('i/invalid', ''),
                     $entry->get_reference(),
-                    $this->get_ul_errors_list_from_array($entry->get_errors())
+                    $this->get_ul_errors_list_from_array($entry->get_errors()),
                 ]);
                 $failed++;
                 continue;
@@ -180,8 +188,11 @@ class import_controller extends page_controller {
 
         $cir->cleanup();
 
-        echo markdown_to_html(get_string('importresultsintro', 'local_xp', ['total' => $total, 'successful' => $successful,
-            'failed' => $failed]));
+        echo markdown_to_html(get_string('importresultsintro', 'local_xp', [
+            'total' => $total,
+            'successful' => $successful,
+            'failed' => $failed,
+        ]));
 
         if (!empty($failed)) {
             $table = new \html_table();
@@ -223,7 +234,7 @@ class import_controller extends page_controller {
                 $rows[] = new \html_table_row([
                     $output->pix_icon('i/invalid', ''),
                     $entry->get_reference(),
-                    $cell
+                    $cell,
                 ]);
                 continue;
             }
@@ -249,8 +260,13 @@ class import_controller extends page_controller {
         $hasmore = $i >= $npreview;
 
         $table = new \html_table();
-        $table->head = ['', get_string('csvline', 'local_xp'), get_string('fullname', 'core'),
-            get_string('currentpoints', 'local_xp'), get_string('afterimport', 'local_xp')];
+        $table->head = [
+            '',
+            get_string('csvline', 'local_xp'),
+            get_string('fullname', 'core'),
+            get_string('currentpoints', 'local_xp'),
+            get_string('afterimport', 'local_xp'),
+        ];
         $table->data = $rows;
 
         echo markdown_to_html(get_string('importpreviewintro', 'local_xp', $npreview));
@@ -270,12 +286,12 @@ class import_controller extends page_controller {
             'get'
         );
 
-        echo $output->single_button(
+        echo $output->render(new single_button(
             (new url($this->pageurl, ['confirm' => 1, 'sesskey' => sesskey()]))->get_compatible_url(),
             get_string('confirm', 'core'),
             'get',
-            ['primary' => true]
-        );
+            defined('single_button::BUTTON_SECONDARY') ? single_button::BUTTON_PRIMARY : true
+        ));
     }
 
     protected function page_content() {
@@ -299,12 +315,11 @@ class import_controller extends page_controller {
             return;
         }
 
-        echo markdown_to_html(get_string('importcsvintro', 'local_xp', [
-            'docsurl' => (new moodle_url('https://docs.levelup.plus/xp/docs/how-to/import-points/importing-points-from-csv', [
-                'ref' => 'localxp_help'
-            ]))->out(false),
-            'sampleurl' => (new moodle_url('/local/xp/samples/points-import.csv'))->out(false),
-        ]));
+        echo $output->advanced_heading(get_string('importpoints', 'block_xp'), [
+            'intro' => new \lang_string('importpointsintro', 'block_xp'),
+            'help' => new \help_icon('importpoints', 'block_xp'),
+        ]);
+
         $form->display();
     }
 

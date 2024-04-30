@@ -23,7 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+use block_xp\di;
+use local_xp\local\xp\level_with_badge_award;
 
 /**
  * Local XP backup.
@@ -39,6 +40,8 @@ class backup_local_xp_plugin extends backup_local_plugin {
      * Define structure.
      */
     protected function define_course_plugin_structure() {
+        $backupid = $this->step->get_task()->get_backupid();
+        $courseid = $this->step->get_task()->get_courseid();
         $userinfo = $this->get_setting_value('users');
 
         $plugin = $this->get_plugin_element();
@@ -48,7 +51,7 @@ class backup_local_xp_plugin extends backup_local_plugin {
         // Add config.
         $config = new backup_nested_element('xp_config', null, [
             'maxpointspertime', 'timeformaxpoints', 'currencystate', 'badgetheme', 'enablegroupladder',
-            'groupidentitymode', 'progressbarmode', 'groupladdercols', 'grouporderby', 'currencytheme'
+            'groupidentitymode', 'progressbarmode', 'groupladdercols', 'grouporderby', 'currencytheme',
         ]);
         $config->set_source_table('local_xp_config', ['courseid' => backup::VAR_COURSEID]);
         $pluginwrapper->add_child($config);
@@ -81,6 +84,26 @@ class backup_local_xp_plugin extends backup_local_plugin {
 
         // Add currency.
         $pluginwrapper->annotate_files('local_xp', 'currency', null, context_course::instance($this->task->get_courseid())->id);
+
+        // Add levels data.
+        try {
+            $world = di::get('course_world_factory')->get_world($courseid);
+            $levelsinfo = di::get('levels_info_factory')->get_world_levels_info($world);
+            foreach ($levelsinfo->get_levels() as $level) {
+                if ($level instanceof level_with_badge_award) {
+                    $badgeid = $level->get_badge_award_id();
+                    if (!$badgeid) {
+                        continue;
+                    }
+
+                    // Save mapping for the badge and issuer.
+                    backup_structure_dbops::insert_backup_ids_record($backupid, 'badge', $badgeid);
+                    backup_structure_dbops::insert_backup_ids_record($backupid, 'user', (int) $level->get_badge_award_issuer_id());
+                }
+            }
+        } catch (Exception $e) {
+            $this->step->get_task()->get_logger()->process("Could annotate elements in levels info", backup::LOG_WARNING);
+        }
 
         return $plugin;
     }

@@ -25,14 +25,20 @@
 
 namespace local_xp\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use DateTime;
 use block_xp\di;
 use block_xp\local\config\course_world_config;
 use block_xp\local\course_world;
+use block_xp\local\utils\external_utils;
 use block_xp\local\world;
-use local_xp\external;
+use local_xp\external\external_api;
+use local_xp\external\get_course_group_info;
+use local_xp\external\get_course_world_group_ladder;
+use local_xp\external\get_course_world_ladder;
+use local_xp\external\get_levels_info;
+use local_xp\external\get_recent_activity;
+use local_xp\external\get_setup;
+use local_xp\external\get_user_state;
 use local_xp\local\config\default_course_world_config;
 
 /**
@@ -72,8 +78,8 @@ class mobile {
                     $world = $worldfactory->get_world($courseid);
                     return $world->get_access_permissions()->can_access()
                         && $bifinder->get_any_instance_in_context('xp', $world->get_context());
-                })
-            ]
+                }),
+            ],
         ];
     }
 
@@ -116,7 +122,7 @@ class mobile {
         return array_merge($data, [
             'courseid' => $courseid,
             'css' => static::get_css_data(),
-            'currency' => external::serialize_currency($currencyfactory->get_currency($courseid)),
+            'currency' => external_api::serialize_currency($currencyfactory->get_currency($courseid)),
             'tabs' => static::get_tabs_data($world, $page),
         ]);
     }
@@ -132,7 +138,7 @@ class mobile {
             'badges' => array_reduce(range(1, 10), function($carry, $i) use ($renderer) {
                 $carry["level$i"] = $renderer->pix_url($i, 'block_xp')->out(false);
                 return $carry;
-            }, [])
+            }, []),
         ];
     }
 
@@ -147,12 +153,12 @@ class mobile {
     protected static function get_group_selector_data($courseid, $currentgroupid, $userid) {
         $data = [
             'enabled' => false,
-            'currentgroupid' => max(0, $currentgroupid)
+            'currentgroupid' => max(0, $currentgroupid),
         ];
 
         $modinfo = get_fast_modinfo($courseid, $userid);
         if (groups_get_course_groupmode($modinfo->get_course()) != NOGROUPS) {
-            $groupinfo = external::get_course_group_info($courseid);
+            $groupinfo = get_course_group_info::execute($courseid);
             $data = array_merge(
                 $data,
                 $groupinfo,
@@ -162,7 +168,7 @@ class mobile {
                     })),
                     'othergroups' => array_values(array_filter($groupinfo['groups'], function($group) {
                         return !$group['ismember'];
-                    }))
+                    })),
                 ]
             );
             $canseeallpart = $data['canseeallparticipants'];
@@ -240,7 +246,7 @@ class mobile {
         $world = $worldfactory->get_world($courseid);
 
         // Ladder.
-        $ladder = external::get_course_world_group_ladder($courseid, $page, $perpage);
+        $ladder = get_course_world_group_ladder::execute($courseid, $page, $perpage);
         $ladder['prevpage'] = $ladder['page'] - 1;
         $ladder['nextpage'] = $ladder['page'] + 1;
         $ladder['hasbefore'] = $ladder['page'] > 1;
@@ -261,14 +267,16 @@ class mobile {
 
         // Permissions are handled in the external functions.
         $infodata = static::enhance_page_data($world, [
-            'ladder' => $ladder
+            'ladder' => $ladder,
         ], 'groupladder');
 
         return [
-            'templates' => [[
-                'id' => 'page',
-                'html' => $renderer->render_from_template('local_xp/mobile-group-ladder', $infodata)
-            ]],
+            'templates' => [
+                [
+                    'id' => 'page',
+                    'html' => $renderer->render_from_template('local_xp/mobile-group-ladder', $infodata),
+                ],
+            ],
             'javascript' => null,
             'otherdata' => null,
             'files' => [],
@@ -299,11 +307,11 @@ class mobile {
         $instructionsformatted = null;
         if ($hasinstructions) {
             $ctx = $world->get_context();
-            list($instructionsformatted, $unused) = external_format_text($instructions, $instructionsformat, $ctx);
+            list($instructionsformatted, $unused) = external_utils::format_text($instructions, $instructionsformat, $ctx);
         }
 
         // Levels info.
-        $levelsinfo = external::get_levels_info($courseid);
+        $levelsinfo = get_levels_info::execute($courseid);
         $alwaysshowname = array_reduce($levelsinfo['levels'], function($carry, $level) {
             return $carry || !empty($level['name']);
         }, false);
@@ -325,8 +333,8 @@ class mobile {
         return [
             'templates' => [[
                 'id' => 'page',
-                'html' => $renderer->render_from_template('local_xp/mobile-info', $infodata)
-            ]],
+                'html' => $renderer->render_from_template('local_xp/mobile-info', $infodata),
+            ], ],
             'javascript' => null,
             'otherdata' => null,
             'files' => [],
@@ -360,7 +368,7 @@ class mobile {
         $groupid = $groupselector['currentgroupid'];
 
         // Ladder.
-        $ladder = external::get_course_world_ladder($courseid, $groupid, $page, $perpage);
+        $ladder = get_course_world_ladder::execute($courseid, $groupid, $page, $perpage);
         $ladder['prevpage'] = $ladder['page'] - 1;
         $ladder['nextpage'] = $ladder['page'] + 1;
         $ladder['hasbefore'] = $ladder['page'] > 1;
@@ -377,17 +385,17 @@ class mobile {
         // Permissions are handled in the external functions.
         $infodata = static::enhance_page_data($world, [
             'ladder' => $ladder,
-            'groupselector' => $groupselector
+            'groupselector' => $groupselector,
         ], 'ladder');
 
         return [
             'templates' => [[
                 'id' => 'page',
-                'html' => $renderer->render_from_template('local_xp/mobile-ladder', $infodata)
-            ]],
+                'html' => $renderer->render_from_template('local_xp/mobile-ladder', $infodata),
+            ], ],
             'javascript' => null,
             'otherdata' => [
-                'groupid' => $groupid
+                'groupid' => $groupid,
             ],
             'files' => [],
         ];
@@ -423,13 +431,13 @@ class mobile {
         $world = $worldfactory->get_world($courseid);
 
         // Permissions are handled in the external function.
-        $setup = external::get_setup($courseid);
-        $state = external::get_user_state($courseid, $userid);
-        $activity = external::get_recent_activity($courseid);
+        $setup = get_setup::execute($courseid);
+        $state = get_user_state::execute($courseid, $userid);
+        $activity = get_recent_activity::execute($courseid);
         $infodata = static::enhance_page_data($world, [
             'activity' => array_map(function($activity) use ($renderer) {
                 return array_merge($activity, [
-                    'timeago' => $renderer->tiny_time_ago(new DateTime("@{$activity['date']}"))
+                    'timeago' => $renderer->tiny_time_ago(new DateTime("@{$activity['date']}")),
                 ]);
             }, $activity),
             'showactivity' => !empty($setup['block']['recentactivity']),
@@ -444,8 +452,8 @@ class mobile {
         return [
             'templates' => [[
                 'id' => 'page',
-                'html' => $renderer->render_from_template('local_xp/mobile-state', $infodata)
-            ]],
+                'html' => $renderer->render_from_template('local_xp/mobile-state', $infodata),
+            ], ],
             'javascript' => null,
             'otherdata' => null,
             'files' => [],

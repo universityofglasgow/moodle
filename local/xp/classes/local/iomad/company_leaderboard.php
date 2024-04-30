@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\iomad;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use stdClass;

@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\course_world;
 
@@ -42,8 +41,7 @@ interface course_world_grouped_leaderboard_factory {
      * Get the leaderboard.
      *
      * @param course_world $world The world.
-     * @param course_world $groupid The group ID, or 0 for none or all participants.
-     * @return local_xp\local\leaderboard\leaderboard
+     * @return \block_xp\local\leaderboard\leaderboard
      */
     public function get_course_grouped_leaderboard(course_world $world);
 

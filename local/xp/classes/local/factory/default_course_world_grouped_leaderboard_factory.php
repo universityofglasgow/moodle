@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use lang_string;
 use moodle_database;
@@ -84,7 +83,7 @@ class default_course_world_grouped_leaderboard_factory implements
      * Get the leaderboard.
      *
      * @param course_world $world The world.
-     * @return block_xp\local\leaderboard\leaderboard
+     * @return leaderboard
      */
     public function get_course_grouped_leaderboard(course_world $world) {
         global $USER;
@@ -124,7 +123,7 @@ class default_course_world_grouped_leaderboard_factory implements
     protected function get_columns(course_world $world) {
         $columns = [
             'rank' => new lang_string('rank', 'block_xp'),
-            'name' => new lang_string('groupname', 'local_xp')
+            'name' => new lang_string('groupname', 'local_xp'),
         ];
 
         $config = $world->get_config();
@@ -143,9 +142,7 @@ class default_course_world_grouped_leaderboard_factory implements
      * Get the leaderboard instance.
      *
      * @param course_world $world The world.
-     * @param int $groupid The group ID.
      * @param array $columns The columns.
-     * @param ranker|null $ranker The ranker.
      * @return leaderboard
      */
     protected function get_leaderboard_instance(course_world $world, array $columns) {

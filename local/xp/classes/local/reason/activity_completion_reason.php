@@ -24,10 +24,10 @@
  */
 
 namespace local_xp\local\reason;
-defined('MOODLE_INTERNAL') || die();
 
 use context_module;
 use block_xp\local\reason\reason;
+use block_xp\local\reason\reason_with_rule;
 
 /**
  * Activity completion reason.
@@ -40,17 +40,27 @@ use block_xp\local\reason\reason;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activity_completion_reason implements reason, reason_with_short_description, reason_with_location {
+class activity_completion_reason implements reason, reason_with_short_description, reason_with_location, reason_with_rule {
 
+    use reason_rule_trait;
+
+    /** @var int The CM ID. */
     protected $cmid;
+    /** @var \context The context. */
     protected $context;
+    /** @var int The state. */
     protected $state;
 
+    /**
+     * Constructor.
+     *
+     * @param int $cmid The CM ID.
+     * @param int $state The state.
+     */
     public function __construct($cmid, $state) {
         $this->cmid = $cmid;
         $this->state = $state;
     }
-
 
     /**
      * Get the context.

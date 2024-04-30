@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\reason;
-defined('MOODLE_INTERNAL') || die();
 
 use grade_item;
 use moodle_url;
@@ -87,7 +86,7 @@ class graded_reason implements reason, reason_with_short_description, reason_wit
         return new moodle_url('/grade/report/singleview/index.php', [
             'id' => $gradeitem->courseid,
             'itemid' => $gradeitem->id,
-            'item' => 'grade'
+            'item' => 'grade',
         ]);
     }
 

@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\reason;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\reason\reason;
 

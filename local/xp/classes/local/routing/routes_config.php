@@ -24,10 +24,9 @@
  */
 
 namespace local_xp\local\routing;
-defined('MOODLE_INTERNAL') || die();
 
-use \block_xp\local\routing\route_definition;
-use \block_xp\local\routing\routes_config as routes_config_interface;
+use block_xp\local\routing\route_definition;
+use block_xp\local\routing\routes_config as routes_config_interface;
 
 /**
  * Routes config.
@@ -41,41 +40,25 @@ class routes_config implements routes_config_interface {
 
     /** @var route_definition[] The routes. */
     protected $routes;
+    /** @var routes_config_interface Alt config. */
+    protected $altconfig;
 
     /**
      * Constructor.
      *
-     * @param block_xp\local\routing\routes_config $altconfig Alternative config.
+     * @param routes_config_interface $altconfig Alternative config.
      */
     public function __construct(routes_config_interface $altconfig) {
         $this->routes = [
-            'drops' => new route_definition(
-                'drops',
-                '/drops/:courseid',
-                '~^/drops/(\d+)$~',
-                'drops',
-                [
-                    1 => 'courseid'
-                ]
-            ),
             'group_ladder' => new route_definition(
                 'group_ladder',
                 '/group/ladder/:courseid',
                 '~^/group/ladder/(\d+)$~',
                 'group_ladder',
                 [
-                    1 => 'courseid'
+                    1 => 'courseid',
                 ]
             ),
-            'import' => new route_definition(
-                'import',
-                '/import/:courseid',
-                '~^/import/(\d+)$~',
-                'import',
-                [
-                    1 => 'courseid'
-                ]
-            )
         ];
         $this->altconfig = $altconfig;
     }

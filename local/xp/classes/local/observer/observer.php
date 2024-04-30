@@ -24,7 +24,9 @@
  */
 
 namespace local_xp\local\observer;
-defined('MOODLE_INTERNAL') || die();
+
+use block_xp\di;
+use local_xp\local\xp\level_with_badge_award;
 
 /**
  * Observer.
@@ -59,4 +61,26 @@ class observer {
         $fs->delete_area_files($event->contextid, 'local_xp', 'currency');
     }
 
+    /**
+     * Act when a user leveled up.
+     *
+     * @param \block_xp\event\user_leveledup $event The event.
+     */
+    public static function user_leveledup(\block_xp\event\user_leveledup $event) {
+        $world = di::get('course_world_factory')->get_world($event->courseid);
+        $levelsinfo = $world->get_levels_info();
+
+        $levelnum = $event->other['level'] ?? 0;
+        if ($levelnum < 2 || $levelnum > $levelsinfo->get_count()) {
+            return;
+        }
+
+        $level = $levelsinfo->get_level($levelnum);
+        if (!($level instanceof level_with_badge_award) || !$level->get_badge_award_id()) {
+            return;
+        }
+
+        $badgemanager = di::get('badge_manager');
+        $badgemanager->award_badge($event->relateduserid, $level->get_badge_award_id(), $level->get_badge_award_issuer_id());
+    }
 }

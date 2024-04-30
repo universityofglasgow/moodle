@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp_rule;
 use block_xp_rule_property;
@@ -99,7 +98,7 @@ class course extends block_xp_rule_property {
             'name' => $basename . '[value]',
             'class' => 'course-rule-courseid',
             'type' => 'hidden',
-            'value' => $this->value
+            'value' => $this->value,
         ]);
 
         if ($config->get('context') != CONTEXT_SYSTEM) {

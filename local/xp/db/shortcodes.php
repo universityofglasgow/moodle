@@ -33,10 +33,10 @@ defined('MOODLE_INTERNAL') || die();
 $shortcodes = [
     'xpdrop' => [
         'callback' => 'local_xp\local\shortcode\handler::xpdrop',
-        'description' => 'shortcode:xpdrop'
+        'description' => 'shortcode:xpdrop',
     ],
     'xpteamladder' => [
         'callback' => 'local_xp\local\shortcode\handler::xpteamladder',
-        'description' => 'shortcode:xpteamladder'
+        'description' => 'shortcode:xpteamladder',
     ],
 ];

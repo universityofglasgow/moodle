@@ -24,10 +24,10 @@
  */
 
 namespace local_xp\local\shortcode;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\di;
 use block_xp\local\sql\limit;
+use block_xp\local\utils\user_utils;
 use block_xp\local\xp\state_store_with_reason;
 use local_xp\local\config\default_course_world_config;
 use local_xp\local\logger\reason_occurance_indicator;
@@ -85,22 +85,34 @@ class handler {
             return;
         }
 
-        $secret = null;
-        if (!empty($args['secret'])) {
-            $secret = $args['secret'];
-        } else if (count($args) === 1) {
+        $id = null;
+        $nargs = count($args);
+        if ($nargs === 1) {
+            // Legacy method where we use the secret as the only argument.
             $candidate = array_keys($args)[0];
             if ($args[$candidate] === true) {
                 $secret = $candidate;
             }
+        } else {
+            $id = (int) ($args['id'] ?? 0);
+            $secret = $args['secret'] ?? null;
         }
+
         if (empty($secret)) {
             return;
         }
 
+        // Resolve the drop by ID if possible, otherwise by secret.
         $repo = di::get('drop_repository');
-        $drop = $repo->get_by_secret($secret);
-        if (!$drop) {
+        $drop = null;
+        if ($id !== null) {
+            $drop = $repo->get_by_id($id);
+        } else {
+            $drop = $repo->get_by_secret($secret);
+        }
+
+        // Validate that we got a drop, and the right one.
+        if (!$drop || $drop->get_secret() !== $secret) {
             return;
         }
 
@@ -116,7 +128,7 @@ class handler {
         // Only display the process the drop when points are enabled, or person is manager.
         $config = $world->get_config();
         $earnallowed = $config->get('enabled') && $drop->is_enabled();
-        $canearn = !isguestuser() && !is_siteadmin() && has_capability('block/xp:earnxp', $world->get_context());
+        $canearn = user_utils::can_earn_points($world->get_context(), $USER->id);
         if ($earnallowed && $canearn) {
             $loggerfactory = di::get('course_collection_logger_factory');
             $logger = $loggerfactory->get_collection_logger($world->get_courseid());

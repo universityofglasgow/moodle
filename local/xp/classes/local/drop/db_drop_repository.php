@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\drop;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 
@@ -52,9 +51,6 @@ class db_drop_repository implements drop_repository {
         $this->db = $db;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_by_secret($secret) {
         $record = $this->db->get_record(self::TABLE, [
             'secret' => $secret,
@@ -63,9 +59,6 @@ class db_drop_repository implements drop_repository {
         return $record ? $this->drop_from_record($record) : null;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_by_id($id) {
         $record = $this->db->get_record(self::TABLE, [
             'id' => $id,

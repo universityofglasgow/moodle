@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\controller;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Config controller class.

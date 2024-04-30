@@ -24,9 +24,6 @@
  */
 
 namespace local_xp\local\currency;
-defined('MOODLE_INTERNAL') || die();
-
-use moodle_url;
 
 /**
  * Currency.
@@ -38,8 +35,11 @@ use moodle_url;
  */
 class default_currency implements currency {
 
+    /** @var objects */
     protected $urlresolver;
+    /** @var bool */
     protected $urlknown = false;
+    /** @var \moodle_url|null */
     protected $url;
 
     public function __construct(currency_sign_url_resolver $urlresolver = null) {

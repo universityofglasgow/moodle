@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp_rule;
 use html_writer;
@@ -106,7 +105,6 @@ class user_graded extends block_xp_rule {
             // We want teachers to initiate this, not the system.
             return false;
         }
-
 
         $gradeobject = $event->get_grade();
         if (!$gradeobject) {

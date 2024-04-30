@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\leaderboard;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\utils\external_utils;
 use block_xp\local\xp\levels_info;
@@ -78,7 +77,11 @@ class course_group_leaderboard extends grouped_leaderboard {
 
         // Update the team IDs by handling the grouping isolation.
         if (!empty($this->groupingid)) {
-            $this->teamids = $this->get_group_ids();
+            $teamids = $this->get_group_ids();
+            if (empty($teamids)) {
+                $teamids = [0];
+            }
+            $this->teamids = $teamids;
         }
 
         parent::prepare_sql();

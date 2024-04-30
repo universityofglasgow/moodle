@@ -21,6 +21,12 @@
     margin-left: 3px;
 }
 
+/** Hide accepted file types from points symbol filemanager. **/
+.block_xp #fitem_id_currency fieldset [name=currency] + p,
+.block_xp #fitem_id_currency fieldset .form-filetypes-descriptions {
+    display: none;
+}
+
 /**
  * Grade filters.
  */

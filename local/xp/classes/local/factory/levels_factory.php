@@ -15,33 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course world drop repository factory.
+ * Levels factory.
  *
  * @package    local_xp
- * @copyright  2022 Branch Up Pty Ltd
- * @author     Peter Dias
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
+
+use block_xp\local\xp\badge_url_resolver;
+use local_xp\local\xp\static_level;
 
 /**
- * Course world drop repository factory.
+ * Levels factory.
  *
- * @package    local_xp
- * @copyright  2022 Branch Up Pty Ltd
- * @author     Peter Dias
+ * @package    block_xp
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface course_world_drop_repository_factory {
+class levels_factory extends \block_xp\local\factory\levels_factory {
 
     /**
-     * Get the repository.
+     * Make a level.
      *
-     * @param \block_xp\local\course_world $world The world.
-     * @return \local_xp\local\repository\drop_repository
+     * @param int $level The level.
+     * @param int $xp The points.
+     * @param array $metadata The metadata.
+     * @param badge_url_resolver $badgeurlresolver The badge URL resolver.
+     * @return \block_xp\local\xp\level
      */
-    public function get_course_world_drop_repository($world);
+    public function make_level($level, $xp, array $metadata = [], badge_url_resolver $badgeurlresolver = null) {
+        return new static_level($level, $xp, $badgeurlresolver, $metadata);
+    }
 
 }

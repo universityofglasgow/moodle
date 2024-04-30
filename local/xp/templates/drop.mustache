@@ -21,17 +21,6 @@
 
     Example context (json):
     {
-        "id": 1,
-        "courseid": 2,
-        "secret": "abcdef"
     }
 }}
-<a id="block_xp-drop-{{uniqid}}" data-id="{{ id }}" data-courseid="{{ courseid }}" data-secret="{{ secret }}">
-    Click me
-</a>
-{{#js}}
-require(['local_xp/drop'], function(DropHandler) {
-    const selector = '#block_xp-drop-{{uniqid}}';
-    DropHandler.init($(selector));
-});
-{{/js}}
+{{! This template wasn't used, but it is left in case something referenced it. We can safely use it in the future. }}

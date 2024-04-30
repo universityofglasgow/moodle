@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\block;
-defined('MOODLE_INTERNAL') || die();
 
 use action_link;
 use lang_string;
@@ -32,9 +31,8 @@ use pix_icon;
 use stdClass;
 use block_xp\local\course_world;
 use block_xp\local\config\course_world_config;
-use block_xp\output\notice;
-use block_xp\output\dismissable_notice;
 use local_xp\local\config\default_course_world_config;
+use local_xp\local\xp\level_with_popup_message;
 
 /**
  * Block class.
@@ -207,6 +205,22 @@ class course_block extends \block_xp\local\block\course_block {
 
         }
         return $actions;
+    }
+
+    /**
+     * Get popup notification props.
+     *
+     * @param object $renderer The renderer.
+     * @param \block_xp\local\course_world $world The world.
+     * @param \block_xp\local\xp\level $level The level.
+     * @param \block_xp\local\xp\level $prevlevel The previous level.
+     */
+    protected function get_popup_notification_props($renderer, $world, $level, $prevlevel) {
+        $props = parent::get_popup_notification_props($renderer, $world, $level, $prevlevel);
+        $props += [
+            'message' => $level instanceof level_with_popup_message ? $level->get_popup_message() : null,
+        ];
+        return $props;
     }
 
     /**

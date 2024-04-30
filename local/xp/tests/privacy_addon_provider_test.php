@@ -23,12 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_xp;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once(__DIR__ . '/base_testcase.php');
 require_once($CFG->dirroot . '/blocks/xp/tests/fixtures/events.php');
 
+use context_course;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\approved_contextlist;
@@ -44,15 +45,15 @@ use local_xp\privacy\provider;
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_xp\privacy\provider
  */
-class local_xp_privacy_addon_provider_testcase extends local_xp_base_testcase {
+class privacy_addon_provider_test extends base_testcase {
 
-    public function setUp(): void {
-        global $CFG;
+    public function setup_test() {
         if (!class_exists('core_privacy\manager')) {
             $this->markTestSkipped('Moodle versions does not support privacy subsystem.');
         }
-        parent::setUp();
+        parent::setup_test();
     }
 
     protected function get_world($courseid) {
@@ -79,22 +80,22 @@ class local_xp_privacy_addon_provider_testcase extends local_xp_base_testcase {
         $world = $this->get_world($c1->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $world = $this->get_world($c2->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $world = $this->get_world($c3->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c3->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c3->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c3->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c3->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $contextlist = new contextlist();
@@ -122,24 +123,24 @@ class local_xp_privacy_addon_provider_testcase extends local_xp_base_testcase {
         $world = $this->get_world($c1->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $world = $this->get_world($c2->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $contextlist = new approved_contextlist($u1, 'block_xp', [context_course::instance($c1->id)->id]);
@@ -171,19 +172,19 @@ class local_xp_privacy_addon_provider_testcase extends local_xp_base_testcase {
         $world = $this->get_world($c1->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $world = $this->get_world($c2->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $this->assertTrue($db->record_exists('local_xp_log', ['contextid' => $c1ctx->id, 'userid' => $u1->id]));
@@ -212,19 +213,19 @@ class local_xp_privacy_addon_provider_testcase extends local_xp_base_testcase {
         $world = $this->get_world($c1->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c1->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $world = $this->get_world($c2->id);
         $strategy = $world->get_collection_strategy();
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u1->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'userid' => $u2->id,
-            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING]);
+            'courseid' => $c2->id, 'edulevel' => \core\event\base::LEVEL_PARTICIPATING, ]);
         $strategy->collect_event($e);
 
         $this->assertTrue($db->record_exists('local_xp_log', ['contextid' => $c1ctx->id, 'userid' => $u1->id]));

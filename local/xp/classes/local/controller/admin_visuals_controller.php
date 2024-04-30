@@ -24,10 +24,12 @@
  */
 
 namespace local_xp\local\controller;
-defined('MOODLE_INTERNAL') || die();
 
+use block_xp\di;
+use block_xp\local\world;
 use context_system;
 use html_writer;
+use local_xp\local\config\default_course_world_config;
 
 /**
  * Admin visuals controller class.
@@ -59,8 +61,8 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
     protected function get_currency_filemanager_options() {
         return [
             'subdirs' => 0,
-            'accepted_types' => array('.jpg', '.png', '.svg'),
-            'maxfiles' => 1
+            'accepted_types' => ['.jpg', '.png', '.svg'],
+            'maxfiles' => 1,
         ];
     }
 
@@ -72,7 +74,7 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
     protected function define_form() {
         return new \local_xp\form\visuals($this->pageurl->out(false), [
             'fmoptions' => $this->get_filemanager_options(),
-            'currencyfmoptions' => $this->get_currency_filemanager_options()
+            'currencyfmoptions' => $this->get_currency_filemanager_options(),
         ]);
     }
 
@@ -101,6 +103,20 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
         $form->init_page_requirements();
     }
 
+    protected function reset_world_to_defaults(world $world) {
+        parent::reset_world_to_defaults($world);
+
+        $config = $world->get_config();
+        $config->set_many([
+            'badgetheme' => $this->adminconfig->get('badgetheme'),
+            'currencystate' => default_course_world_config::CURRENCY_USE_DEFAULT,
+            'currencytheme' => $this->adminconfig->get('currencytheme'),
+        ]);
+
+        $fs = get_file_storage();
+        $fs->delete_area_files($world->get_context()->id, 'local_xp', 'currency', 0);
+    }
+
     /**
      * Save the form data.
      *
@@ -122,10 +138,8 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
      */
     protected function preview() {
         $output = $this->get_renderer();
-        echo $output->heading(get_string('points', 'local_xp'), 4);
-        echo $output->xp_preview(rand(20, 9999));
-        echo $output->heading(get_string('levels', 'block_xp'), 4);
-        echo $output->levels_preview($this->get_levels_info()->get_levels());
+        echo html_writer::div($output->xp_preview(rand(20, 9999)), 'xp-mb-4');
+        parent::preview();
     }
 
 

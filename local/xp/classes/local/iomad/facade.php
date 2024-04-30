@@ -25,11 +25,6 @@
 
 namespace local_xp\local\iomad;
 
-defined('MOODLE_INTERNAL') || die();
-
-use company;
-use context_system;
-use iomad;
 use moodle_database;
 
 /**

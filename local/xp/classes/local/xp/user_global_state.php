@@ -24,10 +24,7 @@
  */
 
 namespace local_xp\local\xp;
-defined('MOODLE_INTERNAL') || die();
 
-use renderable;
-use stdClass;
 use block_xp\local\xp\user_state;
 
 /**

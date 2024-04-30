@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use block_xp\local\config\config;
@@ -44,7 +43,8 @@ use local_xp\local\config\default_admin_config;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_config_factory { // No interface for now, maybe later...
+class course_config_factory {
+    // No interface for now, maybe later...
 
     /** @var config The admin config. */
     protected $adminconfig;
@@ -65,6 +65,7 @@ class course_config_factory { // No interface for now, maybe later...
      *
      * @param config $adminconfig The admin config.
      * @param moodle_database $db The DB.
+     * @param config $adminconfiglocked The locked admin config.
      */
     public function __construct(config $adminconfig, moodle_database $db, config $adminconfiglocked) {
         $this->adminconfig = $adminconfig;
@@ -79,7 +80,7 @@ class course_config_factory { // No interface for now, maybe later...
                 $this->adminconfig,
                 array_keys($localdefaultadminconfig->get_all())
             )),
-            new default_course_world_config()
+            new default_course_world_config(),
         ]);
 
         // There are the defaults for the admin config (from block_xp). Again
@@ -121,7 +122,7 @@ class course_config_factory { // No interface for now, maybe later...
             $this->configcache[$courseid] = new config_stack([
                 $this->configoverrides,
                 new table_row_config($this->db, 'local_xp_config', $this->localcoursedefaults, ['courseid' => $courseid]),
-                new \block_xp\local\config\course_world_config($this->remoteadminconfig, $this->db, $courseid)
+                new \block_xp\local\config\course_world_config($this->remoteadminconfig, $this->db, $courseid),
             ]);
         }
         return $this->configcache[$courseid];

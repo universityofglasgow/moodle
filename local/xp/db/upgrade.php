@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Local XP upgrade function.
  *
@@ -56,13 +54,13 @@ function xmldb_local_xp_upgrade($oldversion) {
         $table->add_field('hashkey', XMLDB_TYPE_CHAR, '40', null, null, null, null);
 
         // Adding keys to table local_xp_log.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
 
         // Adding indexes to table local_xp_log.
-        $table->add_index('ctxuser', XMLDB_INDEX_NOTUNIQUE, array('contextid', 'userid'));
-        $table->add_index('ctxusertime', XMLDB_INDEX_NOTUNIQUE, array('contextid', 'userid', 'time'));
-        $table->add_index('ctxuserpts', XMLDB_INDEX_NOTUNIQUE, array('contextid', 'userid', 'points'));
-        $table->add_index('ctxuserhash', XMLDB_INDEX_NOTUNIQUE, array('contextid', 'userid', 'hashkey'));
+        $table->add_index('ctxuser', XMLDB_INDEX_NOTUNIQUE, ['contextid', 'userid']);
+        $table->add_index('ctxusertime', XMLDB_INDEX_NOTUNIQUE, ['contextid', 'userid', 'time']);
+        $table->add_index('ctxuserpts', XMLDB_INDEX_NOTUNIQUE, ['contextid', 'userid', 'points']);
+        $table->add_index('ctxuserhash', XMLDB_INDEX_NOTUNIQUE, ['contextid', 'userid', 'hashkey']);
 
         // Conditionally launch create table for local_xp_log.
         if (!$dbman->table_exists($table)) {
@@ -87,10 +85,10 @@ function xmldb_local_xp_upgrade($oldversion) {
         $table->add_field('badgetheme', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table local_xp_config.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
 
         // Adding indexes to table local_xp_config.
-        $table->add_index('courseid', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
+        $table->add_index('courseid', XMLDB_INDEX_NOTUNIQUE, ['courseid']);
 
         // Conditionally launch create table for local_xp_config.
         if (!$dbman->table_exists($table)) {
@@ -114,10 +112,10 @@ function xmldb_local_xp_upgrade($oldversion) {
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table local_xp_theme.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
 
         // Adding indexes to table local_xp_theme.
-        $table->add_index('code', XMLDB_INDEX_UNIQUE, array('code'));
+        $table->add_index('code', XMLDB_INDEX_UNIQUE, ['code']);
 
         // Conditionally launch create table for local_xp_theme.
         if (!$dbman->table_exists($table)) {
@@ -283,6 +281,36 @@ function xmldb_local_xp_upgrade($oldversion) {
 
         // Xp savepoint reached.
         upgrade_plugin_savepoint(true, 2022090111, 'local', 'xp');
+    }
+
+    if ($oldversion < 2024042100) {
+
+        // Define field ruleid to be added to local_xp_log.
+        $table = new xmldb_table('local_xp_log');
+        $field = new xmldb_field('ruleid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'time');
+
+        // Conditionally launch add field ruleid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2024042100, 'local', 'xp');
+    }
+
+    if ($oldversion < 2024042101) {
+
+        // Define index ctxrule (not unique) to be added to local_xp_log.
+        $table = new xmldb_table('local_xp_log');
+        $index = new xmldb_index('ctxrule', XMLDB_INDEX_NOTUNIQUE, ['contextid', 'ruleid']);
+
+        // Conditionally launch add index ctxrule.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2024042101, 'local', 'xp');
     }
 
     return true;

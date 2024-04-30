@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\reason;
-defined('MOODLE_INTERNAL') || die();
 
 use context;
 use block_xp\local\reason\reason;
@@ -39,9 +38,13 @@ use block_xp\local\reason\reason;
  */
 class event_reason implements reason, reason_with_short_description, reason_with_location {
 
+    /** @var string */
     protected $name;
+    /** @var int */
     protected $contextid;
+    /** @var int */
     protected $objectid;
+    /** @var int */
     protected $relateduserid;
 
     /** @var context|false|null Internal context caching. */

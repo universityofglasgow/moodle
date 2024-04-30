@@ -27,8 +27,6 @@ namespace local_xp\local\plugin;
 
 use block_xp\di;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Usage report maker class.
  *

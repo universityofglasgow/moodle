@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\currency;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Currency.

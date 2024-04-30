@@ -23,10 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once(__DIR__ . '/base_testcase.php');
+namespace local_xp;
 
 use block_xp\di;
 
@@ -37,8 +34,9 @@ use block_xp\di;
  * @copyright  2020 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_xp\local\course_world::get_config
  */
-class local_xp_course_world_config_testcase extends local_xp_base_testcase {
+class course_world_config_test extends base_testcase {
 
     public function test_default_config() {
         global $DB;
@@ -48,13 +46,13 @@ class local_xp_course_world_config_testcase extends local_xp_base_testcase {
         $c1 = $dg->create_course();
         $c2 = $dg->create_course();
 
-        $defaultadmin = new block_xp\local\config\config_stack([
-            new local_xp\local\config\default_admin_config(),
-            new block_xp\local\config\default_admin_config(),
+        $defaultadmin = new \block_xp\local\config\config_stack([
+            new \local_xp\local\config\default_admin_config(),
+            new \block_xp\local\config\default_admin_config(),
         ]);
-        $defaultcourse = new block_xp\local\config\config_stack([
-            new local_xp\local\config\default_course_world_config(),
-            new block_xp\local\config\default_course_world_config(),
+        $defaultcourse = new \block_xp\local\config\config_stack([
+            new \local_xp\local\config\default_course_world_config(),
+            new \block_xp\local\config\default_course_world_config(),
         ]);
         $inheritable = array_keys(array_intersect_key(
             $defaultadmin->get_all(),

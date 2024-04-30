@@ -24,11 +24,9 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp_rule;
 use block_xp_rule_property;
-use html_writer;
 
 /**
  * Course completion rule.

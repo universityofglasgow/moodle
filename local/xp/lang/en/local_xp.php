@@ -21,6 +21,7 @@
  * @copyright  2017 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @codingStandardsIgnoreFile
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -33,12 +34,13 @@ $string['anonymousgroup'] = 'Another team';
 $string['anonymousiomadcompany'] = 'Another company';
 $string['anonymousiomaddepartment'] = 'Another department';
 $string['awardpoints'] = 'Award points';
-$string['badgetheme'] = 'Level badges theme';
-$string['badgetheme_help'] = 'A badge theme defines the default appearance of the badges.';
+$string['badgetheme'] = 'Level theme';
+$string['badgetheme_help'] = 'A theme defines the default appearance of the level badges.';
 $string['categoryn'] = 'Category: {$a}';
 $string['clicktoselectcourse'] = 'Click to select a course';
 $string['clicktoselectgradeitem'] = 'Click to select a grade item';
 $string['courseselector'] = 'Course selector';
+$string['copypastedropsnippet'] = 'Copy and paste the following code snippet in some content.';
 $string['csvisempty'] = 'The CSV file is empty.';
 $string['csvline'] = 'Line';
 $string['csvfieldseparator'] = 'Field separator for CSV';
@@ -46,13 +48,10 @@ $string['csvfile'] = 'CSV file';
 $string['csvfile_help'] = 'The CSV file must contain the columns __user__ and __points__. The column __message__ is optional and can be used when notifications are enabled. Note that the __user__ column understands user IDs, email addresses and usernames.';
 $string['csvmissingcolumns'] = 'The CSV is missing the following column(s): {$a}.';
 $string['currentpoints'] = 'Current points';
-$string['currencysign'] = 'Points symbol';
-$string['currencysign_help'] = 'With this setting you can change the meaning of the points. It will be displayed next to the amount of points each user has as a substitute for the reference to _experience points_.
+$string['currencysignoverride'] = 'Custom symbol';
+$string['currencysignoverride_help'] = 'Upload an image to select another symbol.
 
-Choose one of the provided symbols, or upload your own!';
-$string['currencysignformhelp'] = 'The recommended image height is 18 pixels.';
-$string['currencysignoverride'] = 'Points symbol override';
-$string['currencysignxp'] = 'XP (Experience points)';
+We recommend images with a height of 18 pixels, in any of the following types: JPEG, PNG and SVG.';
 $string['custom'] = 'Custom';
 $string['dropcollected'] = 'Drop collected';
 $string['dropherea'] = 'Drop: {$a}';
@@ -62,24 +61,6 @@ $string['dropname'] = 'Name';
 $string['dropname_help'] = 'The name of the drop for your reference. This is not displayed to users.';
 $string['droppoints'] = 'Points';
 $string['droppoints_help'] = 'The number of points to award when this drop is found.';
-$string['drops'] = 'Drops';
-$string['dropsintro'] = 'Drops are code snippets directly placed in content that award points when encountered by a user.';
-$string['drops_help'] = '
-In video games, some characters can _drop_ items or experience points on the ground for the player to pick up. These items and points are commonly referred to as drops.
-
-In Level Up XP, drops are shortcodes (e.g. `[xpdrop abcdef]`) that an instructor can place in regular Moodle content. When encountered by a user, these drops will be _picked up_ and a certain amount of points will be awarded.
-
-At present, drops are invible to the user and passively award points the first time they are encountered.
-
-Drops can be use to cleverly award points when certain type of content is consumed by a student. Here are some ideas:
-
-- Place a drop in the feedback of a quiz only visible for perfect scores
-- Place a drop in deep content to reward their consumption
-- Place a drop in an interesting forum discussion
-- Place a drop in a hard-to-get-to page in a lesson module
-
-[More info](https://docs.levelup.plus/xp/docs/how-to/use-drops?ref=localxp_help)
-';
 $string['displaygroupidentity'] = 'Display teams identity';
 $string['displayfirstnameinitiallastname'] = 'Display first name and initial (e.g. Sam H.)';
 $string['editdrop'] = 'Edit drop';
@@ -99,21 +80,6 @@ which the logs are kept can affect how points are distributed over time and shou
 $string['gradeitemselector'] = 'Grade item selector';
 $string['gradeitemtypeis'] = 'The grade is a {$a} grade';
 $string['gradereceived'] = 'Grade received';
-$string['gradesrules'] = 'Grades rules';
-$string['gradesrules_help'] = '
-The rules below determine when students earn points for the grades they receive.
-
-Students will earn as many points as their grade.
-A grade of 5/10, and a grade of 5/100 will both award the student 5 points.
-When a student\'s grade changes multiple times, they will earn points equal to the maximum grade they have received.
-Points are never taken away from students, and negative grades are ignored.
-
-Example: Alice submits an assignment, and receives the mark of 40/100. In _Level Up XP_, Alice receives 40 points for her grade.
-Alice reattempts her assignment, but this time her grade is lowered to 25/100. Alice\'s points in _Level Up XP_ do not change.
-For her final attempt, Alice scores 60/100, she earns 20 additional points in _Level Up XP_, her total of points earned is 60.
-
-[More at _Level Up XP_ documentation](https://docs.levelup.plus/xp/docs/how-to/grade-based-rewards?ref=localxp_help)
-';
 $string['groupanonymity'] = 'Anonymity';
 $string['groupanonymity_help'] = 'This setting controls whether participants can see the names of the teams they do not belong to.';
 $string['groupladder'] = 'Team leaderboard';
@@ -152,11 +118,8 @@ $string['groupsourceiomadcompanies'] = 'IOMAD companies';
 $string['groupsourceiomaddepartments'] = 'IOMAD departments';
 $string['groupsourcenone'] = 'Nothing, the leaderboard is disabled';
 $string['hidegroupidentity'] = 'Hide teams identity';
-$string['importcsvfile_help'] = '';
-$string['importcsvintro'] = 'Use the form below to import points from a CSV file. The import may be used to _increase_ students\' points, or to override them with the provided value. Note that the import __does not__ use the same format as the exported report. The required format is described in the [documentation]({$a->docsurl}), additionally a sample file is available [here]({$a->sampleurl}).';
 $string['importpreview'] = 'Import preview';
 $string['importpreviewintro'] = 'Here is a preview showcasing the first {$a} records out of all of those to be imported. Please review and confirm when you are ready to import everything.';
-$string['importpoints'] = 'Import points';
 $string['importpointsaction'] = 'Points import action';
 $string['importpointsaction_help'] = 'Determines what to do with the points found in the CSV file.
 
@@ -171,13 +134,12 @@ The points represent the amount of points to award the student. When enabled, a 
 $string['importresults'] = 'Import results';
 $string['importresultsintro'] = 'Successfully **imported {$a->successful} entries** out of a total of **{$a->total}**. If some entries could not be imported, details will be displayed below.';
 $string['importsettings'] = 'Import settings';
+$string['increase'] = 'Increase';
 $string['increaseby'] = 'Increase by';
 $string['increaseby_help'] = 'The amount of points to award the student.';
 $string['increasemsg'] = 'Optional message';
 $string['increasemsg_help'] = 'When a message is provided, it is added to the notification.';
 $string['invalidpointscannotbenegative'] = 'Points cannot be negative.';
-$string['levelbadges'] = 'Level badges override';
-$string['levelbadges_help'] = 'Upload images to override the designs provided by the badge theme.';
 $string['levelup'] = 'Level up!'; // The action, not the brand!
 $string['manualawardsubject'] = 'You were awarded {$a->points} points!';
 $string['manualawardnotification'] = 'You were awarded {$a->points} points by {$a->fullname}.';
@@ -189,7 +151,6 @@ $string['maxpointspertime_help'] = 'The maxmimum number of points that can be ea
 $string['messageprovider:manualaward'] = 'Level Up XP points manually awarded';
 $string['missingpermssionsmessage'] = 'You do not have the required permissions to access this content.';
 $string['mylevel'] = 'My level';
-$string['navdrops'] = 'Drops';
 $string['navgroupladder'] = 'Team leaderboard';
 $string['pluginname'] = 'Level Up XP+';
 $string['points'] = 'Points';
@@ -247,7 +208,7 @@ $string['rulecoursecompletioninfo'] = 'This condition matches when a student com
 $string['rulecourse'] = 'Course';
 $string['rulecourse_help'] = 'This condition is met when the event occurs in the course specified.
 
-It is only available when the plugin is used for the whole site. When the plugin is used per course, this condition becomes ineffective.';
+It is only available when the plugin is used sitewide. When the plugin is used per course, this condition becomes ineffective.';
 $string['rulecoursedesc'] = 'The course is: {$a}';
 $string['rulecourseinfo'] = 'This condition requires that the action takes place in a specific course.';
 $string['rulegradeitem'] = 'Specific grade item';
@@ -260,7 +221,7 @@ $string['rulegradeitemtype_help'] = 'This condition is met when the grade item i
 $string['rulegradeitemtypedesc'] = 'The grade is a \'{$a}\' grade';
 $string['rulegradeitemtypeinfo'] = 'This condition matches when the grade item is of the required type.';
 $string['rulesectioncompletion'] = 'Section completion';
-$string['rulesectioncompletion_help'] = 'This condition is met an activity is completed and that activity is the last activity to be completed within the section.';
+$string['rulesectioncompletion_help'] = 'This condition is met when an activity is completed and that activity is the last activity to be completed within the section.';
 $string['rulesectioncompletioninfo'] = 'This condition matches when the student completes all activities in a section.';
 $string['rulesectioncompletiondesc'] = 'The section to complete is \'{$a->sectionname}\'';
 $string['ruleusergraded'] = 'Grade received';
@@ -308,6 +269,7 @@ Note that when the current user belongs to multiple teams, the plugin will use t
 ';
 $string['sectioncompleted'] = 'Section completed';
 $string['sectiontocompleteis'] = 'The section to complete is {$a}';
+$string['setastotal'] = 'Set as total';
 $string['studentsearnpointsforgradeswhen'] = 'Students earn points for grades when:';
 $string['unabletoidentifyuser'] = 'Unable to identify user.';
 $string['unknowngradeitemtype'] = 'Unknown type ({$a})';
@@ -319,7 +281,6 @@ $string['themestandard'] = 'Standard';
 $string['theyleftthefollowingmessage'] = 'They left the following message:';
 $string['timeformaxpoints'] = 'Time frame for max. points';
 $string['timeformaxpoints_help'] = 'The time frame (in seconds) during which the user cannot receive more than a certain amount of points.';
-$string['visualsintro'] = 'Customise the appearance of the levels, and the points.';
 
 // Deprecated since v1.7.
 $string['enablegroupladder'] = 'Enable group ladder';
@@ -328,3 +289,53 @@ $string['enablegroupladder_help'] = 'When enabled, students can view a leaderboa
 // Deprecated since v1.10.2.
 $string['for2weeks'] = 'For 2 weeks';
 $string['for3months'] = 'For 3 months';
+
+// Deprecated since v1.15.0.
+$string['currencysign'] = 'Points symbol';
+$string['currencysign_help'] = 'With this setting you can change the meaning of the points. It will be displayed next to the amount of points each user has as a substitute for the reference to _experience points_.
+
+Choose one of the provided symbols, or upload your own!';
+$string['currencysignformhelp'] = 'The recommended image height is 18 pixels.';
+$string['currencysignxp'] = 'XP (Experience points)';
+$string['drops'] = 'Drops';
+$string['dropsintro'] = 'Drops are code snippets directly placed in content that award points when encountered by a user.';
+$string['drops_help'] = '
+In video games, some characters can _drop_ items or experience points on the ground for the player to pick up. These items and points are commonly referred to as drops.
+
+In Level Up XP, drops are shortcodes (e.g. `[xpdrop id=1 secret=abcdef]`) that an instructor can place in regular Moodle content. When encountered by a user, these drops will be _picked up_ and a certain amount of points will be awarded.
+
+At present, drops are invisible to the user and passively award points the first time they are encountered.
+
+Drops can be used to cleverly award points when certain type of content is consumed by a student. Here are some ideas:
+
+- Place a drop in the feedback of a quiz only visible for perfect scores
+- Place a drop in deep content to reward their consumption
+- Place a drop in an interesting forum discussion
+- Place a drop in a hard-to-get-to page in a lesson module
+
+[More info](https://docs.levelup.plus/xp/docs/how-to/use-drops?ref=localxp_help)
+';
+$string['gradesrules'] = 'Grades rules';
+$string['gradesrules_help'] = '
+The rules below determine when students earn points for the grades they receive.
+
+Students will earn as many points as their grade.
+A grade of 5/10, and a grade of 5/100 will both award the student 5 points.
+When a student\'s grade changes multiple times, they will earn points equal to the maximum grade they have received.
+Points are never taken away from students, and negative grades are ignored.
+
+Example: Alice submits an assignment, and receives the mark of 40/100. In _Level Up XP_, Alice receives 40 points for her grade.
+Alice reattempts her assignment, but this time her grade is lowered to 25/100. Alice\'s points in _Level Up XP_ do not change.
+For her final attempt, Alice scores 60/100, she earns 20 additional points in _Level Up XP_, her total of points earned is 60.
+
+[More at _Level Up XP_ documentation](https://docs.levelup.plus/xp/docs/how-to/grade-based-rewards?ref=localxp_help)
+';
+$string['importpoints'] = 'Import points';
+$string['importcsvintro'] = 'Use the form below to import points from a CSV file. The import may be used to _increase_ students\' points, or to override them with the provided value. Note that the import __does not__ use the same format as the exported report. The required format is described in the [documentation]({$a->docsurl}), additionally a sample file is available [here]({$a->sampleurl}).';
+$string['levelbadges'] = 'Level badges override';
+$string['levelbadges_help'] = 'Upload images to override the designs provided by the badge theme.';
+$string['navdrops'] = 'Drops';
+$string['visualsintro'] = 'Customise the appearance of the levels, and the points.';
+
+// Deprecated since v1.16.0
+$string['unknownsectiona'] = 'Unknown section ({$a})';

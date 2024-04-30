@@ -27,11 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
+use block_xp\local\logger\reason_collection_logger;
 use block_xp\local\reason\reason;
 use block_xp\local\xp\state_store;
 use block_xp\local\xp\state_store_with_delete;
 use block_xp\local\xp\state_store_with_reason;
-use local_xp\local\logger\dummy_collection_logger;
 use local_xp\local\xp\levelless_state;
 
 require_once(__DIR__ . '/collection_logger_mock.php');
@@ -53,6 +53,8 @@ class local_xp_state_store_mock implements state_store, state_store_with_reason,
 
     /**
      * Constructor.
+     *
+     * @param reason_collection_logger|null $logger The logger.
      */
     public function __construct(reason_collection_logger $logger = null) {
         $this->logger = !empty($logger) ? $logger : new local_xp_collection_logger_mock();

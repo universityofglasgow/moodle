@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\leaderboard;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use stdClass;
@@ -82,6 +81,8 @@ abstract class grouped_leaderboard implements
     protected $groupby;
     /** @var string SQL Fragment. */
     protected $order;
+    /** @var array SQL params. */
+    protected $params;
 
     /** @var int The highest member count cache. Do not use directly, use self::get_highest_member_count instead. */
     protected $highestmembercountcache;
@@ -91,9 +92,9 @@ abstract class grouped_leaderboard implements
      *
      * @param moodle_database $db The DB.
      * @param int $courseid The course ID.
-     * @param int[] $teamids The team IDs to limit the leaderboard to.
      * @param array $columns The columns.
-     * @param int $ultimatexp The ultimate XP.
+     * @param int[] $teamids The team IDs to limit the leaderboard to.
+     * @param int|null $ultimatexp The ultimate XP.
      * @param int $orderby The sort by constant.
      */
     public function __construct(moodle_database $db, $courseid, $columns, $teamids = [], $ultimatexp = null,
@@ -317,7 +318,7 @@ abstract class grouped_leaderboard implements
         $params = $this->params + [
             'posxp' => $xp,
             'posxpeq' => $xp,
-            'posid' => $id
+            'posid' => $id,
         ];
         return $this->db->count_records_sql($sql, $params);
     }
@@ -350,7 +351,7 @@ abstract class grouped_leaderboard implements
             'posprogresseq2' => (float) $progress,
             'posxp' => $xp,
             'posxpeq' => $xp,
-            'posid' => $id
+            'posid' => $id,
         ];
         list($progress4, $progress4params) = $this->get_progress_sql();
         return $this->db->count_records_sql($sql, $params);
@@ -425,7 +426,7 @@ abstract class grouped_leaderboard implements
         $params = $this->params + $progress1params + $progress2params + [
             'posprogress' => (float) $progress,
             'posprogresseq' => (float) $progress,
-            'posxp' => $xp
+            'posxp' => $xp,
         ];
         return $this->db->count_records_sql($sql, $params) + 1;
     }

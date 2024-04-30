@@ -33,6 +33,10 @@ defined('MOODLE_INTERNAL') || die();
 $observers = [
     [
         'eventname' => '\\core\\event\\course_deleted',
-        'callback' => 'local_xp\\local\\observer\\observer::course_deleted'
-    ]
+        'callback' => 'local_xp\\local\\observer\\observer::course_deleted',
+    ],
+    [
+        'eventname' => '\\block_xp\\event\\user_leveledup',
+        'callback' => 'local_xp\\local\\observer\\observer::user_leveledup',
+    ],
 ];

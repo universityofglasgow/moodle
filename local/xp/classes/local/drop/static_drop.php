@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\drop;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Static drop.
@@ -52,58 +51,40 @@ class static_drop implements drop {
     /**
      * Constructor.
      *
-     * @param $id The ID of the drop.
-     * @param $points The points for the drop.
-     * @param $secret The unique usable ID of the drop.
-     * @param $name A plain text of the name.
-     * @param $courseid The course ID.
+     * @param int $id The ID of the drop.
+     * @param int $points The points for the drop.
+     * @param string $secret The unique usable ID of the drop.
+     * @param string $name A plain text of the name.
+     * @param int $courseid The course ID.
      */
     public function __construct($id, $points, $secret, $name, $courseid) {
-        $this->id = $id;
-        $this->points = $points;
-        $this->courseid = $courseid;
+        $this->id = (int) $id;
+        $this->points = (int) $points;
+        $this->courseid = (int) $courseid;
         $this->secret = $secret;
         $this->name = $name;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_id() {
         return $this->id;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_points() {
         return $this->points;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_secret() {
         return $this->secret;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_courseid() {
         return $this->courseid;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get_name() {
         return $this->name;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function is_enabled() {
         return $this->enabled;
     }

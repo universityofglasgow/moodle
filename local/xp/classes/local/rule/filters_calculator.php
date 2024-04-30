@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Calculator.
@@ -43,7 +42,6 @@ class filters_calculator implements result_calculator {
      * Constructor.
      *
      * @param array $filters Filters.
-     * @param calculator|null $altcalculator Alternate calculator.
      */
     public function __construct(array $filters) {
         $this->filters = $filters;

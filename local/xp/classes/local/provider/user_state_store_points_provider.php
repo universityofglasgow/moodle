@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\provider;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Provides user state store points entries.

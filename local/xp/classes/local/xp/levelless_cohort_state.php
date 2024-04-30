@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\xp;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\utils\external_utils;
 use stdClass;

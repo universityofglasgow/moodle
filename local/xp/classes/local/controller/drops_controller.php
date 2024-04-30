@@ -35,8 +35,6 @@ use local_xp\form\drop;
 use local_xp\output\drop_table;
 use moodle_url;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Drops controller.
  *
@@ -58,9 +56,6 @@ class drops_controller extends page_controller {
     /** @var moodleform The form. */
     protected $form;
 
-    /**
-     * @inheritDoc
-     */
     protected function define_optional_params() {
         return [
             ['dropid', null, PARAM_INT],
@@ -83,9 +78,6 @@ class drops_controller extends page_controller {
         return (object) ['courseid' => $this->courseid];
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function pre_content() {
         parent::pre_content();
 
@@ -119,9 +111,6 @@ class drops_controller extends page_controller {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function page_content() {
         global $PAGE;
 
@@ -154,18 +143,18 @@ class drops_controller extends page_controller {
                     'id' => $setupdivid,
                     'data-name' => $name,
                     'data-editurl' => $editurl->out(false),
-                    'data-shortcode' => "[xpdrop {$drop->secret}]",
+                    'data-shortcode' => "[xpdrop id={$drop->id} secret={$drop->secret}]",
                 ]);
                 $PAGE->requires->js_call_amd('local_xp/modal-drop-setup', 'showFromSelector', ['#' . $setupdivid]);
             }
         }
 
-        echo $output->advanced_heading(get_string('drops', 'local_xp'), [
+        echo $output->advanced_heading(get_string('drops', 'block_xp'), [
             'actions' => $this->hasdependencies ? [
-                new action_link($url, get_string('adddrop', 'local_xp'), null, ['class' => 'btn btn-secondary btn-default'])
+                new action_link($url, get_string('adddrop', 'local_xp'), null, ['class' => 'btn btn-secondary btn-default']),
             ] : [],
-            'intro' => new \lang_string('dropsintro', 'local_xp'),
-            'help' => new \help_icon('drops', 'local_xp'),
+            'intro' => new \lang_string('dropsintro', 'block_xp'),
+            'help' => new \help_icon('drops', 'block_xp'),
         ]);
 
         if (!$this->hasdependencies) {
@@ -173,7 +162,7 @@ class drops_controller extends page_controller {
             $shortcodesurl = new moodle_url('https://docs.levelup.plus/xp/docs/how-to/use-shortcodes?ref=localxp_drops');
             echo $output->notification_without_close(markdown_to_html(get_string('filtershortcodesrequiredfordrops', 'local_xp', [
                 'url' => $pluginurl->out(false),
-                'shortcodesdocsurl' => $shortcodesurl->out(false)
+                'shortcodesdocsurl' => $shortcodesurl->out(false),
             ])), 'warning');
 
         } else {
@@ -211,16 +200,10 @@ class drops_controller extends page_controller {
         return $record;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function get_page_html_head_title() {
         return get_string('drops', 'local_xp');
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function get_page_heading() {
         return get_string('drops', 'local_xp');
     }

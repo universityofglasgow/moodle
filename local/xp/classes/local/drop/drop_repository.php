@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\drop;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Drop repository.

@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\config;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\config\course_world_config;
 use block_xp\local\config\immutable_config;

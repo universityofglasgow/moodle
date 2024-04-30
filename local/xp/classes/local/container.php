@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Container.
@@ -39,15 +38,18 @@ class container implements \block_xp\local\container {
     /** @var array The objects supported by this container. */
     protected static $supports = [
         'addon' => true,
+        'backup_content_manager' => true,
+        'badge_manager' => true,
         'badge_url_resolver' => true,
+        'badge_url_resolver_course_world_factory' => true,
         'block_class' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
         'config' => true,
         'config_locked' => true,
+        'context_world_factory' => true,
         'course_collection_logger_factory' => true,
         'course_currency_factory' => true,
-        'coruse_world_drop_collection_strategy_factory' => true,
         'course_world_factory' => true,
         'course_world_grouped_leaderboard_factory' => true,
         'course_world_leaderboard_factory' => true,
@@ -59,10 +61,16 @@ class container implements \block_xp\local\container {
         'drop_repository' => true,
         'grouped_leaderboard_helper' => true,
         'iomad_facade' => true,
+        'levels_info_factory' => true,
+        'levels_info_writer' => true,
         'renderer' => true,
         'router' => true,
         'routes_config' => true,
+        'rule_dictator' => true,
         'rule_event_lister' => true,
+        'rule_filter_handler' => true,
+        'rule_type_resolver' => true,
+        'serializer_factory' => true,
         'settings_maker' => true,
         'tasks_definition_maker' => true,
         'team_membership_resolver_factory' => true,
@@ -77,8 +85,6 @@ class container implements \block_xp\local\container {
     /** @var container Sub container. */
     protected $subcontainer;
 
-    /** @var object The store cache. */
-    private $actcompletionstore;
     /** @var object The collection target resolver. */
     private $usercollectiontargetresolver;
     /** @var course_config_factory The course config factory. */
@@ -120,9 +126,27 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Get the content manager.
+     *
+     * @return backup\content_manager
+     */
+    protected function get_backup_content_manager() {
+        return new backup\content_manager();
+    }
+
+    /**
+     * Get the badge manager.
+     *
+     * @return badge\badge_manager
+     */
+    protected function get_badge_manager() {
+        return new badge\badge_manager($this->get('db'));
+    }
+
+    /**
      * Get the default badge URL resolver.
      *
-     * @return moodle_url
+     * @return \block_xp\local\xp\badge_url_resolver
      */
     protected function get_badge_url_resolver() {
         return new \local_xp\local\xp\badge_url_resolver_stack([
@@ -130,8 +154,20 @@ class container implements \block_xp\local\container {
             new \local_xp\local\xp\theme_badge_url_resolver(
                 $this->get('theme_repository'),
                 $this->get('config')->get('badgetheme')
-            )
+            ),
         ]);
+    }
+
+    /**
+     * Get the badge URL resolver factory.
+     *
+     * @return \block_xp\local\factory\badge_url_resolver_course_world_factory
+     */
+    protected function get_badge_url_resolver_course_world_factory() {
+        return new factory\badge_url_resolver_course_world_factory(
+            $this->get('badge_url_resolver'),
+            $this->get('theme_repository')
+        );
     }
 
     /**
@@ -161,8 +197,10 @@ class container implements \block_xp\local\container {
         $st = new \local_xp\local\strategy\collection_strategy(
             $this->get('course_world_factory'),
             $this->get('config')->get('context'),
-            $this->get_user_collection_target_resolver()
+            $this->get_user_collection_target_resolver(),
+            new action\event_action_maker()
         );
+        $st->set_context_world_factory($this->get('context_world_factory'));
         return $st;
     }
 
@@ -184,7 +222,7 @@ class container implements \block_xp\local\container {
                     ['keeplogs']
                 )
             ),
-            $this->subcontainer->get('config')
+            $this->subcontainer->get('config'),
         ]);
     }
 
@@ -196,10 +234,21 @@ class container implements \block_xp\local\container {
     protected function get_config_locked() {
         return new \block_xp\local\config\config_stack([
             new \block_xp\local\config\mdl_locked_config('local_xp', [
-                'groupidentitymode'
+                'groupidentitymode',
             ]),
-            $this->subcontainer->get('config_locked')
+            $this->subcontainer->get('config_locked'),
         ]);
+    }
+
+    /**
+     * Context world factory.
+     *
+     * @return \block_xp\local\factory\context_world_factory
+     */
+    protected function get_context_world_factory() {
+        $factory = new \block_xp\local\factory\default_context_world_factory($this->get('config'));
+        $factory->set_course_world_factory($this->get('course_world_factory'));
+        return $factory;
     }
 
     /**
@@ -237,15 +286,6 @@ class container implements \block_xp\local\container {
             $this->get('course_world_factory'),
             $this->get('currency')
         );
-    }
-
-    /**
-     * Get the drop collection strategy factory.
-     *
-     * @return factory\course_world_drop_collection_strategy_factory
-     */
-    protected function get_course_world_drop_collection_strategy_factory() {
-        return new factory\default_course_world_drop_collection_strategy_factory();
     }
 
     /**
@@ -296,11 +336,9 @@ class container implements \block_xp\local\container {
             $db,
             $this->get_course_config_factory(),
             $this->get_user_collection_target_resolver(),
-            new \local_xp\local\factory\badge_url_resolver_course_world_factory(
-                $this->get('badge_url_resolver'),
-                $this->get('theme_repository')
-            ),
-            $this->get('course_collection_logger_factory')
+            $this->get('badge_url_resolver_course_world_factory'),
+            $this->get('course_collection_logger_factory'),
+            $this->get('levels_info_factory')
         );
     }
 
@@ -386,6 +424,27 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Get the levels info factory.
+     *
+     * @return factory\levels_info_factory
+     */
+    protected function get_levels_info_factory() {
+        return new factory\levels_factory($this->get('config'), $this->get('badge_url_resolver'),
+            $this->get('badge_url_resolver_course_world_factory'));
+    }
+
+    /**
+     * Get the levels info writer.
+     *
+     * @return xp\levels_info_writer
+     */
+    protected function get_levels_info_writer() {
+        $writer = new xp\levels_info_writer($this->get('config'));
+        $writer->set_badge_manager($this->get('badge_manager'));
+        return $writer;
+    }
+
+    /**
      * Get renderer.
      *
      * @return renderer_base
@@ -422,6 +481,15 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Get the rule dictator.
+     *
+     * @return \block_xp\local\rule\dictator
+     */
+    protected function get_rule_dictator() {
+        return new \block_xp\local\rule\the_dictator($this->get('db'), $this->get('rule_filter_handler'));
+    }
+
+    /**
      * Get the rule event lister.
      *
      * @return event_lister
@@ -432,8 +500,36 @@ class container implements \block_xp\local\container {
         // the permission in the system context. This is going to be a configuration nightmare for
         // endusers, or we need to change the defaults, which will make everyone earn points everywhere,
         // this is not a valid option. so holding off this feature for now.
+        // @codingStandardsIgnoreLine
         // return new \local_xp\local\rule\event_lister($this->get('config'));
         return $this->subcontainer->get('rule_event_lister');
+    }
+
+    /**
+     * Get the rule filter handler.
+     *
+     * @return rulefilter\handler
+     */
+    protected function get_rule_filter_handler() {
+        return new rulefilter\handler();
+    }
+
+    /**
+     * Get the rule type resolver.
+     *
+     * @return ruletype\resolver
+     */
+    protected function get_rule_type_resolver() {
+        return new ruletype\resolver();
+    }
+
+    /**
+     * Get the serializer factory.
+     *
+     * @return factory\serializer_factory
+     */
+    protected function get_serializer_factory() {
+        return new factory\serializer_factory();
     }
 
     /**

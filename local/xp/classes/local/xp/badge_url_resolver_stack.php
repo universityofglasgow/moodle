@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\xp;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\xp\badge_url_resolver;
 

@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\leaderboard;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use block_xp\local\course_world;
@@ -84,7 +83,7 @@ class grouped_leaderboard_helper {
      * Where the group source depends on the world settings.
      *
      * @param object $user The user.
-     * @param world $world The world.
+     * @param course_world $world The world.
      * @return array
      */
     public function get_user_group_ids($user, course_world $world) {

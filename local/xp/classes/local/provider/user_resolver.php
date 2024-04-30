@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\provider;
-defined('MOODLE_INTERNAL') || die();
 
 use core_user;
 use moodle_database;
@@ -61,7 +60,7 @@ class user_resolver {
     /**
      * Resolve a user.
      *
-     * @param string|number $info Arbitrary data to resolve the user with.
+     * @param string|number $data Arbitrary data to resolve the user with.
      * @return object|null User object containing enough fields for display purposes.
      */
     public function resolve($data) {

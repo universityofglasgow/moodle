@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\team;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Team membership resolver.

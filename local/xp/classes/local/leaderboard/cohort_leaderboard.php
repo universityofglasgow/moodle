@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\leaderboard;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\utils\external_utils;
 use block_xp\local\xp\levels_info;

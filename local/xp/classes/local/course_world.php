@@ -24,15 +24,17 @@
  */
 
 namespace local_xp\local;
-defined('MOODLE_INTERNAL') || die();
 
+use block_xp\di;
 use moodle_database;
 use block_xp\local\config\config;
 use block_xp\local\factory\badge_url_resolver_course_world_factory;
+use block_xp\local\factory\levels_info_factory;
 use block_xp\local\logger\collection_logger;
 use local_xp\local\config\default_course_world_config;
 use local_xp\local\logger\context_collection_logger;
 use local_xp\local\strategy\collection_target_resolver_from_event;
+use local_xp\local\strategy\world_action_collection_strategy;
 use local_xp\local\xp\user_global_state;
 
 /**
@@ -45,8 +47,11 @@ use local_xp\local\xp\user_global_state;
  */
 class course_world extends \block_xp\local\course_world {
 
+    /** @var strategy\course_world_collection_strategy */
     protected $strategy;
+    /** @var collection_logger */
     protected $logger;
+    /** @var collection_target_resolver_from_event */
     private $usercolletiontargetresolver;
 
     /**
@@ -55,19 +60,23 @@ class course_world extends \block_xp\local\course_world {
      * @param config $config The course config.
      * @param moodle_database $db The DB.
      * @param int $courseid The course ID.
+     * @param collection_target_resolver_from_event $usercolletiontargetresolver The user collection target resolver.
+     * @param badge_url_resolver_course_world_factory $urlresolverfactory The badge URL resolver factory.
+     * @param levels_info_factory $levelsinfofactory The levels info factory.
      */
     public function __construct(config $config, moodle_database $db, $courseid,
             collection_target_resolver_from_event $usercolletiontargetresolver,
-            badge_url_resolver_course_world_factory $urlresolverfactory) {
+            badge_url_resolver_course_world_factory $urlresolverfactory,
+            levels_info_factory $levelsinfofactory) {
 
-        parent::__construct($config, $db, $courseid, $urlresolverfactory);
+        parent::__construct($config, $db, $courseid, $urlresolverfactory, $levelsinfofactory);
         $this->usercolletiontargetresolver = $usercolletiontargetresolver;
     }
 
     /**
      * Return the collection strategy.
      *
-     * @return block_xp\local\strategy\collection_strategy
+     * @return \block_xp\local\strategy\collection_strategy
      */
     public function get_collection_strategy() {
         if (!$this->strategy) {
@@ -87,6 +96,15 @@ class course_world extends \block_xp\local\course_world {
                 new \block_xp\local\notification\course_level_up_notification_service($this->courseid),
                 $this->usercolletiontargetresolver,
                 $this->get_collection_logger()
+            );
+            $this->strategy->set_action_collection_strategy(
+                new world_action_collection_strategy(
+                    $this,
+                    $this->get_collection_logger(),
+                    di::get('rule_dictator'),
+                    di::get('rule_type_resolver'),
+                    di::get('rule_filter_handler')
+                )
             );
         }
         return $this->strategy;

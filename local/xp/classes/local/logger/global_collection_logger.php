@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\logger;
-defined('MOODLE_INTERNAL') || die();
 
 use DateTime;
 use moodle_database;
@@ -46,7 +45,7 @@ use block_xp\local\logger\collection_logger;
  */
 class global_collection_logger implements collection_logger {
 
-    /** The table name. */
+    /** @var string The table name. */
     protected $table = 'local_xp_log';
     /** @var moodle_database The DB. */
     protected $db;
@@ -71,7 +70,7 @@ class global_collection_logger implements collection_logger {
             $this->table,
             'time < :time',
             [
-                'time' => $dt->getTimestamp()
+                'time' => $dt->getTimestamp(),
             ]
         );
     }

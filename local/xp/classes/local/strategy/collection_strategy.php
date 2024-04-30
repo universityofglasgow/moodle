@@ -24,14 +24,17 @@
  */
 
 namespace local_xp\local\strategy;
-defined('MOODLE_INTERNAL') || die();
 
+use block_xp\local\action\maker;
+use block_xp\local\action\maker_from_event;
+use block_xp\local\factory\context_world_factory;
 use block_xp\local\factory\course_world_factory;
+use block_xp\local\strategy\action_collection_strategy;
 use block_xp\local\strategy\event_collection_strategy;
+use block_xp\local\utils\user_utils;
 use completion_info;
 use context_course;
 use local_xp\event\section_completed;
-use moodle_exception;
 
 /**
  * The collection strategy.
@@ -47,17 +50,23 @@ class collection_strategy implements event_collection_strategy {
     protected $allowedcontexts = [];
     /** @var course_world_factory The course factory. */
     protected $worldfactory;
+    /** @var context_world_factory|null The factory. */
+    protected $contextworldfactory;
     /** @var collection_target_resolver_from_event Target resolver. */
     protected $targetresolver;
+    /** @var maker|null The action maker. */
+    protected $actionmaker;
 
     /**
      * Constructor.
      *
      * @param course_world_factory $worldfactory The world.
      * @param int $contextmode The context mode.
+     * @param collection_target_resolver_from_event $targetresolver The target resolver.
+     * @param maker|null $actionmaker The action maker.
      */
     public function __construct(course_world_factory $worldfactory, $contextmode,
-            collection_target_resolver_from_event $targetresolver) {
+            collection_target_resolver_from_event $targetresolver, maker $actionmaker = null) {
 
         $allowedcontexts = [CONTEXT_COURSE, CONTEXT_MODULE];
         if (!empty($contextmode) && $contextmode == CONTEXT_SYSTEM) {
@@ -66,6 +75,7 @@ class collection_strategy implements event_collection_strategy {
         $this->allowedcontexts = $allowedcontexts;
         $this->worldfactory = $worldfactory;
         $this->targetresolver = $targetresolver;
+        $this->actionmaker = $actionmaker;
     }
 
     /**
@@ -75,6 +85,7 @@ class collection_strategy implements event_collection_strategy {
      * @return void
      */
     public function collect_event(\core\event\base $event) {
+        $this->internal_collect_event_for_actions($event);
         $this->internal_collect_event($event);
 
         // This should probably be done elsewhere, but it's a bit tedious to override the
@@ -82,6 +93,43 @@ class collection_strategy implements event_collection_strategy {
         // converting these, so we can place them here for now. That should be done until
         // we decide to do some testing on the event collection alone.
         $this->convert_and_broadcast_event($event);
+    }
+
+    /**
+     * Collect an event for actions.
+     *
+     * @param \core\event\base $event The event.
+     */
+    protected function internal_collect_event_for_actions(\core\event\base $event) {
+        // Skip all the events marked as anonymous.
+        if ($event->anonymous) {
+            return;
+        }
+
+        // No need to continue, we need this.
+        if (!$this->contextworldfactory) {
+            return;
+        }
+
+        // Make the actions from the event.
+        $actions = [];
+        if ($this->actionmaker instanceof maker_from_event) {
+            $actions = $this->actionmaker->make_from_event($event);
+        }
+
+        // Process each action.
+        foreach ($actions as $action) {
+            // Skip the actions if the user does not have the right to earn XP.
+            if (!user_utils::can_earn_points($action->get_context(), $action->get_user_id())) {
+                continue;
+            }
+
+            $strategy = $this->contextworldfactory->get_world_from_context($action->get_context())->get_collection_strategy();
+            if (!$strategy instanceof action_collection_strategy) {
+                continue;
+            }
+            $strategy->collect_action($action);
+        }
     }
 
     /**
@@ -96,10 +144,7 @@ class collection_strategy implements event_collection_strategy {
         }
 
         $userid = $this->targetresolver->get_target_from_event($event);
-        if (!$userid || isguestuser($userid) || is_siteadmin($userid)) {
-            // Skip non-logged in users and guests.
-            return;
-        } else if ($event->anonymous) {
+        if ($event->anonymous) {
             // Skip all the events marked as anonymous.
             return;
         } else if (!in_array($event->contextlevel, $this->allowedcontexts)) {
@@ -110,16 +155,8 @@ class collection_strategy implements event_collection_strategy {
             return;
         }
 
-        try {
-            // It has been reported that this can throw an exception when the context got missing
-            // but is still cached within the event object. Or something like that...
-            $canearn = has_capability('block/xp:earnxp', $event->get_context(), $userid);
-        } catch (moodle_exception $e) {
-            return;
-        }
-
-        // Skip the events if the user does not have the capability to earn XP.
-        if (!$canearn) {
+        // Skip the events if the user does not have the right to earn XP.
+        if (!user_utils::can_earn_points($event->get_context(), $userid)) {
             return;
         }
 
@@ -196,8 +233,8 @@ class collection_strategy implements event_collection_strategy {
             'context' => context_course::instance($event->courseid),
             'relateduserid' => $event->relateduserid,
             'other' => [
-                'sectionnum' => $cm->sectionnum
-            ]
+                'sectionnum' => $cm->sectionnum,
+            ],
         ])->trigger();
     }
 
@@ -257,6 +294,15 @@ class collection_strategy implements event_collection_strategy {
     protected function ensure_completion_lib_is_included() {
         global $CFG;
         require_once($CFG->libdir . '/completionlib.php');
+    }
+
+    /**
+     * Set the context world factory.
+     *
+     * @param context_world_factory $factory The factory.
+     */
+    public function set_context_world_factory(context_world_factory $factory) {
+        $this->contextworldfactory = $factory;
     }
 
 }

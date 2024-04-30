@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_xp;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -39,8 +40,9 @@ use local_xp\local\leaderboard\course_group_leaderboard;
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_xp\local\leaderboard\course_group_leaderboard
  */
-class local_xp_course_group_leaderboard_testcase extends local_xp_base_testcase {
+class course_group_leaderboard_test extends base_testcase {
 
     protected function get_world($courseid) {
         $world = di::get('course_world_factory')->get_world($courseid);

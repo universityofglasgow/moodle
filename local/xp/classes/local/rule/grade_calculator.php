@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\rule;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Grade calculator.
@@ -44,6 +43,9 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class grade_calculator implements result_calculator {
+
+    /** @var \block_xp_rule[] The rules. */
+    protected $filters;
 
     /**
      * Constructor.

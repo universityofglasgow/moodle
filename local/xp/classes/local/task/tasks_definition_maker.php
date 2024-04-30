@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\task;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Tasks definition maker class.

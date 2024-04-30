@@ -63,7 +63,7 @@ class group_leaderboard_table extends flexible_table {
      *
      * @param leaderboard $leaderboard The leaderboard.
      * @param renderer_base $renderer The renderer.
-     * @param int[] $groupid The current group.
+     * @param int[] $objectids The IDs to highlight.
      * @param array $options Options.
      */
     public function __construct(
@@ -110,6 +110,8 @@ class group_leaderboard_table extends flexible_table {
 
     /**
      * Output the table.
+     *
+     * @param int $pagesize The number of items per page.
      */
     public function out($pagesize) {
         $this->setup();
@@ -135,7 +137,7 @@ class group_leaderboard_table extends flexible_table {
         foreach ($ranking as $rank) {
             $row = (object) [
                 'rank' => $rank->get_rank(),
-                'state' => $rank->get_state()
+                'state' => $rank->get_state(),
             ];
             $classes = (in_array($rank->get_state()->get_id(), $this->objectids)) ? 'highlight-row' : '';
             $data = array_map(function($method) use ($row) {
@@ -245,4 +247,22 @@ class group_leaderboard_table extends flexible_table {
             ['style' => 'margin: 1em 0']
         );
     }
+
+    /**
+     * Start HTML.
+     *
+     * Complete override to suppress some features, like pagination at top.
+     *
+     * @return void
+     */
+    public function start_html() {
+        if (in_array(TABLE_P_TOP, $this->showdownloadbuttonsat)) {
+            echo $this->download_buttons();
+        }
+
+        $this->wrap_html_start();
+        echo \html_writer::start_tag('div', ['class' => 'no-overflow']);
+        echo \html_writer::start_tag('table', $this->attributes);
+    }
+
 }

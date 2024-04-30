@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\provider;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * An entry is provided by a provider.

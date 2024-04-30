@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\controller;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp_filter;
 
@@ -81,7 +80,7 @@ class admin_rules_controller extends \block_xp\local\controller\admin_rules_cont
                         'name' => get_string('rulecoursecompletion', 'local_xp'),
                         'info' => get_string('rulecoursecompletioninfo', 'local_xp'),
                         'rule' => new \local_xp\local\rule\course_completion(),
-                    ]
+                    ],
                 ]);
             }
 
@@ -101,7 +100,7 @@ class admin_rules_controller extends \block_xp\local\controller\admin_rules_cont
         $isforwholesite = $config->get('context') == CONTEXT_SYSTEM;
         $defaultgradesfilter = block_xp_filter::load_from_data([
             'category' => block_xp_filter::CATEGORY_GRADES,
-            'rule' => new \block_xp_ruleset()
+            'rule' => new \block_xp_ruleset(),
         ]);
 
         $rules = array_filter([
@@ -114,7 +113,7 @@ class admin_rules_controller extends \block_xp\local\controller\admin_rules_cont
                 'name' => get_string('ruleset', 'block_xp'),
                 'info' => get_string('rulesetinfo', 'block_xp'),
                 'rule' => new \block_xp_ruleset(),
-            ]
+            ],
         ]);
 
         $gradeswidget = new \local_xp\output\grade_filters_widget(
@@ -127,11 +126,11 @@ class admin_rules_controller extends \block_xp\local\controller\admin_rules_cont
         return new \block_xp\output\filters_widget_group([
             new \block_xp\output\filters_widget_element(
                 $gradeswidget,
-                get_string('gradesrules', 'local_xp'),
+                get_string('graderules', 'block_xp'),
                 null,
-                new \help_icon('gradesrules', 'local_xp')
+                new \help_icon('graderules', 'block_xp')
             ),
-            $this->get_events_widget_element()
+            $this->get_events_widget_element(),
         ]);
     }
 

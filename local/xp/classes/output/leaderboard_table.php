@@ -28,8 +28,6 @@ namespace local_xp\output;
 use block_xp\local\config\course_world_config;
 use block_xp\local\xp\state_with_subject;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Leaderboard table.
  *

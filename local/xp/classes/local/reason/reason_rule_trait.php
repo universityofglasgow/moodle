@@ -14,28 +14,46 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
-
-use block_xp\di;
-use block_xp\local\course_world;
-
 /**
- * The drop collection strategy factory.
+ * Reason rule trait.
  *
  * @package    local_xp
- * @copyright  2022 Branch Up Pty Ltd
- * @author     Peter Dias
+ * @copyright  2024 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class default_course_world_drop_collection_strategy_factory implements course_world_drop_collection_strategy_factory {
+
+namespace local_xp\local\reason;
+
+/**
+ * Reason rule trait.
+ *
+ * @package    local_xp
+ * @copyright  2024 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+trait reason_rule_trait {
+
+    /** @var int The rule ID. */
+    protected $ruleid;
 
     /**
-     * @inheritDoc
+     * Get the rule ID.
+     *
+     * @return int|null
      */
-    public function get_course_drop_collection_strategy(course_world $world) {
-        // We need to do this because the logger is not exposed to public from a world.
-        $logger = di::get('course_collection_logger_factory')->get_collection_logger($world);
-        return new course_world_drop_collection_strategy($world->get_store(), $logger);
+    public function get_rule_id(): ?int {
+        return $this->ruleid;
     }
+
+    /**
+     * Set the rule ID.
+     *
+     * @param int|null $id The rule ID.
+     */
+    public function set_rule_id(?int $id) {
+        $this->ruleid = $id;
+    }
+
 }

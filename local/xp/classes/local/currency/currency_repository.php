@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\currency;
-defined('MOODLE_INTERNAL') || die();
 
 use core_collator;
 use DirectoryIterator;
@@ -37,13 +36,16 @@ use DirectoryIterator;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class currency_repository {   // No interface for now.
+class currency_repository {
+    // No interface for now.
 
     /** @var DirectoryIterator The directory iterator. */
     protected $dir;
 
     /**
      * Constructor.
+     *
+     * @param DirectoryIterator $dir The directory iterator.
      */
     public function __construct(DirectoryIterator $dir) {
         $this->dir = $dir;

@@ -25,7 +25,7 @@ use moodleform;
 /**
  * Drop edit form.
  *
- * @package    block_xp
+ * @package    local_xp
  * @copyright  2022 Branch Up Pty Ltd
  * @author     Peter Dias
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

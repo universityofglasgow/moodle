@@ -23,12 +23,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_xp;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once(__DIR__ . '/base_testcase.php');
 
+use backup;
+use backup_controller;
+use base_setting;
+use block_manager;
+use context_course;
+use moodle_page;
+use moodle_url;
+use restore_controller;
+use restore_dbops;
 use local_xp\local\reason\manual_reason;
 
 /**
@@ -38,8 +48,10 @@ use local_xp\local\reason\manual_reason;
  * @copyright  2023 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \backup_local_xp_plugin
+ * @covers     \restore_local_xp_plugin
  */
-class local_xp_backup_testcase extends local_xp_base_testcase {
+class backup_test extends base_testcase {
 
     public function test_restore_in_new_course() {
         global $DB;
@@ -58,8 +70,8 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $newid, 'maxpointspertime' => 8]));
         // Logs are never restored.
         $this->assertEquals(0, $DB->count_records('local_xp_log', ['contextid' => $newctxid]));
-        // The drop secret already exists, not restored.
-        $this->assertEquals(0, $DB->count_records('local_xp_drops', ['courseid' => $newid]));
+        // The drop is restored.
+        $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $newid]));
     }
 
     public function test_restore_merge_in_other() {
@@ -78,8 +90,8 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $c2->id, 'maxpointspertime' => 18]));
         // Logs are never restored.
         $this->assertEquals(1, $DB->count_records('local_xp_log', ['contextid' => $c2ctxid]));
-        // The drop secret already exists, not restored.
-        $this->assertEquals(0, $DB->count_records('local_xp_drops', ['courseid' => $c2->id]));
+        // The drop is added to the course.
+        $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c2->id]));
     }
 
     public function test_restore_delete_and_merge_in_other() {
@@ -99,8 +111,8 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $c2->id, 'maxpointspertime' => 8]));
         // Logs are not restored.
         $this->assertEquals(0, $DB->count_records('local_xp_log', ['contextid' => $c2ctxid]));
-        // The drop secret already exists, not restored.
-        $this->assertEquals(0, $DB->count_records('local_xp_drops', ['courseid' => $c2->id]));
+        // The drop is added to the course.
+        $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c2->id]));
 
         // Validate nothing changed in other courses (c1).
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $c1->id, 'maxpointspertime' => 8]));
@@ -123,8 +135,8 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $c1->id, 'maxpointspertime' => 8]));
         // Logs are never restored.
         $this->assertEquals(4, $DB->count_records('local_xp_log', ['contextid' => $c1ctxid]));
-        // Drop secrets conflict, no restore.
-        $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c1->id]));
+        // The drop is restored next to the other one.
+        $this->assertEquals(2, $DB->count_records('local_xp_drops', ['courseid' => $c1->id]));
     }
 
     public function test_restore_merge_in_same_with_changes() {
@@ -177,7 +189,7 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $this->assertFalse($DB->record_exists('local_xp_config', ['courseid' => $c1->id, 'maxpointspertime' => 999]));
         // Logs are deleted and not restored.
         $this->assertEquals(0, $DB->count_records('local_xp_log', ['contextid' => $c1ctxid]));
-        // Drop secrets don't conflict, restore.
+        // The drop is restored.
         $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c1->id]));
         $this->assertTrue($DB->record_exists('local_xp_drops', ['secret' => 'abcdef']));
         $this->assertFalse($DB->record_exists('local_xp_drops', ['secret' => 'abcdef2']));
@@ -208,7 +220,7 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $c1->id, 'maxpointspertime' => 999]));
         // Logs are not deleted and not restored.
         $this->assertEquals(4, $DB->count_records('local_xp_log', ['contextid' => $c1ctxid]));
-        // Drop secrets don't conflict, restore.
+        // The drop is restored.
         $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c1->id]));
         $this->assertFalse($DB->record_exists('local_xp_drops', ['secret' => 'abcdef']));
         $this->assertTrue($DB->record_exists('local_xp_drops', ['secret' => 'abcdef2']));
@@ -360,8 +372,13 @@ class local_xp_backup_testcase extends local_xp_base_testcase {
         $w2->get_store()->increase_with_reason($u1->id, '33', new manual_reason($USER->id));
 
         // Create a drop.
-        $DB->insert_record('local_xp_drops', ['courseid' => $c1->id, 'name' => 'Foo', 'points' => 420, 'enabled' => 1,
-            'secret' => 'abcdef']);
+        $DB->insert_record('local_xp_drops', [
+            'courseid' => $c1->id,
+            'name' => 'Foo',
+            'points' => 420,
+            'enabled' => 1,
+            'secret' => 'abcdef',
+        ]);
 
         // Validate and document setup.
         $this->assertTrue($DB->record_exists('local_xp_config', ['courseid' => $c1->id, 'maxpointspertime' => 8]));

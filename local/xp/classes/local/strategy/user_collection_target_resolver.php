@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\strategy;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Target resolver from event.

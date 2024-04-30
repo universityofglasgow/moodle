@@ -71,7 +71,9 @@ class log_table extends table_sql {
      *
      * @param context $context The context.
      * @param int $groupid The group ID.
-     * @param string $downloadformat The download format.
+     * @param string|null $downloadformat The download format.
+     * @param team_membership_resolver|null $teamresolver The team resolver.
+     * @param int|null $userid The user ID to filter by.
      */
     public function __construct(context $context, $groupid, $downloadformat = null,
             team_membership_resolver $teamresolver = null, $userid = null) {
@@ -96,7 +98,7 @@ class log_table extends table_sql {
 
         // Define SQL.
         $sqlfrom = '';
-        $sqlparams = array();
+        $sqlparams = [];
         if ($groupid) {
             $sqlfrom = '{local_xp_log} x
                      JOIN {groups_members} gm
@@ -104,7 +106,7 @@ class log_table extends table_sql {
                       AND gm.userid = x.userid
                 LEFT JOIN {user} u
                        ON x.userid = u.id';
-            $sqlparams = array('groupid' => $groupid);
+            $sqlparams = ['groupid' => $groupid];
         } else {
             $sqlfrom = '{local_xp_log} x
                  LEFT JOIN {user} u
@@ -145,7 +147,7 @@ class log_table extends table_sql {
         if ($isdownloading) {
             $cols = array_merge($cols, [
                 'firstname' => get_string('firstname', 'core'),
-                'lastname' => get_string('lastname', 'core')
+                'lastname' => get_string('lastname', 'core'),
             ]);
         }
         $cols = array_merge($cols, [
@@ -187,7 +189,7 @@ class log_table extends table_sql {
         $cols = array_merge($cols, [
             'points' => get_string('reward', 'block_xp'),
             'reason' => !$isdownloading ? '' : get_string('reason', 'local_xp'),
-            'location' => !$isdownloading ? '' : get_string('reasonlocation', 'local_xp')
+            'location' => !$isdownloading ? '' : get_string('reasonlocation', 'local_xp'),
         ]);
         if ($isdownloading) {
             $cols['location_url'] = get_string('reasonlocationurl', 'local_xp');

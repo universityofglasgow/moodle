@@ -24,10 +24,7 @@
  */
 
 namespace local_xp\local\setting;
-defined('MOODLE_INTERNAL') || die();
 
-use ArrayIterator;
-use admin_setting_configcheckbox;
 use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
@@ -57,6 +54,8 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
      *
      * @param config $defaults The config object to get the defaults from.
      * @param url_resolver $urlresolver The URL resolver.
+     * @param iomadfacade $iomad IOMAD.
+     * @param config $configlocked The config object.
      */
     public function __construct(config $defaults, url_resolver $urlresolver, iomadfacade $iomad, config $configlocked) {
         parent::__construct($defaults, $urlresolver, $configlocked);
@@ -128,7 +127,7 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                     $setting->defaultsetting,
                     array_merge($setting->choices, [
                         default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME => get_string(
-                            'displayfirstnameinitiallastname', 'local_xp')
+                            'displayfirstnameinitiallastname', 'local_xp'),
                     ])
                 );
             }

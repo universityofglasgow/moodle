@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\provider;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * A provider provides entries via an iterator.

@@ -15,44 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Drop collection strategy.
+ * Level.
  *
  * @package    local_xp
- * @copyright  2022 Branch Up Pty Ltd
- * @author     Peter Dias
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_xp\local\strategy;
-defined('MOODLE_INTERNAL') || die();
+namespace local_xp\local\xp;
 
-use local_xp\local\drop\drop;
+use block_xp\local\xp\level;
 
 /**
- * Drop collection strategy.
+ * Level.
  *
  * @package    local_xp
- * @copyright  2022 Branch Up Pty Ltd
- * @author     Peter Dias
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface drop_collection_strategy extends collection_strategy {
+interface level_with_badge_award extends level {
 
     /**
-     * Handle an event.
+     * Get the badge ID to award.
      *
-     * @param drop $drop The drop that the user has found.
-     * @param int $userid The user that has found the drop.
-     * @return bool True if acquired.
+     * @return int|null
      */
-    public function collect_drop_for_user(drop $drop, $userid);
+    public function get_badge_award_id();
 
     /**
-     * Can the user collect the event?
+     * Get the badge issuer ID.
      *
-     * @param drop $drop The drop that the user has found.
-     * @param int $userid The user that we need to check.
-     * @return bool
+     * @return int|null
      */
-    public function can_collect(drop $drop, $userid);
+    public function get_badge_award_issuer_id();
+
 }

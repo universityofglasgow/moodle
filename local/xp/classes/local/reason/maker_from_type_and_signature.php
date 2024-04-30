@@ -24,9 +24,6 @@
  */
 
 namespace local_xp\local\reason;
-defined('MOODLE_INTERNAL') || die();
-
-use block_xp\local\reason\reason;
 
 /**
  * Reason maker from type and signature.
@@ -43,7 +40,8 @@ class maker_from_type_and_signature {
     /**
      * Make a reason from the event.
      *
-     * @param \core\event\base $e The event.
+     * @param string $type The type of the reason.
+     * @param string $signature The signature of the reason.
      * @return event_reason
      */
     public function make_from_type_and_signature($type, $signature) {

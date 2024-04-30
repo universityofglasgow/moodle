@@ -17,13 +17,11 @@
 /**
  * Cli lib.
  *
- * @package    core
+ * @package    local_xp
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Get the language root directory.
@@ -62,7 +60,7 @@ function local_xp_cli_has_language($lang) {
 /**
  * Get the language root directory.
  *
- * @return string ending with /
+ * @return string[] ending with /
  */
 function local_xp_cli_get_languages() {
     $root = local_xp_cli_get_language_root();

@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\logger;
-defined('MOODLE_INTERNAL') || die();
 
 use context;
 use DateTime;
@@ -35,8 +34,10 @@ use block_xp\local\reason\reason;
 use block_xp\local\logger\collection_logger_with_group_reset;
 use block_xp\local\logger\collection_logger_with_id_reset;
 use block_xp\local\logger\reason_collection_logger;
+use block_xp\local\reason\reason_with_rule;
 use local_xp\local\reason\reason_with_short_description;
 use local_xp\local\reason\maker_from_type_and_signature;
+
 /**
  * Collection logger.
  *
@@ -55,12 +56,15 @@ class context_collection_logger implements
         collection_counts_indicator,
         reason_collection_counts_indicator,
         reason_occurance_indicator,
-        user_recent_activity_repository
-    {
+        user_recent_activity_repository {
 
+    /** @var moodle_database */
     protected $db;
+    /** @var string */
     protected $table = 'local_xp_log';
+    /** @var context */
     protected $context;
+    /** @var make_from_type_and_signature */
     protected $reasonmaker;
 
     public function __construct(moodle_database $db, context $context, maker_from_type_and_signature $reasonmaker) {
@@ -100,7 +104,7 @@ class context_collection_logger implements
             'contextid = :contextid AND time < :time',
             [
                 'contextid' => $this->context->id,
-                'time' => $dt->getTimestamp()
+                'time' => $dt->getTimestamp(),
             ]
         );
     }
@@ -196,7 +200,8 @@ class context_collection_logger implements
             'signature' => $reason->get_signature(),
             'points' => $points,
             'time' => $time ? $time->getTimestamp() : time(),
-            'hashkey' => $this->make_hash_key($reason)
+            'ruleid' => $reason instanceof reason_with_rule ? $reason->get_rule_id() : null,
+            'hashkey' => $this->make_hash_key($reason),
         ];
         $this->db->insert_record($this->table, $record);
     }
@@ -242,7 +247,7 @@ class context_collection_logger implements
 
         $params = [
             'contextid' => $this->context->id,
-            'groupid' => $groupid
+            'groupid' => $groupid,
         ];
 
         $this->db->execute($sql, $params);
@@ -259,7 +264,7 @@ class context_collection_logger implements
             $this->table,
             [
                 'contextid' => $this->context->id,
-                'userid' => $id
+                'userid' => $id,
             ]
         );
     }

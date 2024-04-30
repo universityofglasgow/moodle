@@ -79,8 +79,8 @@ class csv_import extends moodleform {
 
         // Import action.
         $mform->addElement('select', 'resetoradd', get_string('importpointsaction', 'local_xp'), [
-            user_state_store_points::ACTION_SET => 'Set as total',
-            user_state_store_points::ACTION_INCREASE => 'Increase'
+            user_state_store_points::ACTION_SET => get_string('setastotal', 'local_xp'),
+            user_state_store_points::ACTION_INCREASE => get_string('increase', 'local_xp'),
         ]);
         $mform->setDefault('resetoradd', user_state_store_points::ACTION_INCREASE);
         $mform->addHelpButton('resetoradd', 'importpointsaction', 'local_xp');
@@ -94,7 +94,7 @@ class csv_import extends moodleform {
             $mform->disabledIf('sendnotification', 'resetoradd', 'eq', user_state_store_points::ACTION_SET);
         }
 
-        $this->add_action_buttons(true, get_string('preview'));
+        $this->add_action_buttons(false, get_string('preview'));
     }
 
     /**

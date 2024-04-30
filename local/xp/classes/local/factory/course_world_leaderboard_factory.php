@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_database;
 use block_xp\local\course_world;
@@ -65,7 +64,9 @@ class course_world_leaderboard_factory extends default_course_world_leaderboard_
     /**
      * Get the anonymiser.
      *
-     * @inheritDoc
+     * @param course_world $world The course world.
+     * @param config $config The config.
+     * @return \block_xp\local\xp\state_anonymiser
      */
     protected function get_anonymiser_with_config(course_world $world, config $config) {
         global $USER;
@@ -80,7 +81,12 @@ class course_world_leaderboard_factory extends default_course_world_leaderboard_
     /**
      * Get the leaderboard instance.
      *
-     * @inheritDoc
+     * @param course_world $world The course world.
+     * @param int $groupid The group ID.
+     * @param array $columns The columns.
+     * @param config $config The config.
+     * @param ranker|null $ranker The ranker.
+     * @return \block_xp\local\leaderboard\leaderboard
      */
     protected function get_leaderboard_instance_with_config(course_world $world, $groupid, array $columns,
             config $config, ranker $ranker = null) {

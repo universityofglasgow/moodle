@@ -49,7 +49,7 @@ list($options, $unrecognised) = cli_get_params([
     'help' => false,
     'lang' => null,
 ], [
-    'h' => 'help'
+    'h' => 'help',
 ]);
 
 if ($unrecognised) {

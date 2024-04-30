@@ -17,7 +17,7 @@
 /**
  * Log controller.
  *
- * @package    block_xp
+ * @package    local_xp
  * @copyright  2017 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,8 +26,6 @@
 namespace local_xp\local\controller;
 
 use local_xp\local\config\default_course_world_config;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Log controller class.

@@ -55,7 +55,6 @@ class drop_table extends table_sql {
      * Constructor.
      *
      * @param course_world $world The world.
-     * @param int $groupid The group ID.
      */
     public function __construct(course_world $world) {
         parent::__construct('block_xp_drops');
@@ -99,7 +98,7 @@ class drop_table extends table_sql {
             'data-action' => 'drop-setup',
             'data-name' => $name,
             'data-editurl' => $url->out(false),
-            'data-shortcode' => "[xpdrop {$row->secret}]",
+            'data-shortcode' => "[xpdrop id={$row->id} secret={$row->secret}]",
         ]);
     }
 
@@ -125,7 +124,8 @@ class drop_table extends table_sql {
 
     /**
      * Actions link.
-     * @param $row
+     *
+     * @param stdClass $row The row.
      * @throws \coding_exception
      */
     protected function col_actions($row) {

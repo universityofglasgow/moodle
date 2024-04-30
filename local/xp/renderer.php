@@ -26,7 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/blocks/xp/renderer.php');
 
+use block_xp\local\course_world;
 use block_xp\local\xp\state;
+use local_xp\local\config\default_course_world_config;
 use local_xp\local\factory\course_currency_factory;
 use local_xp\local\drop\drop;
 use local_xp\local\currency\currency;
@@ -41,7 +43,9 @@ use local_xp\local\currency\currency;
  */
 class local_xp_renderer extends block_xp_renderer {
 
+    /** @var course_currency_factory */
     protected $currencyfactory;
+    /** @var object */
     protected $currencyrendercache;
 
     public function currency(currency $currency) {
@@ -67,12 +71,9 @@ class local_xp_renderer extends block_xp_renderer {
      * @param drop $drop The drop.
      */
     public function drop(drop $drop) {
-        $context = [
-            "secret" => $drop->get_secret(),
-            "courseid" => $drop->get_courseid(),
-            "id" => $drop->get_id(),
-        ];
-        return $this->render_from_template("local_xp/drop", $context);
+        // This method existed but was never used, it is left in case something referenced it.
+        // We may decide to use it at a later stage.
+        return '';
     }
 
     /**
@@ -90,10 +91,34 @@ class local_xp_renderer extends block_xp_renderer {
     }
 
     /**
+     * Get the context of the navbar widget.
+     *
+     * @param course_world $world The world.
+     * @param state $state The user's state.
+     * @return array
+     */
+    protected function get_navbar_widget_context(course_world $world, state $state) {
+        $data = parent::get_navbar_widget_context($world, $state);
+
+        $urlresolver = \block_xp\di::get('url_resolver');
+        $worldconfig = $world->get_config();
+
+        $teamleaderboardurl = null;
+        if ($worldconfig->get('enablegroupladder') != default_course_world_config::GROUP_LADDER_NONE) {
+            $teamleaderboardurl = $urlresolver->reverse('group_ladder', ['courseid' => $world->get_courseid()]);
+        }
+
+        return array_merge($data, [
+            'linkurl' => $data['linkurl'] ?? ($teamleaderboardurl ? $teamleaderboardurl->out(false) : null),
+            'teamleaderboardurl' => $teamleaderboardurl ? $teamleaderboardurl->out(false) : null,
+        ]);
+    }
+
+    /**
      * Get the progress bar mustache context.
      *
      * @param state $state The renderable object.
-     * @param bool $showpercentagetogo Show the percentage to go.
+     * @param bool $percentagetogo Show the percentage to go.
      * @return array
      */
     protected function get_progress_bar_context(state $state, $percentagetogo = false) {
@@ -122,7 +147,7 @@ class local_xp_renderer extends block_xp_renderer {
             return;
         }
         return $this->team_picture($pic, format_string($group->name, true, [
-            'context' => context_course::instance($group->courseid)
+            'context' => context_course::instance($group->courseid),
         ]));
     }
 
@@ -130,13 +155,14 @@ class local_xp_renderer extends block_xp_renderer {
      * Return the team picture.
      *
      * @param moodle_url $url The URL.
+     * @param string $alt The alt text.
      * @return string
      */
     public function team_picture(moodle_url $url, $alt = '') {
         return html_writer::empty_tag('img', [
             'src' => $url->out(false),
             'class' => 'grouppic',
-            'alt' => $alt
+            'alt' => $alt,
         ]);
     }
 
@@ -147,7 +173,7 @@ class local_xp_renderer extends block_xp_renderer {
      * this here because the grade filter looks different and does not support the same
      * options.
      *
-     * @param block_xp_filter $filter The filter.
+     * @param renderable $gradefilter The grade filter.
      * @return string
      */
     public function render_grade_filter(renderable $gradefilter) {
@@ -157,23 +183,25 @@ class local_xp_renderer extends block_xp_renderer {
         $o = '';
         $basename = 'gradefilters[' . $i++ . ']';
 
-        $o .= html_writer::start_tag('li', array('class' => 'filter', 'data-basename' => $basename));
+        $o .= html_writer::start_tag('li', ['class' => 'filter', 'data-basename' => $basename]);
 
         $content = '';
         $content .= get_string('studentsearnpointsforgradeswhen', 'local_xp');
 
         $o .= html_writer::tag('p', $content);
-        $o .= html_writer::empty_tag('input', array(
+        $o .= html_writer::empty_tag('input', [
                 'type' => 'hidden',
                 'value' => $filter->get_id(),
-                'name' => $basename . '[id]'));
-        $o .= html_writer::empty_tag('input', array(
+                'name' => $basename . '[id]',
+            ]);
+        $o .= html_writer::empty_tag('input', [
                 'type' => 'hidden',
                 'value' => $filter->get_sortorder(),
-                'name' => $basename . '[sortorder]'));
+                'name' => $basename . '[sortorder]',
+            ]);
         $basename .= '[rule]';
 
-        $o .= html_writer::start_tag('ul', array('class' => 'filter-rules'));
+        $o .= html_writer::start_tag('ul', ['class' => 'filter-rules']);
         $o .= $this->render($filter->get_rule(), ['iseditable' => true, 'basename' => $basename]);
         $o .= html_writer::end_tag('ul');
         $o .= html_writer::end_tag('li');
@@ -191,18 +219,20 @@ class local_xp_renderer extends block_xp_renderer {
         $containerid = html_writer::random_id();
 
         // Prepare Javascript.
-        $this->page->requires->yui_module('moodle-block_xp-filters', 'Y.M.block_xp.Filters.init', [[
-            'containerSelector' => '#' . $containerid,
-            'filter' => $this->render($widget->filter),
-            'rules' => array_reduce($widget->rules, function($carry, $rule) {
-                $carry[] = [
-                    'name' => $rule->name,
-                    'info' => !empty($rule->info) ? $rule->info : null,
-                    'template' => $this->render($rule->rule, ['iseditable' => true, 'basename' => 'XXXXX'])
-                ];
-                return $carry;
-            }, [])
-        ]]);
+        $this->page->requires->yui_module('moodle-block_xp-filters', 'Y.M.block_xp.Filters.init', [
+            [
+                'containerSelector' => '#' . $containerid,
+                'filter' => $this->render($widget->filter),
+                'rules' => array_reduce($widget->rules, function($carry, $rule) {
+                    $carry[] = [
+                        'name' => $rule->name,
+                        'info' => !empty($rule->info) ? $rule->info : null,
+                        'template' => $this->render($rule->rule, ['iseditable' => true, 'basename' => 'XXXXX']),
+                    ];
+                    return $carry;
+                }, []),
+            ],
+        ]);
         $this->page->requires->strings_for_js(['pickaconditiontype', 'deleterule', 'deletecondition'], 'block_xp');
         $this->page->requires->strings_for_js(['areyousure'], 'core');
 
@@ -240,7 +270,7 @@ class local_xp_renderer extends block_xp_renderer {
         } else {
             $currency = $this->get_course_currency_factory()->get_currency($courseid);
         }
-        return $this->xp($points, $currency);
+        return html_writer::div($this->xp($points, $currency), 'xp-bg-gray-100 xp-px-2 xp-py-1 xp-rounded');
     }
 
 }

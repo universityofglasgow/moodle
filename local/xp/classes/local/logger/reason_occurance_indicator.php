@@ -24,10 +24,8 @@
  */
 
 namespace local_xp\local\logger;
-defined('MOODLE_INTERNAL') || die();
 
-use DateTime;
-use block_xp\local\reason\reason;
+use block_xp\local\logger\reason_occurrence_indicator;
 
 /**
  * Reason occurance indicator.
@@ -36,17 +34,7 @@ use block_xp\local\reason\reason;
  * @copyright  2017 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Since XP+ 1.16, use XP reason_occurrence_indicator instead.
  */
-interface reason_occurance_indicator {
-
-    /**
-     * Has the reason ever happened.
-     *
-     * @param int $id The ID.
-     * @param reason $reason The reason.
-     * @param DateTime $since The date.
-     * @return bool
-     */
-    public function has_reason_happened_since($id, reason $reason, DateTime $since);
-
+interface reason_occurance_indicator extends reason_occurrence_indicator {
 }

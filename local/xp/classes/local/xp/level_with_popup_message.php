@@ -14,27 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_xp\local\factory;
-defined('MOODLE_INTERNAL') || die();
-
-use \block_xp\local\course_world;
-
 /**
- * Drop strategry factory interface.
+ * Level.
  *
- * @package    block_xp
- * @copyright  2022 Branch Up Pty Ltd
- * @author     Peter Dias
+ * @package    local_xp
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface course_world_drop_collection_strategy_factory {
+
+namespace local_xp\local\xp;
+
+use block_xp\local\xp\level;
+
+/**
+ * Level.
+ *
+ * @package    local_xp
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+interface level_with_popup_message extends level {
 
     /**
-     * Get the collection strategy.
+     * Get the popup message.
      *
-     * @param course_world $world The world.
-     * @return drop_collection_strategy
+     * @return string|null
      */
-    public function get_course_drop_collection_strategy(course_world $world);
+    public function get_popup_message();
 
 }

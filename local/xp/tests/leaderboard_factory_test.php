@@ -23,10 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once(__DIR__ . '/base_testcase.php');
+namespace local_xp;
 
 use block_xp\di;
 use block_xp\local\config\config_stack;
@@ -41,8 +38,9 @@ use local_xp\local\config\default_course_world_config;
  * @copyright  2022 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_xp\local\factory\course_world_leaderboard_factory
  */
-class local_xp_leaderboard_factory_testcase extends local_xp_base_testcase {
+class leaderboard_factory_test extends base_testcase {
 
     protected function get_world($courseid) {
         return di::get('course_world_factory')->get_world($courseid);
@@ -174,8 +172,8 @@ class local_xp_leaderboard_factory_testcase extends local_xp_base_testcase {
         $this->assertEquals(120, $ranking[3]->get_state()->get_total_xp_in_level());
 
         $config = new config_stack([new static_config([
-            'progressbarmode' => default_course_world_config::PROGRESS_BAR_MODE_OVERALL
-        ]), $world->get_config()]);
+            'progressbarmode' => default_course_world_config::PROGRESS_BAR_MODE_OVERALL,
+        ]), $world->get_config(), ]);
         $lb = $factory->get_course_leaderboard_with_config($world, $config);
         $ranking = $lb->get_ranking(new limit(0, 0));
         $ranking = !is_array($ranking) ? array_values(iterator_to_array($ranking)) : $ranking;

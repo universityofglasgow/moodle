@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\provider;
-defined('MOODLE_INTERNAL') || die();
 
 use csv_import_reader;
 use block_xp\local\iterator\csv_reader_iterator;
@@ -68,12 +67,14 @@ class csv_user_state_store_points_provider implements user_state_store_points_pr
         $this->defaultreason = $defaultreason;
     }
 
+    // @codingStandardsIgnoreLine.
+    #[\ReturnTypeWillChange]
     /**
      * Get the iterator.
      *
      * @return \Iterator
      */
-    public function getIterator() {
+    public function getIterator() { // @codingStandardsIgnoreLine.
         return new map_iterator(
             new csv_reader_iterator($this->cir),
             function($line, $lineno) {

@@ -23,11 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_xp;
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
+use context_course;
 
-require_once(__DIR__ . '/base_testcase.php');
+global $CFG;
 require_once($CFG->dirroot . '/blocks/xp/tests/fixtures/events.php');
 
 /**
@@ -37,8 +38,9 @@ require_once($CFG->dirroot . '/blocks/xp/tests/fixtures/events.php');
  * @copyright  2022 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_xp\local\course_world
  */
-class local_xp_course_world_testcase extends local_xp_base_testcase {
+class course_world_test extends base_testcase {
 
     public function test_delete_user_state() {
         global $DB;
@@ -59,12 +61,12 @@ class local_xp_course_world_testcase extends local_xp_base_testcase {
         $strategy = $world->get_collection_strategy();
 
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'edulevel' => \core\event\base::LEVEL_PARTICIPATING,
-            'userid' => $u1->id, 'courseid' => $c1->id]);
+            'userid' => $u1->id, 'courseid' => $c1->id, ]);
         $strategy->collect_event($e);
         $strategy->collect_event($e);
 
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'edulevel' => \core\event\base::LEVEL_PARTICIPATING,
-            'userid' => $u2->id, 'courseid' => $c1->id]);
+            'userid' => $u2->id, 'courseid' => $c1->id, ]);
         $strategy->collect_event($e);
         $strategy->collect_event($e);
 
@@ -73,7 +75,7 @@ class local_xp_course_world_testcase extends local_xp_base_testcase {
         $strategy = $world->get_collection_strategy();
 
         $e = \block_xp\event\something_happened::mock(['crud' => 'c', 'edulevel' => \core\event\base::LEVEL_PARTICIPATING,
-            'userid' => $u1->id, 'courseid' => $c2->id]);
+            'userid' => $u1->id, 'courseid' => $c2->id, ]);
         $strategy->collect_event($e);
 
         $world = $this->get_world($c1->id);

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Export strings..
+ * Export strings.
  *
- * @package    core
+ * @package    local_xp
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -52,7 +52,7 @@ list($options, $unrecognised) = cli_get_params([
     'help' => false,
 ], [
     'f' => 'file',
-    'h' => 'help'
+    'h' => 'help',
 ]);
 
 if ($unrecognised) {
@@ -127,6 +127,11 @@ foreach ($otherlangs as $lang) {
     }
 }
 
+/**
+ * Make language header.
+ *
+ * @return string
+ */
 function local_xp_cli_get_lang_header() {
     return <<<HEADER
 <?php
@@ -152,6 +157,7 @@ function local_xp_cli_get_lang_header() {
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @codingStandardsIgnoreFile
  */
 
 defined('MOODLE_INTERNAL') || die();

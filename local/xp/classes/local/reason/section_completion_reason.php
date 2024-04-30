@@ -24,12 +24,10 @@
  */
 
 namespace local_xp\local\reason;
-defined('MOODLE_INTERNAL') || die();
 
 use block_xp\local\reason\reason;
+use block_xp\local\reason\reason_with_rule;
 use context_course;
-
-require_once($CFG->dirroot . '/course/lib.php');
 
 /**
  * Section completion reason.
@@ -39,12 +37,23 @@ require_once($CFG->dirroot . '/course/lib.php');
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class section_completion_reason implements reason, reason_with_short_description, reason_with_location {
+class section_completion_reason implements reason, reason_with_short_description, reason_with_location, reason_with_rule {
 
+    use reason_rule_trait;
+
+    /** @var int The course ID. */
     protected $courseid;
+    /** @var \context The context. */
     protected $context;
+    /** @var int The section num. */
     protected $sectionnum;
 
+    /**
+     * Constructor.
+     *
+     * @param int $courseid The course ID.
+     * @param int $sectionnum The section.
+     */
     public function __construct($courseid, $sectionnum) {
         $this->courseid = $courseid;
         $this->sectionnum = $sectionnum;

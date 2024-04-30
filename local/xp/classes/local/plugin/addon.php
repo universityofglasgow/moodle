@@ -25,8 +25,6 @@
 
 namespace local_xp\local\plugin;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Addon class.
  *
@@ -71,6 +69,28 @@ defined('MOODLE_INTERNAL') || die();
 class addon extends \block_xp\local\plugin\addon {
 
     /**
+     * Get the version difference.
+     *
+     * @return int
+     */
+    public function get_version_diff() {
+        $pluginman = \core_plugin_manager::instance();
+        $blockxp = $pluginman->get_plugin_info('block_xp');
+        $localxp = static::get_plugin_info();
+
+        if (!$localxp || !$localxp->is_installed_and_upgraded()) {
+            return false;
+        } else if (!$blockxp || !$blockxp->is_installed_and_upgraded()) {
+            return false;
+        }
+
+        // Versions should have the same date.
+        $blockxpversion = (int) floor($blockxp->versiondb / 100);
+        $localxpversion = (int) floor($localxp->versiondb / 100);
+        return $blockxpversion - $localxpversion;
+    }
+
+    /**
      * Whether the plugin is activated.
      *
      * @return bool
@@ -85,7 +105,7 @@ class addon extends \block_xp\local\plugin\addon {
      * @return bool
      */
     public function is_installed_and_upgraded() {
-        return $this->get_plugin_info()->is_installed_and_upgraded();
+        return static::get_plugin_info()->is_installed_and_upgraded();
     }
 
     /**
@@ -94,20 +114,7 @@ class addon extends \block_xp\local\plugin\addon {
      * @return bool
      */
     public function is_out_of_sync() {
-        $pluginman = \core_plugin_manager::instance();
-        $blockxp = $pluginman->get_plugin_info('block_xp');
-        $localxp = static::get_plugin_info();
-
-        if (!$localxp || !$localxp->is_installed_and_upgraded()) {
-            return false;
-        } else if (!$blockxp || !$blockxp->is_installed_and_upgraded()) {
-            return false;
-        }
-
-        // Versions should have the same date.
-        $blockxpversion = floor($blockxp->versiondb / 100);
-        $localxpversion = floor($localxp->versiondb / 100);
-        return $blockxpversion > $localxpversion;
+        return $this->get_version_diff() !== 0;
     }
 
 }

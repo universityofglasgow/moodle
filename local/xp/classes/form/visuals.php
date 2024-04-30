@@ -27,7 +27,6 @@ namespace local_xp\form;
 defined('MOODLE_INTERNAL') || die();
 
 use html_writer;
-use local_xp\local\currency\builtin_sign_url_resolver;
 use local_xp\local\currency\default_currency;
 use local_xp\local\currency\theme_sign_url_resolver;
 use moodleform;
@@ -60,20 +59,19 @@ class visuals extends moodleform {
         $mform->addElement('select', 'badgetheme', get_string('badgetheme', 'local_xp'), $themes);
         $mform->addHelpButton('badgetheme', 'badgetheme', 'local_xp');
 
-        $mform->addElement('filemanager', 'badges', get_string('levelbadges', 'local_xp'), null, $this->_customdata['fmoptions']);
-        $mform->addHelpButton('badges', 'levelbadges', 'local_xp');
-        $mform->addElement('static', '', '', get_string('levelbadgesformhelp', 'block_xp'));
+        $mform->addElement('filemanager', 'badges', get_string('levelbadges', 'block_xp'), null, $this->_customdata['fmoptions']);
+        $mform->addHelpButton('badges', 'levelbadges', 'block_xp');
 
         $currencies = array_reduce($currencyrepository->get_currencies(), function($carry, $data) {
             $carry[$data->code] = $data->name;
             return $carry;
-        }, ['' => get_string('currencysignxp', 'local_xp')]);
-        $mform->addElement('select', 'currencytheme', get_string('currencysign', 'local_xp'), $currencies);
-        $mform->addHelpButton('currencytheme', 'currencysign', 'local_xp');
+        }, ['' => get_string('currencysignxp', 'block_xp')]);
+        $mform->addElement('select', 'currencytheme', get_string('currencysign', 'block_xp'), $currencies);
+        $mform->addHelpButton('currencytheme', 'currencysign', 'block_xp');
 
         $mform->addElement('filemanager', 'currency', get_string('currencysignoverride', 'local_xp'), null,
             $this->_customdata['currencyfmoptions']);
-        $mform->addElement('static', 'currencyfilenote', '', get_string('currencysignformhelp', 'local_xp'));
+        $mform->addHelpButton('currency', 'currencysignoverride', 'local_xp');
 
         $this->add_action_buttons();
     }
@@ -98,7 +96,7 @@ class visuals extends moodleform {
                         html_writer::div($renderer->small_level_badge($badge))
                         . html_writer::div($renderer->small_level_badge($badge2))
                         . html_writer::tag('small', get_string('uptoleveln', 'local_xp', $theme->levels)),
-                    'xp-flex xp-items-center xp-space-x-1')
+                    'xp-flex xp-items-center xp-space-x-1'),
             ];
             return $carry;
         }, [[
@@ -106,8 +104,8 @@ class visuals extends moodleform {
             'annotation' => html_writer::div(
                     html_writer::div($renderer->small_level_badge(new \block_xp\local\xp\described_level(1, 0, '')))
                     . html_writer::div($renderer->small_level_badge(new \block_xp\local\xp\described_level(99, 0, ''))),
-                'xp-flex xp-items-center xp-space-x-1')
-        ]]);
+                'xp-flex xp-items-center xp-space-x-1'),
+        ], ]);
 
         $jsonid = html_writer::random_id();
         echo $renderer->json_script($themedata, $jsonid);
@@ -122,7 +120,7 @@ class visuals extends moodleform {
             $currency = new default_currency($resolver);
             $carry[] = [
                 'value' => $value,
-                'annotation' => html_writer::div($renderer->xp(1337, $currency), 'xp-mt-1')
+                'annotation' => html_writer::div($renderer->xp(1337, $currency), 'xp-mt-1'),
             ];
             return $carry;
         });

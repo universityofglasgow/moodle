@@ -24,7 +24,6 @@
  */
 
 namespace local_xp\local\notification;
-defined('MOODLE_INTERNAL') || die();
 
 use coding_exception;
 use core_user;
@@ -76,7 +75,7 @@ class award_notifier {
         $smallmessage = get_string($messagekey, 'local_xp', [
             'coursename' => $this->world->get_context()->get_context_name(false),
             'fullname' => fullname($this->awardedby),
-            'points' => $points
+            'points' => $points,
         ]);
         $fullmessage = $smallmessage;
         if (!empty($message)) {
@@ -102,6 +101,7 @@ class award_notifier {
             $message->courseid = $this->world->get_courseid();
         } catch (coding_exception $e) {
             // The property courseid did not exist in older versions.
+            $pleaselinter = true;
         }
 
         message_send($message);
