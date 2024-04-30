@@ -1,3 +1,8 @@
+# Version 2.52 of the Moodle WordSelect question type by Marcus Green. Apr 2024
+Updated to support PHP 8.2, and removal of @core tags in behat tests.
+Thanks to Tim Hunt at the UK Open University
+https://github.com/marcusgreen/moodle-qtype_wordselect/pull/52.
+
 # Version 2.50 of the Moodle WordSelect question type by Marcus Green. Oct 2023
 Removed all references to the function initialise_question_instance, it was throwing an error in
 PHP 8.1 that that highlighted it was not doing anything. Fixed behat tests to work with changes to
