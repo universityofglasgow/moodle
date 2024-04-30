@@ -66,7 +66,7 @@ Feature: Reset task works.
         And I follow "Test Quiz"
         And I press "Attempt quiz"
         And I click on "True" "radio" in the "First question" "question"
-        And I set the field with xpath "//div[@role='textbox']" to "This is my answer to the second question"
+        And I set the field with xpath "//textarea[@data-fieldtype='editor']" to "This is my answer to the second question"
         And I press "Finish attempt ..."
         And I press "Submit all and finish"
         And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
