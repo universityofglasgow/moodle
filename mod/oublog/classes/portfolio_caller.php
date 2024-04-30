@@ -33,7 +33,9 @@ class portfolio_caller extends \portfolio_module_caller_base {
     protected $oublogid;
     protected $cmid;
     protected $cmsharedblogid;
-
+    protected $oubloguserid;
+    protected $oublog;
+    protected $modcontext;
     private $posts;
     protected $files = array();
     private $keyedfiles = array();
@@ -249,10 +251,10 @@ class portfolio_caller extends \portfolio_module_caller_base {
             $output .= \html_writer::start_tag('body') . "\n";
         }
         if (!$oublog = oublog_get_blog_from_postid($post->id)) {
-            print_error('invalidpost', 'oublog');
+            throw new moodle_exception('invalidpost', 'oublog');
         }
         if (!$cm = get_coursemodule_from_instance('oublog', $oublog->id)) {
-            print_error('invalidcoursemodule');
+            throw new moodle_exception('invalidcoursemodule');
         }
         $oublogoutput = $PAGE->get_renderer('mod_oublog');
         $context = \context_module::instance($cm->id);

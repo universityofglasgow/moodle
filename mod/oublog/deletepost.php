@@ -32,16 +32,16 @@ $referurl = optional_param('referurl', 0, PARAM_LOCALURL);
 $cmid = optional_param('cmid', null, PARAM_INT);
 
 if (!$oublog = $DB->get_record("oublog", array("id"=>$blog))) {
-    print_error('invalidblog', 'oublog');
+    throw new moodle_exception('invalidblog', 'oublog');
 }
 if (!$post = oublog_get_post($postid, false)) {
-    print_error('invalidpost', 'oublog');
+    throw new moodle_exception('invalidpost', 'oublog');
 }
 if (!$cm = get_coursemodule_from_instance('oublog', $blog)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 if (!$course = $DB->get_record("course", array("id"=>$oublog->course))) {
-    print_error('coursemisconf');
+    throw new moodle_exception('coursemisconf');
 }
 $url = new moodle_url('/mod/oublog/deletepost.php',
         array('blog' => $blog, 'post' => $postid, 'confirm' => $confirm));
@@ -139,7 +139,7 @@ if ($email) {
         }
         // Send an email to the author of the post.
         if (!email_to_user($user, $from, $post->title, html_to_text($messagehtml), $messagehtml)) {
-            print_error(get_string('emailerror', 'oublog'));
+            throw new moodle_exception('emailerror', 'oublog');
         }
 
         // Prepare for copies.
@@ -148,7 +148,7 @@ if ($email) {
             // Send an email copy to the current user, with prefered format.
             $subject = strtoupper(get_string('copy')) . ' - '. $post->title;
             if (!email_to_user($USER, $from, $subject, html_to_text($messagehtml), $messagehtml)) {
-                print_error(get_string('emailerror', 'oublog'));
+                throw new moodle_exception('emailerror', 'oublog');
             }
         }
 
@@ -167,7 +167,7 @@ if ($email) {
                         'id' => -1
                 );
                 if (!email_to_user($fakeuser, $from, $subject, '', $messagehtml)) {
-                    print_error(get_string('emailerror', 'oublog'));
+                    throw new moodle_exception('emailerror', 'oublog');
                 }
             }
         }
@@ -241,7 +241,7 @@ function oublog_do_delete($course, $cm, $oublog, $post) {
     $DB->update_record('oublog_posts', $updatepost);
     if (!oublog_update_item_tags($post->oubloginstancesid, $post->id,
             array(), $post->visibility)) {
-        print_error('tagupdatefailed', 'oublog');
+        throw new moodle_exception('tagupdatefailed', 'oublog');
     }
     if (oublog_search_installed() && !local_ousearch_indexingdisabled()) {
         $doc = oublog_get_search_document($updatepost, $cm);
