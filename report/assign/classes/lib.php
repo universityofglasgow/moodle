@@ -64,13 +64,12 @@ class lib {
             $assignment = new \assign($context, $cm, $course);
             $instance = $assignment->get_instance();
             $instance->submitcount = $assignment->count_submissions_with_status(ASSIGN_SUBMISSION_STATUS_SUBMITTED);
-            $instance->releasedcount = $assignment->count_submissions_need_grading();
-            $instance->gradecount = $instance->submitcount - $instance->releasedcount;
+            $instance->releasedcount = $DB->count_records_sql('SELECT COUNT(*) FROM {assign_user_flags} WHERE assignment = :id and workflowstate = :wf', ['id' => $instance->id, 'wf' => 'released',]);
             $instance->urkundenabled = self::urkund_enabled($instance->id);
             $instance->turnitinenabled = self::turnitin_enabled($instance->id);
             $assignments[$instance->id] = $instance;
         }
-
+        
         return $assignments;
     }
 
