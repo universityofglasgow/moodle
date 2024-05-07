@@ -162,8 +162,8 @@
 {{!Moodle 4.3+ does not need this but 4.1/4.2 do. If missing it prevents scrolling when tile open see issue 178.}}
     .format-tiles.path-course-view #page {overflow-y: visible;}
 {{/ismoodle42minus}}
-
-.format-tiles li.activity .activityiconcontainer.content {
-    {{! Make the "content" activity icon container have a slightly lighter version of main tile colour. }}
-    background-color: rgba({{base_colour_rgb}},0.8);
-}
+{{#ismoodle44}}
+    li.activity.subtile .tileiconcontainer .tile-icon .icon {
+        max-width: 90px;max-height: 90px;width: 90px;height: 90px;padding: 0;
+    }
+{{/ismoodle44}}

@@ -1,4 +1,4 @@
-@format @format_tiles @javascript_nav @javascript
+@format @format_tiles @format_tiles_javascript_nav @javascript
 Feature: Interface can be enhabced with JS nav if allowed by site admin
   In order to improve navigation
   As a user
@@ -16,8 +16,8 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
       | assign   | Test assignment name    | Test assignment description | C1     | assign1  | 0       | 1       |
       | forum    | Announcements Sec 0     | Test forum description      | C1     | forum1   | 0       | 1       |
       | book     | Test book name s1       | Test book description       | C1     | book1    | 1       | 1       |
-      | chat     | Test chat name s2       | Test chat description       | C1     | chat1    | 2       | 1       |
-      | choice   | Test choice name hidden | Test choice description     | C1     | choice1  | 2       | 0       |
+      | book     | Test book name s2       | Test book 2 description     | C1     | book2    | 2       | 1       |
+      | book     | Test book name hidden   | Test book 3 description     | C1     | book3    | 2       | 0       |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | C1     | student |
@@ -40,7 +40,7 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I click on tile "1"
     And I wait until the page is ready
     And I should see "Test book name s1"
-    And I should not see "Test chat name s2"
+    And I should not see "Test book name s2"
     And "#editsectiontbtn-1" "css_element" should not be visible
     And I click on close button for tile "1"
     And I should not see "Test book name s1"
@@ -51,9 +51,9 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I click on tile "2"
     And I wait until the page is ready
     And I should not see "Test book name s1"
-    And I should see "Test chat name s2"
+    And I should see "Test book name s2"
     And I click on close button for tile "2"
-    And I should not see "Test chat name s2"
+    And I should not see "Test book name s2"
     And section "1" should be visible
     And section "2" should be visible
     And section "3" should be visible
@@ -72,7 +72,7 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I click on tile "1"
     And I wait until the page is ready
     And I should see "Test book name s1"
-    And I should not see "Test chat name s2"
+    And I should not see "Test book name s2"
     # No close button as we are not using JS this time
     And I click on ".navigation-arrows [title='Course home']" "css_element"
     And I am on "Course 1" course homepage
@@ -83,10 +83,10 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
     And I click on tile "2"
     And I wait until the page is ready
     And I should not see "Test book name s1"
-    And I should see "Test chat name s2"
+    And I should see "Test book name s2"
 
     And I click on ".navigation-arrows [title='Course home']" "css_element"
-    And I should not see "Test chat name s2"
+    And I should not see "Test book name s2"
     And I should not see "Test choice name hidden"
     And section "1" should be visible
     And section "2" should be visible
@@ -102,7 +102,7 @@ Feature: Interface can be enhabced with JS nav if allowed by site admin
 #    And I click on tile "1"
 #    And I wait until the page is ready
 #    And I should see "Test book name s1"
-#    And I should not see "Test chat name s2"
+#    And I should not see "Test book name s2"
 #    And "#editsectiontbtn-1" "css_element" should be visible
 #    And I click on "#editsectiontbtn-1" "css_element"
 #    And I should see "Test book name s1"

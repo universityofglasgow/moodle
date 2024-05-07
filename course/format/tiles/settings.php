@@ -19,8 +19,8 @@
  *
  * @package format_tiles
  * @copyright  2019 David Watson {@link http://evolutioncode.uk}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
- **/
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -273,6 +273,12 @@ if ($ADMIN->fulltree) {
     $title = get_string('allowsubtilesview', 'format_tiles');
     $description = get_string('allowsubtilesview_desc', 'format_tiles');
     $default = 1;
+    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
+
+    $name = 'format_tiles/subtileiconcolourbackground';
+    $title = get_string('subtileiconcolourbackground', 'format_tiles');
+    $description = get_string('subtileiconcolourbackground_desc', 'format_tiles');
+    $default = 0;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
     $name = 'format_tiles/showoverallprogress';

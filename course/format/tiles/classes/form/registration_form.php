@@ -19,8 +19,8 @@
  *
  * @package format_tiles
  * @copyright  2019 David Watson {@link http://evolutioncode.uk}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
- **/
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace format_tiles\form;
 defined('MOODLE_INTERNAL') || die();

@@ -24,9 +24,6 @@
 
 namespace format_tiles\output\courseformat\content\cm;
 
-
-use stdClass;
-
 /**
  * Class to render a course module icon.
  *

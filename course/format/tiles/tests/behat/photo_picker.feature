@@ -97,6 +97,8 @@ Feature: Teacher can allocate photos to tiles
     And course "Business Law" tile "7" should show photo "placeholder_1.jpg"
     And course "Business Law" tile "8" should show no photo
 
+    And the following config values are set as admin:
+      | enableasyncbackup | 0 |
     And I backup "Business Law" course using this options:
       | Confirmation | Filename | test_backup.mbz |
 

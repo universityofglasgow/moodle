@@ -118,6 +118,7 @@ class dynamic_styles {
         }
         $outputdata['shade_heading_bar'] = $shadeheadingbar;
         $outputdata['ismoodle42minus'] = \format_tiles\util::get_moodle_release() <= 4.2;
+        $outputdata['ismoodle44'] = \format_tiles\util::get_moodle_release() === 4.4;
 
         return $outputdata;
     }

@@ -57,21 +57,21 @@ class tile_photo {
 
     /**
      * The filename relating to this tile_photo object.
-     * @var
+     * @var string
      */
     private $filename;
 
     /**
      * The file object to which this tile_photo object relates.
-     * @var
+     * @var \stored_file
      */
     private $file;
 
     /**
      * Creates a new instance of class
      *
-     * @param \context $context
-     * @param int $sectionid
+     * @param \context $context context for this photo.
+     * @param int $sectionid section ID for this photo.
      */
     public function __construct(\context $context, int $sectionid) {
         $this->context = $context;

@@ -18,9 +18,9 @@
  * Page called by administrator to migrate course data (for addressing any issues on 4.3 upgrade).
  *
  * @package format_tiles
- * @copyright  2023 David Watson {@link http://evolutioncode.uk}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
- **/
+ * @copyright 2023 David Watson {@link http://evolutioncode.uk}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once('../../../../config.php');
 

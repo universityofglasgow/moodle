@@ -73,7 +73,7 @@ class course_output implements \renderable, \templatable {
 
     /**
      * The course format.
-     * @var
+     * @var string
      */
     private $format;
 
@@ -133,8 +133,8 @@ class course_output implements \renderable, \templatable {
      * course_output constructor.
      * @param \stdClass $course the course object.
      * @param bool $fromajax Whether we are rendering for AJAX request.
-     * @param int $sectionnum the id of the current section
-     * @param \renderer_base|null $courserenderer
+     * @param int|null $sectionnum the id of the current section.
+     * @param \renderer_base|null $courserenderer the course renderer.
      */
     public function __construct($course, $fromajax = false, $sectionnum = null, \renderer_base $courserenderer = null) {
         $this->course = $course;
@@ -148,7 +148,6 @@ class course_output implements \renderable, \templatable {
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
-        // TODO this class is no longer used if the user is editing.  To be removed.
         $this->isediting = false;
         $this->coursecontext = \context_course::instance($this->course->id);
         $this->canviewhidden = has_capability('moodle/course:viewhiddensections', $this->coursecontext);
@@ -234,6 +233,8 @@ class course_output implements \renderable, \templatable {
 
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
+        $data['ulextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
+            ? 'format-tiles-colour-subtile-icon-bg' : '';
 
         foreach ($this->courseformatoptions as $k => $v) {
             $data[$k] = $v;
@@ -1078,6 +1079,13 @@ class course_output implements \renderable, \templatable {
             } else {
                 $modiconurl = $mod->get_icon_url($output);
             }
+
+            // No filter icons.  Big blue button has a coloured monologo which cannot be filtered.
+            $nofiltericons = ['bigbluebuttonbn'];
+            if (in_array($mod->modname, $nofiltericons)) {
+                $iconclass = 'nofilter';
+            }
+
             $moduleobject['icon'] = ['url' => $modiconurl, 'label' => $mod->name, 'iconclass' => $iconclass];
             $moduleobject['tileicon'] = false; // Template is shared with top level tile, so avoiding inheriting parent icon.
             $moduleobject['purpose'] = plugin_supports('mod', $mod->modname, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);

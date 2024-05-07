@@ -54,10 +54,10 @@
 }}
 
 {{^jsnavuserenabled}}
-    <div id="jswarning" class="alert alert-secondary">
+    <div id="jswarning" class="alert alert-secondary d-inline-block">
         {{#str}}jsdeactivated, format_tiles{{/str}}
         <a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&stopjsnav=1">({{#str}}reactivate, format_tiles{{/str}})</a>
-        <button type="button" class="close" data-dismiss="alert">
+        <button type="button" class="close ml-2" data-dismiss="alert">
             <span aria-hidden="true">&times;</span>
             <span class="sr-only">{{#str}}dismissnotification, core{{/str}}</span>
         </button>
@@ -92,7 +92,7 @@
     </a>
 {{/showinitialpageloadingicon}}
 
-<ul class="tiles" id="multi_section_tiles">
+<ul class="tiles {{ulextraclasses}}" id="multi_section_tiles">
     {{#tiles}}
         {{^editing}}
             {{> format_tiles/multi_section_tile}}

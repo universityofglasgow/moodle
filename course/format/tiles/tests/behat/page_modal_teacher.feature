@@ -39,7 +39,7 @@ Feature: Teacher can add a page to a course and open it with subtiles off
     And I toggle expand or collapse section "1" for edit
     And I wait until the page is ready
     And I wait "3" seconds
-    And I add a "page" to section "1"
+    And I add a "page" activity to course "Course 1" section "1"
     And I wait until the page is ready
     And I wait "2" seconds
     And I set the following fields to these values:
@@ -88,7 +88,7 @@ Feature: Teacher can add a page to a course and open it with subtiles off
     And I toggle expand or collapse section "1" for edit
     And I wait until the page is ready
     And I wait "3" seconds
-    And I add a "page" to section "1"
+    And I add a "page" activity to course "Course 1" section "1"
     And I wait until the page is ready
     And I wait "2" seconds
     And I set the following fields to these values:

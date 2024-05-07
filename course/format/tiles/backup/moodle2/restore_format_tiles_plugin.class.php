@@ -220,9 +220,9 @@ class restore_format_tiles_plugin extends restore_format_plugin {
                 $hasmappedfiles = $DB->record_exists_sql(
                     "SELECT fo.id
                         FROM {format_tiles_tile_options} fo
-                        JOIN {files} f ON f.itemid = fo.elementid AND contextid = :coursecontextid
-                        AND component = 'format_tiles' AND filearea = 'tilephoto' AND filepath = '/tilephoto/'
-                        AND filesize > 0 AND filename != '.'
+                        JOIN {files} f ON f.itemid = fo.elementid AND f.contextid = :coursecontextid
+                        AND f.component = 'format_tiles' AND f.filearea = 'tilephoto' AND f.filepath = '/tilephoto/'
+                        AND f.filesize > 0 AND f.filename != '.'
                         WHERE fo.optiontype = :optiontype",
                     ['coursecontextid' => $context->id, 'optiontype' => format_option::OPTION_SECTION_PHOTO]
                 );

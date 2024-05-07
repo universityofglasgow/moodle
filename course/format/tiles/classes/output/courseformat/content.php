@@ -53,7 +53,7 @@ class content extends content_base {
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
 
-        // TODO for now this class is only used if user is editing but check anyway as one day it will be used when not editing.
+        // For now this class is only used if user is editing but check anyway as one day it will be used when not editing.
         if ($isediting) {
             $isadmin = is_siteadmin($USER->id);
             $courseformatoptions = $this->format->get_format_options();
@@ -62,7 +62,7 @@ class content extends content_base {
 
             if (get_config('format_tiles', 'allowsubtilesview')
                 && isset($courseformatoptions['courseusesubtiles']) && $courseformatoptions['courseusesubtiles']) {
-                // TODO for now (Beta version) we warn editor about sub tiles only appearing in non-edit view.
+                // For now (Beta version) we warn editor about sub tiles only appearing in non-edit view.
                 $messgage = get_string('editoradvicesubtiles', 'format_tiles');
                 if (has_capability('moodle/site:config', \context_system::instance())) {
                     $messgage .= ' (' . get_string('version', 'format_tiles', \format_tiles\util::get_tiles_plugin_release()) . ')';

@@ -41,7 +41,6 @@ class header extends \core_courseformat\output\local\content\section\header {
      */
     public function export_for_template(\renderer_base $output): \stdClass {
 
-        // TODO optimise this.
         $format = $this->format;
         $course = $format->get_course();
 
@@ -85,7 +84,7 @@ class header extends \core_courseformat\output\local\content\section\header {
             $data->selecttext = $format->get_format_string('selectsection', $data->name);
         }
 
-        if (!$format->get_section_number()) {
+        if (!$format->get_sectionnum()) {
             $data->sectionbulk = true;
         }
 

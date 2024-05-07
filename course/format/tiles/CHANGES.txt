@@ -406,3 +406,16 @@ Other
 - Fix issue 187: blocks drawer
 - Fix issue 189: show more
 - Fix issue 192: Beta issue with duplicated section 0 content on the top of individual weeks
+
+4.4.0.1 RC (2024042200)
+===========================
+- Moodle 4.4. compatibility
+- Sort strings file alphabetically
+
+4.4.0.2 (2024050300)
+===========================
+- Sub-tile style improvement with setting
+- Set get_view_url to avoid /course/section.php page
+- PHP docs improvements
+- Correct test namespace
+- Fix issue #204 upgrade path

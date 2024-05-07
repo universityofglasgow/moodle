@@ -454,7 +454,6 @@ class external extends external_api {
                 break;
             default:
                 throw new invalid_parameter_exception('No logging method provided for type |' . $cm->modname . '|');
-            // TODO add more to these if more modules added.
         }
 
         // If this item is using automatic completion, mark the item as complete.

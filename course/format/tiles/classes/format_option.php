@@ -94,7 +94,6 @@ class format_option {
      * @return false|mixed
      */
     public static function get(int $courseid, int $optiontype, int $elementid) {
-        // TODO For now we just get it from the database - later we keep it in a cache.
         $record = self::get_db_record($courseid, $optiontype, $elementid);
         return $record ? $record->optionvalue : false;
     }

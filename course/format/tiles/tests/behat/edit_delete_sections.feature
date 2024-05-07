@@ -39,13 +39,11 @@ Feature: Sections can be edited and deleted in tiles format
   Scenario: View the default name of the second section in tiles format
     And I edit the section "2"
     And I wait until the page is ready
-    Then the field "Custom" matches value "0"
-    And the field "New value for Section name" matches value "Tile 2"
+    Then the field "Section name" matches value ""
 
   Scenario: Edit section default name in tiles format
     And I edit the section "2" and I fill the form with:
-      | Custom                     | 1                       |
-      | New value for Section name | This is the second Tile |
+      | Section name | This is the second Tile |
     Then I should see "This is the second Tile" in the "li#section-2" "css_element"
     And I should not see "Tile 2" in the "li#section-2" "css_element"
 

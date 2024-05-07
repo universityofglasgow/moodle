@@ -373,13 +373,15 @@ li.activity .tileiconcontainer {
     margin-top: 25px;
 }
 
-li.activity .tileiconcontainer .tile-icon .icon {
+.format-tiles li.activity .tileiconcontainer .tile-icon .icon {
     color: #fff;
     width: 65px;
     height: 65px;
-    padding-top: 11px;
-    padding-left: 2px;
     margin: 0;
+}
+.format-tiles li.tile .tile-icon .icon {
+    max-width: unset;
+    max-height: unset;
 }
 
 li.activity .tileiconcontainer .tile-icon .icon.fa {
@@ -946,13 +948,23 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     opacity: 0.9;
 }
 
-.format-tiles .iconpickericons .pickericondiv,
-.format-site .iconpickericons .pickericondiv {
+.format-tiles #icon_picker_modal .iconpickericons .pickericondiv,
+.format-site #icon_picker_modal .iconpickericons .pickericondiv {
     padding: 10px;
     cursor: pointer;
     display: inline-block;
+    width: 81px;
+    height: 81px;
 }
-
+.format-tiles #icon_picker_modal .iconpickericons .pickericondiv img.icon {
+    max-width: 65px;
+    max-height: 65px;
+}
+.format-tiles .tiles-editor-image img.icon,
+.format-tiles li.section:not(#section-0) .course-section-header img.icon {
+    max-width: 45px;
+    max-height: 45px;
+}
 #page-course-editsection .format-tiles .icon_picker_modal .modal-header,
 #page-course-edit .format-tiles .icon_picker_modal .modal-header {
     color: #333;
@@ -1623,7 +1635,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles .tilebarphoto {
     width: 75px;
     height: 48px;
-    background-size: contain;
+    background-size: cover;
     background-repeat: no-repeat;
     float: left;
 }
@@ -1715,11 +1727,6 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles li.section:not(#section-0).restricted .course-section-header .tilebarphoto {
     filter: grayscale(1);
 }
-.format-tiles li.section:not(#section-0) .course-section-header img.icon {
-    width: 32px;
-    height: 32px;
-}
-
 .format-tiles .tiles-editor-image {
     width: 77px;
     height: 45px;
@@ -1813,6 +1820,58 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     height: 45px;
 }
 
+.format-tiles li.subtile .tileiconcontainer.administration{
+    border: 3px solid #da58ef;
+}
+.format-tiles li.subtile .tileiconcontainer.assessment {
+    border: 3px solid #f90086;
+}
+.format-tiles li.subtile .tileiconcontainer.content {
+    border: 3px solid #0099ad;
+}
+.format-tiles li.subtile .tileiconcontainer.collaboration {
+    border: 3px solid #6f46f7;
+}
+.format-tiles li.subtile .tileiconcontainer.communication {
+    border: 3px solid #eb6200;
+}
+.format-tiles li.subtile .tileiconcontainer.interactivecontent {
+    border: 3px solid #8d3d1b;
+}
+.format-tiles li.subtile .tileiconcontainer.other {
+    border: 3px solid #212529;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration{
+    background-color: #da58ef;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.assessment {
+    background-color: #f90086;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.content {
+    background-color: #0099ad;
+ }
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.collaboration {
+    background-color: #6f46f7;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.communication {
+    background-color: #eb6200;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.interactivecontent {
+    background-color: #8d3d1b;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.other {
+    background-color: #212529;
+}
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .activityicon:not(.nofilter),
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .icon:not(.nofilter) {
+    filter: brightness(0) invert(1);
+}
+.format-tiles li.subtile .tile-icon {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 @media (min-width: 768px) {
     body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
     .format-tiles .header-maxwidth {
