@@ -33,17 +33,18 @@ $string['topic0'] = 'General';
 // Moodle 2.0 Enhancement - Moodle Tracker MDL-15252, MDL-21693 & MDL-22056 - http://docs.moodle.org/en/Development:Languages.
 $string['sectionname'] = 'Section';
 $string['pluginname'] = 'Grid';
+$string['plugin_description'] = 'The course is divided into sections selectable via a grid.';
 $string['section0name'] = 'General';
 
 // MDL-26105.
 $string['page-course-view-grid'] = 'Any course main page in the grid format';
 $string['page-course-view-grid-x'] = 'Any course page in the grid format';
 
-$string['addsection'] = 'Add section';
 $string['addsections'] = 'Add section';
-$string['hidefromothers'] = 'Hide section'; // No longer used kept for legacy versions.
-$string['showfromothers'] = 'Show section'; // No longer used kept for legacy versions.
-$string['currentsection'] = 'This section'; // No longer used kept for legacy versions.
+$string['newsection'] = 'New section';
+$string['hidefromothers'] = 'Hide section';
+$string['showfromothers'] = 'Show';
+$string['currentsection'] = 'This section';
 $string['markedthissection'] = 'This section is highlighted as the current section';
 $string['markthissection'] = 'Highlight this section as the current section';
 

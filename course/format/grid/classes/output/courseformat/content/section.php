@@ -56,7 +56,7 @@ class section extends section_base {
 
         $data = parent::export_for_template($output);
 
-        if (!$this->format->get_section_number()) {
+        if (!$this->format->get_sectionnum()) {
             $addsectionclass = $format->get_output_classname('content\\addsection');
             $addsection = new $addsectionclass($format);
             $data->numsections = $addsection->export_for_template($output);
@@ -64,5 +64,20 @@ class section extends section_base {
         }
 
         return $data;
+    }
+
+    /**
+     * Add the section format attributes to the data structure.
+     *
+     * @param stdClass $data the current cm data reference
+     * @param bool[] $haspartials the result of loading partial data elements
+     * @param renderer_base $output typically, the renderer that's calling this function
+     * @return bool if the cm has name data
+     */
+    protected function add_format_data(stdClass &$data, array $haspartials, \renderer_base $output): bool {
+        parent::add_format_data($data, $haspartials, $output);
+        $data->collapsemenu = false;
+
+        return true;
     }
 }

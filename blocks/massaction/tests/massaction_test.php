@@ -37,7 +37,7 @@ use stdClass;
  * @author     Philipp Memmel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class massaction_test extends advanced_testcase {
+final class massaction_test extends advanced_testcase {
     /**
      * @var stdClass Course record.
      */
@@ -64,7 +64,7 @@ class massaction_test extends advanced_testcase {
         // Generate two modules of each type for each of the 5 sections, so we have 6 modules per section.
         $modulerecord = [
             'course' => $this->course->id,
-            'showdescription' => 0
+            'showdescription' => 0,
         ];
         for ($i = 0; $i < 10; $i++) {
             $generator->create_module('assign', $modulerecord, ['section' => floor($i / 2)]);

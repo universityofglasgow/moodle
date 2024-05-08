@@ -14,18 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace block_massaction\hook;
+
+defined('MOODLE_INTERNAL') || die();
+
+#[\core\attribute\label('Hook dispatched when block_massaction is duplicating or moving activities inside a course. '
+        . 'The hook provides ways to customize which sections the user can duplicate/move activities to.')]
+#[\core\attribute\tags('block_massaction')]
 /**
- * Settings for the massactions block.
+ * Hook class for filtering a list of target sections when duplicating/moving inside a course.
  *
+ * @copyright  2024 ISB Bayern
+ * @author     Philipp Memmel
  * @package    block_massaction
- * @copyright  2011 University of Minnesota
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class filter_sections_same_course {
 
-defined('MOODLE_INTERNAL') || die;
+    // We use the trait here, because inheritance is not recommended for hooks.
+    use filter_sections_handler;
 
-$plugin->version = 2024050700;
-$plugin->requires  = 2023100900;
-$plugin->component = 'block_massaction';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v7.3.1';
+}

@@ -71,6 +71,3 @@ if (!empty($displaysection)) {
 $outputclass = $format->get_output_classname('content');
 $widget = new $outputclass($format);
 echo $renderer->render($widget);
-
-// Include course format js module.
-$PAGE->requires->js('/course/format/grid/format.js');

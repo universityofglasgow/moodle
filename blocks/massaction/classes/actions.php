@@ -29,6 +29,8 @@ use base_plan_exception;
 use base_setting_exception;
 use block_massaction\form\course_select_form;
 use block_massaction\form\section_select_form;
+use block_massaction\hook\filter_sections_different_course;
+use block_massaction\hook\filter_sections_same_course;
 use coding_exception;
 use context_course;
 use core\event\course_module_updated;
@@ -151,13 +153,13 @@ class actions {
         $cms = [];
         $errors = [];
         $duplicatedmods = [];
-        $targetformat = course_get_format($courseid);
-        $sectionsrestricted = massactionutils::get_restricted_sections($courseid, $targetformat->get_format());
+        $filtersectionshook = new filter_sections_same_course($courseid, array_keys($modinfo->get_section_info_all()));
+        \core\di::get(\core\hook\manager::class)->dispatch($filtersectionshook);
         foreach ($idsincourseorder as $cmid) {
             $cm = $modinfo->get_cm($cmid);
             // Not duplicated if the section is restricted.
-            if (in_array($cm->sectionnum, $sectionsrestricted)) {
-                throw new moodle_exception('sectionrestricted', 'block_massaction');
+            if (!in_array($cm->sectionnum, $filtersectionshook->get_sectionnums())) {
+                throw new moodle_exception('sectionrestricted', 'block_massaction', '', $cm->sectionnum);
             }
 
             try {
@@ -185,7 +187,7 @@ class actions {
                 $section = $modinfo->get_section_info($duplicatedmod->sectionnum);
             } else { // Duplicate to a specific section.
                 // Verify target.
-                if (!$section = $DB->get_record('course_sections', array('course' => $courseid, 'section' => $sectionnumber))) {
+                if (!$section = $DB->get_record('course_sections', ['course' => $courseid, 'section' => $sectionnumber])) {
                     throw new moodle_exception('sectionnotexist', 'block_massaction');
                 }
             }
@@ -244,9 +246,28 @@ class actions {
         $targetformat = course_get_format($targetmodinfo->get_course());
         $targetsectionnum = $targetformat->get_last_section_number();
 
-        $canaddsection = has_capability('moodle/course:update', context_course::instance($targetcourseid));
+        $filtersectionshook = new filter_sections_different_course($targetcourseid,
+                array_keys($targetmodinfo->get_section_info_all()));
+        \core\di::get(\core\hook\manager::class)->dispatch($filtersectionshook);
+        $filteredsections = $filtersectionshook->get_sectionnums();
 
-        // If a new section has been specified, we create one.
+        if ($targetsectionnum == -1 && !$filtersectionshook->is_originsectionkept()) {
+            // The course modules should be in the same section number as in the original course. However, the hook listener(s)
+            // disabled this option, so we cancel the operation.
+            // This is only a security measure and should not happen unless someone manipulates the UI.
+            return;
+        }
+
+        if (!in_array($targetsectionnum, $filteredsections)) {
+            // The target section number has been filtered by a hook callback, thus must not be used.
+            // This is only a security measure and should not happen unless someone manipulates the UI.
+            return;
+        }
+
+        $canaddsection = has_capability('moodle/course:update', context_course::instance($targetcourseid))
+            && $filtersectionshook->is_makesectionallowed();
+
+        // If a new section (that means that $sectionnum of the user is higher than $targetsectionnum), we create one.
         if ($sectionnum > $targetsectionnum) {
             // No permissions to add section.
             if (!$canaddsection) {
@@ -261,7 +282,7 @@ class actions {
 
             // Update course format setting to prevent new orphaned sections.
             if (isset($targetformatopt['numsections'])) {
-                update_course((object)array('id' => $targetcourseid, 'numsections' => $targetformatopt['numsections'] + 1));
+                update_course((object)['id' => $targetcourseid, 'numsections' => $targetformatopt['numsections'] + 1]);
             }
 
             // Make sure new sectionnum is set accurately.
@@ -286,7 +307,7 @@ class actions {
             // Update course format setting to prevent orphaned sections.
             $targetformatopt = $targetformat->get_format_options();
             if (isset($targetformatopt['numsections']) && $targetformatopt['numsections'] < $srcmaxsectionnum) {
-                update_course((object)array('id' => $targetcourseid, 'numsections' => $srcmaxsectionnum));
+                update_course((object)['id' => $targetcourseid, 'numsections' => $srcmaxsectionnum]);
             }
         }
 
@@ -298,13 +319,15 @@ class actions {
         $duplicatedmods = [];
         $cms = [];
         $errors = [];
-        $sourceformat = course_get_format($sourcecourseid);
-        $sourcesectionsrestricted = massactionutils::get_restricted_sections($sourcecourseid, $sourceformat->get_format());
+        $filtersectionshook = new filter_sections_same_course($sourcecourseid, array_keys($sourcemodinfo->get_section_info_all()));
+        \core\di::get(\core\hook\manager::class)->dispatch($filtersectionshook);
+        $srcfilteredsections = $filtersectionshook->get_sectionnums();
+
         foreach ($idsincourseorder as $cmid) {
             $sourcecm = $sourcemodinfo->get_cm($cmid);
             // Not duplicated if the section is restricted.
-            if (in_array($sourcecm->sectionnum, $sourcesectionsrestricted)) {
-                throw new moodle_exception('sectionrestricted', 'block_massaction');
+            if (!in_array($sourcecm->sectionnum, $srcfilteredsections)) {
+                throw new moodle_exception('sectionrestricted', 'block_massaction', '', $sourcecm->sectionnum);
             }
 
             try {
@@ -415,7 +438,7 @@ class actions {
             'instance_id' => $instanceid,
             'return_url' => $returnurl,
             'request' => $massactionrequest,
-            'del_confirm' => 1
+            'del_confirm' => 1,
         ];
         $optionsoncancel = ['id' => $cm->course];
 
@@ -461,7 +484,7 @@ class actions {
                 new moodle_exception('invalidcoursemodule');
             }
 
-            if (!$DB->get_record('course', array('id' => $cm->course))) {
+            if (!$DB->get_record('course', ['id' => $cm->course])) {
                 throw new moodle_exception('invalidcourseid');
             }
 
@@ -563,10 +586,14 @@ class actions {
         require_once($CFG->dirroot . '/course/lib.php');
 
         $idsincourseorder = self::sort_course_order($modules);
-        $sectionsrestricted = [];
+
         if (!empty($modules)) {
-            $targetformat = course_get_format(reset($modules)->course);
-            $sectionsrestricted = massactionutils::get_restricted_sections(reset($modules)->course, $targetformat->get_format());
+            $courseid = reset($modules)->course;
+            $filtersectionshook = new filter_sections_same_course(
+                    $courseid,
+                    array_keys(get_fast_modinfo($courseid)->get_section_info_all())
+            );
+            \core\di::get(\core\hook\manager::class)->dispatch($filtersectionshook);
         }
 
         foreach ($idsincourseorder as $cmid) {
@@ -575,13 +602,13 @@ class actions {
             }
 
             // Verify target.
-            if (!$section = $DB->get_record('course_sections', array('course' => $cm->course, 'section' => $target))) {
+            if (!$section = $DB->get_record('course_sections', ['course' => $cm->course, 'section' => $target])) {
                 throw new moodle_exception('sectionnotexist', 'block_massaction');
             }
 
             // Not moving if the section is restricted.
-            if (in_array($cm->sectionnum, $sectionsrestricted)) {
-                throw new moodle_exception('sectionrestricted', 'block_massaction');
+            if (!in_array($cm->sectionnum, $filtersectionshook->get_sectionnums())) {
+                throw new moodle_exception('sectionrestricted', 'block_massaction', '', $cm->sectionnum);
             }
 
             // Move each module to the end of their section.

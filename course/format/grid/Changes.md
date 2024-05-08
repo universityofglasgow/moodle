@@ -1,7 +1,11 @@
 History
 =============
 
-Version 403.1.2 - 08/04/2024
+Version 404.0.1 - 22/04/2024
+----------------------------
+1. Release candidate version for Moodle 4.4.
+
+Version 403.1.2 - TBR
 ----------------------------
 1. Fix 'Orphaned Section still appear in Index Drawer'.
 2. Fix 'Restrict access can cause no content in other sections to be shown.' - #202.

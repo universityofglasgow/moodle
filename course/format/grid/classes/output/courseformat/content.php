@@ -84,7 +84,7 @@ class content extends content_base {
             'sectionreturn' => 0,
         ];
 
-        $singlesection = $this->format->get_section_number();
+        $singlesection = $this->format->get_sectionnum();
         $sections = $this->export_sections($output);
         $initialsection = '';
         $course = $format->get_course();
