@@ -712,8 +712,10 @@ class lib {
         if ($turnitinenabled = self::turnitin_enabled($assignment->id)) {
             $myxls->write_string(3, $i++, get_string('turnitin', 'report_assign'));
         }
-        if ($assignment->markingallocation) {
+        if ($assignment->markingworkflow) {
             $myxls->write_string(3, $i++, get_string('workflow', 'report_assign'));
+        }
+        if ($assignment->markingallocation) {
             $myxls->write_string(3, $i++, get_string('allocatedmarker', 'report_assign'));
         }
         $myxls->write_string(3, $i++, get_string('grader', 'report_assign'));
@@ -748,8 +750,10 @@ class lib {
                 $turnitinscore = empty($s->turnitin->similarityscore) ? '-' : $s->turnitin->similarityscore;
                 $myxls->write_string($row, $i++, $turnitinscore);
             }
-            if ($assignment->markingallocation) {
+            if ($assignment->markingworkflow) {
                 $myxls->write_string($row, $i++, $s->workflow);
+            }
+            if ($assignment->markingallocation) {
                 $myxls->write_string($row, $i++, $s->marker);
             }
             $myxls->write_string($row, $i++, $s->grader);
@@ -880,7 +884,7 @@ class lib {
         }
         $myxls->write_string(1, $i++, get_string('groups'));
         $myxls->write_string(1, $i++, get_string('status'));
-        $myxls->write_string(1, $i++, get_string('grade'));
+        $myxls->write_string(1, $i++, get_string('grade', 'report_assign'));
         if ($isurkund) {
             $myxls->write_string(1, $i++, get_string('urkund', 'report_assign'));
         }
