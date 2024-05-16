@@ -36,6 +36,7 @@ const Selectors = {
 const CourseIndex = (coursindexcollapsed) => {
     let params = (new URL(location.href)).searchParams;
     let courseindexcollapsed = coursindexcollapsed;
+    Log.debug('CourseIndex! called with params:' + params + ' coursindexcollapsed is:' + coursindexcollapsed);
     if (params.get('id') > 1 && courseindexcollapsed) {
         Log.debug('CourseIndex called with params:' + params + ' coursindexcollapsed is:' + coursindexcollapsed);
         waitForElement(Selectors.COURSE_INDEX, params.get('id'));
@@ -91,5 +92,5 @@ const setCourseIndexState = (element, courseId) => {
 };
 
 export const init = (coursindexcollapsed) => {
-    new CourseIndex(coursindexcollapsed);
+    CourseIndex(coursindexcollapsed);
 };
