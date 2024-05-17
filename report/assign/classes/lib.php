@@ -802,6 +802,7 @@ class lib {
         $myxls->write_string(0, $i++, get_string('gradenoun'));
         $myxls->write_string(0, $i++, get_string('lastmodifiedgrade', 'assign'));
         $myxls->write_string(0, $i++, get_string('fullname'));
+        $myxls->write_string(0, $i++, get_string('submissionstatus' , 'report_assign'));
         foreach ($profilefields as $profilefield) {
             if ($profilefield == 'idnumber') {
                 continue;
@@ -830,6 +831,9 @@ class lib {
             $myxls->write_string($row, $i++, $grade);
             $myxls->write_string($row, $i++, ' ');
             $myxls->write_string($row, $i++, $fullname);
+            $myxls->write_string($row, $i++, $s->status);
+            
+
             if ($fields != '') {
 
                 foreach ($s->profiledata as $key => $value) {
