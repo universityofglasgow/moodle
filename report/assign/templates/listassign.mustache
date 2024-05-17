@@ -50,7 +50,11 @@
                         {{/ groupsubmission }}
                     </td>
                     <td>{{ submitcount }}</td>
-                    <td>{{ releasedcount }}</td>
+                    <td>
+                    {{# markingworkflow }}
+                    {{ releasedcount }}
+                    {{/ markingworkflow }}
+                    </td>
                     <td>{{ groupmode }}</td>
                     {{# enableplagiarism }}
                         <td>
