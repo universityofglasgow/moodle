@@ -376,7 +376,7 @@ Other
 - Fixes issue #152 filter buttons
 - Fixes issue #153 glossary multiple windows
 
-4.3.0.x (202403xxxx and preceding 4.3.0.x betas)
+4.3.0.1 - 4.3.0.24 (202403xxxx and preceding 4.3.0.x betas)
 ================================================
 (Versions 4.1.1.2 and 4.2.1.1 also implement almost all of the below changes for their respective Moodle versions).
 - Moodle 4.3 compatibility (including completion control and editing mode fixes)
@@ -419,3 +419,16 @@ Other
 - PHP docs improvements
 - Correct test namespace
 - Fix issue #204 upgrade path
+
+4.4.0.3 (2024051700)
+====================
+- Fix issue 205 Embedded URL activity video stop
+- Fix issue 206 overall progress missing if JS nav disabled
+- Improve overall progress indicator
+- Various PHPUnit fixes, PHP docs typos
+- YouTube embedded in label max width fix
+- Simplify function to get modal allowed CM IDs
+
+4.4.0.4 (2024051800)
+====================
+- Edge case behat fix

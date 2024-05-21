@@ -110,12 +110,7 @@ class observer {
      * @throws \dml_exception
      */
     private static function clear_cache_modal_cmids(int $courseid) {
-        foreach (['modalresources', 'modalmodules'] as $setting) {
-            $modalmodules = get_config('format_tiles', $setting);
-            $cache = \cache::make('format_tiles', 'modalcmids');
-            foreach (explode(',', $modalmodules) as $modalmodule) {
-                $cache->delete($courseid . '_' . $modalmodule);
-            }
-        }
+        $cache = \cache::make('format_tiles', 'modalcmids');
+        $cache->delete($courseid);
     }
 }

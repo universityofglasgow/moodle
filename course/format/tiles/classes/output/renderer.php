@@ -33,19 +33,35 @@ class renderer extends section_renderer {
      */
     public function render_content() {
         $format = course_get_format($this->page->course->id);
-        $contentclass = $format->get_output_classname('content');
-        $section = 1; // TODO.
-        $displayoptions = [];
-        $contentoutput = new $contentclass(
-            $format,
-            $section,
-            null,
-            $displayoptions
-        );
+        $displaysection = optional_param('section', 0, PARAM_INT);
+        if ($this->page->user_is_editing()) {
+            // If user is editing, we render the page the new way.
+            // We will use this for non editing as well in a later version, but not yet.
+            $template = 'format_tiles/local/content';
+            $contentclass = $format->get_output_classname('content');
+            $displayoptions = [];
+            $contentoutput = new $contentclass(
+                $format,
+                $displaysection,
+                null,
+                $displayoptions
+            );
+            $data = $contentoutput->export_for_template($this);
+        } else {
+            // If user not editing, for now we render the page the old way.
+            $course = $format->get_course();
+            if (self::display_multiple_section_page($displaysection, false)) {
+                $template = 'format_tiles/multi_section_page';
+                $templateable = new \format_tiles\output\course_output($course, false, null, $this);
+                $data = $templateable->export_for_template($this);
+            } else {
+                $template = 'format_tiles/single_section_page';
+                $templateable = new \format_tiles\output\course_output($course, false, $displaysection, $this);
+                $data = $templateable->export_for_template($this);
+            }
+        }
 
-        $data = $contentoutput->export_for_template($this);
-
-        echo $this->render_from_template('format_tiles/local/content', $data);
+        echo $this->render_from_template($template, $data);
     }
 
     /**
@@ -93,5 +109,44 @@ class renderer extends section_renderer {
 
         // This ends up calling \format_tiles\output\section_renderer::render_section().
         return $renderer->render($output);
+    }
+
+    /**
+     * Should we display a multiple section page or not?
+     * I.e. do we display all tiles on screen or just one open section?
+     * @param int $displaysection the param to say if we are displaying one sec and if so which.
+     * @param bool $isediting are we editing or not.
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    private function display_multiple_section_page(int $displaysection, bool $isediting): bool {
+        global $SESSION;
+        // We display the multi section page if the user is not requesting a specific single section.
+        // We also display it if user is requesting a specific section (URL &section=xx) with JS enabled.
+        // We know they have JS if $SESSION->format_tiles_jssuccessfullyused is set.
+        // In that case we show them the multi section page and use JS to open the section.
+        if (optional_param('canceljssession', false, PARAM_BOOL)) {
+            // The user is shown a link to cancel the successful JS flag for this session in <noscript> tags if their JS is off.
+            unset($SESSION->format_tiles_jssuccessfullyused);
+        }
+
+        if (!$displaysection) {
+            // If the URL does not request a specific section page (&section=xx) we always show multiple secs.
+            return true;
+        }
+
+        if (optional_param('singlesec', 0, PARAM_INT)) {
+            // Singlesec param is appended to inplace editable links by format_tiles\inplace_editable_render_section_name().
+            return false;
+        }
+
+        // Otherwise, even if URL requests single, we may show multiple in certain situations.
+        if (\format_tiles\util::using_js_nav() && isset($SESSION->format_tiles_jssuccessfullyused)) {
+            if (!$isediting && get_config('format_tiles', 'usejsnavforsinglesection')) {
+                return true;
+            }
+        }
+        return false;
     }
 }

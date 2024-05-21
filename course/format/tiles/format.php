@@ -39,6 +39,7 @@ $format = course_get_format($course);
 $course = $format->get_course();
 $context = context_course::instance($course->id);
 $isediting = $PAGE->user_is_editing();
+$canedit = $PAGE->user_allowed_editing();
 $displaysection = optional_param('section', 0, PARAM_INT);
 if (!empty($displaysection)) {
     $format->set_sectionnum($displaysection);
@@ -51,29 +52,13 @@ if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context
 
 $renderer = $PAGE->get_renderer('format_tiles');
 
-$ismobile = core_useragent::get_device_type() == core_useragent::DEVICETYPE_MOBILE ? 1 : 0;
 $allowphototiles = get_config('format_tiles', 'allowphototiles');
 $usejsnav = \format_tiles\util::using_js_nav();
 
-if ($isediting) {
-    // If user is editing, we render the page the new way.
-    // We will use this for non editing as well in a later version, but not yet.
-    $outputclass = $format->get_output_classname('content');
-    $widget = new $outputclass($format);
-
-    echo $renderer->render($widget);
-} else {
-    if (display_multiple_section_page($displaysection, $usejsnav, $context, $isediting)) {
-        $templateable = new \format_tiles\output\course_output($course, false, null, $renderer);
-        $data = $templateable->export_for_template($renderer);
-        echo $renderer->render_from_template('format_tiles/multi_section_page', $data);
-    } else {
-        $SESSION->editing_last_edited_section = $course->id . "-" . $displaysection;
-        $templateable = new \format_tiles\output\course_output($course, false, $displaysection, $renderer);
-        $data = $templateable->export_for_template($renderer);
-        echo $renderer->render_from_template('format_tiles/single_section_page', $data);
-    }
-}
+// This will take us to render_content() in /course/format/tiles/classes/output/renderer.php.
+$outputclass = $format->get_output_classname('content');
+$widget = new $outputclass($format);
+echo $renderer->render($widget);
 
 // Include format.js (required for dragging sections around).
 $PAGE->requires->js('/course/format/tiles/format.js');
@@ -83,14 +68,15 @@ if (!empty($displaysection)) {
     $jssectionnum = $displaysection;
 } else if (! $jssectionnum = optional_param('expand', 0, PARAM_INT)) {
     $jssectionnum = 0;
-} else if (isset($SESSION->editing_last_edited_section)) {
-    $jssectionnum = $SESSION->editing_last_edited_section;
+}
+if ($canedit) {
+    $SESSION->editing_last_edited_section = $course->id . "-" . $displaysection;
 }
 
 $jsparams = [
     'courseId' => $course->id,
     'useJSNav' => $usejsnav, // See also lib.php page_set_course().
-    'isMobile' => $ismobile,
+    'isMobile' => core_useragent::get_device_type() == core_useragent::DEVICETYPE_MOBILE ? 1 : 0,
     'jsSectionNum' => $jssectionnum,
     'displayFilterBar' => $course->displayfilterbar,
     'assumeDataStoreContent' => get_config('format_tiles', 'assumedatastoreconsent'),
@@ -130,45 +116,4 @@ if ($isediting) {
 
 if ($course->enablecompletion) {
     $PAGE->requires->js_call_amd('format_tiles/completion', 'init', [$course->id]);
-}
-
-/**
- * Should we display a multiple section page or not?
- * I.e. do we display all tiles on screen or just one open section?
- * @param int $displaysection the param to say if we are displaying one sec and if so which.
- * @param bool $usejsnav are we using JS nav or not.
- * @param \context_course $context the context we are in
- * @param bool $isediting are we editing or not.
- * @return bool
- * @throws coding_exception
- * @throws dml_exception
- */
-function display_multiple_section_page($displaysection, $usejsnav, $context, $isediting) {
-    global $SESSION;
-    // We display the multi section page if the user is not requesting a specific single section.
-    // We also display it if user is requesting a specific section (URL &section=xx) with JS enabled.
-    // We know they have JS if $SESSION->format_tiles_jssuccessfullyused is set.
-    // In that case we show them the multi section page and use JS to open the section.
-    if (optional_param('canceljssession', false, PARAM_BOOL)) {
-        // The user is shown a link to cancel the successful JS flag for this session in <noscript> tags if their JS is off.
-        unset($SESSION->format_tiles_jssuccessfullyused);
-    }
-
-    if (empty($displaysection)) {
-        // If the URL does not request a specific section page (&section=xx) we always show multiple secs.
-        return true;
-    }
-
-    if (optional_param('singlesec', 0, PARAM_INT)) {
-        // Singlesec param is appended to inplace editable links by format_tiles\inplace_editable_render_section_name().
-        return false;
-    }
-
-    // Otherwise, even if URL requests single, we may show multiple in certain situations.
-    if ($usejsnav && isset($SESSION->format_tiles_jssuccessfullyused)) {
-        if (!$isediting && get_config('format_tiles', 'usejsnavforsinglesection')) {
-            return true;
-        }
-    }
-    return false;
 }

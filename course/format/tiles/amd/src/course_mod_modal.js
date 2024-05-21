@@ -27,8 +27,9 @@
  * @since       Moodle 3.3
  */
 
-define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/notification", "core/ajax", 'core/fragment'],
-    function ($, modalFactory, config, Templates, Notification, ajax, Fragment) {
+define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/notification", "core/ajax",
+        'core/fragment', "core/modal_events"],
+    function ($, modalFactory, config, Templates, Notification, ajax, Fragment, ModalEvents) {
         "use strict";
 
         /**
@@ -78,36 +79,16 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
          * @param {object} modal the modal which contains the video.
          */
         const stopAllVideosOnDismiss = function(modal) {
-            const iframes = modal.find(Selector.iframe);
-            if (iframes.length > 0) {
-                modal.find(Selector.closeBtn).click(function(e) {
-                    $(e.currentTarget).closest(Selector.cmModal).find(Selector.iframe).each(function (index, iframe) {
-                        iframe = $(iframe);
-                        iframe.attr('src', iframe.attr("src"));
-                    });
-                });
-            }
-            const objects = modal.find("object");
-            if (objects.length > 0) {
-                // In this case resetting the URL does not seem to work so we clear it and clear modal from storage.
-                modal.find(Selector.closeBtn).click(function(e) {
-                    const modal = $(e.currentTarget).closest(Selector.cmModal);
-                    modal.find("object").each(function (index, object) {
-                        object = $(object);
-                        object.attr('data', "");
-                    });
-                    modalStore[modal.data("cmid")] = undefined;
-                });
-            }
+            modal.on(ModalEvents.hidden, function() {
+                const iframes = modal.find(Selector.iframe);
+                const objects = modal.find("object");
+                const moodleMediaPlayer = modal.find(Selector.moodleMediaPlayer);
 
-            const moodleMediaPlayer = modal.find(Selector.moodleMediaPlayer);
-            if (moodleMediaPlayer.length > 0) {
-                modal.find(Selector.closeBtn).click(function() {
-                    modal.find(Selector.moodleMediaPlayer).html("");
-                });
-                // Ensure we create a new modal next time.
-                modalStore[modal.data("cmid")] = undefined;
-            }
+                if (iframes.length || objects.length || moodleMediaPlayer.length) {
+                    modalStore[modal.data("cmid")] = undefined;
+                    modal.remove();
+                }
+            });
         };
         /**
          *

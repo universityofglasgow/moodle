@@ -108,8 +108,15 @@
     {{/isComplete}}
     {{#isComplete}}
         <div class="progress-indic{{#showAsPercent}} percent{{/showAsPercent}}" id="tileprogress-{{tileid}}"
-             data-numcomplete="{{numComplete}}" data-numoutof="{{numOutOf}}" style="display:none;">
-            {{! placeholder progress indicator for possible JS replacement}}
+             data-numcomplete="{{numComplete}}" data-numoutof="{{numOutOf}}" {{^isOverall}}style="display:none;"{{/isOverall}}>
+            {{#isOverall}}
+                <div class="progress-indic progress-indic-label" id="tileallcomplete-{{tileid}}" data-numcomplete="{{numComplete}}"
+                     data-numoutof="{{numOutOf}}" title="{{#str}}allcomplete, format_tiles{{/str}}"{{#usetooltips}} data-toggle="tooltip"{{/usetooltips}}>
+                    {{#pix}}completion-check, format_tiles, {{#str}}allcomplete, format_tiles{{/str}}{{/pix}}
+                    {{#str}}allcomplete, format_tiles{{/str}}
+                </div>
+            {{/isOverall}}
+            {{! If not overall, this is just a placeholder progress indicator for possible JS replacement}}
         </div>
     {{/isComplete}}
 {{/hastilephoto}}
@@ -149,7 +156,7 @@
     {{^numOutOf}}
         <div class="progress-indic{{#showAsPercent}} percent{{/showAsPercent}} placeholder"
              id="tileprogress-{{tileid}}" data-numcomplete="-1" data-numoutof="0" style="display: none;">
-            {{! placeholder progress indicator for possible JS replacement}}
+            {{! If not overall, this is just a placeholder progress indicator for possible JS replacement}}
         </div>
     {{/numOutOf}}
 {{/hastilephoto}}

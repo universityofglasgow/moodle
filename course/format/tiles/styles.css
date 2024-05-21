@@ -1111,7 +1111,10 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     border: 1px solid rgb(231, 231, 231);
     position: relative;
 }
-
+/*YouTube iframes embedded in labels may be too wide */
+.format-tiles li.activity.label iframe {
+    width: 100%;
+}
 .format-tiles li.activity.subtile .activityname {
     position: absolute;
     bottom: 0;

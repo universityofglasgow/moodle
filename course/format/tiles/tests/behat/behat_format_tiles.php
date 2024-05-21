@@ -53,17 +53,21 @@ class behat_format_tiles extends behat_base {
      * Check a tile has expected colour (bg and border top).
      * @Given /^Tile "(?P<tilenumber_int>(?:[\d]|\\")*)" has colour "(?P<colour_string>(?:[^"]|\\")*)"$/
      * @param int $tilenumber
-     * @param string $colour
+     * @param string $expectedvalue
      * @return void
      */
-    public function format_tiles_tile_has_colour(int $tilenumber, string $colour) {
+    public function format_tiles_tile_has_colour(int $tilenumber, string $expectedvalue) {
         $selector = "#tile-$tilenumber";
         $property = 'border-top-color';
-        $expectedvalue = "rgb($colour)";
         $value = $this->element_get_css_value($selector, $property);
-        if ($value != $expectedvalue) {
+
+        // Expected value will be in rgb format like "22, 112, 204".
+        // We ignore the opacity since if the element happens to be on hover during behat test, opacity will be < 1.
+        // Actual value may be like rgb(22, 112, 204) rgba(22, 112, 204, 0.5) and both are ok.
+        $pattern = '/rgba?\(' . $expectedvalue . '(\)|, \d\.\d\))$/';
+        if (!preg_match($pattern, $value)) {
             throw new \Behat\Mink\Exception\ExpectationException(
-                "The property '$property' for the selector '$selector' is '$value' not 'rgb($expectedvalue)'",
+                "The property '$property' for the selector '$selector' is '$value' not '$expectedvalue'",
                 $this->getSession()
             );
         }
@@ -71,10 +75,10 @@ class behat_format_tiles extends behat_base {
         $selector = "#tile-$tilenumber .tile-bg";
         $property = 'background-color';
         $value = $this->element_get_css_value($selector, $property);
-        $expectedvalue = "rgba($colour, 0.05)";
-        if ($value != $expectedvalue) {
+        $expectedvaluebg = "rgba($expectedvalue, 0.05)";
+        if ($value != $expectedvaluebg) {
             throw new \Behat\Mink\Exception\ExpectationException(
-                "The property '$property' for the selector '$selector' is '$value' not '$expectedvalue'",
+                "The property '$property' for the selector '$selector' is '$value' not '$expectedvaluebg'",
                 $this->getSession()
             );
         }
