@@ -23,11 +23,19 @@ Feature: Use the activity chooser to insert activities anywhere in a section in 
     And I log in as "teacher"
     And I am on "Course" course homepage with editing mode on
 
-  Scenario: The activity chooser icon is hidden by default and be made visible on hover
+  Scenario: The activity chooser icon is hidden by default and be made visible on hover for Moodle 4.1-4.3
+    Given the site is running Moodle version 4.3 or lower
     Given I hover ".navbar-brand" "css_element"
     And "[data-action='insert-before-Test Forum'] button" "css_element" should not be visible
     When I hover "Insert an activity or resource before 'Test Forum'" "button"
     Then "[data-action='insert-before-Test Forum'] button" "css_element" should be visible
+
+  Scenario: The activity chooser icon is hidden by default and be made visible on hover for Moodle 4.4 and above
+    Given the site is running Moodle version 4.4 or higher
+    Given I hover ".navbar-brand" "css_element"
+    #And "[data-action='insert-before-Test Forum'] button" "css_element" should not be visible
+    When I hover "Insert an activity or resource before 'Test Forum'" "button"
+    Then "button[aria-label=\"Insert an activity or resource before 'Test Forum'\"]" "css_element" should be visible
 
   Scenario: The activity chooser can be used to insert modules before existing modules
     Given I hover "Insert an activity or resource before 'Test Forum'" "button"

@@ -31,7 +31,7 @@ use testable_course_edit_form;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_flexsections
  */
-class format_flexsections_test extends \advanced_testcase {
+final class format_flexsections_test extends \advanced_testcase {
 
     /**
      * Shared setup for the testcase.
@@ -44,7 +44,7 @@ class format_flexsections_test extends \advanced_testcase {
     /**
      * Tests for format_flexsections::get_section_name method with default section names.
      */
-    public function test_get_section_name() {
+    public function test_get_section_name(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -70,7 +70,7 @@ class format_flexsections_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_get_section_name_customised() {
+    public function test_get_section_name_customised(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -104,7 +104,7 @@ class format_flexsections_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_get_default_section_name() {
+    public function test_get_default_section_name(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -136,7 +136,7 @@ class format_flexsections_test extends \advanced_testcase {
      * @runInSeparateProcess
      * @return void
      */
-    public function test_update_inplace_editable() {
+    public function test_update_inplace_editable(): void {
         global $CFG, $DB, $PAGE;
         require_once($CFG->dirroot . '/lib/external/externallib.php');
 
@@ -172,7 +172,7 @@ class format_flexsections_test extends \advanced_testcase {
      * @runInSeparateProcess
      * @return void
      */
-    public function test_inplace_editable() {
+    public function test_inplace_editable(): void {
         global $DB, $PAGE;
 
         $this->resetAfterTest();
@@ -207,7 +207,7 @@ class format_flexsections_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_default_course_enddate() {
+    public function test_default_course_enddate(): void {
         global $CFG, $DB;
 
         $this->resetAfterTest(true);
@@ -225,7 +225,7 @@ class format_flexsections_test extends \advanced_testcase {
             'category' => $category,
             'editoroptions' => [
                 'context' => context_course::instance($course->id),
-                'subdirs' => 0
+                'subdirs' => 0,
             ],
             'returnto' => new moodle_url('/'),
             'returnurl' => new moodle_url('/'),
@@ -246,7 +246,7 @@ class format_flexsections_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_get_view_url() {
+    public function test_get_view_url(): void {
         global $CFG;
         $this->resetAfterTest();
 
@@ -268,7 +268,7 @@ class format_flexsections_test extends \advanced_testcase {
     /**
      * Tests for format_flexsections::delete_section_with_children.
      */
-    public function test_delete_section_with_children() {
+    public function test_delete_section_with_children(): void {
         global $DB;
         $this->resetAfterTest(true);
 

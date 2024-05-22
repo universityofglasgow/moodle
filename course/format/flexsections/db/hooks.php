@@ -15,19 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Hook callbacks for Flexible sections format
  *
  * @package    format_flexsections
- * @copyright  2022 Marina Glancy
+ * @copyright  2024 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2024052200;             // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2022112800.00;          // Requires Moodle 4.1 or above.
-$plugin->release   = "4.1.0";
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->component = 'format_flexsections';  // Full name of the plugin (used for diagnostics).
-$plugin->supported = [401, 404];
+$callbacks = [
 
+    [
+        'hook' => core\hook\output\before_footer_html_generation::class,
+        'callback' => 'format_flexsections\local\hooks\output\before_footer_html_generation::callback',
+        'priority' => 0,
+    ],
+];

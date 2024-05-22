@@ -25,9 +25,6 @@ namespace format_flexsections\output\courseformat\state;
  */
 class cm extends \core_courseformat\output\local\state\cm {
 
-    /** @var \format_flexsections the course format class */
-    protected $format;
-
     /**
      * Export this data so it can be used as state object in the course editor.
      *

@@ -123,11 +123,11 @@ class stateactions extends  \core_courseformat\stateactions {
     /**
      * Merging a section with its parent
      *
-     * @param \format_flexsections\courseformat\stateupdates $updates the affected course elements track
+     * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids not used
-     * @param int $targetsectionid section id to merge up
-     * @param int $targetcmid not used
+     * @param int|null $targetsectionid section id to merge up
+     * @param int|null $targetcmid not used
      */
     public function section_mergeup(
         stateupdates $updates,
@@ -163,7 +163,8 @@ class stateactions extends  \core_courseformat\stateactions {
     /**
      * Check maxsectionslimit
      *
-     * Only compare the number of sections on the top level.
+     * Only compare the number of sections on the top level. Throws exception if number
+     * of sections is already at the limit. Used as a pre-check for adding/duplicating sections.
      *
      * @param stdClass $course
      * @throws moodle_exception
@@ -171,12 +172,7 @@ class stateactions extends  \core_courseformat\stateactions {
     protected function check_maxsections(stdClass $course) {
         /** @var \format_flexsections $format */
         $format = course_get_format($course->id);
-        $cnt = 0;
-        foreach ($format->get_sections() as $section) {
-            if ($section->section && !$section->parent) {
-                $cnt++;
-            }
-        }
+        $cnt = $format->get_number_of_toplevel_sections();
         $maxsections = $format->get_max_toplevel_sections();
 
         if ($cnt >= $maxsections) {
@@ -226,9 +222,9 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids not used
-     * @param int $targetsectionid optional target section id (if not passed section will be appended),
+     * @param int|null $targetsectionid optional target section id (if not passed section will be appended),
      *     the section will be inserted to the same parent AFTER the target section
-     * @param int $targetcmid not used
+     * @param int|null $targetcmid not used
      */
     public function section_add(
         stateupdates $updates,
@@ -320,8 +316,8 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
      * @param int[] $ids section ids
-     * @param int $targetsectionid not used
-     * @param int $targetcmid not used
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
      */
     public function section_delete(
         stateupdates $updates,

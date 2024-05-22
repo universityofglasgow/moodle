@@ -12,31 +12,52 @@ Feature: Sections can be edited and deleted in flexsections format
       | fullname | shortname | format | coursedisplay | numsections |
       | Course 1 | C1        | flexsections | 0             | 5           |
     And the following "activities" exist:
-      | activity   | name                   | intro                         | course | idnumber    | section |
-      | assign     | Test assignment name   | Test assignment description   | C1     | assign1     | 0       |
-      | book       | Test book name         | Test book description         | C1     | book1       | 1       |
-      | chat       | Test chat name         | Test chat description         | C1     | chat1       | 4       |
-      | choice     | Test choice name       | Test choice description       | C1     | choice1     | 5       |
+      | activity | name                 | intro                       | course | idnumber | section |
+      | assign   | Test assignment name | Test assignment description | C1     | assign1  | 0       |
+      | book     | Test book name       | Test book description       | C1     | book1    | 1       |
+      | folder   | Test folder name     | Test folder description     | C1     | folder1  | 4       |
+      | choice   | Test choice name     | Test choice description     | C1     | choice1  | 5       |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
 
-  Scenario: View the default name of the second section in flexsections format
+  Scenario: View the default name of the second section in flexsections format for Moodle 4.1-4.3
+    Given the site is running Moodle version 4.3 or lower
     When I edit the section "2"
     Then the field "Custom" matches value "0"
     And the field "New value for Section name" matches value "Topic 2"
 
-  Scenario: Edit section summary in flexsections format
+  Scenario: View the default name of the second section in flexsections format for Moodle 4.4 and above
+    Given the site is running Moodle version 4.4 or higher
+    When I edit the section "2"
+    And the field "Section name" matches expression "/^$/"
+
+  Scenario: Edit section summary in flexsections format for Moodle 4.1-4.3
+    Given the site is running Moodle version 4.3 or lower
     When I edit the section "2" and I fill the form with:
       | Summary | Welcome to section 2 |
     Then I should see "Welcome to section 2" in the "Topic 2" "section"
 
-  Scenario: Edit section default name in flexsections format
+  Scenario: Edit section summary in flexsections format for Moodle 4.4 and above
+    Given the site is running Moodle version 4.4 or higher
     When I edit the section "2" and I fill the form with:
-      | Custom | 1                      |
-      | New value for Section name      | This is the second topic |
+      | Description | Welcome to section 2 |
+    Then I should see "Welcome to section 2" in the "Topic 2" "section"
+
+  Scenario: Edit section default name in flexsections format for Moodle 4.1-4.3
+    Given the site is running Moodle version 4.3 or lower
+    When I edit the section "2" and I fill the form with:
+      | Custom                     | 1                        |
+      | New value for Section name | This is the second topic |
+    Then I should see "This is the second topic" in the "This is the second topic" "section"
+    And I should not see "Topic 2" in the "region-main" "region"
+
+  Scenario: Edit section default name in flexsections format for Moodle 4.4 and above
+    Given the site is running Moodle version 4.4 or higher
+    When I edit the section "2" and I fill the form with:
+      | Section name | This is the second topic |
     Then I should see "This is the second topic" in the "This is the second topic" "section"
     And I should not see "Topic 2" in the "region-main" "region"
 
@@ -60,7 +81,7 @@ Feature: Sections can be edited and deleted in flexsections format
     When I delete section "4"
     And I click on "Yes" "button" in the "Confirm" "dialogue"
     Then I should not see "Topic 5" in the "region-main" "region"
-    And I should not see "Test chat name"
+    And I should not see "Test folder name"
     And I should see "Test choice name" in the "Topic 4" "section"
     And I should see "Topic 4" in the "region-main" "region"
 

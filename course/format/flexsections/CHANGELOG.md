@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.1.0] - 2024-05-22
+### Added
+- Support for Moodle 4.4, #83
+- Ability to duplicate sections, #69
+### Fixed
+- Fixed fatal PHP error on Moodle 4.3 introduced by changes in MDL-81610
+
 ## [4.0.6] - 2023-12-23
 ### Added
 - Adjusted automatic tests for Moodle 4.3

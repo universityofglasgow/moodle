@@ -53,7 +53,7 @@ class controlmenu extends \core_courseformat\output\local\content\cm\controlmenu
     protected function cm_control_items() {
         $actions = parent::cm_control_items();
 
-        $baseurl = new moodle_url('/course/mod.php', array('sesskey' => sesskey()));
+        $baseurl = new moodle_url('/course/mod.php', ['sesskey' => sesskey()]);
         $sr = $this->format->get_section_number();
         $mod = $this->mod;
 

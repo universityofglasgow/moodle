@@ -46,14 +46,76 @@ class content extends \core_courseformat\output\local\content {
     }
 
     /**
+     * Override the parent export_for_template, for Moodle 4.4 only
+     *
+     * This function is almost identical to the
+     * \core_courseformat\output\local\content::export_for_template() from Moodle 4.3
+     * except for the $data->sectionreturn being null instead of 0 (otherwise JS does not work)
+     *
+     * @param \renderer_base $output
+     * @return stdClass
+     */
+    public function export_for_template_override(\renderer_base $output): stdClass {
+        global $PAGE;
+
+        $format = $this->format;
+
+        // Most formats uses section 0 as a separate section so we remove from the list.
+        $sections = $this->export_sections($output);
+        $initialsection = '';
+        if (!empty($sections)) {
+            $initialsection = array_shift($sections);
+        }
+
+        $data = (object)[
+            'title' => $format->page_title(), // This method should be in the course_format class.
+            'initialsection' => $initialsection,
+            'sections' => $sections,
+            'format' => $format->get_format(),
+            'sectionreturn' => null,
+        ];
+
+        // The single section format has extra navigation.
+        $singlesectionnum = $this->format->get_section_number();
+        if ($singlesectionnum) {
+            if (!$PAGE->theme->usescourseindex) {
+                $sectionnavigation = new $this->sectionnavigationclass($format, $singlesectionnum);
+                $data->sectionnavigation = $sectionnavigation->export_for_template($output);
+
+                $sectionselector = new $this->sectionselectorclass($format, $sectionnavigation);
+                $data->sectionselector = $sectionselector->export_for_template($output);
+            }
+            $data->hasnavigation = true;
+            $data->singlesection = array_shift($data->sections);
+            $data->sectionreturn = $singlesectionnum;
+        }
+
+        if ($this->hasaddsection) {
+            $addsection = new $this->addsectionclass($format);
+            $data->numsections = $addsection->export_for_template($output);
+        }
+
+        if ($format->show_editor()) {
+            $bulkedittools = new $this->bulkedittoolsclass($format);
+            $data->bulkedittools = $bulkedittools->export_for_template($output);
+        }
+
+        return $data;
+    }
+
+    /**
      * Export this data so it can be used as the context for a mustache template (core/inplace_editable).
      *
      * @param \renderer_base $output typically, the renderer that's calling this function
      * @return \stdClass data context for a mustache template
      */
     public function export_for_template(\renderer_base $output) {
-        /** @var \stdClass $data */
-        $data = parent::export_for_template($output);
+        global $CFG;
+        if ((int)($CFG->branch) >= 404) {
+            $data = $this->export_for_template_override($output);
+        } else {
+            $data = parent::export_for_template($output);
+        }
 
         // If we are on course view page for particular section.
         if ($this->format->get_viewed_section()) {
@@ -64,14 +126,14 @@ class content extends \core_courseformat\output\local\content {
             $section = $this->format->get_section($this->format->get_viewed_section());
             if ($section->parent) {
                 $sr = $this->format->find_collapsed_parent($section->parent);
-                $url = $this->format->get_view_url($section->section, array('sr' => $sr));
+                $url = $this->format->get_view_url($section->section, ['sr' => $sr]);
                 $data->backtosection = [
                     'url' => $url->out(false),
-                    'sectionname' => $this->format->get_section_name($section->parent)
+                    'sectionname' => $this->format->get_section_name($section->parent),
                 ];
             } else {
                 $sr = 0;
-                $url = $this->format->get_view_url($section->section, array('sr' => $sr));
+                $url = $this->format->get_view_url($section->section, ['sr' => $sr]);
                 $context = \context_course::instance($this->format->get_courseid());
                 $data->backtocourse = [
                     'url' => $url->out(false),
