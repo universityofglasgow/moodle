@@ -1045,7 +1045,7 @@ function xmldb_local_recompletion_upgrade($oldversion) {
         }
         // Fill backup attempt table.
         $sql = "INSERT INTO {local_recompletion_sa} (userid, scormid, attempt, courseid)
-        SELECT userid, scormid, attempt, course FROM {local_recompletion_sst} sst GROUP BY userid,scormid,attempt";
+        SELECT userid, scormid, attempt, course FROM {local_recompletion_sst} sst GROUP BY userid,scormid,attempt,course";
         $DB->execute($sql);
         // Fill backup value table.
         $sql = "INSERT INTO {local_recompletion_ssv} (attemptid, scoid, elementid, value, courseid, timemodified)
@@ -1053,7 +1053,8 @@ function xmldb_local_recompletion_upgrade($oldversion) {
             FROM {local_recompletion_sst} t
             JOIN {scorm_element} e ON e.element = t.element
             LEFT JOIN {scorm} s ON s.id = t.scormid
-            JOIN {local_recompletion_sa} a ON (t.userid = a.userid AND t.scormid = a.scormid AND a.attempt = t.attempt)";
+            JOIN {local_recompletion_sa} a ON (t.userid = a.userid AND t.scormid = a.scormid AND a.attempt = t.attempt)
+           WHERE s.course is not null";
         $DB->execute($sql);
         // Remove old table.
         $table = new xmldb_table('local_recompletion_sst');

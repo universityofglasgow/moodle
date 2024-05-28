@@ -430,14 +430,15 @@ class provider implements
         $courseid = $context->instanceid;
 
         $params = array('course' => $courseid);
+        $paramsid = array('courseid' => $courseid);
         $DB->delete_records('local_recompletion_cc', $params);
         $DB->delete_records('local_recompletion_cc_cc', $params);
         $DB->delete_records('local_recompletion_cmc', $params);
         $DB->delete_records('local_recompletion_cmv', $params);
         $DB->delete_records('local_recompletion_qa', $params);
         $DB->delete_records('local_recompletion_qg', $params);
-        $DB->delete_records('local_recompletion_ssv', $params);
-        $DB->delete_records('local_recompletion_sa', $params);
+        $DB->delete_records('local_recompletion_ssv', $paramsid);
+        $DB->delete_records('local_recompletion_sa', $paramsid);
         $DB->delete_records('local_recompletion_qr', $params);
         $DB->delete_records('local_recompletion_cha', $params);
         $DB->delete_records('local_recompletion_hvp', $params);
