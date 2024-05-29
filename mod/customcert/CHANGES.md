@@ -4,9 +4,25 @@ All notable changes to this project will be documented in this file.
 
 Note - All hash comments refer to the issue number. Eg. #169 refers to https://github.com/mdjnelson/moodle-mod_customcert/issues/169.
 
-## [4.2.5] - 2024-XX-YY
+## [4.4.1] - 2024-05-28
 
-### Fixed 
+### Fixed
+
+- Major issue with the pop-up window not working in the reposition element page (#483).
+- Non-editing teachers being able to see the download certificate link for a user which took them to a blank page (#620).
+
+## [4.4.0] - 2024-05-28
+
+### Added
+
+- Added 'Save and Continue' option when editing image elements (#613).
+  This means you can add an image to the filemanager, click 'Save and Continue'
+  and then select it in the drop-down avoiding renavigating to the edit element page.
+- Added monologo image (#568).
+
+## [4.2.5] - 2024-04-23
+
+### Fixed
 
 - Fixed issue when restoring `date`, `daterange`, `gradeitemname` and `grade` that have been linked to a manual grade item (#582).
 - Removed unnecessary set_context() call causing a PHP notice to be shown (#443).
