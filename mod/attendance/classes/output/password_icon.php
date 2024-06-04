@@ -50,6 +50,16 @@ class password_icon implements renderable, templatable {
     public $linktext = null;
 
     /**
+     * @var int Session id.
+     */
+    public $sessionid;
+
+    /**
+     * @var int - should qr code be displayed.
+     */
+    public $includeqrcode;
+
+    /**
      * Constructor
      *
      * @param string $text string for help page title,

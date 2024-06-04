@@ -39,6 +39,8 @@ class mod_attendance_report_page_params extends mod_attendance_page_with_filter_
     public $showsessiondetails;
     /** @var int */
     public $sessiondetailspos;
+    /** @var int */
+    public $page;
 
     /**
      * mod_attendance_report_page_params constructor.
