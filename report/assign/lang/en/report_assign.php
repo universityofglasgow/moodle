@@ -82,6 +82,7 @@ $string['statussubmitted'] = 'submitted';
 $string['submissions'] = 'Submissions';
 $string['submitdate'] = 'Submit date';
 $string['submitted'] = 'Submitted';
+$string['submissionstatus'] = ' Submission Status';
 $string['title'] = 'Title';
 $string['turnitin'] = 'Turnitin';
 $string['turnitinenabled'] = 'Turnitin enabled';
