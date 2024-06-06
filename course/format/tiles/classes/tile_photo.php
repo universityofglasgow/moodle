@@ -301,6 +301,11 @@ class tile_photo {
         $tolerance = 0.05;
 
         $imageinfo = $file->get_imageinfo();
+        if (!$imageinfo) {
+            debugging("No stored file found", DEBUG_DEVELOPER);
+            $this->clear();
+            return ['status' => false];
+        }
         $ratio = $imageinfo['height'] / $imageinfo['width'];
         $messageshort = get_string('imagesize', 'format_tiles') . ": ";
         if (abs($ratio - $requiredratio) > $tolerance) {

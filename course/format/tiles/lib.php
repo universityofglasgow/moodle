@@ -1035,5 +1035,5 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
             throw new invalid_parameter_exception('Only page modules allowed through this service');
         }
     }
-    throw new invalid_parameter_exception('Module not found woth context ID ' . $args['contextid']);
+    throw new invalid_parameter_exception('Module not found with context ID ' . $args['contextid']);
 }

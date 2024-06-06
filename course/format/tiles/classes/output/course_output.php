@@ -1276,16 +1276,21 @@ class course_output implements \renderable, \templatable {
                     ));
                 } else if (in_array($allowedmodule, ['pdf', 'html'])) {
                     // First get file cmids of relevant mime type.
+                    // There is an index on the files table component-filearea-contextid-itemid.
                     $sql = "SELECT cm.id
                     FROM {course_modules} cm
                     JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-                    JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = 70
-                    JOIN {files} f ON f.contextid = ctx.id AND f.component = 'mod_resource'
-                        AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
+                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
+                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
+                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
                     WHERE cm.course = :courseid";
                     $cmids = array_merge($cmids, $DB->get_fieldset_sql(
                         $sql,
-                        ['courseid' => $courseid, 'mimetype' => $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html']
+                        [
+                            'courseid' => $courseid,
+                            'mimetype' => $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html',
+                            'contextmodule' => CONTEXT_MODULE,
+                        ]
                     ));
 
                 } else if ($allowedmodule == 'page') {
