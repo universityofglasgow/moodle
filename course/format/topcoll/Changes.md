@@ -1,6 +1,12 @@
 ﻿Version Information
 ===================
 
+Version 404.0.2 - 30/05/2024
+----------------------------
+1. Fix section zero with a summary is shown when there are no modules.
+2. Add flexible modules.
+3. Only show a section if it has modules that are visible to the user when not editing.
+
 Version 404.0.1 - 22/04/2024
 ----------------------------
 1. Release candidate version for Moodle 4.4.

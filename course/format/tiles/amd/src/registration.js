@@ -65,7 +65,11 @@ define(["jquery", "core/notification", "core/config", "core/str"], function ($, 
                             });
                         }
                     },
-                    error: Notification.exception
+                    error: function(e) {
+                        require(["core/log"], function(log) {
+                            log.debug("Error registering", e.message);
+                        });
+                    }
                 });
             });
         }

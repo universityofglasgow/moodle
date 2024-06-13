@@ -44,20 +44,20 @@ class attendance extends base {
     private $acronyms = [];
 
     /**
-     * Database tables that this entity uses and their default aliases
+     * Database tables that this entity uses
      *
-     * @return array
+     * @return string[]
      */
-    protected function get_default_table_aliases(): array {
+    protected function get_default_tables(): array {
         return [
-            'user' => 'attu',
-            'context' => 'attctx',
-            'course' => 'attc',
-            'attendance' => 'att',
-            'attendance_sessions' => 'attsess',
-            'attendance_log' => 'attlog',
-            'attendance_statuses' => 'attstat',
-            'session_data' => 'sessdata',
+            'user',
+            'context',
+            'course',
+            'attendance',
+            'attendance_sessions',
+            'attendance_log',
+            'attendance_statuses',
+            'session_data',
         ];
     }
 
@@ -328,7 +328,7 @@ class attendance extends base {
                 AND $fieldname.statusid = $attendancestatusalias.id
                 AND $fieldname.studentid = $attendancelogalias.studentid")
                 ->set_is_sortable(true)
-                ->add_field("$fieldname.count");
+                ->add_field("$fieldname.count", 'totalcount');
 
             // Status total count in the current week column.
             $columns[] = (new column(
@@ -349,7 +349,7 @@ class attendance extends base {
                 AND $fieldnamecw.statusid = $attendancestatusalias.id
                 AND $fieldnamecw.studentid = $attendancelogalias.studentid")
                 ->set_is_sortable(true)
-                ->add_field("{$fieldnamecw}.count");
+                ->add_field("{$fieldnamecw}.count", 'totalcountcw');
 
             // Status total count in the previous week column.
             $columns[] = (new column(
@@ -371,7 +371,7 @@ class attendance extends base {
                 AND $fieldnamepw.statusid = $attendancestatusalias.id
                 AND $fieldnamepw.studentid = $attendancelogalias.studentid")
                 ->set_is_sortable(true)
-                ->add_field("{$fieldnamepw}.count");
+                ->add_field("{$fieldnamepw}.count", 'totalcountprev');
         }
 
         return $columns;
@@ -739,7 +739,7 @@ class attendance extends base {
      * @return array
      */
     private function acronymfieldnames(string $acronym): array {
-        $fieldname = 'status_' . strtolower($acronym) . '_total_count';
+        $fieldname = 'status_' . rtrim(base64_encode($acronym), '=') . '_total_count';
         return [
             $fieldname,
             $fieldname . '_current_week',

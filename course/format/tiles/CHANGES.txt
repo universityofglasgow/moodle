@@ -432,3 +432,8 @@ Other
 4.4.0.4 (2024051800)
 ====================
 - Edge case behat fix
+
+4.4.0.5 (2024060500)
+=====================
+- Fix issue #208 overlap on tile when using style 2
+- Registration bug and other minor bug fixes

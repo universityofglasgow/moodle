@@ -268,7 +268,33 @@ class format_topcoll extends core_courseformat\base {
             // Don't show.
             return false;
         }
-        return parent::is_section_visible($section);
+        $shown = parent::is_section_visible($section);
+        if (($shown) && ($section->sectionnum == 0)) {
+            // Don't show section zero if no modules or all modules unavailable to user.
+            $showmovehere = ismoving($this->course->id);
+            if (!$showmovehere) {
+                global $PAGE;
+                $context = context_course::instance($this->course->id);
+                if (!($PAGE->user_is_editing() && has_capability('moodle/course:update', $context))) {
+                    $modshown = false;
+                    $modinfo = get_fast_modinfo($this->course);
+
+                    if (!empty($modinfo->sections[$section->section])) {
+                        foreach ($modinfo->sections[$section->section] as $modnumber) {
+                            $mod = $modinfo->cms[$modnumber];
+                            if ($mod->is_visible_on_course_page()) {
+                                // At least one is.
+                                $modshown = true;
+                                break;
+                            }
+                        }
+                    }
+                    $shown = $modshown;
+                }
+            }
+        }
+
+        return $shown;
     }
 
     /**
@@ -581,6 +607,10 @@ class format_topcoll extends core_courseformat\base {
                     'default' => 0,
                     'type' => PARAM_INT,
                 ],
+                'flexiblemodules' => [
+                    'default' => 0,
+                    'type' => PARAM_INT,
+                ],
                 'toggleallenabled' => [
                     'default' => 0,
                     'type' => PARAM_INT,
@@ -814,6 +844,21 @@ class format_topcoll extends core_courseformat\base {
                     'element_type' => 'select',
                     'element_attributes' => [$layoutcolumnsvalues],
                 ];
+                $flexiblemodulesvalues = $this->generate_default_entry(
+                    'flexiblemodules',
+                    0,
+                    [
+                        1 => new lang_string('no'),
+                        2 => new lang_string('yes'),
+                    ]
+                );
+                $courseformatoptionsedit['flexiblemodules'] = [
+                    'label' => new lang_string('setflexiblemodules', 'format_topcoll'),
+                    'help' => 'setflexiblemodules',
+                    'help_component' => 'format_topcoll',
+                    'element_type' => 'select',
+                    'element_attributes' => [$flexiblemodulesvalues],
+                ];
                 $toggleallenabledvalues = $this->generate_default_entry(
                     'toggleallenabled',
                     0,
@@ -897,6 +942,8 @@ class format_topcoll extends core_courseformat\base {
                 $courseformatoptionsedit['layoutcolumns'] = [
                     'label' => 0, 'element_type' => 'hidden', ];
                 $courseformatoptionsedit['layoutcolumnorientation'] = [
+                    'label' => 0, 'element_type' => 'hidden', ];
+                $courseformatoptionsedit['flexiblemodules'] = [
                     'label' => 0, 'element_type' => 'hidden', ];
                 $courseformatoptionsedit['toggleallenabled'] = [
                     'label' => 0, 'element_type' => 'hidden', ];
@@ -1688,6 +1735,7 @@ class format_topcoll extends core_courseformat\base {
             $updatedata['layoutstructure'] = 0;
             $updatedata['layoutcolumns'] = 0;
             $updatedata['layoutcolumnorientation'] = 0;
+            $updatedata['flexiblemodules'] = 0;
             $updatedata['toggleallenabled'] = 0;
             $updatedata['viewsinglesectionenabled'] = 0;
             $updatedata['toggleiconposition'] = 0;
@@ -1780,6 +1828,7 @@ class format_topcoll extends core_courseformat\base {
             // Defaults taken from 'settings.php'.
             $data['displayinstructions'] = 0;
             $data['layoutcolumnorientation'] = 0;
+            $data['flexiblemodules'] = 0;
             $data['toggleallenabled'] = 0;
             $data['viewsinglesectionenabled'] = 0;
             $data['showsectionsummary'] = 0;

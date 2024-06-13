@@ -90,8 +90,8 @@ final class courseformatrenderer_test extends \advanced_testcase {
     /**
      * Init.
      */
-    protected function init($numsections = 1, $layoutcolumnorientation = 2, $toggleallenabled = 2,
-        $viewsinglesectionenabled = 2): void {
+    protected function init($numsections = 1, $layoutcolumnorientation = 2, $flexiblemodules = 1,
+        $toggleallenabled = 2, $viewsinglesectionenabled = 2): void {
         $this->resetAfterTest(true);
 
         set_config('theme', 'boost');
@@ -126,6 +126,7 @@ final class courseformatrenderer_test extends \advanced_testcase {
         self::set_property($this->outputus, 'output', $this->ouroutput);
         $tcsettings = $this->courseformat->get_settings();
         $tcsettings['layoutcolumnorientation'] = $layoutcolumnorientation;
+        $tcsettings['flexiblemodules'] = $flexiblemodules;
         $tcsettings['toggleallenabled'] = $toggleallenabled;
         $tcsettings['viewsinglesectionenabled'] = $viewsinglesectionenabled;
         $tcsettings['toggleiconset'] = 'arrow';
@@ -456,7 +457,7 @@ final class courseformatrenderer_test extends \advanced_testcase {
         $theoutput .= self::call_method($this->outputus, 'topcoll_section', [$section1, $this->course, false, null, $toggle]);
         $theoutput .= '</ul>';
 
-        $this->assertEquals($thevalue, $theoutput);
+        $this->assertEquals($theoutput, $thevalue);
     }
 
     public function test_multiple_section_page_vertical(): void {
@@ -481,7 +482,7 @@ final class courseformatrenderer_test extends \advanced_testcase {
         $theoutput .= self::call_method($this->outputus, 'topcoll_section', [$section1, $this->course, false, null, $toggle]);
         $theoutput .= '</ul></div>';
 
-        $this->assertEquals($thevalue, $theoutput);
+        $this->assertEquals($theoutput, $thevalue);
     }
 
     public function test_multiple_section_page_no_sections(): void {
@@ -500,7 +501,7 @@ final class courseformatrenderer_test extends \advanced_testcase {
         $theoutput .= self::call_method($this->outputus, 'topcoll_section', [$section0, $this->course, false, 0]);
         $theoutput .= '</ul>';
 
-        $this->assertEquals($thevalue, $theoutput);
+        $this->assertEquals($theoutput, $thevalue);
     }
 
     public function test_toggle_all(): void {
