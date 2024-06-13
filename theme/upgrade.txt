@@ -1,6 +1,9 @@
 This files describes API changes in /theme/* themes,
 information provided here is intended especially for theme designer.
 
+=== 4.4.1 ===
+* New `core/context_header` mustache template has been added. This template can be overridden by themes to modify the context header.
+
 === 4.4 ===
 * Theme selection is now performed using cards and modals.
 * The 'choosereadme' string for each theme is expected to be plain text. HTML content will not render when displayed in the modal.

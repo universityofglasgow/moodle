@@ -1,6 +1,10 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 4.4.1 ===
+
+* Use server timezone when constructing `\DateTimeImmutable` for the system `\core\clock` implementation.
+
 === 4.4 ===
 
 * New modinfo methods related to delegated sections (sections controlled by a component):
@@ -151,6 +155,7 @@ information provided here is intended especially for developers.
 * groups_get_user_groups() in grouplib has a new $includehidden paramater, which will return groups for user even if they have
   GROUP_VISIBILITY_NONE. This is false by default, and should be used with care. The calling code must ensure that these groups
   are not exposed to the user as this may be a privacy issue.
+* Added a new `renderer_base::get_page` getter method.
 
 === 4.3 ===
 
