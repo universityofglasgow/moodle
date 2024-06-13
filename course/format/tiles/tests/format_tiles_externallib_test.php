@@ -98,7 +98,9 @@ final class format_tiles_externallib_test extends \externallib_advanced_testcase
         $this->assertTrue($result['status']);
 
         // Check it worked and data made it to db.
-        $dbvalue = \format_tiles\format_option::get($course->id, \format_tiles\format_option::OPTION_SECTION_ICON, $sectionid);
+        $dbvalue = \format_tiles\local\format_option::get(
+            $course->id, \format_tiles\local\format_option::OPTION_SECTION_ICON, $sectionid
+        );
 
         $this->assertEquals($newicon, $dbvalue);
 

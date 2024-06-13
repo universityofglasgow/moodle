@@ -33,7 +33,7 @@ use restricted_context_exception;
 use stored_file_creation_exception;
 use context_module;
 use context_course;
-use format_tiles\tile_photo;
+use format_tiles\local\tile_photo;
 
 /**
  * Format tiles external functions
@@ -179,7 +179,7 @@ class external extends external_api {
      * @throws stored_file_creation_exception
      */
     private static function set_tile_photo($data, $context): array {
-        $optiontype = \format_tiles\format_option::OPTION_SECTION_ICON;
+        $optiontype = \format_tiles\local\format_option::OPTION_SECTION_ICON;
         $elementid = $data['sectionid'];
 
         if (!$data['image']) {
@@ -190,7 +190,7 @@ class external extends external_api {
             $tilephoto->clear();
 
             // If there is an icon attached to this element, clear it (as here we are setting a photo).
-            \format_tiles\format_option::unset($data['courseid'], $optiontype, $elementid);
+            \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
 
             return ['status' => true, 'imageurl' => ''];
         }
@@ -232,7 +232,7 @@ class external extends external_api {
         $file = $tilephoto->set_file_from_stored_file($sourcefile, $data['image']);
         if ($file) {
             // If there is an icon attached to this element, clear it (as here we are setting a photo).
-            \format_tiles\format_option::unset($data['courseid'], $optiontype, $elementid);
+            \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
             return ['status' => true, 'imageurl' => $tilephoto->get_image_url()];
         } else {
             return ['status' => false, 'imageurl' => ''];
@@ -249,13 +249,13 @@ class external extends external_api {
      */
     private static function set_tile_icon($data, $context) {
         global $DB;
-        $availableicons = (new \format_tiles\icon_set)->available_tile_icons($data['courseid']);
+        $availableicons = (new \format_tiles\local\icon_set)->available_tile_icons($data['courseid']);
         if (!isset($availableicons[$data['image']])) {
             throw new invalid_parameter_exception('Icon is invalid');
         }
 
         // An icon for a single section or cm - use custom Tiles format options.
-        $optiontype = \format_tiles\format_option::OPTION_SECTION_ICON;
+        $optiontype = \format_tiles\local\format_option::OPTION_SECTION_ICON;
         $elementid = $data['sectionid'];
 
         // We are dealing with a tile icon for one particular section, so check if user has picked the course default.
@@ -265,9 +265,9 @@ class external extends external_api {
         );
         if ($data['image'] == $defaulticonthiscourse) {
             // Using default icon for a tile do don't store anything in database = default.
-            $result = \format_tiles\format_option::unset($data['courseid'], $optiontype, $elementid);
+            $result = \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
         } else {
-            $result = \format_tiles\format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
+            $result = \format_tiles\local\format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
         }
 
         if ($result) {
@@ -408,7 +408,7 @@ class external extends external_api {
     }
 
     /**
-     * Simulate the resource/view.php and page/view.php etc logging when caleld from AJAX
+     * Simulate the resource/view.php and page/view.php etc logging when called from AJAX.
      *
      * This is a re-implementation of the core service only required because the core
      * version is not callable from AJAX
@@ -432,7 +432,7 @@ class external extends external_api {
         self::validate_context($context);
         require_capability('mod/' . $cm->modname . ':view', $context);
 
-        $allowedmodalmodules = \format_tiles\util::allowed_modal_modules();
+        $allowedmodalmodules = \format_tiles\local\util::allowed_modal_modules();
         if (!in_array($cm->modname, $allowedmodalmodules['modules'])
             && count($allowedmodalmodules['resources']) == 0) {
             throw new invalid_parameter_exception(
@@ -545,7 +545,7 @@ class external extends external_api {
         $data = [
             'status' => true,
             'warnings' => [],
-            'icons' => json_encode((new \format_tiles\icon_set)->available_tile_icons($params['courseid'])),
+            'icons' => json_encode((new \format_tiles\local\icon_set)->available_tile_icons($params['courseid'])),
             'photos' => '',
         ];
         if (get_config('format_tiles', 'allowphototiles')) {
@@ -590,7 +590,7 @@ class external extends external_api {
      * We can then use this to render the page from PHP at the correct width initially next time.
      * @param int $courseid the course id we are in
      * @param int $width the JS calculated width
-     * @see \format_tiles\util::width_template_data() for where this is used.
+     * @see \format_tiles\local\util::width_template_data() for where this is used.
      * @return array of warnings and status result
      * @since Moodle 3.0
      * @throws moodle_exception
@@ -657,7 +657,7 @@ class external extends external_api {
     /**
      * Return some information about a section or a set of sections in a course.
      * This may be called as a user progresses through course activities (with course completion).
-     * The data provided enable the tiles to be updated client side with progress info ana availability.
+     * The data provided enable the tiles to be updated client side with progress info and availability.
      * @param int $courseid
      * @param array $sectionnums
      * @return array of warnings and status result
@@ -849,7 +849,7 @@ class external extends external_api {
         self::validate_context($context);
 
         // The method below includes a capability check for the module view.
-        $data = \format_tiles\util::get_course_mod_info($context->get_course_context()->instanceid, $params['cmid']);
+        $data = \format_tiles\local\util::get_course_mod_info($context->get_course_context()->instanceid, $params['cmid']);
         if ($data) {
             return $data;
         }

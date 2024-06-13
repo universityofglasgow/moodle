@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_tiles;
+namespace format_tiles\local;
 
 /**
  * General utilities class for format_tiles.

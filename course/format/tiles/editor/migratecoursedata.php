@@ -72,7 +72,7 @@ if ($courseid) {
     $sesskey = optional_param('sesskey', '', PARAM_TEXT);
     if ($sesskey) {
         require_sesskey();
-        \format_tiles\format_option::migrate_legacy_format_options($courseid);
+        \format_tiles\local\format_option::migrate_legacy_format_options($courseid);
         \core\notification::success(
             get_string('migratedcourseid', 'format_tiles', $courseid)
             . '&nbsp;' . html_writer::link($courseurl, $course->fullname)
@@ -116,7 +116,7 @@ $legacycourses = $DB->get_records_sql(
         FROM {course} c
          ) counts
     WHERE counts.legacyoptions > 0",
-    [\format_tiles\format_option::OPTION_SECTION_PHOTO, \format_tiles\format_option::OPTION_SECTION_ICON]
+    [\format_tiles\local\format_option::OPTION_SECTION_PHOTO, \format_tiles\local\format_option::OPTION_SECTION_ICON]
 );
 $table = new html_table();
 $table->head = [

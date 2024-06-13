@@ -40,7 +40,7 @@ class migrate_legacy_data extends \core\task\adhoc_task {
         $courseid = $this->get_custom_data()->courseid;
         mtrace("format_tiles migrate_legacy_data course ID '$courseid'");
         if ($courseid) {
-            \format_tiles\format_option::migrate_legacy_format_options($courseid);
+            \format_tiles\local\format_option::migrate_legacy_format_options($courseid);
         }
     }
 }

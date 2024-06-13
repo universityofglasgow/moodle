@@ -51,7 +51,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
      * If we have a single tile on the last row it looks odd.
      * We might want to shrink the tile window down a little to even it out.
      * So we work out how many per row would be optimal, and shrink the window accordingly.
-     * @see \format_tiles\util::width_template_data() for more information.
+     * @see \format_tiles\local\util::width_template_data() for more information.
      * @return {Promise}
      */
     var resizeTilesDivWidth = function() {
@@ -316,25 +316,7 @@ define(["jquery", "core/ajax"], function ($, ajax) {
         }
     };
 
-    var setListeners = function () {
-        // If theme uses docked blocks (e.g. more) then re-organise if they move.
-        $(".block-hider-hide").click(function () {
-            organiser.runReOrg(true);
-        });
-
-        $(".block-hider-show").click(function () {
-            organiser.runReOrg(true);
-        });
-
-        // If nav drawer is opened or closed, this rezises the window so need to re-initialise content divs.
-        $(".navbar button[data-action=\"toggle-drawer\"]").click(function () {
-            setTimeout(function() {
-                organiser.runReOrg(true);
-                resizeTilesDivWidth();
-            }, 600);
-
-        });
-    };
+    // We no longer set observers for size changes here as this appears in course.js in const resizeObserver.
 
     /**
      * On initial page load, we need to unhide the tiles.  They will have been hidden from PHP if we are using JS.
@@ -350,7 +332,6 @@ define(["jquery", "core/ajax"], function ($, ajax) {
         init: function(courseIdInit, sectionOpen, fitTilesToWidth, isEditing) {
             courseId = courseIdInit;
             $(document).ready(function() {
-                setListeners();
                 if ($(Selector.TILES).css("opacity") === "1") {
                     organiser.runReOrg(false).done(function() {
                         if (sectionOpen !== 0) {

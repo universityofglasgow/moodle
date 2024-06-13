@@ -45,13 +45,22 @@ class cm extends core_cm {
      * @return bool if the cm has format data
      */
     protected function add_format_data(\stdClass &$data, array $haspartials, \renderer_base $output): bool {
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+
+        $parentadded = parent::add_format_data($data, $haspartials, $output);
+
+        // See also the higher level section where moodle release info is added e.g. ismoodle42minus.
+        // I.e. format_tiles\output\courseformat\content\section.
+        // However we can't rely on that here.
+        // The cm templates inherit from that in edit view, but not when we use fragment API to get a cm list.
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
         $data->ismoodle44 = $moodlerelease === 4.4;
         $data->ismoodle40 = $moodlerelease === 4.0;
         $data->modcontextid = $this->mod->context->id;
-        return parent::add_format_data($data, $haspartials, $output);
+
+        $childadded = true; // We did add some data above.
+        return $parentadded || $childadded;
     }
 
 

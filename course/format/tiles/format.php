@@ -53,7 +53,7 @@ if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context
 $renderer = $PAGE->get_renderer('format_tiles');
 
 $allowphototiles = get_config('format_tiles', 'allowphototiles');
-$usejsnav = \format_tiles\util::using_js_nav();
+$usejsnav = \format_tiles\local\util::using_js_nav();
 
 // This will take us to render_content() in /course/format/tiles/classes/output/renderer.php.
 $outputclass = $format->get_output_classname('content');

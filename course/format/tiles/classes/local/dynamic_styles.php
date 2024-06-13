@@ -21,7 +21,7 @@
  * @copyright 2024 David Watson {@link http://evolutioncode.uk}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace format_tiles;
+namespace format_tiles\local;
 
 /**
  * Prepares CSS for Tiles dynamic styles (e.g. course specific colours).
@@ -83,7 +83,7 @@ class dynamic_styles {
 
     /**
      * Export the data for the mustache template.
-     * @see \format_tiles\util::width_template_data()
+     * @see \format_tiles\local\util::width_template_data()
      * @param string $basecolourhex The hex code for the base colour used in this course.
      * @param bool $shadeheadingbar Whether the shade heading bar is set to yes for this course.
      * @param bool $usesubtiles Whether the course uses subtiles.
@@ -91,7 +91,7 @@ class dynamic_styles {
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar, bool $usesubtiles) {
+    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar, bool $usesubtiles): array {
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
         $basecolourrgb = self::rgbcolour($basecolourhex);
         $outputdata = [
@@ -117,8 +117,8 @@ class dynamic_styles {
             );
         }
         $outputdata['shade_heading_bar'] = $shadeheadingbar;
-        $outputdata['ismoodle42minus'] = \format_tiles\util::get_moodle_release() <= 4.2;
-        $outputdata['ismoodle44'] = \format_tiles\util::get_moodle_release() === 4.4;
+        $outputdata['ismoodle42minus'] = \format_tiles\local\util::get_moodle_release() <= 4.2;
+        $outputdata['ismoodle44'] = \format_tiles\local\util::get_moodle_release() === 4.4;
 
         return $outputdata;
     }
@@ -129,7 +129,7 @@ class dynamic_styles {
      * @param string $hex the colour in hex form e.g. #979797
      * @return string rgb colour
      */
-    private static function rgbcolour(string $hex) {
+    public static function rgbcolour(string $hex): string {
         list($r, $g, $b) = sscanf($hex, "#%02x%02x%02x");
         return "$r,$g,$b";
     }
@@ -241,7 +241,7 @@ class dynamic_styles {
             return false;
         }
 
-        return \format_tiles\util::using_js_nav()
+        return \format_tiles\local\util::using_js_nav()
             && get_config('format_tiles', 'fittilestowidth')
             && \core_useragent::get_device_type() != \core_useragent::DEVICETYPE_MOBILE
             && ($SESSION->format_tiles_skip_width_check ?? null) != 1;

@@ -29,7 +29,9 @@ require_once($CFG->dirroot . '/course/format/tiles/lib.php');
 if ($ADMIN->fulltree) {
     $settings = null; // We add our own settings pages and do not want the standard settings link.
 
-    $settingscategory = new \format_tiles\admin_settingspage_tabs('formatsettingtiles', get_string('pluginname', 'format_tiles'));
+    $settingscategory = new \format_tiles\local\admin_settingspage_tabs(
+        'formatsettingtiles', get_string('pluginname', 'format_tiles')
+    );
 
 
     // Colour settings.
@@ -256,7 +258,7 @@ if ($ADMIN->fulltree) {
             'problemcourses',
             get_string('problemcourses', 'format_tiles'),
             html_writer::link(
-                \format_tiles\course_section_manager::get_list_problem_courses_url(),
+                \format_tiles\local\course_section_manager::get_list_problem_courses_url(),
                 get_string('checkforproblemcourses', 'format_tiles'),
                 ['class' => 'btn btn-primary', 'target' => '_blank']
             )

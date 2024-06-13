@@ -39,8 +39,8 @@ class observer {
         global $DB;
         $courseid = $event->objectid;
         $DB->delete_records("user_preferences", ["name" => 'format_tiles_stopjsnav_' . $courseid]);
-        \format_tiles\tile_photo::delete_files_from_ids($courseid);
-        \format_tiles\format_option::unset_all_course($courseid);
+        \format_tiles\local\tile_photo::delete_files_from_ids($courseid);
+        \format_tiles\local\format_option::unset_all_course($courseid);
         self::clear_cache_modal_cmids($courseid);
     }
 
@@ -49,11 +49,11 @@ class observer {
      * @param \core\event\course_section_deleted $event
      */
     public static function course_section_deleted(\core\event\course_section_deleted $event) {
-        \format_tiles\tile_photo::delete_files_from_ids($event->courseid, $event->objectid);
-        \format_tiles\format_option::unset_multiple_types(
+        \format_tiles\local\tile_photo::delete_files_from_ids($event->courseid, $event->objectid);
+        \format_tiles\local\format_option::unset_multiple_types(
             $event->courseid,
             $event->objectid,
-            [\format_tiles\format_option::OPTION_SECTION_PHOTO, \format_tiles\format_option::OPTION_SECTION_ICON]
+            [\format_tiles\local\format_option::OPTION_SECTION_PHOTO, \format_tiles\local\format_option::OPTION_SECTION_ICON]
         );
     }
 
@@ -97,7 +97,7 @@ class observer {
         if ($event->other['type'] == 'course') {
             $istilescourse = $DB->record_exists('course', ['id' => $event->objectid, 'format' => 'tiles']);
             if ($istilescourse) {
-                \format_tiles\format_option::delete_legacy_format_options($event->objectid);
+                \format_tiles\local\format_option::delete_legacy_format_options($event->objectid);
             }
         }
     }

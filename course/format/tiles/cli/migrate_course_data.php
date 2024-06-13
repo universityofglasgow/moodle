@@ -50,7 +50,7 @@ if ($count == 0) {
 }
 mtrace("Migrating $count items for course ID $courseid");
 mtrace("Course name: $coursename");
-\format_tiles\format_option::migrate_legacy_format_options($courseid);
+\format_tiles\local\format_option::migrate_legacy_format_options($courseid);
 
 $countleft = $DB->get_field_sql($counttomigratesql, [$courseid]);
 mtrace("Done - count left $countleft");

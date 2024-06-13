@@ -22,7 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_tiles;
+namespace format_tiles\local;
 
 /**
  * Settings page providing a tabbed view.
@@ -95,8 +95,8 @@ class admin_settingspage_tabs extends \admin_settingpage {
             $context['tabs'][] = $data;
         }
         $context['documentationurl'] = get_config('format_tiles', 'documentationurl');
-        $context['showregisterbutton'] = !\format_tiles\registration_manager::is_registered()
-            && !\format_tiles\registration_manager::has_recent_attempt();
+        $context['showregisterbutton'] = !\format_tiles\local\registration_manager::is_registered()
+            && !\format_tiles\local\registration_manager::has_recent_attempt();
         $context['sesskey'] = sesskey();
 
         return $OUTPUT->render_from_template('format_tiles/admin_setting_tabs', $context);

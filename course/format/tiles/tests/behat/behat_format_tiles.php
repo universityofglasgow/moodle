@@ -549,7 +549,7 @@ class behat_format_tiles extends behat_base {
             'course_sections', 'id', ['course' => $courseid, 'section' => $sectionnumber], MUST_EXIST
         );
 
-        $tilephoto = new \format_tiles\tile_photo($context, $sectionid);
+        $tilephoto = new \format_tiles\local\tile_photo($context, $sectionid);
         if (!$tilephoto->get_file()) {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "File not found in files table for course $coursename tile $sectionnumber photo $photoname ",
@@ -594,7 +594,9 @@ class behat_format_tiles extends behat_base {
         $sectionid = $DB->get_field(
             'course_sections', 'id', ['course' => $courseid, 'section' => $sectionnumber], MUST_EXIST
         );
-        $photo = \format_tiles\format_option::get($courseid, format_tiles\format_option::OPTION_SECTION_PHOTO, $sectionid);
+        $photo = \format_tiles\local\format_option::get(
+            $courseid, format_tiles\local\format_option::OPTION_SECTION_PHOTO, $sectionid
+        );
         if ($photo) {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "Photo unexpectedly found for course $coursename tile $sectionnumber photo $photo",
@@ -616,7 +618,7 @@ class behat_format_tiles extends behat_base {
      */
     public function should_see_section_confirm_delete($sectionname) {
         // @codingStandardsIgnoreEnd.
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $expectedstring = $moodlerelease < 4.2
             ? get_string('confirmdeletesection', 'moodle', $sectionname)
             : get_string('sectiondelete_info', 'courseformat', (object)['name' => $sectionname]);
@@ -635,7 +637,7 @@ class behat_format_tiles extends behat_base {
     public function i_set_completion_tracking_to_manual() {
         // Moodle 42 version: And I set the field "Completion tracking" to "Students can manually mark the activity as completed".
         // Moodle 43 version: And I set the field "Students must manually mark the activity as done" to "1".
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $field = $moodlerelease <= 4.2
             ? "Completion tracking"
             : "Students must manually mark the activity as done";

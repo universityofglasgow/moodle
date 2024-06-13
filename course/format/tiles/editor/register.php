@@ -27,7 +27,7 @@ require_once('../../../../config.php');
 global $PAGE, $DB;
 
 use format_tiles\form\registration_form;
-use format_tiles\registration_manager;
+use format_tiles\local\registration_manager;
 
 require_login();
 require_sesskey();

@@ -26,6 +26,7 @@ namespace format_tiles\output\courseformat;
 
 
 use core_courseformat\output\local\content as content_base;
+use format_tiles\local\dynamic_styles;
 
 /**
  * Format tiles class to render course content.
@@ -45,11 +46,12 @@ class content extends content_base {
     public function export_for_template(\renderer_base $output) {
         global $PAGE, $DB, $USER;
         $isediting = $PAGE->user_is_editing();
+        $course = $this->format->get_course();
 
         $data = parent::export_for_template($output);
         $data->editoradvice = [];
 
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
 
@@ -65,7 +67,8 @@ class content extends content_base {
                 // For now (Beta version) we warn editor about sub tiles only appearing in non-edit view.
                 $messgage = get_string('editoradvicesubtiles', 'format_tiles');
                 if (has_capability('moodle/site:config', \context_system::instance())) {
-                    $messgage .= ' (' . get_string('version', 'format_tiles', \format_tiles\util::get_tiles_plugin_release()) . ')';
+                    $messgage .= ' ('
+                        . get_string('version', 'format_tiles', \format_tiles\local\util::get_tiles_plugin_release()) . ')';
                 }
                 $data->editoradvice[] = ['text' => $messgage, 'icon' => 'info-circle', 'class' => 'secondary'];
             }
@@ -92,7 +95,7 @@ class content extends content_base {
                 ];
             }
 
-            $hasbulkedittools = \format_tiles\util::get_moodle_release() >= 4.2
+            $hasbulkedittools = \format_tiles\local\util::get_moodle_release() >= 4.2
                 && isset($this->bulkedittoolsclass)
                 && class_exists($this->bulkedittoolsclass);
             if ($hasbulkedittools) {
@@ -101,7 +104,7 @@ class content extends content_base {
             }
 
             // Check if the course photos and icons have not yet finished migrating (4.3 upgrade) and alert if so.
-            if ($moodlerelease >= 4.0 && \format_tiles\format_option::needs_migration_incomplete_warning($course->id)) {
+            if ($moodlerelease >= 4.0 && \format_tiles\local\format_option::needs_migration_incomplete_warning($course->id)) {
                 $message = get_string('coursephotomigrationincomplete', 'format_tiles');
                 if ($isadmin) {
                     $message .= \html_writer::link(

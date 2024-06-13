@@ -70,7 +70,7 @@ if ($cmid) {
 $PAGE->navbar->add(get_string('uploadnewphoto', 'format_tiles'));
 
 $photocontext = $modulecontext != null ? $modulecontext : $coursecontext;
-$tilephoto = new \format_tiles\tile_photo($photocontext, $sectionid);
+$tilephoto = new \format_tiles\local\tile_photo($photocontext, $sectionid);
 
 if ($deletephoto) {
     $tilephoto->clear();
@@ -146,7 +146,7 @@ if ($mform->is_cancelled()) {
             $newfilename,
             true
         );
-        if (!\format_tiles\tile_photo::verify_file_type($tempfile)) {
+        if (!\format_tiles\local\tile_photo::verify_file_type($tempfile)) {
             debugging('Invalid file type');
             $tempfile->delete();
         } else {

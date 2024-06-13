@@ -142,7 +142,7 @@ class renderer extends section_renderer {
         }
 
         // Otherwise, even if URL requests single, we may show multiple in certain situations.
-        if (\format_tiles\util::using_js_nav() && isset($SESSION->format_tiles_jssuccessfullyused)) {
+        if (\format_tiles\local\util::using_js_nav() && isset($SESSION->format_tiles_jssuccessfullyused)) {
             if (!$isediting && get_config('format_tiles', 'usejsnavforsinglesection')) {
                 return true;
             }

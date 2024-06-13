@@ -45,7 +45,7 @@ class before_footer_html_generation {
             $allowedmodals = null;
 
             if (get_config('format_tiles', 'usecourseindex')) {
-                $allowedmodals = \format_tiles\util::allowed_modal_modules();
+                $allowedmodals = \format_tiles\local\util::allowed_modal_modules();
                 if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
                     // On /mod/xxx/view.php or course/view.php page passing in cmid, may need to launch modal JS.
                     // This is because the course index needs the JS.  So get details.
@@ -56,7 +56,7 @@ class before_footer_html_generation {
             }
 
             if (($oncourseviewpage && !$editing) || $modviewpageneedsjs) {
-                $allowedmodals = $allowedmodals === null ? \format_tiles\util::allowed_modal_modules() : $allowedmodals;
+                $allowedmodals = $allowedmodals === null ? \format_tiles\local\util::allowed_modal_modules() : $allowedmodals;
 
                 // Course module modals.
                 $launchmodalcmid = null;
@@ -66,7 +66,7 @@ class before_footer_html_generation {
                     if ($launchmodalcmid) {
                         // Need to check if this cm allowed a modal.
                         $modalallowed =
-                            \format_tiles\util::get_course_mod_info($PAGE->course->id, $launchmodalcmid)->modalallowed ?? false;
+                            \format_tiles\local\util::get_course_mod_info($PAGE->course->id, $launchmodalcmid)->modalallowed ?? false;
                         if (!$modalallowed) {
                             $launchmodalcmid = null;
                         }

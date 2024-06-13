@@ -24,6 +24,8 @@
 
 namespace format_tiles;
 
+use format_tiles\local\format_option;
+
 /**
  * Class format_tiles_course_format_options_testcase
  * @copyright  2024 David Watson {@link http://evolutioncode.uk}
@@ -43,7 +45,7 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
 
     /**
      * Create a mock course with legacy format options and test migration.
-     * @covers \format_tiles\format_option::migrate_legacy_format_options
+     * @covers \format_tiles\local\format_option::migrate_legacy_format_options
      * @return void
      * @throws \dml_exception
      * @throws \moodle_exception
@@ -190,7 +192,7 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
                 if (isset($expectedphotos[$section->section])) {
                     continue;
                 }
-                $photo = \format_tiles\format_option::get_db_record(
+                $photo = format_option::get_db_record(
                     $restoredcourseid, format_option::OPTION_SECTION_PHOTO, $section->id
                 );
                 if ($photo) {

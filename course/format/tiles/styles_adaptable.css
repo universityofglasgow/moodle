@@ -28,3 +28,7 @@
 .format-tiles li.activity.subtile .badge-info {
     color: #fff;
 }
+body.format-tiles.path-course-view.format-tiles-tile-open #page-content aside.block {
+    /* Avoid empty white blocks showing on grey overlay at bottom of page*/
+    background-color: inherit;
+}

@@ -41,7 +41,7 @@ class standard_head_html_prepend {
                 // We have to be careful in this function as it's called on every page (not just tiles course pages).
                 return;
             }
-            $dynamiccss = \format_tiles\dynamic_styles::get_tiles_dynamic_css($courseid);
+            $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css($courseid);
             if ($dynamiccss) {
                 $hook->add_html("<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>");
             }

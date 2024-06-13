@@ -81,25 +81,27 @@ class content extends content_base {
         $data = (object)[
             'title' => $format->page_title(),
             'format' => $format->get_format(),
-            'sectionreturn' => 0,
+            'sectionreturn' => null,
         ];
 
-        $singlesection = $this->format->get_sectionnum();
+        $singlesectionid = $this->format->get_sectionid();
         $sections = $this->export_sections($output);
         $initialsection = '';
         $course = $format->get_course();
         $currentsectionid = 0;
+        $coursesettings = $format->get_settings();
+        $sectionzeronotingrid = ($coursesettings['sectionzeroingrid'] == 1);
 
         if (!empty($sections)) {
             // Is first entry section 0?
             if ($sections[0]->num === 0) {
-                // Most formats uses section 0 as a separate section so we remove from the list.
-                $initialsection = array_shift($sections);
-                if (!$singlesection) {
+                if ((!$singlesectionid) && ($sectionzeronotingrid)) {
+                    // Most formats uses section 0 as a separate section so we remove from the list.
+                    $initialsection = array_shift($sections);
                     $data->initialsection = $initialsection;
                 }
             }
-            if (($editing) || ($singlesection)) { // This triggers the display of the standard list of section(s).
+            if (($editing) || ($singlesectionid)) { // This triggers the display of the standard list of section(s).
                 $data->sections = $sections;
             }
             if (!empty($course->marker)) {
@@ -113,18 +115,18 @@ class content extends content_base {
         }
 
         // The single section format has extra navigation.
-        if ($singlesection) {
-            $sectionnavigation = new $this->sectionnavigationclass($format, $singlesection);
+        if ($singlesectionid) {
+            $singlesectionno = $this->format->get_sectionnum();
+            $sectionnavigation = new $this->sectionnavigationclass($format, $singlesectionno);
             $data->sectionnavigation = $sectionnavigation->export_for_template($output);
 
             $sectionselector = new $this->sectionselectorclass($format, $sectionnavigation);
             $data->sectionselector = $sectionselector->export_for_template($output);
             $data->hasnavigation = true;
             $data->singlesection = array_shift($data->sections);
-            $data->sectionreturn = $singlesection;
+            $data->sectionreturn = $singlesectionno;
             $data->maincoursepage = new \moodle_url('/course/view.php', ['id' => $course->id]);
         } else {
-            $coursesettings = $format->get_settings();
             $toolbox = \format_grid\toolbox::get_instance();
             $coursesectionimages = $DB->get_records('format_grid_image', ['courseid' => $course->id]);
             if (!empty($coursesectionimages)) {
@@ -225,8 +227,8 @@ class content extends content_base {
                 } else {
                     // Section link.
                     $sectionimages[$section->id]->sectionurl = new \moodle_url(
-                        '/course/view.php',
-                        ['id' => $course->id, 'section' => $section->num]
+                        '/course/section.php',
+                        ['id' => $section->id]
                     );
                     $sectionimages[$section->id]->sectionurl = $sectionimages[$section->id]->sectionurl->out(false);
 
@@ -323,9 +325,14 @@ class content extends content_base {
         $sections = [];
         $numsections = $format->get_last_section_number();
         $sectioninfos = $modinfo->get_section_info_all();
-        // Get rid of section 0.
-        if (!empty($sectioninfos)) {
-            array_shift($sectioninfos);
+
+        $coursesettings = $format->get_settings();
+        $sectionzeronotingrid = ($coursesettings['sectionzeroingrid'] == 1);
+        if ($sectionzeronotingrid) {
+            // Get rid of section 0.
+            if (!empty($sectioninfos)) {
+                array_shift($sectioninfos);
+            }
         }
         foreach ($sectioninfos as $thissection) {
             // The course/view.php check the section existence but the output can be called from other parts so we need to check it.

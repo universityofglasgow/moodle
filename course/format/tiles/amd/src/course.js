@@ -631,6 +631,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 );
                 $(document).ready(function () {
                     if (useSubTiles) {
+                        // We need to be able to style tooltips outside of ul.tiles element.
                         $(Selector.BODY).addClass('format-tiles-subtiles');
                     }
                     var pageContent = $("#page-content");
@@ -657,7 +658,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         $(Selector.TILEID + "1").focus();
                         tileFitter.init(courseId, null, fitTilesToWidth, false);
                     }
-                    var windowWidth = $(window).outerWidth();
+
+                    // We are going to watch for changes to size of main tiles window.
+                    // This allows us to call the tile fitter to re-org tiles if needed.
+                    const pageContentElem = $('#page-content');
+                    // In case some themes don't have a page content div, use window as alternative.
+                    const widthObservedElement = pageContentElem.length ? pageContentElem : $(window);
+                    var observedElementWidth = widthObservedElement.outerWidth();
 
                     if (useJavascriptNav) {
                         // User is not editing but is usingJS nav to view.
@@ -701,11 +708,11 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // So remove them and re-initialise them.
                         // Collapse the selected section before doing this.
                         // Otherwise the re-organisation won't work as the tiles' flow will be out when they are analysed.
-                        $(window).on("resize", function () {
-
+                        // We use the multi_section_tiles element to capture left and right drawer opening/closing.
+                        const resizeObserver = new ResizeObserver(() => {
                             // On iOS resize events are triggered often on scroll because the address bar hides itself.
-                            // Avoid this using windowWidth here.
-                            if (resizeLocked || windowWidth === $(window).outerWidth()) {
+                            // Avoid this using observedElementWidth here.
+                            if (resizeLocked || observedElementWidth === widthObservedElement.outerWidth()) {
                                 return;
                             }
                             resizeLocked = true;
@@ -740,12 +747,14 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 }
                                 if (resizeRequired) {
                                     // Set global for comparison next time.
-                                    windowWidth = $(window).outerWidth();
+                                    observedElementWidth = widthObservedElement.outerWidth();
                                     reOrgSections(true, fitTilesToWidth);
                                 }
                                 resizeLocked = false;
                             }, 600);
                         });
+
+                        resizeObserver.observe(document.getElementById('page-content'));
 
                         // When user clicks to close a section using cross at top right in section.
                         pageContent.on(Event.CLICK, Selector.CLOSE_SEC_BTN, function (e) {
@@ -775,7 +784,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                         // Get the section ID from section number.
                         const contentArea = $(Selector.SECTION_ID + data.section);
-                        const sectionId = contentArea.data('sectionid');
+                        const sectionId = contentArea.data('sectionid')
+                            ?? contentArea.data('section-id');
                         // This gets the fragment from format_tiles_output_fragment_get_cm_list().
                         Fragment.loadFragment(
                             'format_tiles', 'get_cm_list', courseContextId, {sectionid: sectionId}

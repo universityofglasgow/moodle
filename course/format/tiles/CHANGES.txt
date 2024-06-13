@@ -437,3 +437,11 @@ Other
 =====================
 - Fix issue #208 overlap on tile when using style 2
 - Registration bug and other minor bug fixes
+
+4.4.0.6 (2024061101)
+=====================
+- Fix issue 210 progress indicator contrast
+- Fix issue 203 drawer scroll (Moodle 4.0 - 4.2)
+- Refactor move tiles local classes to \format_tiles\local\
+- Refactor dynamic styles to use CSS vars and less inline CSS
+- Other minor changes: tile fitter JS, registration, book icon & Adaptable theme CSS
