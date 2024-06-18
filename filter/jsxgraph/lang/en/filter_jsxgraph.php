@@ -49,7 +49,7 @@ $string['docs'] = 'Thank your for using our JSXGraph filter. For current informa
 $string['header_versions'] = 'Version info';
 $string['filterversion'] = 'You are using version the following <b>version of the JSXGraph filter</b> for Moodle:';
 $string['recommendedversion_pre'] = 'It is recommended, to use <b>JSXGraph ';
-$string['recommendedversion_post'] = '</b> (or use "<code>auto</code>").';
+$string['recommendedversion_post'] = '</b> (or use "<code>automatically</code>").';
 
 $string['header_jsxversion'] = 'Version of the used JSXGraph library';
 $string['header_libs'] = 'Extensions for the JSXGraph filter';

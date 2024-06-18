@@ -620,7 +620,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .navigation-arrows .navigation-arrow.dimmed:hover {
     background-color: inherit;
 }
-.format-tiles .single-section a.navigation-arrow {
+.format-tiles .single-section .navigation-arrow {
     color: grey;
 }
 
@@ -871,11 +871,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 }
 .format-tiles .phototile .progress-complete-alt img {
     margin-top: 4px;
-}
-.format-tiles .phototile .progress-indic,
-.format-tiles .subtile.hasphoto .activitytype,
-.format-tiles.editing .subtile.hasphoto .editable-title {
-    background-color: rgba({{base_colour_rgb}}, {{photo_tile_text_bg_opacity}});
 }
 .format-tiles li.activity.subtile.hasphoto {
     border-top-color: var(--format-tiles-colour);

@@ -70,7 +70,7 @@ $string['filterstatus'] = 'Filter on status';
 $string['findid'] = 'Jump to ID';
 $string['gdpr'] = 'GDPR';
 $string['go'] = 'Go';
-$string['gotanidea'] ='Do you have an idea for improvements to current Learning & Teaching technologies? You can submit your request to the Learning & Teaching Enhancement and Change Forum (LTEC) for consideration.';
+$string['gotanidea'] ='By submitting this form you agree that you have completed the due diligence requirements at outlined on <a href="https://gla.sharepoint.com/sites/learning-innovation/SitePages/VLE-Enhancement-Request.aspx">the LTEC SharePoint site</a>. Any request submitted which has not followed this process will be rejected.';
 $string['headline'] = 'One line headline or summary';
 $string['highpriority'] = 'High priority';
 $string['impact'] = 'Impact, security & feasibility';

@@ -146,7 +146,7 @@ class course_output implements \renderable, \templatable {
             $this->courserenderer = $courserenderer;
         }
         $this->devicetype = \core_useragent::get_device_type();
-        $this->usemodalsforcoursemodules = \format_tiles\local\util::allowed_modal_modules();
+        $this->usemodalsforcoursemodules = \format_tiles\local\modal_helper::allowed_modal_modules();
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
@@ -256,38 +256,6 @@ class course_output implements \renderable, \templatable {
                 'icon' => 'exclamation-triangle', 'class' => 'warning',
             ];
         }
-        return $data;
-    }
-
-    /**
-     * Get config data to be provided to JavaScript client side.
-     * @param int $courseid
-     * @return array
-     * @throws \dml_exception
-     */
-    public static function get_js_config_data(int $courseid) {
-        global $DB;
-
-        $jsconfigvalues = [];
-
-        // If we are using the course index, JS needs to know which PDFs and HTML files in course launch in modals.
-        if (get_config('format_tiles', 'usecourseindex')) {
-            $allowedmodals = \format_tiles\local\util::allowed_modal_modules();
-            $modnames = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
-            $jsconfigvalues['modalAllowedModNames'] = json_encode($modnames);
-            $jsconfigvalues['modalAllowedCmids'] = json_encode(self::get_modal_allowed_cmids($courseid, $modnames));
-        }
-
-        $jsconfigvalues['defaultcourseicon'] = $DB->get_field(
-            'course_format_options', 'value',
-            ['courseid' => $courseid, 'format' => 'tiles', 'sectionid' => 0, 'name' => 'defaulttileicon']
-        );
-
-        $data = [];
-        foreach ($jsconfigvalues as $k => $v) {
-            $data[] = ['key' => $k, 'value' => $v];
-        }
-
         return $data;
     }
 
@@ -1112,97 +1080,6 @@ class course_output implements \renderable, \templatable {
             }
         }
         return $moduleobject;
-    }
-
-    /**
-     * This is to avoid re-implementing multiple files from the course index.
-     * To know which resources to launch in modals, we can get the cmids of all resources which will launch as modals.
-     * This takes no account of whether a user can see the module - handled elsewhere.
-     * @param int $courseid
-     * @param array $allowedmodals // E.g. ['pdf', 'html', 'url', 'page'].
-     * @return array course module IDs to launch in modals.
-     */
-    public static function get_modal_allowed_cmids(int $courseid, array $allowedmodals): array {
-        global $DB;
-
-        if (empty($allowedmodals)) {
-            return [];
-        }
-        $modinfo = get_fast_modinfo($courseid);
-
-        $cmids = [];
-
-        // The cached value is for the course and does not take user visibility into account.
-        // But it may save us some time.
-        $cache = \cache::make('format_tiles', 'modalcmids');
-        $cachedvalue = $cache->get($courseid);
-        if ($cachedvalue === false) {
-            // Config values to be added to templates for JS to retrieve.
-            // May move more to this from existing JS init in format.php.
-
-            foreach ($allowedmodals as $allowedmodule) {
-                if ($allowedmodule == 'url') {
-                    $displayoptions = [
-                        RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_EMBED,
-                    ];
-                    list($insql, $params) = $DB->get_in_or_equal($displayoptions, SQL_PARAMS_NAMED);
-                    $params['course'] = $courseid;
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                        "SELECT cm.id FROM {url} u
-                             JOIN {course_modules} cm ON cm.instance = u.id
-                             JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
-                             WHERE u.course = :course AND u.display $insql", $params
-                    ));
-                } else if (in_array($allowedmodule, ['pdf', 'html'])) {
-                    // First get file cmids of relevant mime type.
-                    // There is an index on the files table component-filearea-contextid-itemid.
-                    $sql = "SELECT cm.id
-                    FROM {course_modules} cm
-                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
-                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
-                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-                    WHERE cm.course = :courseid";
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                        $sql,
-                        [
-                            'courseid' => $courseid,
-                            'mimetype' => $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html',
-                            'contextmodule' => CONTEXT_MODULE,
-                        ]
-                    ));
-
-                } else if ($allowedmodule == 'page') {
-                    $cmids = [];
-                    $pagecms = $modinfo->get_instances_of('page');
-                    foreach ($pagecms as $pagecm) {
-                        $cmids[] = $pagecm->id;
-                    }
-                }
-            }
-
-            // Sort to ease debugging.
-            sort($cmids);
-
-            // Now we can set the cached value for all users, before going on to check visibility for this user only.
-            $cache->set($courseid, $cmids);
-
-        } else {
-            // We already have a cached value so use that.
-            $cmids = $cachedvalue;
-        }
-
-        // Now we check user visibility for the cmids which may be relevant.
-        $result = [];
-        if (!empty($cmids)) {
-            foreach ($cmids as $cmid) {
-                $cm = $modinfo->get_cm($cmid);
-                if (!$cm->onclick && $cm->uservisible) {
-                    $result[] = (int)$cm->id; // Must be ints for JS to interpret correctly.
-                }
-            }
-        }
-        return $result;
     }
 
     /**

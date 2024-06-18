@@ -49,7 +49,7 @@ $string['docs'] = 'Vielen Dank, dass sie den JSXGraph-Filter benutzen. Für aktu
 $string['header_versions'] = 'Versionsinformationen';
 $string['filterversion'] = 'Sie benutzen derzeit die folgende <b>Version des JSXGraph-Filters</b> für Moodle:';
 $string['recommendedversion_pre'] = 'Es wird empfohlen, <b>JSXGraph ';
-$string['recommendedversion_post'] = '</b> zu verwenden (oder "<code>auto</code>").';
+$string['recommendedversion_post'] = '</b> zu verwenden (oder "<code>automatisch</code>").';
 
 $string['header_jsxversion'] = 'Version der verwendeten JSXGraph-Bibliothek';
 $string['header_libs'] = 'Erweiterungen für den JSXGraph-Filter';
@@ -60,7 +60,7 @@ $string['header_deprecated'] = 'Veraltete Einstellungen';
 
 $string['versionJSXGraph'] = 'JSXGraph-Version';
 $string['versionJSXGraph_desc'] = 'Wähle hier, welche JSXGraph-Version genutz werden soll. Achtung: Für Responsivität wird mindestens Version 1.3.2+ benötigt.';
-$string['versionJSXGraph_auto'] = 'aktuellste mitgelieferte Version  (automatisch)';
+$string['versionJSXGraph_auto'] = 'aktuellste mitgelieferte Version (automatisch)';
 
 $string['formulasextension'] = 'Fragetyp formulas';
 $string['formulasextension_desc'] = 'Ist diese Option aktiviert, wird eine weitere JavaScript Bibliothek geladen, mit deren Hilfe ein JSXGraph-Board in einer Frage des Typs "formulas" verwendet werden kann. (Hierzu muss dieser Fragetyp installiert sein!)<br>Eine Dokumentation der Erweiterung findet sich im <a href="https://github.com/jsxgraph/moodleformulas_jsxgraph" target="_blank">zugehörigen Repository bei GitHub</a>.';

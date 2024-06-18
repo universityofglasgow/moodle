@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_tiles\local\hooks\output;
+namespace format_tiles\hooks\output;
 
 /**
  * Allows plugins to add any elements to the page before footer.
@@ -38,14 +38,15 @@ class before_footer_html_generation {
         }
         try {
             $editing = $PAGE->user_is_editing();
-            $oncourseviewpage = $PAGE->pagetype == 'course-view-tiles';
+
+            $allowedpagetypes = ['course-view-tiles', 'section-view-tiles'];
+            $oncourseviewpage = in_array($PAGE->pagetype, $allowedpagetypes);
 
             // On a mod/view.php page we may need JS to ensure that any clicks on course index menu launch modals where appropriate.
             $modviewpageneedsjs = false;
-            $allowedmodals = null;
+            $allowedmodals = \format_tiles\local\modal_helper::allowed_modal_modules();
 
             if (get_config('format_tiles', 'usecourseindex')) {
-                $allowedmodals = \format_tiles\local\util::allowed_modal_modules();
                 if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
                     // On /mod/xxx/view.php or course/view.php page passing in cmid, may need to launch modal JS.
                     // This is because the course index needs the JS.  So get details.
@@ -56,8 +57,6 @@ class before_footer_html_generation {
             }
 
             if (($oncourseviewpage && !$editing) || $modviewpageneedsjs) {
-                $allowedmodals = $allowedmodals === null ? \format_tiles\local\util::allowed_modal_modules() : $allowedmodals;
-
                 // Course module modals.
                 $launchmodalcmid = null;
                 if (!empty($allowedmodals['resources'] || !empty($allowedmodals['modules']))) {
@@ -74,7 +73,7 @@ class before_footer_html_generation {
                 }
                 $PAGE->requires->js_call_amd(
                     'format_tiles/course_mod_modal', 'init',
-                    [$PAGE->course->id, false, $PAGE->pagetype, $launchmodalcmid]
+                [$PAGE->course->id, false, $PAGE->pagetype, $launchmodalcmid, \format_tiles\local\util::using_js_nav()]
                 );
             }
 
@@ -82,7 +81,7 @@ class before_footer_html_generation {
             // Avoid doing so if the header has not been printed.
             // (The caveat is because some plugins e.g. mod/customcert/view.php when sending a PDF file may trigger this function).
             if ($PAGE->state === \moodle_page::STATE_IN_BODY) {
-                $jsconfig = \format_tiles\output\course_output::get_js_config_data($PAGE->course->id, $allowedmodals ?? []);
+                $jsconfig = \format_tiles\local\util::get_js_config_data($PAGE->course->id, $allowedmodals ?? []);
                 $renderer = $PAGE->get_renderer('format_tiles');
                 $hook->add_html($renderer->render_from_template('format_tiles/js-config', ['tiles_js_config' => $jsconfig]));
             }
@@ -90,6 +89,5 @@ class before_footer_html_generation {
         } catch (\Exception $e) {
             debugging("Could not prepare format_tiles footer data: " . $e->getMessage(), DEBUG_DEVELOPER);
         }
-        return;
     }
 }

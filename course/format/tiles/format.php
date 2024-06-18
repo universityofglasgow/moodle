@@ -23,7 +23,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-global $PAGE, $USER, $SESSION, $CFG;
+global $PAGE, $USER, $CFG;
 
 // Horrible backwards compatible parameter aliasing.
 if ($topic = optional_param('topic', 0, PARAM_INT)) {
@@ -38,9 +38,13 @@ if ($topic = optional_param('topic', 0, PARAM_INT)) {
 $format = course_get_format($course);
 $course = $format->get_course();
 $context = context_course::instance($course->id);
-$isediting = $PAGE->user_is_editing();
-$canedit = $PAGE->user_allowed_editing();
+
 $displaysection = optional_param('section', 0, PARAM_INT);
+if (!$displaysection) {
+    // Try to get it from url params which may have been added /course/view.php incl from sectionid.
+    // This enables us to respect "permalink" section URLs as AMD format_tiles/course redirects them to &sectionid=xx.
+    $displaysection = $PAGE->url->param('section') ?? null;
+}
 if (!empty($displaysection)) {
     $format->set_sectionnum($displaysection);
 }
@@ -52,9 +56,6 @@ if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context
 
 $renderer = $PAGE->get_renderer('format_tiles');
 
-$allowphototiles = get_config('format_tiles', 'allowphototiles');
-$usejsnav = \format_tiles\local\util::using_js_nav();
-
 // This will take us to render_content() in /course/format/tiles/classes/output/renderer.php.
 $outputclass = $format->get_output_classname('content');
 $widget = new $outputclass($format);
@@ -63,57 +64,4 @@ echo $renderer->render($widget);
 // Include format.js (required for dragging sections around).
 $PAGE->requires->js('/course/format/tiles/format.js');
 
-// Include amd module required for AJAX calls to change tile icon, filter buttons etc.
-if (!empty($displaysection)) {
-    $jssectionnum = $displaysection;
-} else if (! $jssectionnum = optional_param('expand', 0, PARAM_INT)) {
-    $jssectionnum = 0;
-}
-if ($canedit) {
-    $SESSION->editing_last_edited_section = $course->id . "-" . $displaysection;
-}
-
-$jsparams = [
-    'courseId' => $course->id,
-    'useJSNav' => $usejsnav, // See also lib.php page_set_course().
-    'isMobile' => core_useragent::get_device_type() == core_useragent::DEVICETYPE_MOBILE ? 1 : 0,
-    'jsSectionNum' => $jssectionnum,
-    'displayFilterBar' => $course->displayfilterbar,
-    'assumeDataStoreContent' => get_config('format_tiles', 'assumedatastoreconsent'),
-    'reOpenLastSection' => get_config('format_tiles', 'reopenlastsection'),
-    'userId' => $USER->id,
-    'fitTilesToWidth' => get_config('format_tiles', 'fittilestowidth')
-        && !optional_param("skipcheck", 0, PARAM_INT)
-        && !isset($SESSION->format_tiles_skip_width_check)
-        && $usejsnav,
-    'enablecompletion' => $course->enablecompletion,
-    'usesubtiles' => get_config('format_tiles', 'allowsubtilesview') && $course->courseusesubtiles,
-];
-
-if (!$isediting) {
-    // Initalise the main JS module for non editing users.
-    $PAGE->requires->js_call_amd(
-        'format_tiles/course', 'init', array_merge($jsparams, ['courseContextId' => $context->id])
-    );
-}
-if ($isediting) {
-    // Initalise the main JS module for editing users.
-    $jsparams['pagetype'] = $PAGE->pagetype;
-    $jsparams['allowphototiles'] = $allowphototiles;
-    $jsparams['documentationurl'] = get_config('format_tiles', 'documentationurl');
-
-    $PAGE->requires->js_call_amd('format_tiles/edit_course', 'init', $jsparams);
-    if (strpos($PAGE->pagetype, 'course-view-') === 0 && $PAGE->theme->name == 'snap') {
-        \core\notification::ERROR(
-            get_string('snapwarning', 'format_tiles') . ' ' .
-            html_writer::link(
-                get_docs_url(get_string('snapwarning_help', 'format_tiles')),
-                get_string('morehelp')
-            )
-        );
-    }
-}
-
-if ($course->enablecompletion) {
-    $PAGE->requires->js_call_amd('format_tiles/completion', 'init', [$course->id]);
-}
+// Other JS initialisation has been moved to render_content() in /course/format/tiles/classes/output/renderer.php.

@@ -49,7 +49,8 @@ class image_processor {
      * @return \stored_file|bool
      * @throws \required_capability_exception
      */
-    public static function adjust_and_copy_file($tempfile, $newfilename, $context, $itemid, $width, $height) {
+    public static function adjust_and_copy_file(\stored_file $tempfile, string $newfilename,
+                                                \context $context, int $itemid, int $width, int $height) {
         require_capability('moodle/course:update', $context);
         $newfilename = str_replace(' ', '_', $newfilename);
         $storedfilerecord = self::stored_file_record($context->id, $itemid, $newfilename);
@@ -112,7 +113,7 @@ class image_processor {
      * @param string $mime The mime type.
      * @return string|bool false if a problem occurs or the image data.
      */
-    private static function process_image($filepath, $requestedwidth, $requestedheight, $mime) {
+    private static function process_image(string $filepath, int $requestedwidth, int $requestedheight, string $mime) {
         $imagecontainerbgcolour = ['r' => 255, 'g' => 255, 'b' => 255];
         if (empty($filepath) || empty($requestedwidth) || empty($requestedheight)) {
             return false;

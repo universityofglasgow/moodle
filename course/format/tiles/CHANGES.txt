@@ -445,3 +445,19 @@ Other
 - Refactor move tiles local classes to \format_tiles\local\
 - Refactor dynamic styles to use CSS vars and less inline CSS
 - Other minor changes: tile fitter JS, registration, book icon & Adaptable theme CSS
+
+4.4.0.7 (2024061303)
+=====================
+- Respect section permalinks https://docs.moodle.org/403/en/Course_homepage#Get_a_permalink_to_a_course_section
+- Remove CSS error
+- Dynamic styles improve
+- Non JS mode - fix Moodle 4.4 section.php page incl colours, fix dimmed nav arrow colour.
+- Refactor JS init and remove some redundant editor JS
+- Avoid imprecision warning on image upload
+- Course index modals work on section.php page
+
+4.4.0.8 (2024061402)
+=====================
+- Support for section.php on Moodle 4.4
+- Move some helper methods and minor refactor
+- Fix modals non JS navigation mode

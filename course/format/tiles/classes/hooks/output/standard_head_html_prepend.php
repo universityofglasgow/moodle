@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_tiles\local\hooks\output;
+namespace format_tiles\hooks\output;
 
 /**
  * Allows plugins to add any elements to the page <head> html tag
@@ -32,16 +32,13 @@ class standard_head_html_prepend {
      */
     public static function callback(\core\hook\output\before_standard_head_html_generation $hook): void {
         global $PAGE;
+        if (($PAGE->course->format ?? null) !== 'tiles') {
+            // This is called on every page so check that we are in a tiles course first.
+            return;
+        }
         try {
-            $courseid = optional_param('id', 0, PARAM_INT);
-
-            $istilescoursefrontpage = $PAGE->pagetype == 'course-view-tiles' && $courseid
-                && $PAGE->url->compare(new \moodle_url('/course/view.php'), URL_MATCH_BASE);
-            if (!$istilescoursefrontpage || !$courseid) {
-                // We have to be careful in this function as it's called on every page (not just tiles course pages).
-                return;
-            }
-            $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css($courseid);
+            // The method get_tiles_dynamic_css() will check that we are on a page that really needs it.
+            $dynamiccss = \format_tiles\local\dynamic_styles::get_tiles_dynamic_css();
             if ($dynamiccss) {
                 $hook->add_html("<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>");
             }

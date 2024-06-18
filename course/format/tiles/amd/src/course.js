@@ -825,6 +825,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                     if (enableCompletion) {
                         // We use pageContent for listener here, as completion button is replaced by core JS when it's clicked.
+                        // This is for non-subtiles only.
                         // We wait half a second to enable the completion change to be registered first.
                         pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function(e) {
                             const currentTarget = $(e.currentTarget);
@@ -982,6 +983,20 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }
                         }
                     });
+
+                    // The URL may include a section ID in the form "#sectionid-xx-title" where xx is section ID.
+                    // This would be from a section "permalink".
+                    // We cannot get that value in PHP so try redirect from here instead.
+                    // This is not needed from Moodle 4.4+ as then the section.php URL is used for permalinks.
+                    const urlPattern = /.*\/course\/view\.php\?id=([\d]+)#sectionid-([\d+]+)-title/;
+                    const urlMatches = window.location.href.match(urlPattern);
+                    if (urlMatches && urlMatches.length === 3) {
+                        const sectionId = urlMatches[2];
+                        const redirectUrl = urlMatches[0].replace(
+                            `#sectionid-${sectionId}-title`, `&sectionid=${sectionId}`
+                        );
+                        window.location.replace(redirectUrl);
+                    }
                 });
             },
             populateAndExpandSection(courseContextId, sectionId, sectionNumber) {

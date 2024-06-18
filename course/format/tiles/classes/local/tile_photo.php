@@ -258,7 +258,7 @@ class tile_photo {
                 $this->context,
                 $this->get_element_id(),
                 $newwidth,
-                $sourceimageinfo['height'] * $newwidth / $sourceimageinfo['width']
+                floor($sourceimageinfo['height'] * $newwidth / $sourceimageinfo['width'])
             );
             if ($newfile) {
                 if ($this->get_filename() && $this->get_filename() != $sourcefile->get_filename()) {

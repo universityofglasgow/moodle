@@ -138,7 +138,8 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
          */
         const triggerCompletionChangedEvent = function (sectionNum, cmId) {
             if (sectionNum > 0 || cmId > 0) {
-                $(document).trigger('format-tiles-completion-changed', {courseid: courseId, section: sectionNum, cmid: cmId});
+                const data = {courseid: courseId, section: sectionNum, cmid: cmId};
+                $(document).trigger('format-tiles-completion-changed', data);
             }
         };
 

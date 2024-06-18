@@ -432,7 +432,7 @@ class external extends external_api {
         self::validate_context($context);
         require_capability('mod/' . $cm->modname . ':view', $context);
 
-        $allowedmodalmodules = \format_tiles\local\util::allowed_modal_modules();
+        $allowedmodalmodules = \format_tiles\local\modal_helper::allowed_modal_modules();
         if (!in_array($cm->modname, $allowedmodalmodules['modules'])
             && count($allowedmodalmodules['resources']) == 0) {
             throw new invalid_parameter_exception(

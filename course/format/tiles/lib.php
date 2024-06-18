@@ -997,22 +997,23 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
     require_capability('mod/' . $mod->modname . ':view', $context);
 
     if ($mod) {
-        if (!in_array($mod->modname, explode(",", get_config('format_tiles', 'modalmodules')))) {
+        $allowedmodules = explode(",", get_config('format_tiles', 'modalmodules'));
+        $treataslabel = $mod->has_custom_cmlist_item();
+        if (!in_array($mod->modname, $allowedmodules) && !$treataslabel) {
             throw new invalid_parameter_exception('Not allowed to call this mod type - disabled by site admin');
         }
         if (!$mod->uservisible) {
             require_capability('moodle/course:viewhiddenactivities', $context);
         }
-        if (!in_array($mod->modname, explode(",", get_config('format_tiles', 'modalmodules')))) {
-            throw new invalid_parameter_exception('Not allowed to call this mod type - disabled by site admin');
-        }
         if ($mod->modname == 'page') {
             // Record from the page table.
             $record = $DB->get_record($mod->modname, ['id' => $mod->instance], 'intro, content, revision, contentformat');
             return \format_tiles\local\util::format_cm_content_text($mod->modname, $record, $context);
-        } else {
-            throw new invalid_parameter_exception('Only page modules allowed through this service');
         }
+        if ($treataslabel) {
+            return $mod->get_formatted_content(['overflowdiv' => true, 'noclean' => true]);
+        }
+        throw new invalid_parameter_exception('Only page modules or label like activities are allowed through this service');
     }
     throw new invalid_parameter_exception('Module not found with context ID ' . $args['contextid']);
 }
