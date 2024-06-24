@@ -103,6 +103,15 @@ class observer {
     }
 
     /**
+     * When a course is restored, the existing course content may be selected to be deleted.
+     * @param \core\event\course_restored $event
+     * @return void
+     */
+    public static function course_restored(\core\event\course_restored $event) {
+        self::clear_cache_modal_cmids($event->courseid);
+    }
+
+    /**
      * Clear the cache of resource modal IDs for a given course.
      * @param int $courseid
      * @return void

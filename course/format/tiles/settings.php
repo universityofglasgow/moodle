@@ -33,7 +33,6 @@ if ($ADMIN->fulltree) {
         'formatsettingtiles', get_string('pluginname', 'format_tiles')
     );
 
-
     // Colour settings.
     $page = new admin_settingpage('format_tiles/tab-colours', get_string('colours', 'format_tiles'));
 
@@ -331,14 +330,10 @@ if ($ADMIN->fulltree) {
     $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
-    $page->add(new admin_setting_heading(
-        'experimentalfeatures', get_string('experimentalfeatures', 'format_tiles'), ''
-    ));
-
     $name = 'format_tiles/usecourseindex';
     $title = get_string('usecourseindex', 'format_tiles');
     $description = get_string('usecourseindex_desc', 'format_tiles');
-    $default = 0;
+    $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
     $settingscategory->add($page);

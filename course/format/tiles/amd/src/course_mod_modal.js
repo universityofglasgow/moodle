@@ -393,6 +393,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                             }])[0].done(function (data) {
                                                 if (!data || !data.modalallowed) {
                                                     window.location.href = linkUrl;
+                                                    return;
                                                 }
                                                 if (usingJsNav) {
                                                     const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);

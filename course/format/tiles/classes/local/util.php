@@ -59,7 +59,13 @@ class util {
             $completiondata = $completioninfo
                 && $completioninfo->is_enabled($cm) != COMPLETION_TRACKING_NONE ? $completioninfo->get_data($cm) : null;
 
-            $resourcetype = $isresource ? self::get_mod_resource_icon_name($cm->context->id) : '';
+            if ($isresource) {
+                // If it's a resource, could be a file e.g. PDF/HTML or could be a URL activity.
+                $resourcetype = $cm->modname == 'url' ? 'url' : self::get_mod_resource_icon_name($cm->context->id);
+            } else {
+                $resourcetype = '';
+            }
+
             $modalallowed = \format_tiles\local\modal_helper::is_allowed_modal($cmrecord->modname, $resourcetype);
 
             $pluginfileurl = $isresource ? \format_tiles\output\course_output::plugin_file_url($cm) : '';

@@ -50,4 +50,8 @@ $observers = [
         'eventname' => '\core\event\course_backup_created',
         'callback'  => 'format_tiles\observer::course_backup_created',
     ],
+    [
+        'eventname' => '\core\event\course_restored',
+        'callback'  => 'format_tiles\observer::course_restored',
+    ],
 ];

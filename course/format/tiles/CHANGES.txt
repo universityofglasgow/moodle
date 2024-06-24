@@ -461,3 +461,12 @@ Other
 - Support for section.php on Moodle 4.4
 - Move some helper methods and minor refactor
 - Fix modals non JS navigation mode
+
+
+4.4.0.9 (2024062100)
+=====================
+- Course index admin setting defaults to on for Tiles
+- After save an activity, return to course main page, with # scroll to section edited
+- Remove set icon menu control for section zero
+- Avoid footer cache issue when course is restored deleting existing content.
+- Fix URL activity modal when launched from course index.

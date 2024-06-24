@@ -60,7 +60,8 @@ Feature: Teacher can restrict course modules to groups
     And I press "Save and return to course"
 
     And I wait until the page is ready
-    And I follow "Collapse all"
+    #  We used to say "And I follow "Collapse all"" but course index includes that too we have to use element ID now.
+    And I follow "collapsesections"
     And I toggle expand or collapse section "1" for edit
 
     And I open "I am a restricted label" actions menu

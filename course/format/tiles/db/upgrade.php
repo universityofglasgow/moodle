@@ -210,5 +210,12 @@ function xmldb_format_tiles_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024020200, 'format', 'tiles');
     }
 
+    if ($oldversion < 2024061800) {
+        // Course index in Tiles is no longer an experimental feature so activate it.
+        // Site admin can de-activate if they wish via plugin settings.
+        set_config('usecourseindex', 1, 'format_tiles');
+        upgrade_plugin_savepoint(true, 2024061800, 'format', 'tiles');
+    }
+
     return true;
 }
