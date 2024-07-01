@@ -25031,9 +25031,6 @@ dd:after {
 .inplaceeditable.inplaceeditingon select {
   margin-bottom: 0;
 }
-.inplaceeditable .quickediticon .icon {
-  font-size: medium;
-}
 .inplaceeditable .quickediticon img {
   opacity: 0.2;
 }
@@ -28459,6 +28456,7 @@ span.editinstructions {
   text-decoration: none;
   z-index: 9999;
   border: 0 solid transparent;
+  width: fit-content;
   color: #00434e;
   background-color: #cce6ea;
   border-color: #b8dce2;
@@ -36743,6 +36741,25 @@ span[data-flexitour=container][x-placement=right] div[data-role=arrow]:after, sp
 }
 .modal .close:not(:disabled):not(.disabled):hover, .modal .close:not(:disabled):not(.disabled):focus {
   opacity: inherit;
+}
+
+/* Bug fix for TinyMCE menu when in fullscreen mode. */
+body.tox-fullscreen .modal-dialog {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+}
+body.tox-fullscreen .modal-dialog .modal-header {
+  height: 0;
+  padding: 0;
+}
+body.tox-fullscreen .modal-dialog .tox-tinymce-aux {
+  position: relative;
+}
+
+/* Bug fix TinyMCE menu width dropdowns when in fullscreen mode. */
+body.tox-fullscreen .tox.tox-tinymce-aux {
+  position: relative !important;
 }
 
 .layout.fullscreen {
