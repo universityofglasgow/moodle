@@ -15,7 +15,7 @@ Parson’s problems enable students to focus on the structure and meaning, by pr
 Traditionally Parson’s problems require the student to create an ordered list. For mathematical proofs, we believe it is more natural to ask students to create a _tree_. Parson's problems in mathematics, especially proofs, do not always have a unique answer which is considered correct.
 Hence, there are challenges in deciding what a correct answer is in particular cases, and how to develop authoring tools to robustly create problems with reliable marking algorithms.
 For example, in a proof of
-\[ A\mbox{ if and only if } B\]
+\[ A\text{ if and only if } B\]
 We might expect/require two conscious and separate blocks
 
 1.  Assume \(A\), \(\cdots\), hence \(B\).
@@ -32,6 +32,19 @@ Notes
 
 * Lists are a special case of a tree with one root (the list creation function) and an arbitrary number of nodes in order.  Hence our design explicitly includes traditional Parson's problems as a special case.
 * Teachers who do not want to scaffold explicit block structures (e.g. signal types of proof blocks) can choose to restrict students to (i) flat lists, or (ii) lists of lists.
+
+## Troubleshooting
+
+If your Parson's problem is not displaying properly, in particular if the all the items are displayed in a single yellow block, then
+double-check that you have spelled the keys of the JSON inside the Parsons block correctly as described below. They should be a subset of 
+```
+{"steps", "options", "headers", "available_header"}
+```
+and a superset of 
+```
+{"steps"}
+```
+For technical reasons this is one error that we are unable to validate currently.
 
 # Example 1: a minimal Parson's question
 

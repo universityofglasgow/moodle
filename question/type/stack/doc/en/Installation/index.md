@@ -2,7 +2,7 @@
 
 STACK is being used live at many institutions, including the University of Edinburgh, the UK Open University, Aalto, Loughborough University, and the University of Birmingham in the UK.
 
-We appreciate some people prefer hosted services as an alternative to running their own server. We are pleased to work with EDINA at the University of Edinburgh as a [recommended hosting partner](https://stack.edina.ac.uk/).
+We appreciate some people prefer hosted services as an alternative to running their own server.  If so, then please contact the developers for more details of current providers.
 
 STACK is designed to be used on a Linux-based server.  The Windows/MS option exists to help teachers author questions offline, and for demonstration and development.  However, for demonstration, development and offline use we strongly recommend using VirtualBox instead of the Windows port.  Note also that support for the optimized Maxima image is not available on Windows platforms, which is a substantial performance improvement.
 
@@ -26,7 +26,7 @@ and then re-start the web server.
 
 Please ensure you have [installed Moodle](http://docs.moodle.org/en/Main_page).
 
-* STACK has been tested on Moodle 3.9 to Moodle 4.0 inclusive.  (STACK is untested on versions before Moodle 3.9.)
+* STACK has been tested on Moodle 4.0 to Moodle 4.4 inclusive.
 * We intend to support STACK within the normal Moodle [release cycle](https://docs.moodle.org/dev/Releases).  We intend to support all future Moodle releases. If your version of Moodle is not listed here please contact the developers: we probably simply have not done the testing of future versions yet.  For longer support of older versions of Moodle please contact us, otherwise will will drop them from our list.
 
 Please ensure LaTeX can be displayed.  We currently support [MathJax](Mathjax.md) through the Moodle MathJax filter.

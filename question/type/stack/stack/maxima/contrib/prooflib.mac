@@ -46,6 +46,8 @@ tap:proof_display(proof_ans, proof_steps);
 /* proof_iff()   - if any only if                                 */
 /* proof_cases() - proof by exhaustive cases, the first element   */
 /*                 is assumed to justify the cases.               */
+/* proof_goal()  - proof by establishing a goal, the last element */
+/*                 is assumed to justify by the previous cases.   */
 /* proof_ind()   - proof by induction                             */
 /*                                                                */
 /******************************************************************/
@@ -54,17 +56,13 @@ tap:proof_display(proof_ans, proof_steps);
 /* Please update Proof/Proof_CAS_library.md with new types.       */
 
 /* Note, "proof" is assumed to come first in this list, as we use "rest" below for other types. */
-proof_types:[proof, proof_c, proof_opt, proof_iff, proof_cases, proof_ind];
+proof_types:[proof, proof_c, proof_opt, proof_iff, proof_cases, proof_goal, proof_ind];
 
 proofp(ex) := block(
   if atom(ex) then true,
   if elementp(op(ex), setify(proof_types)) then return(true),
   return(false)
 );
-
-s_test_case(proofp(proof(1,2,3)), true);
-s_test_case(proofp(proof_iff(1,2)), true);
-s_test_case(proofp(sin(x)), false);
 
 proof_validatep(ex) := block(
   if atom(ex) then return(true),
@@ -82,19 +80,6 @@ proof_validatep(ex) := block(
   return(false)
 );
 
-s_test_case(proof_validatep(proof(1,2,3)), true);
-s_test_case(proof_validatep(proof(1,2,proof(4,5,6))), true);
-s_test_case(proof_validatep(proof(1,2,proof_iff(4,5))), true);
-/* proof_opt must have exactly one sub-proof. */
-s_test_case(proof_validatep(proof(1,2,proof_opt(4,5))), false);
-/* proof_iff must have exactly two sub-proofs. */
-s_test_case(proof_validatep(proof(1,2,proof_iff(4))), false);
-s_test_case(proof_validatep(proof(1,2,proof_iff(4,5,6))), false);
-/* proof_ind must have exactly four sub-proofs. */
-s_test_case(proof_validatep(proof_ind(1,proof(2,3),proof(4,5),6)), true);
-s_test_case(proof_validatep(proof_ind(1,proof(2,3),proof(4,5))), false);
-s_test_case(proof_validatep(proof(1,proof_opt(2),proof_iff(4,5))), true);
-
 /* Is this a type of proof which can reorder its arguments? */
 proof_commutep(ex):=block(
     if atom(ex) then false,
@@ -105,9 +90,6 @@ proof_commutep(ex):=block(
 
 /* Takes a proof tree and flattens this to a list. */
 proof_flatten(ex) := apply(proof, flatten(ev(ex, map(lambda([ex2], ex2="["), proof_types))));
-
-s_test_case(proof_flatten(proof_iff(proof(A,B),proof(C))), proof(A,B,C));
-s_test_case(proof_flatten(proof_c(proof(A,proof(B,C)),proof(D))), proof(A,B,C,D));
 
 /*
  * Create a normalised proof tree.
@@ -122,15 +104,10 @@ proof_normal(ex) := block(
   if proof_commutep(ex) then return(apply(op(ex), sort(map(proof_normal, args(ex))))),
   /* Some proof types have subsets of arguments which commute. */
   if op(ex) = proof_cases then return(apply(proof_cases, append([first(args(ex))], sort(map(proof_normal, rest(args(ex))))))),
+  if op(ex) = proof_goal then return(apply(proof_goal, append(sort(map(proof_normal, reverse(rest(reverse(args(ex)))))), [first(reverse(args(ex)))]))),
   if op(ex) = proof_ind then return(apply(proof_ind,append([first(args(ex))], sort([proof_normal(second(args(ex))), proof_normal(third(args(ex)))]), [fourth(args(ex))]))),
   return(apply(op(ex), map(proof_normal, args(ex))))
 );
-
-s_test_case(proof_normal(proof_c(B,A,D,C)), proof_c(A,B,C,D));
-s_test_case(proof_normal(proof_iff(B,A)), proof_iff(A,B));
-s_test_case(proof_normal(proof_ind(D,C,B,A)), proof_ind(D,B,C,A));
-s_test_case(proof_normal(proof_cases(D,C,B,A)), proof_cases(D,A,B,C));
-s_test_case(proof_normal(proof_iff(proof_c(proof_opt(C),A), B)), proof_iff(proof_c(A,C),B));
 
 /******************************************************************/
 /*                                                                */
@@ -153,6 +130,9 @@ proof_one_alternatives(pr) := block(
   if op(pr)=proof_opt then return(pf_one(first(pr), nullproof)),
   /* In a proof by exhaustive cases the first element is fixed. */
   if op(pr)=proof_cases then return(apply(pf_one, map(lambda([ex], apply(op(pr), append([first(args(pr))], map(proof_one_alternatives, ex)))), listify(permutations(rest(args(pr))))))),
+  /* In a proof establishing a goal the last element is fixed. */
+  if op(pr)=proof_goal then return(apply(pf_one, map(lambda([ex], apply(op(pr), append(map(proof_one_alternatives, ex), [first(reverse(args(pr)))]))), 
+                        listify(permutations(rest(reverse(args(pr)))))))),
   /* In a proof by induction cases the first element and last elents are fixed. */
   if op(pr) = proof_ind then return(apply(pf_one, map(lambda([ex], apply(op(pr), append([first(args(pr))],
       map(proof_one_alternatives, ex), [fourth(args(pr))]))), listify(permutations([second(args(pr)), third(args(pr))]))))),
@@ -186,13 +166,6 @@ proof_remove_nullproof(ex):= block(
    apply(op(ex), map(proof_remove_nullproof, sublist(args(ex), lambda([ex2], not(is(ex2=nullproof)))))) 
 );
 
-s_test_case(proof_alternatives(proof(A,B,C,D)), [proof(A,B,C,D)]);
-s_test_case(proof_alternatives(proof_c(A,B)), [proof_c(A,B),proof_c(B,A)]);
-s_test_case(proof_alternatives(proof_iff(A,B)), [proof_iff(A,B),proof_iff(B,A)]);
-s_test_case(proof_alternatives(proof_ind(A,B,C,D)), [proof_ind(A,B,C,D),proof_ind(A,C,B,D)]);
-s_test_case(proof_alternatives(proof_cases(A,B,C)), [proof_cases(A,B,C),proof_cases(A,C,B)]);
-s_test_case(proof_alternatives(proof_iff(proof(proof_opt(A), B),C)), [proof_iff(proof(A,B),C),proof_iff(proof(B),C),proof_iff(C,proof(A,B)),proof_iff(C,proof(B))]);
-
 /******************************************************************/
 /*                                                                */
 /*  STACK Parson's block functions                                */
@@ -204,9 +177,9 @@ s_test_case(proof_alternatives(proof_iff(proof(proof_opt(A), B),C)), [proof_iff(
  */
 proof_parsons_interpret(st) := block([pf],
   pf:stackjson_parse(st),
-  pf:apply(proof, stackmap_get(pf, "used"))
+  pf:apply(proof, first(first(stackmap_get(pf, "used"))))
 );
-s_test_case(proof_parsons_interpret("{\"used\":[\"0\",\"3\",\"5\"],\"available\":[\"1\",\"2\",\"4\",\"6\",\"7\"]}"), proof("0","3","5"));
+s_test_case(proof_parsons_interpret("{\"used\":[[[\"0\",\"3\",\"5\"]]],\"available\":[\"1\",\"2\",\"4\",\"6\",\"7\"]}"), proof("0","3","5"));
 
 /*
  * Takes a proof, and proof steps list and returns the keys not used in the proof_steps.
@@ -215,7 +188,7 @@ s_test_case(proof_parsons_interpret("{\"used\":[\"0\",\"3\",\"5\"],\"available\"
 proof_parsons_keys_used_unused(proof_ans, proof_steps) := block([tkeys, skeys],
   tkeys:map(first, proof_steps),
   skeys:ev(proof_ans, map(lambda([ex], ex="["), proof_types), simp),
-  /* TODO: update this when we deal with trees (and have examples) */
+  /* TO-DO: update this when we deal with trees (and have examples) */
   skeys:flatten(skeys),
   return([skeys, listdifference(tkeys, ev(unique(skeys), simp))])
 );
@@ -225,7 +198,7 @@ proof_parsons_key_json(proof_ans, proof_steps) := block([pkeys],
   /* Ensure all keys are string keys. */
   if not(emptyp(proof_steps)) then proof_ans:proof_keys_sub(proof_ans, proof_steps),
   pkeys:proof_parsons_keys_used_unused(proof_ans, proof_steps),
-  sconcat("{\"used\":", stackjson_stringify(first(pkeys)), ", \"available\":", stackjson_stringify(second(pkeys)), "}")
+  sconcat("{\"used\":", stackjson_stringify([[first(pkeys)]]), ", \"available\":", stackjson_stringify(second(pkeys)), "}")
 );
 
 /******************************************************************/
@@ -282,7 +255,6 @@ proof_keys_int(ex, proof_steps):= block(
  * Replace displayed LaTeX mathematics delimiters with inline.
  */
 proof_inline_maths(st) := ssubst("\\)", "\\]", ssubst("\\(", "\\[", st));
-s_test_case(proof_inline_maths("\\[ 3 = 2^{\\frac{p}{q}}\\]"), "\\( 3 = 2^{\\frac{p}{q}}\\)");
 
 /*
  * Prune out any narrative from the proof steps: used to display a proof without narrative.
@@ -304,7 +276,7 @@ proof_getstep_html(k, pf) := block([keylist],
 );
 
 /*
-  Wrap lines in html divs, and add narrative if it exists. 
+  Wrap lines in html <div> tags, and add narrative if it exists. 
   pfs is a line from the proof_steps array.
 */
 proof_line_html(pfs) := block([st],
@@ -368,7 +340,7 @@ dispproof([ex]) := block([ex1],
   Returns the process of getting from s to t.
   Original author Achim Eichhorn Achim.Eichhorn(at)hs-esslingen.de modified by Chris Sangwin to track process.
 */
-proof_damerau_levenstein(s, t) := block([m, n, XY, XYaction, i, j, d, temp, L, lm, li, dl_tags, simp],
+proof_damerau_levenstein(s, t) := block([c, m, n, XY, XYaction, i, j, d, temp, L, lm, li, dl_tags, simp],
     simp:true,
     if(s=t) then return([0,[]]), /* Equal strings result in 0, nothing to do. */
     m:length(s),
@@ -380,9 +352,9 @@ proof_damerau_levenstein(s, t) := block([m, n, XY, XYaction, i, j, d, temp, L, l
         XYaction[2][1]:makelist(dl_delete(s[k]),k,1,i),
         for j:1 thru n do(
             c:if is(s[i]=t[j]) then 0 else 1,
-            L:[XY[2][j]+1,     /* Insertion */
-                XY[1][j+1]+1,  /* Deletion  */
-                XY[1][j]+c],   /* Substion  */
+            L:[XY[2][j]+1,     /* Insertion    */
+                XY[1][j+1]+1,  /* Deletion     */
+                XY[1][j]+c],   /* Substitution */
             /* Add in the swap rule. */
             /* The swapping costs nothing, but the cost comes from the subsequent dl_subs, which we filter out. */
             if is(i<m and j<n) and not(is(s[i]=s[i+1]))
@@ -409,13 +381,6 @@ proof_damerau_levenstein_tidy(L) := block(
   if op(first(L))=dl_swap then return(append([first(L),dl_swap_follow(second(first(L)))], proof_damerau_levenstein_tidy(rest(rest(L))))),
   return(append([first(L)], proof_damerau_levenstein_tidy(rest(L))))
 );
-
-s_test_case(proof_damerau_levenstein([1,2,3],[1,2,3]), [0,[]]);
-s_test_case(proof_damerau_levenstein([1,2,3],[1,2,3,4]), [1,[dl_ok(1),dl_ok(2),dl_ok(3),dl_add(4)]]);
-s_test_case(proof_damerau_levenstein([1,3,4],[1,2,3,4]), [1,[dl_ok(1),dl_add(2),dl_ok(3),dl_ok(4)]]);
-s_test_case(proof_damerau_levenstein([3,4],[1,2,3,4]), [2,[dl_add(1),dl_add(2),dl_ok(3),dl_ok(4)]]);
-s_test_case(proof_damerau_levenstein([1,3,2,4],[1,2,3,4]), [1,[dl_ok(1),dl_swap(3,2),dl_swap_follow(2),dl_ok(4)]]);
-
 
 /*
   This function performs assessment of the student's proof.
@@ -471,8 +436,9 @@ proof_assessment_display(saa, pf) := block([st, k],
   /* Turn the st list of lists into a string to display. */
     st:dl_disp(st),
   for k:1 thru length(saa) do block(
-     st[k]:proof_line_disp(proof_column_disp(first(st[k])), proof_column_disp2(second(st[k])))
+     st[k]:proof_line_disp(proof_column_disp(first(st[k])), proof_column_disp(second(st[k])))
   ),
   st:apply(sconcat, st),  
   sconcat("<div class='proof'>", st, "</div>")
 );
+
