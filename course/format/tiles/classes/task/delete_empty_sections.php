@@ -24,7 +24,7 @@
 
 namespace format_tiles\task;
 
-use format_tiles\course_section_manager;
+use format_tiles\local\course_section_manager;
 
 defined('MOODLE_INTERNAL') || die();
 

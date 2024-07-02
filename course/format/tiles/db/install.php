@@ -37,7 +37,7 @@ function xmldb_format_tiles_install() {
 
     // Store the sample photo tile image in the database.
     $fs = get_file_storage();
-    $filerecord = format_tiles\tile_photo::file_api_params();
+    $filerecord = format_tiles\local\tile_photo::file_api_params();
     $filerecord['contextid'] = \context_system::instance()->id;
     $filerecord['itemid'] = 0;
     $filerecord['mimetype'] = 'image/jpeg';

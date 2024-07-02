@@ -27,12 +27,12 @@ defined('MOODLE_INTERNAL') || die();
 $callbacks = [
     [
         'hook' => \core\hook\output\before_standard_head_html_generation::class,
-        'callback' => 'format_tiles\local\hooks\output\standard_head_html_prepend::callback',
+        'callback' => 'format_tiles\hooks\output\standard_head_html_prepend::callback',
         'priority' => 0,
     ],
     [
         'hook' => \core\hook\output\before_footer_html_generation::class,
-        'callback' => 'format_tiles\local\hooks\output\before_footer_html_generation::callback',
+        'callback' => 'format_tiles\hooks\output\before_footer_html_generation::callback',
         'priority' => 0,
     ],
 ];

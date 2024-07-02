@@ -314,12 +314,8 @@ a.autolink {
     display: none;
 }
 
-.visibleifjs {
+body:not(.jsenabled) .visibleifjs {
     display: none;
-}
-
-.jsenabled .visibleifjs {
-    display: inline;
 }
 
 .jsenabled .collapsibleregion {
@@ -1978,6 +1974,10 @@ a.disabled {
     color: $text-muted;
 }
 
+a.btn.disabled {
+    opacity: 1;
+}
+
 body.lockscroll {
     height: 100%;
     overflow: hidden;
@@ -2038,10 +2038,6 @@ dd:after {
         select {
             margin-bottom: 0;
         }
-    }
-
-    .quickediticon .icon {
-        font-size: medium;
     }
 
     .quickediticon img {

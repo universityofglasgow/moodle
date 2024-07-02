@@ -631,6 +631,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 );
                 $(document).ready(function () {
                     if (useSubTiles) {
+                        // We need to be able to style tooltips outside of ul.tiles element.
                         $(Selector.BODY).addClass('format-tiles-subtiles');
                     }
                     var pageContent = $("#page-content");
@@ -657,7 +658,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         $(Selector.TILEID + "1").focus();
                         tileFitter.init(courseId, null, fitTilesToWidth, false);
                     }
-                    var windowWidth = $(window).outerWidth();
+
+                    // We are going to watch for changes to size of main tiles window.
+                    // This allows us to call the tile fitter to re-org tiles if needed.
+                    const pageContentElem = $('#page-content');
+                    // In case some themes don't have a page content div, use window as alternative.
+                    const widthObservedElement = pageContentElem.length ? pageContentElem : $(window);
+                    var observedElementWidth = widthObservedElement.outerWidth();
 
                     if (useJavascriptNav) {
                         // User is not editing but is usingJS nav to view.
@@ -701,11 +708,11 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // So remove them and re-initialise them.
                         // Collapse the selected section before doing this.
                         // Otherwise the re-organisation won't work as the tiles' flow will be out when they are analysed.
-                        $(window).on("resize", function () {
-
+                        // We use the multi_section_tiles element to capture left and right drawer opening/closing.
+                        const resizeObserver = new ResizeObserver(() => {
                             // On iOS resize events are triggered often on scroll because the address bar hides itself.
-                            // Avoid this using windowWidth here.
-                            if (resizeLocked || windowWidth === $(window).outerWidth()) {
+                            // Avoid this using observedElementWidth here.
+                            if (resizeLocked || observedElementWidth === widthObservedElement.outerWidth()) {
                                 return;
                             }
                             resizeLocked = true;
@@ -740,12 +747,14 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 }
                                 if (resizeRequired) {
                                     // Set global for comparison next time.
-                                    windowWidth = $(window).outerWidth();
+                                    observedElementWidth = widthObservedElement.outerWidth();
                                     reOrgSections(true, fitTilesToWidth);
                                 }
                                 resizeLocked = false;
                             }, 600);
                         });
+
+                        resizeObserver.observe(document.getElementById('page-content'));
 
                         // When user clicks to close a section using cross at top right in section.
                         pageContent.on(Event.CLICK, Selector.CLOSE_SEC_BTN, function (e) {
@@ -775,7 +784,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                         // Get the section ID from section number.
                         const contentArea = $(Selector.SECTION_ID + data.section);
-                        const sectionId = contentArea.data('sectionid');
+                        const sectionId = contentArea.data('sectionid')
+                            ?? contentArea.data('section-id');
                         // This gets the fragment from format_tiles_output_fragment_get_cm_list().
                         Fragment.loadFragment(
                             'format_tiles', 'get_cm_list', courseContextId, {sectionid: sectionId}
@@ -815,6 +825,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
 
                     if (enableCompletion) {
                         // We use pageContent for listener here, as completion button is replaced by core JS when it's clicked.
+                        // This is for non-subtiles only.
                         // We wait half a second to enable the completion change to be registered first.
                         pageContent.on(Event.CLICK, Selector.MANUAL_COMPLETION, function(e) {
                             const currentTarget = $(e.currentTarget);
@@ -972,6 +983,20 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             }
                         }
                     });
+
+                    // The URL may include a section ID in the form "#sectionid-xx-title" where xx is section ID.
+                    // This would be from a section "permalink".
+                    // We cannot get that value in PHP so try redirect from here instead.
+                    // This is not needed from Moodle 4.4+ as then the section.php URL is used for permalinks.
+                    const urlPattern = /.*\/course\/view\.php\?id=([\d]+)#sectionid-([\d+]+)-title/;
+                    const urlMatches = window.location.href.match(urlPattern);
+                    if (urlMatches && urlMatches.length === 3) {
+                        const sectionId = urlMatches[2];
+                        const redirectUrl = urlMatches[0].replace(
+                            `#sectionid-${sectionId}-title`, `&sectionid=${sectionId}`
+                        );
+                        window.location.replace(redirectUrl);
+                    }
                 });
             },
             populateAndExpandSection(courseContextId, sectionId, sectionNumber) {

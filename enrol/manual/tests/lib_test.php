@@ -42,7 +42,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Test enrol migration function used when uninstalling enrol plugins.
      */
-    public function test_migrate_plugin_enrolments() {
+    public function test_migrate_plugin_enrolments(): void {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/enrol/manual/locallib.php');
 
@@ -207,7 +207,7 @@ class lib_test extends \advanced_testcase {
         enrol_manual_migrate_plugin_enrolments('yyyy');
     }
 
-    public function test_expired() {
+    public function test_expired(): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -334,7 +334,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($DB->record_exists('user_enrolments', array('enrolid'=>$maninstance2->id, 'userid'=>$user3->id, 'status'=>ENROL_USER_SUSPENDED)));
     }
 
-    public function test_send_expiry_notifications() {
+    public function test_send_expiry_notifications(): void {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->preventResetByRollback(); // Messaging does not like transactions...
@@ -501,7 +501,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Test for getting user enrolment actions.
      */
-    public function test_get_user_enrolment_actions() {
+    public function test_get_user_enrolment_actions(): void {
         global $CFG, $PAGE;
         $this->resetAfterTest();
 
@@ -553,7 +553,7 @@ class lib_test extends \advanced_testcase {
      * @param stdClass $globalsettings
      * @covers \enrol_manual::add_default_instance
      */
-    public function test_default_enrolment_instance_acquires_correct_settings(stdClass $expectation, stdClass $globalsettings) {
+    public function test_default_enrolment_instance_acquires_correct_settings(stdClass $expectation, stdClass $globalsettings): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -767,7 +767,7 @@ class lib_test extends \advanced_testcase {
      *
      * @covers ::find_instance
      */
-    public function test_find_instance() {
+    public function test_find_instance(): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -800,7 +800,7 @@ class lib_test extends \advanced_testcase {
 
         // Create course.
         $course = $this->getDataGenerator()->create_course([
-            'fullname' => 'Course 1',
+            'fullname' => 'Course 1 & 2',
             'shortname' => 'C1',
         ]);
         // Create users.
@@ -860,7 +860,8 @@ class lib_test extends \advanced_testcase {
             instance: $maninstance,
             userid: $student->id,
             sendoption: ENROL_SEND_EMAIL_FROM_COURSE_CONTACT,
-            message: 'Your email address: {$a->email}, your first name: {$a->firstname}, your last name: {$a->lastname}',
+            message: 'Your email address: {$a->email}, your first name: {$a->firstname}, your last name: {$a->lastname}, ' .
+                'your course: {$a->coursename}',
         );
         $messages = $messagesink->get_messages_by_component_and_type(
             'moodle',
@@ -874,7 +875,7 @@ class lib_test extends \advanced_testcase {
         $this->assertStringContainsString($course->fullname, $message->subject);
         $this->assertEquals(
             'Your email address: ' . $student->email . ', your first name: ' . $student->firstname . ', your last name: ' .
-                $student->lastname,
+                $student->lastname . ', your course: ' . $course->fullname,
             $message->fullmessage,
         );
         // Clear sink.

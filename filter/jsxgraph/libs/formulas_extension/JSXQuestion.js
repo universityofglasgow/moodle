@@ -258,6 +258,7 @@ var JSXQuestion = function(boardIDs, jsxGraphCode, allowInputEntry, decimalPreci
 
         for (i = 0; i < that.BOARDIDS.length; i++) {
             attr = attributes[i] || attributes[0]; // First attributes are default.
+            attr.id = attr.id ?? that.BOARDIDS[i] + '_board';
             board = JXG.JSXGraph.initBoard(that.BOARDIDS[i], attr);
             that.boards.push(board);
         }
@@ -288,6 +289,7 @@ var JSXQuestion = function(boardIDs, jsxGraphCode, allowInputEntry, decimalPreci
             JXG.JSXGraph.freeBoard(that.boards[index]);
         }
 
+        attributes.id = attributes.id ?? that.BOARDIDS[index] + '_board';
         that.boards[index] = JXG.JSXGraph.initBoard(that.BOARDIDS[index], attributes);
         return that.boards[index];
     };

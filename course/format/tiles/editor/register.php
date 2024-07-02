@@ -27,7 +27,7 @@ require_once('../../../../config.php');
 global $PAGE, $DB;
 
 use format_tiles\form\registration_form;
-use format_tiles\registration_manager;
+use format_tiles\local\registration_manager;
 
 require_login();
 require_sesskey();
@@ -65,8 +65,13 @@ if ($mform->is_cancelled()) {
     redirect($settingsurl);
 } else if ($data = $mform->get_data()) { // Form has been submitted.
     $registrationmanager = new registration_manager();
-    $serverresponse = $registrationmanager::make_curl_request($data, 3);
-    $result = $registrationmanager::parse_server_response($registrationmanager::process_data($serverresponse));
+    try {
+        $serverresponse = $registrationmanager::make_curl_request($data, $registrationmanager::registration_server_url(), 3);
+        $result = $registrationmanager::parse_server_response($registrationmanager::process_data($serverresponse));
+    } catch (\Exception $e) {
+        $result = null;
+    }
+
     if ($result && $result['status'] && registration_manager::validate_key($result['key'])) {
         $registrationmanager->set_registered();
         unset_config('lastregistrationattempt', 'format_tiles');

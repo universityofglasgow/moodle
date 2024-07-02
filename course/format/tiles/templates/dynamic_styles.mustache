@@ -52,78 +52,21 @@
     }
 }}
 
-.format-tiles .course-content ul.tiles .tile.tilestyle-1,
-.format-tiles .course-content ul.tiles .tile.tilestyle-2,
-.format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
-.format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
-    border-top-color: rgb({{base_colour_rgb}});
-    border-radius: 0;
-}
-.format-tiles .course-content ul.tiles .tile.tilestyle-1,
-.format-tiles .course-content ul.tiles .tile.tilestyle-2 {
-    border-top-color: rgb({{base_colour_rgb}});
-    transition: border-top-color 0s;
-}
-.format-tiles .tile-bg,
-.format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
-.format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
-    background-color: rgba({{base_colour_rgb}},0.05);
-}
-.format-tiles ul.tiles .tile-clickable.tilestyle-1:hover,
-.format-tiles ul.tiles .tile-clickable.tilestyle-1.current:hover,
-.format-tiles ul.tiles .tile-clickable.tilestyle-2:hover,
-.format-tiles ul.tiles .tile-clickable.tilestyle-2.current:hover {
-    border-top-color: rgba({{base_colour_rgb}},0.5);
-    transition: border-top-color 0s, transform .2s ease-in-out;
-}
-.format-tiles ul.tiles .tile.selected {
-    border-top-color: rgba({{base_colour_rgb}},0.5);
-}
-.format-tiles ul.tiles .current .sectiontitle::after {
-    background-color: red;
-}
-.format-tiles ul.tiles .headerabovetiles button.selected,
-.headerabovetiles button:active, .headerabovetiles button:focus,
-.format-tiles .embed_cm_modal .modal-header {
-    background-color: rgb({{base_colour_rgb}});
-}
-.format-tiles .embed_cm_modal .modal-header h5,
-.format-tiles .embed_cm_modal .modal-header h4 {
-    color: #fff;
-}
-.format-tiles .embed_cm_modal .modal-header .close {
-    color: #fff;
-    opacity: 0.8;
-}
-.format-tiles .sectiontitle::after,
-.format-tiles .badge-info {
-    background-color: rgb({{base_colour_rgb}});
-}
-.format-tiles ul.tiles .headerabovetiles button:hover {
-    border-color: rgba({{base_colour_rgb}},0.5);
-}
+{{! Tile colours moved to main styles.css with variables var(...) }}
 
-.format-tiles .course-content .single-section .navigation-arrows .navigation-arrow:not(.dimmed):hover,
-.format-tiles .embed_cm_modal .embed_file_button:hover {
-    background-color: rgba({{base_colour_rgb}},0.1);
-}
+:root {
+    {{! Tile course colour variables (depend on course settings)}}
+    {{! These values are used in styles.css }}
+    --format-tiles-colour-elems: {{base_colour_rgb}};
+    --format-tiles-colour: rgb({{base_colour_rgb}});
+    --format-tiles-colour-7: rgba({{base_colour_rgb}}, 0.7);
+    --format-tiles-colour-5: rgba({{base_colour_rgb}}, 0.5);
+    --format-tiles-colour-1: rgba({{base_colour_rgb}}, 0.1);
+    --format-tiles-colour-05: rgba({{base_colour_rgb}}, 0.05);
+    --format-tiles-photo-tile-text-bg-opacity: {{photo_tile_text_bg_opacity}};
+    --format-tiles-photo-tile-text-line-height: {{phototiletextlineheight}}px;
+    --format-tiles-photo-tile-text-padding: {{phototiletextpadding}}px;
 
-.format-tiles .filterbutton:hover,
-.sectionbutton:hover {
-    background-color: rgba({{base_colour_rgb}},0.1);
-    transition: all 0.1s ease-in-out;
-}
-
-.format-tiles .filterbutton.selected{
-    background-color: rgba({{base_colour_rgb}},0.1);
-}
-
-.format-tiles button.tiles-top-button:hover {
-    background-color: rgba({{base_colour_rgb}},0.1);
-}
-.format-tiles .background-course-base {
-    background-color: rgb({{base_colour_rgb}});
-}
 {{#shade_heading_bar}}
     .format-tiles .course-content li.activity.label h1,
     .format-tiles .course-content .section li.activity.label h2,
@@ -133,37 +76,19 @@
     .format-tiles .editor_atto_content_wrap h2,
     .format-tiles .editor_atto_content_wrap h3,
     .format-tiles .editor_atto_content_wrap h4 {
-        border-left-color: rgb({{base_colour_rgb}});
+        border-left-color: var(--format-tiles-colour);
         border-left-style: solid;
         padding-left: 0.4em;
         border-left-width: 10px;
     }
 {{/shade_heading_bar}}
 
-{{#isstyle1or2}}
-    {{#allowphototiles}}
-        .format-tiles .course-content ul.tiles .tile.phototile .photo-tile-text h3 {
-            background-color: rgba({{base_colour_rgb}},{{photo_tile_text_bg_opacity}});
-            line-height: {{phototiletextlineheight}}px;
-            padding: {{phototiletextpadding}}px 7px;
-        }
-        .format-tiles .phototile .progress-indic,
-        .format-tiles .subtile.hasphoto .activitytype,
-        .format-tiles.editing .subtile.hasphoto .editable-title {
-            background-color: rgba({{base_colour_rgb}},{{photo_tile_text_bg_opacity}});
-        }
-        .format-tiles li.activity.subtile.hasphoto {
-            border-top-color: rgb({{base_colour_rgb}});
-        }
-
-    {{/allowphototiles}}
-{{/isstyle1or2}}
 {{#ismoodle42minus}}
 {{!Moodle 4.3+ does not need this but 4.1/4.2 do. If missing it prevents scrolling when tile open see issue 178.}}
-    .format-tiles.path-course-view #page {overflow-y: visible;}
+    .format-tiles.path-course-view #page {overflow-y: auto;}
 {{/ismoodle42minus}}
 {{#ismoodle44}}
-    li.activity.subtile .tileiconcontainer .tile-icon .icon {
+    .format-tiles li.activity.subtile .tileiconcontainer .tile-icon .icon {
         max-width: 90px;max-height: 90px;width: 90px;height: 90px;padding: 0;
     }
 {{/ismoodle44}}

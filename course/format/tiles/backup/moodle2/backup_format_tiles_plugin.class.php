@@ -50,7 +50,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
      * @throws base_element_struct_exception
      */
     protected function define_section_plugin_structure() {
-        $fileapiparams = \format_tiles\tile_photo::file_api_params();
+        $fileapiparams = \format_tiles\local\tile_photo::file_api_params();
 
         // Define the virtual plugin element with the condition to fulfill.
         $plugin = $this->get_plugin_element(null, $this->get_format_condition(), 'tiles');
@@ -68,8 +68,8 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         );
 
         // Define sources.
-        $const1 = \format_tiles\format_option::OPTION_SECTION_PHOTO;
-        $const2 = \format_tiles\format_option::OPTION_SECTION_ICON;
+        $const1 = \format_tiles\local\format_option::OPTION_SECTION_PHOTO;
+        $const2 = \format_tiles\local\format_option::OPTION_SECTION_ICON;
 
         // Include tiles version so we can use it on restore.
         $tilesversion  = filter_var(get_config('format_tiles', 'version') ?? 0, FILTER_SANITIZE_NUMBER_INT);
@@ -114,7 +114,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
         // For backwards compatibility of course exports with prior plugin versions, we include such data in backups.
         // So we temporarily set course format options to the course so that they will be included.
         // There is an observer \format_tiles\observer\course_backup_created() which reverses this once backup is complete.
-        \format_tiles\format_option::set_legacy_format_options($courseid);
+        \format_tiles\local\format_option::set_legacy_format_options($courseid);
     }
 
     /**
@@ -128,13 +128,13 @@ class backup_format_tiles_plugin extends backup_format_plugin {
     private function pre_step_fail_if_course_includes_excess_sections(int $courseid) {
         global $DB;
 
-        $maxsectionsconfig = \format_tiles\course_section_manager::get_max_sections();
+        $maxsectionsconfig = \format_tiles\local\course_section_manager::get_max_sections();
         $maxallowed = $maxsectionsconfig + 1;// We +1 as sec zero not counted.
 
         // If user is admin, when we throw error, we offer them a button to delete excess sections.
         $isadmin = has_capability('moodle/site:config', \context_system::instance());
         if ($isadmin) {
-            $admintoolsurl = \format_tiles\course_section_manager::get_list_problem_courses_url();
+            $admintoolsurl = \format_tiles\local\course_section_manager::get_list_problem_courses_url();
             $admintoolsbutton = \html_writer::link(
                 $admintoolsurl,
                 get_string('checkforproblemcourses', 'format_tiles'),

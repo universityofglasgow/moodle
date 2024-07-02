@@ -25,7 +25,7 @@
 namespace format_tiles\output\courseformat\content;
 
 use core_courseformat\output\local\content\section as section_base;
-use format_tiles\tile_photo;
+use format_tiles\local\tile_photo;
 
 /**
  * Base class to render a course section.
@@ -48,7 +48,7 @@ class section extends section_base {
         $data->hasphoto = 0;
         // If photo tile backgrounds are allowed by site admin, prepare the image for this section.
         if (get_config('format_tiles', 'allowphototiles')) {
-            $coursecontext = \context_course::instance($this->section->course);
+            $coursecontext = $this->format->get_context();
             // Is getting course context the most efficient way?
             $tilephoto = new tile_photo($coursecontext, $this->section->id);
             $tilephotourl = $tilephoto->get_image_url();
@@ -65,8 +65,8 @@ class section extends section_base {
 
         }
         if (!$data->hasphoto) {
-            $data->tileicon = \format_tiles\format_option::get(
-                $this->section->course, \format_tiles\format_option::OPTION_SECTION_ICON, $this->section->id
+            $data->tileicon = \format_tiles\local\format_option::get(
+                $this->section->course, \format_tiles\local\format_option::OPTION_SECTION_ICON, $this->section->id
             );
             if (!$data->tileicon) {
                 $formatoptions = $this->format->get_format_options();
@@ -84,7 +84,7 @@ class section extends section_base {
             $data->collapsemenu = true;
         }
 
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
         $data->tilestyle = get_config('format_tiles', 'tilestyle') ?? 1;

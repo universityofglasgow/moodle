@@ -30,26 +30,29 @@ To find out more about the installation, you can also [read on here](#installing
 
 ## Usage
 
-1. In a Moodle course you can add a board to different types of content, i.e.:
-   - `Add an activity or resource -> Page`
-   - `Add an activity or resource -> Link`
-   - `Add an activity or resource -> Quiz`
-   - ...
-2. Write content. At the position the construction should appear, create a construction by:
-	* switching to the code input, i.e. to "HTML source editor"
-	* inserting a `<jsxgraph>` tag with all required parameters
-	* Each <code><div\></code> that contains a JSXGraph board needs a unique ID on the page. This ID is generated automatically. Reference it within the JavaScript using the constant <code>BOARDID</code>.
-   
-   Example: 
+In a Moodle course you can add a board to different types of content, i.e.: `Page`, `Link`, `Quiz`, ...
 
-   ```html
-   <jsxgraph width="500" aspect-ratio="1/1">
-       var brd = JXG.JSXGraph.initBoard(BOARDID, {boundingbox:[-5,5,5,-5], axis:true});
-       var p = brd.create('point', [1,2]);
-   </jsxgraph>
-   ```
+At the position the construction should appear, create a construction by:
+* switching to the code input, i.e. to "HTML source editor" **(*)**
+* inserting a `<jsxgraph>` tag with all required parameters
+* Each <code><div\></code> that contains a JSXGraph board needs a unique ID on the page. This ID is generated automatically. Reference it within the JavaScript using the constant <code>BOARDID</code>.
+
+**(*) Important notice:**   
+Please note that some Moodle editors remove the `<jsxgraph>` tag when saving.
+As a result, the construction may not be displayed correctly or at all.
+You should therefore always use the "Plain text editor".
+Some also report that the "Atto HTML editor" works, too.
+
+Example: 
+
+```html
+<jsxgraph width="500" aspect-ratio="1/1">
+   var brd = JXG.JSXGraph.initBoard(BOARDID, {boundingbox:[-5,5,5,-5], axis:true});
+   var p = brd.create('point', [1,2]);
+</jsxgraph>
+```
    
-Get many examples for constructions at [jsxgraph.org/share](https://jsxgraph.org/share). There you can export them to the JSXGraph Moodle filter format.
+Get many examples for constructions at [https://jsxgraph.org/share](https://jsxgraph.org/share). There you can export them to the JSXGraph Moodle filter format.
    
 ***For tag attributes and global settings have a look at [Attributes and settings](#attributes-and-settings) in this documentation.*** 
  
@@ -195,7 +198,7 @@ As moodle administrator, you can make the following settings:
 <table>
     <tr>
         <th>JSXGraph version</th>
-        <td>Our filter delivers all versions of JSXGraph. Here you can choose which version to use. If <code>auto</code> is selected (recommended), the latest version will be used automatically.</td>
+        <td>Our filter delivers all versions of JSXGraph. Here you can choose which version to use. If <code>automatically</code> is selected (recommended), the latest version will be used automatically.</td>
     </tr>
     <tr>
         <th>extension for question type <a href="https://moodle.org/plugins/qtype_formulas" target="_blank">formulas</a></th>
@@ -272,6 +275,19 @@ Within the `<jsxgraph>` tag different attributes can be declared, e.g. `<jsxgrap
         <td><b>Deprecated</b><br><small>This attribute defines, which id the graph of JSXGraph will have. Please use the id stored in the constant <code>BOARDID</code> within the JavaScript block, especially for the first parameter in <code>JXG.JSXGraph.initBoard(...)</code>. Look at the examples at <a href="#usage">Usage</a>.</small></td>
     </tr>
 </table>
+
+These attributes can be defined for each board by separating with `,`:
+- title
+- description
+- width
+- height
+- aspect-ratio
+- max-width
+- max-height
+- class
+- wrapper-class
+- box
+- boardid
 
 ## Using MathJax within the board
 

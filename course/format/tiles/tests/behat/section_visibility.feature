@@ -34,7 +34,8 @@ Feature: Show/hide course sections in format_tiles
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
     And I wait until the page is ready
-    And I follow "Collapse all"
+    #  We used to say "And I follow "Collapse all"" but course index includes that too we have to use element ID now.
+    And I follow "collapsesections"
     And I wait until the page is ready
     And I toggle expand or collapse section "1" for edit
     And I wait until the page is ready
@@ -60,7 +61,8 @@ Feature: Show/hide course sections in format_tiles
 
     And I am on "Course 1" course homepage
     And I wait until the page is ready
-    And I follow "Collapse all"
+    #  We used to say "And I follow "Collapse all"" but course index includes that too we have to use element ID now.
+    And I follow "collapsesections"
     And I wait until the page is ready
     And I toggle expand or collapse section "2" for edit
     And I wait until the page is ready
@@ -78,7 +80,8 @@ Feature: Show/hide course sections in format_tiles
 
     And I am on "Course 1" course homepage
     And I wait until the page is ready
-    And I follow "Collapse all"
+    #  We used to say "And I follow "Collapse all"" but course index includes that too we have to use element ID now.
+    And I follow "collapsesections"
     And I wait until the page is ready
     And I toggle expand or collapse section "3" for edit
     And I wait until the page is ready

@@ -1,3 +1,85 @@
+/*CSS including colour variables for colours set at course level*/
+/*Formerly included in dynamic styles via mustache*/
+/*The variables e.g. --format-tiles-colour are defined in dynamic_styles mustache template*/
+
+.format-tiles .course-content ul.tiles .tile.tilestyle-1,
+.format-tiles .course-content ul.tiles .tile.tilestyle-2,
+.format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
+.format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
+    border-top-color: var(--format-tiles-colour);
+    border-radius: 0;
+}
+.format-tiles .course-content ul.tiles .tile.tilestyle-1,
+.format-tiles .course-content ul.tiles .tile.tilestyle-2 {
+    border-top-color: var(--format-tiles-colour);
+    transition: border-top-color 0s;
+}
+.format-tiles .tile-bg,
+.format-tiles li.section:not(#section-0).tilestyle-1 .course-section-header,
+.format-tiles li.section:not(#section-0).tilestyle-2 .course-section-header {
+    background-color: var(--format-tiles-colour-05);
+}
+.format-tiles ul.tiles .tile-clickable.tilestyle-1:hover,
+.format-tiles ul.tiles .tile-clickable.tilestyle-1.current:hover,
+.format-tiles ul.tiles .tile-clickable.tilestyle-2:hover,
+.format-tiles ul.tiles .tile-clickable.tilestyle-2.current:hover {
+    border-top-color: var(--format-tiles-colour-5);
+    transition: border-top-color 0s, transform .2s ease-in-out;
+}
+.format-tiles ul.tiles .tile.selected {
+    border-top-color: var(--format-tiles-colour-5);
+}
+.format-tiles .embed_cm_modal .modal-header {
+    background-color: var(--format-tiles-colour);
+}
+.format-tiles ul.tiles .current .sectiontitle::after {
+    background-color: red;
+}
+.format-tiles .embed_cm_modal .modal-header h5,
+.format-tiles .embed_cm_modal .modal-header h4 {
+    color: #fff;
+}
+.format-tiles .embed_cm_modal .modal-header .close {
+    color: #fff;
+    opacity: 0.8;
+}
+.format-tiles .sectiontitle::after,
+.format-tiles .badge-info {
+    background-color: var(--format-tiles-colour);
+}
+.format-tiles .course-content .single-section .navigation-arrows .navigation-arrow:not(.dimmed):hover,
+.format-tiles .embed_cm_modal .embed_file_button:hover {
+    background-color: var(--format-tiles-colour-1);
+}
+
+.format-tiles .filterbutton:hover,
+.sectionbutton:hover {
+    background-color: var(--format-tiles-colour-1);
+    transition: all 0.1s ease-in-out;
+}
+
+.format-tiles .filterbutton.selected {
+    background-color: var(--format-tiles-colour-1);
+}
+
+.format-tiles button.tiles-top-button:hover {
+    background-color: var(--format-tiles-colour-1);
+}
+.format-tiles .background-course-base {
+    background-color: var(--format-tiles-colour);
+}
+.format-tiles .tiles-base-bg {
+    background-color: var(--format-tiles-colour);
+}
+.format-tiles .tiles-base-transparent7-bg {
+    background-color: var(--format-tiles-colour-7);
+}
+.format-tiles .tiles-base-transparent05-bg {
+    background-color: var(--format-tiles-colour-05);
+}
+
+/*Other CSS*/
+
 .format-tiles ul.tiles {
     transition: 0.3s ease-in-out;
     overflow: visible;
@@ -70,7 +152,7 @@
 }
 .format-tiles .progress-indic {
     display: inline-block;
-    color: #999;
+    color: #676767;
 }
 
 .format-tiles .progress-indic svg {
@@ -114,7 +196,7 @@
     vertical-align: top;
     line-height: 40px;
     margin-right: 3px;
-    color: #999;
+    color: #676767;
     font-size: 0.9em;
 }
 
@@ -538,7 +620,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .navigation-arrows .navigation-arrow.dimmed:hover {
     background-color: inherit;
 }
-.format-tiles .single-section a.navigation-arrow {
+.format-tiles .single-section .navigation-arrow {
     color: grey;
 }
 
@@ -768,13 +850,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles #abovetiles.section-zero-empty {
     width: calc(100% - 40px);
 }
-
-body.format-tiles.jsenabled .course-content .headerabovetiles {
-    display: block;
-}
-.format-tiles .headerabovetiles .progress-indic {
-    height: 42px;
-}
 .format-tiles .phototile .progress-indic {
     color: rgba(255, 255, 255, 0.85);
     padding: 2px 7px 2px 7px;
@@ -782,6 +857,11 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     bottom: 10px;
     left: 0;
     font-size: 0.9em;
+}
+.format-tiles .phototile .progress-indic,
+.format-tiles .subtile.hasphoto .activitytype,
+.format-tiles.editing .subtile.hasphoto .editable-title {
+    background-color: rgba(var(--format-tiles-colour-elems), var(--format-tiles-photo-tile-text-bg-opacity));
 }
 .format-tiles .tilestyle-2.phototile .progress-indic {
     top: 5px;
@@ -791,6 +871,9 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 }
 .format-tiles .phototile .progress-complete-alt img {
     margin-top: 4px;
+}
+.format-tiles li.activity.subtile.hasphoto {
+    border-top-color: var(--format-tiles-colour);
 }
 .format-tiles .filterbutton {
     cursor: pointer;
@@ -1578,12 +1661,12 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     text-align: left;
     position: absolute;
 }
-
 .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-1 .photo-tile-text h3,
 .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-2 .photo-tile-text h3 {
     display: inline;
-    line-height: 30px;
-    padding: 4px 7px;
+    background-color: rgba(var(--format-tiles-colour-elems), var(--format-tiles-photo-tile-text-bg-opacity));
+    line-height: var(--format-tiles-photo-tile-text-line-height);
+    padding: var(--format-tiles-photo-tile-text-padding) 7px;
     text-align: center;
     color: #fff;
 }
@@ -1629,7 +1712,9 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles li.tile.phototile.tilestyle-2 .availabilityinfo {
     position: absolute;
     bottom: inherit;
-    top: 20px;
+    top: 9px;
+    left: 3px;
+    right: unset;
 }
 .format-tiles .existingtilephoto {
     height: 160px;
@@ -1823,7 +1908,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     height: 45px;
 }
 
-.format-tiles li.subtile .tileiconcontainer.administration{
+.format-tiles li.subtile .tileiconcontainer.administration {
     border: 3px solid #da58ef;
 }
 .format-tiles li.subtile .tileiconcontainer.assessment {
@@ -1844,7 +1929,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 .format-tiles li.subtile .tileiconcontainer.other {
     border: 3px solid #212529;
 }
-.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration{
+.format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration {
     background-color: #da58ef;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.assessment {
@@ -1852,7 +1937,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.content {
     background-color: #0099ad;
- }
+}
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.collaboration {
     background-color: #6f46f7;
 }
@@ -1875,6 +1960,7 @@ body.format-tiles.jsenabled .course-content .headerabovetiles {
     justify-content: center;
     align-items: center;
 }
+
 @media (min-width: 768px) {
     body.format-tiles.limitedwidth:not(.path-mod) #page.drawers .main-inner,
     .format-tiles .header-maxwidth {

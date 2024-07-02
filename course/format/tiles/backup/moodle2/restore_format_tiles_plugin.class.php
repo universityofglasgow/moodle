@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use format_tiles\format_option;
+use format_tiles\local\format_option;
 
 /**
  * Specialised restore for format_tiles
@@ -122,7 +122,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             );
 
             // Now add the mapping for the files (old section ID to new).
-            $fileapiparams = \format_tiles\tile_photo::file_api_params();
+            $fileapiparams = \format_tiles\local\tile_photo::file_api_params();
             $oldsectionid = $data['sectionid'] ?? null;
             $newsectionid = $this->task->get_sectionid();
 
@@ -231,7 +231,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             if ($needsunmappedfilesadded) {
                 // Moodle 3.x archives just use the course format options table with no image mapping.
                 // Add these unmapped here for old plugin versions which are not mapped (null mappingitemname).
-                $fileapiparams = \format_tiles\tile_photo::file_api_params();
+                $fileapiparams = \format_tiles\local\tile_photo::file_api_params();
                 $this->add_related_files(
                     $fileapiparams['component'],
                     $fileapiparams['filearea'],
@@ -347,7 +347,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
                     // We have a file in the table with the old section id.
                     // However if we are merging a backup into an existing course, the new section may already have a photo too.
                     // We have to delete it if it does, before we give new photos the new section uid.
-                    \format_tiles\tile_photo::delete_files_from_ids($newcourseid, $newitemid);
+                    \format_tiles\local\tile_photo::delete_files_from_ids($newcourseid, $newitemid);
 
                     // Issue #165 only pass in needed fields (avoid core converting a null referencefileid to zero MDL-80938).
                     $newfilerecord = (object)[
@@ -411,7 +411,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      */
     private function fail_if_course_includes_excess_sections() {
         $backupinfo = $this->step->get_task()->get_info();
-        $maxallowed = \format_tiles\course_section_manager::get_max_sections();
+        $maxallowed = \format_tiles\local\course_section_manager::get_max_sections();
 
         // Get the sections from the backup and check them one by one.
         $totalincluded = 0;
@@ -456,7 +456,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
      */
     private function check_destination_course_section_count() {
         global $DB, $SESSION;
-        $maxallowed = \format_tiles\course_section_manager::get_max_sections();
+        $maxallowed = \format_tiles\local\course_section_manager::get_max_sections();
         $courseid = $this->step->get_task()->get_courseid();
         $sessionvar = 'restore_dest_check_' . $courseid;
         if (isset($SESSION->$sessionvar) && $SESSION->$sessionvar > strtotime('2 minutes ago')) {
@@ -471,7 +471,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             // If user is admin, when we throw error, we offer them a button to delete excess sections.
             $isadmin = has_capability('moodle/site:config', \context_system::instance());
             if ($isadmin) {
-                $admintoolsurl = \format_tiles\course_section_manager::get_list_problem_courses_url();
+                $admintoolsurl = \format_tiles\local\course_section_manager::get_list_problem_courses_url();
                 $admintoolsbutton = \html_writer::link(
                     $admintoolsurl,
                     get_string('checkforproblemcourses', 'format_tiles'),

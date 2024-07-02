@@ -24,6 +24,8 @@ Optionally, depending on the question settings, you have
 
 Sometimes you need to use \(e\), or other constants, as an abstract symbol not a number.  The Maxima solution is to use the `kill()` command, but for security reasons users of STACK are not permitted to use this function. Instead use `stack_reset_vars(true)` in the question variables.  This resets all the special constants defined by STACK so the symbols can be redefined in an individual STACK question.  (On Maxima 5.42.1 (and possibly others) `stack_reset_vars(true)` also resets `ordergreat`, so if you need to use `stack_reset_vars(true)` it must be the first command the question variables.  Since this has been fixed in Maxima 5.44.0, it was probably a bug in Maxima.)
 
+If you want to change the display of the constant \(e\) you need to refer to the `%e%` value, e.g. `texput(%e, "\mathrm{e}");`.
+
 ## Modular arithmetic ##
 
 The function `recursemod(ex, n)` recurses over an expression tree, and applies the function `mod(?, n)` to any numbers as identified by `numberp`.  This works on any expression, whereas `polymod` only applies to polynomials.
@@ -106,8 +108,8 @@ You can also force all integers to be displayed as floating point decimals or in
 |             | `0.12`      | \(0.1200\)       |
 | `"~,5e"`    | `100.34`    | \(1.00340e+2\)   |  Output five decimal places: scientific notation.
 | `"~:d"`     | `10000000`  | \(10,000,000\)   |  Separate decimal groups of three digits with commas.
-| `~r`        | `9`         | \(\mbox{nine}\)  |  Rhetoric.
-| `~:r`       | `9`         | \(\mbox{ninth}\) |  Ordinal rhetoric.
+| `~r`        | `9`         | \(\text{nine}\)  |  Rhetoric.
+| `~:r`       | `9`         | \(\text{ninth}\) |  Ordinal rhetoric.
 | `~7r`       | `9`         | \(12\)           |  Base 7.
 | `~@r`       | `9`         | \(IX\)           |  Roman numerals.
 | `~:@r`      | `9`         | \(VIIII\)        |  Old style Roman numerals.

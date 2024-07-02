@@ -16,7 +16,9 @@
 
 namespace mod_bigbluebuttonbn\external;
 
+use context_course;
 use core_external\external_api;
+use core_external\restricted_context_exception;
 use mod_bigbluebuttonbn\instance;
 use mod_bigbluebuttonbn\test\testcase_helper_trait;
 use moodle_exception;
@@ -62,7 +64,7 @@ class get_join_url_test extends \externallib_advanced_testcase {
     /**
      * Test execute API CALL with no instance
      */
-    public function test_execute_no_instance() {
+    public function test_execute_no_instance(): void {
         $this->resetAfterTest();
         $this->expectExceptionMessageMatches('/No such instance.*/');
         $joinurl = $this->get_join_url(1234, 5678);
@@ -75,7 +77,7 @@ class get_join_url_test extends \externallib_advanced_testcase {
     /**
      * Test execute API CALL without login
      */
-    public function test_execute_without_login() {
+    public function test_execute_without_login(): void {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
@@ -87,9 +89,31 @@ class get_join_url_test extends \externallib_advanced_testcase {
     }
 
     /**
+     * Test execution with a user who doesn't have the capability to join the meeting
+     */
+    public function test_execute_without_capability(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $record = $this->getDataGenerator()->create_module('bigbluebuttonbn', ['course' => $course->id]);
+        $instance = instance::get_from_instanceid($record->id);
+
+        $user = $this->getDataGenerator()->create_and_enrol($course);
+        $this->setUser($user);
+
+        $student = $DB->get_field('role', 'id', ['shortname' => 'student'], MUST_EXIST);
+        assign_capability('mod/bigbluebuttonbn:join', CAP_PROHIBIT, $student, context_course::instance($course->id), true);
+
+        $this->expectException(restricted_context_exception::class);
+        $this->get_join_url($instance->get_cm_id());
+    }
+
+    /**
      * Test execute API CALL with invalid login
      */
-    public function test_execute_with_invalid_login() {
+    public function test_execute_with_invalid_login(): void {
         $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
@@ -107,7 +131,7 @@ class get_join_url_test extends \externallib_advanced_testcase {
     /**
      * When login as a student
      */
-    public function test_execute_with_valid_login() {
+    public function test_execute_with_valid_login(): void {
         $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
@@ -136,7 +160,7 @@ class get_join_url_test extends \externallib_advanced_testcase {
     /**
      * Check that URL are different depending on the group.
      */
-    public function test_execute_with_group() {
+    public function test_execute_with_group(): void {
         $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
@@ -174,7 +198,7 @@ class get_join_url_test extends \externallib_advanced_testcase {
     /**
      * Check that we return the same URL once meeting is started.
      */
-    public function test_execute_with_same_url() {
+    public function test_execute_with_same_url(): void {
         $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
@@ -208,7 +232,7 @@ class get_join_url_test extends \externallib_advanced_testcase {
     /**
      * Check that we return the same URL once meeting is started.
      */
-    public function test_user_limit() {
+    public function test_user_limit(): void {
         $this->resetAfterTest();
         set_config('bigbluebuttonbn_userlimit_editable', true);
         $generator = $this->getDataGenerator();

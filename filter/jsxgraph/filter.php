@@ -376,32 +376,8 @@ class filter_jsxgraph extends moodle_text_filter {
 
         // Paste the code.
 
-        // POI: Version differences.
-        if ($this->versionmoodle["is_newer_version"]) {
-
-            if ($this->versionjsx["version_number"] >= $this->jxg_to_version_number("1.5.0")) {
-
-                $PAGE->requires->js_init_call($code);
-
-            } else {
-
-                $PAGE->requires->js_init_call($code);
-
-            }
-
-        } else {
-
-            if ($this->versionjsx["version_number"] >= $this->jxg_to_version_number("1.5.0")) {
-
-                $PAGE->requires->js_init_call($code);
-
-            } else {
-
-                $PAGE->requires->js_init_call($code);
-
-            }
-
-        }
+        // POI: Version differences. Here no differences.
+        $PAGE->requires->js_init_call($code);
     }
 
     /**
@@ -873,6 +849,8 @@ class filter_jsxgraph extends moodle_text_filter {
             'aspect-ratio',
             'max-width',
             'max-height',
+            'class',
+            'wrapper-class',
             'box',
             'boardid',
         ];
@@ -960,7 +938,7 @@ class filter_jsxgraph extends moodle_text_filter {
     }
 
     /**
-     * Converts a version string like 1.5.0 to an integer.
+     * Converts a version string like 1.2.3 to an integer.
      *
      * @param String $versionstring
      *

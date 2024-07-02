@@ -42,6 +42,7 @@ div.stack-hint-content {
 .que.stack .stackinputfeedback.compact {
     margin: 3px 3px 3px;
     display: inline-block;
+    vertical-align: top;
     background-color: white;
     border: 1px solid #ccc;
     padding: 0.3em;
@@ -101,12 +102,16 @@ textarea[name=maximavars] {
     max-width: 100%;
     text-align: right;
 }
+.que.stack .input-monospace {
+    font-family: monospace;
+}
 
 .que.stack .formulation .stackprtfeedback {
     background: #fcf8e3;
     margin: 0.2em -0.2em 0.5em;
     padding: 0.2em 0.5em 0.2em 0.2em;
     display: inline-block;
+    vertical-align: top;
 }
 .que.stack .formulation .stackprtfeedback .correct,
 .que.stack .formulation .stackprtfeedback .partiallycorrect,

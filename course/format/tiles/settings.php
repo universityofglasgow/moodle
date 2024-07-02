@@ -29,8 +29,9 @@ require_once($CFG->dirroot . '/course/format/tiles/lib.php');
 if ($ADMIN->fulltree) {
     $settings = null; // We add our own settings pages and do not want the standard settings link.
 
-    $settingscategory = new \format_tiles\admin_settingspage_tabs('formatsettingtiles', get_string('pluginname', 'format_tiles'));
-
+    $settingscategory = new \format_tiles\local\admin_settingspage_tabs(
+        'formatsettingtiles', get_string('pluginname', 'format_tiles')
+    );
 
     // Colour settings.
     $page = new admin_settingpage('format_tiles/tab-colours', get_string('colours', 'format_tiles'));
@@ -256,7 +257,7 @@ if ($ADMIN->fulltree) {
             'problemcourses',
             get_string('problemcourses', 'format_tiles'),
             html_writer::link(
-                \format_tiles\course_section_manager::get_list_problem_courses_url(),
+                \format_tiles\local\course_section_manager::get_list_problem_courses_url(),
                 get_string('checkforproblemcourses', 'format_tiles'),
                 ['class' => 'btn btn-primary', 'target' => '_blank']
             )
@@ -329,14 +330,10 @@ if ($ADMIN->fulltree) {
     $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
-    $page->add(new admin_setting_heading(
-        'experimentalfeatures', get_string('experimentalfeatures', 'format_tiles'), ''
-    ));
-
     $name = 'format_tiles/usecourseindex';
     $title = get_string('usecourseindex', 'format_tiles');
     $description = get_string('usecourseindex_desc', 'format_tiles');
-    $default = 0;
+    $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
     $settingscategory->add($page);

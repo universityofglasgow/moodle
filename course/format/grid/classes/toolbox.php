@@ -687,6 +687,9 @@ class toolbox {
             $fs = get_file_storage();
             $lockfactory = null;
             $lock = null;
+            $format = null;
+            $coursecontext = null;
+
             if (!defined('BEHAT_SITE_RUNNING')) {
                 $lockfactory = \core\lock\lock_config::get_lock_factory('format_grid');
             }
@@ -696,42 +699,49 @@ class toolbox {
                 if ($courseid != $coursesectionimage->courseid) {
                     $courseid = $coursesectionimage->courseid;
                     $format = course_get_format($courseid);
+                    if (get_class($format) != 'format_grid') {
+                        // Not currently in the Grid format, but was.
+                        $format = null;
+                        continue;
+                    }
+                    $coursecontext = \context_course::instance($courseid);
                 }
-                $coursecontext = \context_course::instance($courseid);
-                if (!defined('BEHAT_SITE_RUNNING')) {
-                    $lock = $lockfactory->get_lock('sectionid' . $coursesectionimage->sectionid, 5);
-                }
-                if (($lock instanceof \core\lock\lock) || (defined('BEHAT_SITE_RUNNING'))) {
-                    try {
-                        $files = $fs->get_area_files($coursecontext->id, 'format_grid', 'sectionimage',
-                            $coursesectionimage->sectionid);
-                        foreach ($files as $file) {
-                            if (!$file->is_directory()) {
-                                    $coursesectionimage = $toolbox->setup_displayed_image(
-                                        $coursesectionimage,
-                                        $file,
-                                        $courseid,
-                                        $coursesectionimage->sectionid,
-                                        $format
-                                    );
+                if (!empty($format)) {
+                    if (!defined('BEHAT_SITE_RUNNING')) {
+                        $lock = $lockfactory->get_lock('sectionid' . $coursesectionimage->sectionid, 5);
+                    }
+                    if (($lock instanceof \core\lock\lock) || (defined('BEHAT_SITE_RUNNING'))) {
+                        try {
+                            $files = $fs->get_area_files($coursecontext->id, 'format_grid', 'sectionimage',
+                                $coursesectionimage->sectionid);
+                            foreach ($files as $file) {
+                                if (!$file->is_directory()) {
+                                        $coursesectionimage = $toolbox->setup_displayed_image(
+                                            $coursesectionimage,
+                                            $file,
+                                            $courseid,
+                                            $coursesectionimage->sectionid,
+                                            $format
+                                        );
+                                }
                             }
+                        } catch (\Exception $e) {
+                            if (!defined('BEHAT_SITE_RUNNING')) {
+                                $lock->release();
+                            }
+                            throw $e;
                         }
-                    } catch (\Exception $e) {
                         if (!defined('BEHAT_SITE_RUNNING')) {
                             $lock->release();
                         }
-                        throw $e;
+                    } else {
+                        throw new \moodle_exception(
+                            'imagemanagement',
+                            'format_grid',
+                            '',
+                            get_string('cannotgetmanagesectionimagelock', 'format_grid')
+                        );
                     }
-                    if (!defined('BEHAT_SITE_RUNNING')) {
-                        $lock->release();
-                    }
-                } else {
-                    throw new \moodle_exception(
-                        'imagemanagement',
-                        'format_grid',
-                        '',
-                        get_string('cannotgetmanagesectionimagelock', 'format_grid')
-                    );
                 }
             }
         }

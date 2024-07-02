@@ -24,7 +24,7 @@
 
 namespace format_tiles\task;
 
-use format_tiles\registration_manager;
+use format_tiles\local\registration_manager;
 
 /**
  * Class deferred_register

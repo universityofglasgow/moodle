@@ -138,7 +138,7 @@ function xmldb_format_tiles_upgrade($oldversion) {
 
         // Store the sample photo tile image in the database.
         $fs = get_file_storage();
-        $filerecord = format_tiles\tile_photo::file_api_params();
+        $filerecord = format_tiles\local\tile_photo::file_api_params();
         $filerecord['contextid'] = \context_system::instance()->id;
         $filerecord['itemid'] = 0;
         $filerecord['mimetype'] = 'image/jpeg';
@@ -208,6 +208,13 @@ function xmldb_format_tiles_upgrade($oldversion) {
 
         // Tiles savepoint reached.
         upgrade_plugin_savepoint(true, 2024020200, 'format', 'tiles');
+    }
+
+    if ($oldversion < 2024061800) {
+        // Course index in Tiles is no longer an experimental feature so activate it.
+        // Site admin can de-activate if they wish via plugin settings.
+        set_config('usecourseindex', 1, 'format_tiles');
+        upgrade_plugin_savepoint(true, 2024061800, 'format', 'tiles');
     }
 
     return true;

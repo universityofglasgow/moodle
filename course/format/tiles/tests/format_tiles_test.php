@@ -24,6 +24,8 @@
 
 namespace format_tiles;
 
+use format_tiles\local\format_option;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -56,7 +58,7 @@ final class format_tiles_test extends \advanced_testcase {
 
     /**
      * Test updating the section format options e.g. changing the tile icon for a tile.
-     * @covers \format_tiles\format_option::set
+     * @covers \format_tiles\local\format_option::set
      * @throws \moodle_exception
      */
     public function test_update_section_format_options(): void {

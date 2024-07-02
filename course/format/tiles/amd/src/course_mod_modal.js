@@ -367,14 +367,14 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
         };
 
         return {
-            init: function (courseIdInit, isEditing, pageType, launchModalCmid) {
+            init: function (courseIdInit, isEditing, pageType, launchModalCmid, usingJsNav) {
                 courseId = courseIdInit;
                 $(document).ready(function () {
                     tilesConfig = $('#format-tiles-js-config').data();
                     const courseIndex = $('nav#courseindex');
 
-                    if (pageType === 'course-view-tiles') {
-                        // We are on the main tiles page.
+                    if (['course-view-tiles', 'section-view-tiles'].includes(pageType)) {
+                        // We are on a main tiles page, /course/view.php or /course/section.php in Moodle 4.4+.
                         // If any link in the course index on the left is clicked, check if it needs a modal.
                         // If it does, launch the modal instead of following the link.
                         // This isn't ideal but saves plugin re-implementing / maintaining large volume of course index code.
@@ -393,36 +393,43 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                             }])[0].done(function (data) {
                                                 if (!data || !data.modalallowed) {
                                                     window.location.href = linkUrl;
+                                                    return;
                                                 }
-                                                const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
-                                                if (expandedSection.length === 0) {
-                                                    require(["format_tiles/course"], function (course) {
-                                                        course.populateAndExpandSection(
-                                                            data.coursecontextid, data.sectionid, data.sectionnumber
-                                                        );
-                                                    });
+                                                if (usingJsNav) {
+                                                    const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
+                                                    if (expandedSection.length === 0) {
+                                                        require(["format_tiles/course"], function (course) {
+                                                            course.populateAndExpandSection(
+                                                                data.coursecontextid, data.sectionid, data.sectionnumber
+                                                            );
+                                                        });
+                                                    }
+                                                    launchCmModal(
+                                                        cmId,
+                                                        data.modulecontextid,
+                                                        data.sectionnumber,
+                                                        data.name,
+                                                        data.modname === 'resource'
+                                                            ? `resource_${data.resourcetype}` : data.modname,
+                                                        data.modname === 'url' || data.resourcetype === 'html'
+                                                            ? data.pluginfileurl : linkUrl,
+                                                        data.completionenabled ? 1 : 0,
+                                                        data.iscomplete ? 1 : 0,
+                                                        data.ismanualcompletion,
+                                                        data.pluginfileurl
+                                                    );
+                                                } else {
+                                                    window.location.href = config.wwwroot
+                                                        + `/course/view.php?id=${courseId}`
+                                                        + `&section=${data.sectionnumber}&cmid=${cmId}`;
                                                 }
-
-                                                launchCmModal(
-                                                    cmId,
-                                                    data.modulecontextid,
-                                                    data.sectionnumber,
-                                                    data.name,
-                                                    data.modname === 'resource' ? `resource_${data.resourcetype}` : data.modname,
-                                                    data.modname === 'url' || data.resourcetype === 'html'
-                                                        ? data.pluginfileurl : linkUrl,
-                                                    data.completionenabled ? 1 : 0,
-                                                    data.iscomplete ? 1 : 0,
-                                                    data.ismanualcompletion,
-                                                    data.pluginfileurl
-                                                );
                                             })
-                                                .fail(function() {
-                                                    window.location.href = linkUrl;
-                                                });
-                                            } else {
+                                            .fail(function() {
                                                 window.location.href = linkUrl;
-                                            }
+                                            });
+                                        } else {
+                                            window.location.href = linkUrl;
+                                        }
                                     }
                                 }
                             });
@@ -439,11 +446,13 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                 if (data && data.modalallowed) {
                                     const expandedSection = $(`li#section-${data.sectionnumber}.state-visible`);
                                     if (expandedSection.length === 0) {
-                                        require(["format_tiles/course"], function (course) {
-                                            course.populateAndExpandSection(
-                                                data.coursecontextid, data.sectionid, data.sectionnumber
-                                            );
-                                        });
+                                        if (usingJsNav) {
+                                            require(["format_tiles/course"], function (course) {
+                                                course.populateAndExpandSection(
+                                                    data.coursecontextid, data.sectionid, data.sectionnumber
+                                                );
+                                            });
+                                        }
                                     }
 
                                     launchCmModal(
@@ -542,8 +551,14 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                     const link = $(e.target);
                                     const cmId = link.closest('li.courseindex-item').data('id');
                                     if (modalRequired(cmId, linkUrl)) {
-                                        window.location.href =
-                                            `${config.wwwroot}/course/view.php?id=${courseId}&cmid=${cmId}`;
+                                        if (usingJsNav) {
+                                            window.location.href = `${config.wwwroot}/course/view.php?id=${courseId}&cmid=${cmId}`;
+                                        } else {
+                                            const sectionElement = link.closest('.courseindex-section');
+                                            const sectionNumber = sectionElement ? sectionElement.data('number') : 0;
+                                            window.location.href = `${config.wwwroot}/course/view.php?id=${courseId}`
+                                                + `&section=${sectionNumber}&cmid=${cmId}`;
+                                        }
                                     } else {
                                         window.location.href = linkUrl;
                                     }

@@ -1,6 +1,10 @@
 ﻿Version Information
 ===================
 
+Version 404.1.0 - 01/07/2024
+----------------------------
+1. Fix 'Error with Orphaned Sections when editing' - #151.
+
 Version 404.0.2 - 30/05/2024
 ----------------------------
 1. Fix section zero with a summary is shown when there are no modules.

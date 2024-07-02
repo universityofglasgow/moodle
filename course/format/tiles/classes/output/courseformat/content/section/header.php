@@ -78,7 +78,7 @@ class header extends \core_courseformat\output\local\content\section\header {
             }
         }
         $data->name = get_section_name($course, $section);
-        $moodlerelease = \format_tiles\util::get_moodle_release();
+        $moodlerelease = \format_tiles\local\util::get_moodle_release();
 
         if ($moodlerelease > 4.1) {
             $data->selecttext = $format->get_format_string('selectsection', $data->name);

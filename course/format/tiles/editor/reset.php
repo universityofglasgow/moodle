@@ -35,7 +35,7 @@ require_capability('moodle/site:config', context_system::instance());
 
 if (optional_param('sesskey', '', PARAM_TEXT)) {
     require_sesskey();
-    $result = \format_tiles\tile_photo::reset_tiles_course($courseid);
+    $result = \format_tiles\local\tile_photo::reset_tiles_course($courseid);
     redirect(
         new moodle_url('/course/view.php', ['id' => $courseid]),
         $result ? get_string('tilesreset', 'format_tiles')

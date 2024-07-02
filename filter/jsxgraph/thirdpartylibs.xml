@@ -1,6 +1,38 @@
 <?xml version="1.0"?>
 <libraries>
     <library>
+        <location>amd/src/jsxgraphcore-v1.9.1-lazy.js</location>
+        <name>JSXGraph 1.9.1</name>
+        <version>1.9.1</version>
+        <license>LGPL</license>
+        <licenseversion>3.0+</licenseversion>
+    </library>
+
+    <library>
+        <location>amd/src/jsxgraphcore-v1.9.0-lazy.js</location>
+        <name>JSXGraph 1.9.0</name>
+        <version>1.9.0</version>
+        <license>LGPL</license>
+        <licenseversion>3.0+</licenseversion>
+    </library>
+
+    <library>
+        <location>amd/src/jsxgraphcore-v1.8.0-lazy.js</location>
+        <name>JSXGraph 1.8.0</name>
+        <version>1.8.0</version>
+        <license>LGPL</license>
+        <licenseversion>3.0+</licenseversion>
+    </library>
+
+    <library>
+        <location>amd/src/jsxgraphcore-v1.7.0-lazy.js</location>
+        <name>JSXGraph 1.7.0</name>
+        <version>1.7.0</version>
+        <license>LGPL</license>
+        <licenseversion>3.0+</licenseversion>
+    </library>
+
+    <library>
         <location>amd/src/jsxgraphcore-v1.6.2-lazy.js</location>
         <name>JSXGraph 1.6.2</name>
         <version>1.6.2</version>

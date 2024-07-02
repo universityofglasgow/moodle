@@ -33,7 +33,8 @@ Feature: Teacher can add a page to a course and open it with subtiles off
     When I am on "Course 1" course homepage with editing mode on
     And format_tiles subtiles are off for course "Course 1"
     And I wait until the page is ready
-    And I follow "Collapse all"
+    #  We used to say "And I follow "Collapse all"" but course index includes that too we have to use element ID now.
+    And I follow "collapsesections"
     And I wait until the page is ready
     And I wait "2" seconds
     And I toggle expand or collapse section "1" for edit
@@ -82,7 +83,8 @@ Feature: Teacher can add a page to a course and open it with subtiles off
     And format_tiles subtiles are on for course "Course 1"
     And I wait until the page is ready
     And I wait "2" seconds
-    And I follow "Collapse all"
+    #  We used to say "And I follow "Collapse all"" but course index includes that too we have to use element ID now.
+    And I follow "collapsesections"
     And I wait until the page is ready
     And I wait "2" seconds
     And I toggle expand or collapse section "1" for edit

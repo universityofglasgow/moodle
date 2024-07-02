@@ -36,7 +36,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests constructing and using condition.
      */
-    public function test_usage() {
+    public function test_usage(): void {
         global $CFG, $USER;
         $this->resetAfterTest();
         $CFG->enableavailability = true;
@@ -47,9 +47,9 @@ class condition_test extends \advanced_testcase {
         // Make a test course and user.
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();
-        $user = $generator->create_user();
-        $generator->enrol_user($user->id, $course->id);
-        $this->setUser($user);
+        $user = $generator->create_and_enrol($course);
+        $usertwo = $generator->create_and_enrol($course);
+
         $info = new \core_availability\mock_info($course, $user->id);
 
         // Make 2 test groups, one in a grouping and one not.
@@ -76,6 +76,8 @@ class condition_test extends \advanced_testcase {
         // Recheck.
         $this->assertTrue($cond->is_available(false, $info, true, $user->id));
         $this->assertFalse($cond->is_available(true, $info, true, $user->id));
+        $this->assertFalse($cond->is_available(false, $info, true, $usertwo->id));
+        $this->assertTrue($cond->is_available(true, $info, true, $usertwo->id));
         $information = $cond->get_description(false, true, $info);
         $information = \core_availability\info::format_info($information, $course);
         $this->assertMatchesRegularExpression('~do not belong to.*G1!~', $information);
@@ -83,11 +85,14 @@ class condition_test extends \advanced_testcase {
         // Check group 2 works also.
         $cond = new condition((object)array('id' => (int)$group2->id));
         $this->assertTrue($cond->is_available(false, $info, true, $user->id));
+        $this->assertFalse($cond->is_available(false, $info, true, $usertwo->id));
 
         // What about an 'any group' condition?
         $cond = new condition((object)array());
         $this->assertTrue($cond->is_available(false, $info, true, $user->id));
         $this->assertFalse($cond->is_available(true, $info, true, $user->id));
+        $this->assertFalse($cond->is_available(false, $info, true, $usertwo->id));
+        $this->assertTrue($cond->is_available(true, $info, true, $usertwo->id));
         $information = $cond->get_description(false, true, $info);
         $information = \core_availability\info::format_info($information, $course);
         $this->assertMatchesRegularExpression('~do not belong to any~', $information);
@@ -110,7 +115,7 @@ class condition_test extends \advanced_testcase {
      * Tests the constructor including error conditions. Also tests the
      * string conversion feature (intended for debugging only).
      */
-    public function test_constructor() {
+    public function test_constructor(): void {
         // Invalid id (not int).
         $structure = (object)array('id' => 'bourne');
         try {
@@ -134,7 +139,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the save() function.
      */
-    public function test_save() {
+    public function test_save(): void {
         $structure = (object)array('id' => 123);
         $cond = new condition($structure);
         $structure->type = 'group';
@@ -149,7 +154,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the update_dependency_id() function.
      */
-    public function test_update_dependency_id() {
+    public function test_update_dependency_id(): void {
         $cond = new condition((object)array('id' => 123));
         $this->assertFalse($cond->update_dependency_id('frogs', 123, 456));
         $this->assertFalse($cond->update_dependency_id('groups', 12, 34));
@@ -162,7 +167,7 @@ class condition_test extends \advanced_testcase {
      * Tests the filter_users (bulk checking) function. Also tests the SQL
      * variant get_user_list_sql.
      */
-    public function test_filter_users() {
+    public function test_filter_users(): void {
         global $DB;
         $this->resetAfterTest();
 
