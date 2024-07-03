@@ -89,6 +89,10 @@ $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';
 $string['edit'] = 'Edit';
 
+$string['idcreated'] = 'Created Course ID Number';
+$string['fullnamecreated'] = 'Created Course Full name';
+$string['shortnamecreated'] = 'Created Course Short Name';
+
 $string['shortname'] = 'Short Name';
 
 $string['edittemplate'] = 'Edit template';
