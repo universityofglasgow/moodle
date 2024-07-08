@@ -163,13 +163,13 @@ class template extends \core\form\persistent {
         // Course fullname.
         $mform->addElement('text', 'fullname', get_string('fullnamecourse'), 'maxlength="254" size="50"');
         $mform->addHelpButton('fullname', 'fullnamecourse');
-        $mform->addRule('fullname', get_string('missingfullname'), 'required', null, 'client');
+        $mform->addRule('fullname', get_string('missingfullname'), 'required', null);
         $mform->setType('fullname', PARAM_TEXT);
 
         // Course shortname.
         $mform->addElement('text', 'shortname', get_string('shortnamecourse'), 'maxlength="100" size="20"');
         $mform->addHelpButton('shortname', 'shortnamecourse');
-        $mform->addRule('shortname', get_string('missingshortname'), 'required', null, 'client');
+        $mform->addRule('shortname', get_string('missingshortname'), 'required', null);
         $mform->setType('shortname', PARAM_TEXT);
 
         // Course category.
@@ -311,7 +311,7 @@ class template extends \core\form\persistent {
         $mform->addElement('static', 'createdcoursename', '',  get_string('importcourse_desc', 'local_template'));
         $mform->addElement('autocomplete', 'importcourseid', get_string('importcourse', 'local_template'), $importcourses);
         //$mform->addRule('importcourseid', null, 'required', null, 'client');
-        //$mform->addHelpButton('category', 'coursecategory');
+        $mform->addHelpButton('importcourseid', 'importcourse', 'local_template');
         $mform->setDefault('importcourseid', 0);
 
         if ($showstepper) {
@@ -386,6 +386,21 @@ class template extends \core\form\persistent {
 
         $validateshortname = true;
         $record = $this->get_persistent()->to_record();
+
+        if (empty($data->fullname)) {
+            echo '<script type="text/javascript">
+                    window.onload = function () { alert("Please enter Course Name"); } 
+                </script>';
+            $errors['fullname'] = get_string('missingfullname');
+        }
+
+        if (empty($data->shortname)) {
+            echo '<script type="text/javascript">
+                    window.onload = function () { alert("Please enter Course Short Name"); } 
+                </script>';
+            $errors['shortname'] = get_string('missingshortname');
+        }
+
         if (!empty($record->id)) {
             if (!empty($record->createdcourseid)) {
                 $validateshortname = false;
@@ -413,7 +428,7 @@ class template extends \core\form\persistent {
             $errors['enddate'] = get_string($errorcode, 'error');
         }
 
-        return $errors;
+       return $errors;
     }
 
 }

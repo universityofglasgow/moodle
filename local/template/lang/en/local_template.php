@@ -71,8 +71,8 @@ $string['template:managetemplate'] = 'Manage Template';
 $string['createnewtemplate'] = 'Create new course via template';
 $string['importcourse'] = 'Import Course';
 
-$string['importcourse_desc'] = 'Optionally select a course below to reuse/import activities from another course.';
-
+$string['importcourse_desc'] = 'Optionally search for a course using the below dropdown to reuse and import activities from.';
+$string['importcourse_help'] = 'Type the name of the desired course into the search field, please note this will only find courses modified in the last 2 years.';
 $string['summary'] = 'Course Summary';
 
 
@@ -88,6 +88,10 @@ $string['timemodified'] = 'Time Modified';
 $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';
 $string['edit'] = 'Edit';
+
+$string['idcreated'] = 'Created Course ID Number';
+$string['fullnamecreated'] = 'Created Course Full name';
+$string['shortnamecreated'] = 'Created Course Short Name';
 
 $string['shortname'] = 'Short Name';
 

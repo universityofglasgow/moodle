@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die;
 
 /** @var mixed $plugin */
 $plugin->component = 'local_template';
-$plugin->version = 2023021009;
+$plugin->version = 2023021010;
 $plugin->requires  = 2021051700;
 $plugin->dependencies = array(
     'enrol_gudatabase' => 2014080603,
