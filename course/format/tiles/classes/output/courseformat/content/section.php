@@ -59,7 +59,7 @@ class section extends section_base {
                 $data->phototileurl = $tilephotourl;
                 $data->phototileediturl = new \moodle_url(
                     '/course/format/tiles/editor/editimage.php',
-                    ['courseid' => $this->section->course, 'sectionid' => $this->section->id]
+                    ['sectionid' => $this->section->id]
                 );
             }
 
@@ -88,7 +88,7 @@ class section extends section_base {
         $data->ismoodle42minus = $moodlerelease <= 4.2;
         $data->ismoodle41minus = $moodlerelease <= 4.1;
         $data->tilestyle = get_config('format_tiles', 'tilestyle') ?? 1;
-        $data->restricted = !$this->section->available;
+
         return $data;
     }
 }

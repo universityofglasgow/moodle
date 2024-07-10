@@ -94,16 +94,11 @@
         {{> format_tiles/local/content/section/header }}
     {{/ format_tiles/local/content/section/header }}
 {{/header}}
-{{#restrictionlock}}
-    <div class="align-self-center ml-2 restriction-lock">
-        {{#pix}}t/unlock, core{{/pix}}
-    </div>
-{{/restrictionlock}}
 <div data-region="sectionbadges" class="sectionbadges d-flex align-items-center">
     {{$ core_courseformat/local/content/section/badges }}
         {{> core_courseformat/local/content/section/badges }}
     {{/ core_courseformat/local/content/section/badges }}
-    {{#restricted}}<i class="icon fa fa-lock fa-fw " aria-hidden="true"></i>{{/restricted}}
+    {{#restrictionlock}}<i class="icon fa fa-lock fa-fw " aria-hidden="true"></i>{{/restrictionlock}}
 </div>
 {{#collapsemenu}}
 <div class="flex-fill d-flex justify-content-end mr-2 align-self-start mt-2">

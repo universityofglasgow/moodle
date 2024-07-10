@@ -66,19 +66,6 @@ class image_processor {
 
             $data = self::process_image($tmpfilepath, $width, $height, $mime);
             if (!empty($data)) {
-                // If a file exists with the same details (e.g. teacher uploading new file with same name), delete it.
-                $existingfile = $fs->get_file(
-                    $storedfilerecord['contextid'],
-                    $storedfilerecord['component'],
-                    $storedfilerecord['filearea'],
-                    $storedfilerecord['itemid'],
-                    $storedfilerecord['filepath'],
-                    $storedfilerecord['filename']
-                );
-                if ($existingfile) {
-                    debugging('Deleted old photo' . $existingfile->get_id(), DEBUG_DEVELOPER);
-                    $existingfile->delete();
-                }
                 // Create new file.
                 $newfile = $fs->create_file_from_string($storedfilerecord, $data);
                 unlink($tmpfilepath);

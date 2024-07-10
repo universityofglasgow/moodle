@@ -54,7 +54,7 @@ class registration_manager {
                     'Unexpected HTTP code ' . $serverresponse['http_code'] . json_encode($serverresponse), DEBUG_DEVELOPER
                 );
             } else if (isset($serverresponse['exception'])) {
-                debugging('Exception ' . $serverresponse['exception']);
+                debugging('Exception ' . $serverresponse['exception'], DEBUG_DEVELOPER);
             } else if (!isset($serverresponse['status'])) {
                 debugging(
                     'Server JSON response did not contain status field as expected, or status was not true', DEBUG_DEVELOPER

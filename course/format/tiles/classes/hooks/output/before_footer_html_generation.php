@@ -65,7 +65,8 @@ class before_footer_html_generation {
                     if ($launchmodalcmid) {
                         // Need to check if this cm allowed a modal.
                         $modalallowed =
-                            \format_tiles\local\util::get_course_mod_info($PAGE->course->id, $launchmodalcmid)->modalallowed ?? false;
+                            \format_tiles\local\util::get_course_mod_info($PAGE->course->id, $launchmodalcmid)->modalallowed
+                                ?? false;
                         if (!$modalallowed) {
                             $launchmodalcmid = null;
                         }

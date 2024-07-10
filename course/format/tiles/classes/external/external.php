@@ -23,6 +23,7 @@ use core_external\external_value;
 use core_external\external_description;
 use core_external\external_single_structure;
 use core_external\external_warnings;
+use format_tiles\local\format_option;
 use invalid_parameter_exception;
 use dml_exception;
 use file_exception;
@@ -50,7 +51,6 @@ class external extends external_api {
      * Teacher is changing the icon/photo for a course section or whole course using AJAX
      * @param Integer $courseid the id of this course
      * @param Integer $sectionid the number of the section in this course - zero if whole course
-     * @param Integer $cmid the course module we are setting an image for (if applicable).
      * @param String $filename the icon filename or photo filename for this tile.
      * @param string $imagetype whether it's a tile icon or a background photo.
      * @param int $sourcecontextid the context id of the source photo or icon.
@@ -66,7 +66,7 @@ class external extends external_api {
      * @throws stored_file_creation_exception
      */
     public static function set_image(
-        $courseid, $sectionid, $cmid, $filename, $imagetype = 'tileicon', $sourcecontextid = 0, $sourceitemid = 0
+        $courseid, $sectionid, $filename, $imagetype = 'tileicon', $sourcecontextid = 0, $sourceitemid = 0
     ) {
         global $DB, $OUTPUT;
 
@@ -74,7 +74,6 @@ class external extends external_api {
             [
                 'courseid' => $courseid,
                 'sectionid' => $sectionid,
-                'cmid' => $cmid,
                 'image' => $filename,
                 'sourcecontextid' => $sourcecontextid,
                 'sourceitemid' => $sourceitemid,
@@ -83,18 +82,18 @@ class external extends external_api {
         );
 
         // Section id of zero means we are changing the course icon.  Otherwise check sec id is valid.
-        if ($data['sectionid'] && $data['cmid'] == 0  && $DB->get_record('course_sections',
+        if ($data['sectionid'] && $DB->get_record('course_sections',
                 ['course' => $data['courseid'], 'id' => $data['sectionid']]) === false) {
             throw new invalid_parameter_exception('Invalid course and section id combination');
         }
 
         // Both section ID and cm ID can validly be zero.
         // This is allowed where we are setting course default icon from the course edit settings page.
-        if ($data['sectionid'] == 0 && $data['cmid'] == 0 && $data['courseid'] == 0) {
+        if ($data['sectionid'] == 0 && $data['courseid'] == 0) {
             throw new invalid_parameter_exception('At least course ID must be provided');
         }
 
-        $context = $cmid ? context_module::instance($data['cmid']) : context_course::instance($data['courseid']);
+        $context = context_course::instance($data['courseid']);
         self::validate_context($context);
         require_capability('moodle/course:viewhiddenactivities', $context); // This allows non-editing teachers for the course.
 
@@ -265,9 +264,13 @@ class external extends external_api {
         );
         if ($data['image'] == $defaulticonthiscourse) {
             // Using default icon for a tile do don't store anything in database = default.
-            $result = \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
+            // Unset any icon.
+            format_option::unset($data['courseid'], format_option::OPTION_SECTION_ICON, $elementid);
+            // Also unset any photo.
+            format_option::unset($data['courseid'], format_option::OPTION_SECTION_PHOTO, $elementid);
+            return true;
         } else {
-            $result = \format_tiles\local\format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
+            $result = format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
         }
 
         if ($result) {
@@ -320,10 +323,6 @@ class external extends external_api {
                 'sectionid' => new external_value(
                     PARAM_INT,
                     'Section id whose icon/image we are setting (zero means whole course not just one section)'
-                ),
-                'cmid' => new external_value(
-                    PARAM_INT,
-                    'Course module id whose image we are setting (zero if not applicable)'
                 ),
                 'image' => new external_value(PARAM_RAW, 'File name for the image picked'),
                 'imagetype' => new external_value(PARAM_RAW, 'Image type for image picked (tileicon, tilephoto, draftfile)'),

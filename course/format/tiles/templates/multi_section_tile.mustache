@@ -46,7 +46,7 @@
         "restricted": 0
         }
 }}
-<li class="tile{{#hidden}} tile-hidden{{/hidden}}{{#restricted}} tile-restricted{{/restricted}}{{#isactive}} current{{/isactive}}{{#userclickable}} tile-clickable{{/userclickable}}{{#progress.isComplete}} is-complete{{/progress.isComplete}} {{extraclasses}}"
+<li class="tile{{#hidden}} tile-hidden{{/hidden}}{{#restrictionlock}} tile-restricted{{/restrictionlock}}{{#isactive}} current{{/isactive}}{{#userclickable}} tile-clickable{{/userclickable}}{{#progress.isComplete}} is-complete{{/progress.isComplete}} {{extraclasses}}"
     id="tile-{{tileid}}" data-section="{{tileid}}" data-true-sectionid="{{secid}}" tabindex="2" {{#hastilephoto}}{{{phototileinlinestyle}}}{{/hastilephoto}}>
     {{^hastilephoto}}<div class="tile-bg"></div>{{/hastilephoto}}
     <a class="tile-link"{{#userclickable}} href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&section={{tileid}}"{{/userclickable}}

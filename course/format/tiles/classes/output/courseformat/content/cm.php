@@ -62,38 +62,4 @@ class cm extends core_cm {
         $childadded = true; // We did add some data above.
         return $parentadded || $childadded;
     }
-
-
-    /**
-     * Add course editor attributes to the data structure.
-     * We override this so we can use local control menu class.
-     *
-     * @param \stdClass $data the current cm data reference
-     * @param \renderer_base $output typically, the renderer that's calling this function
-     * @return bool if the cm has editor data
-     */
-    protected function add_editor_data(\stdClass &$data, \renderer_base $output): bool {
-
-        parent::add_editor_data($data, $output);
-
-        if (!$this->format->show_editor()) {
-            return false;
-        }
-        $returnsection = $this->format->get_sectionnum();
-        // Edit actions.
-        $sectioninfo = get_fast_modinfo($this->mod->course)->get_section_info($this->mod->sectionnum);
-        $controlmenu = new \format_tiles\output\courseformat\content\cm\controlmenu (
-            $this->format,
-            $sectioninfo,
-            $this->mod,
-            $this->displayoptions
-        );
-
-        $data->controlmenu = $controlmenu->export_for_template($output);
-        if (!$this->format->supports_components()) {
-            // Add the legacy YUI move link.
-            $data->moveicon = course_get_cm_move($this->mod, $returnsection);
-        }
-        return true;
-    }
 }

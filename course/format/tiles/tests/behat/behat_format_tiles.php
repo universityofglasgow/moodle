@@ -566,10 +566,16 @@ class behat_format_tiles extends behat_base {
             : "//li[@id='tile-" . $sectionnumber . "']//div[contains(@class, 'photo-overlay')]";
         $node = $this->get_selected_node("xpath_element", $xpath);
         $nodestyle = $node->getAttribute('style');
-        if (!$nodestyle || strpos($nodestyle, $imageurl) === false) {
+
+        // File name will have _xxx added to end before extension, where xxx is random string.
+        // E.g. apple_xeb.jpg.
+        $imageextension = '.' . pathinfo($imageurl, PATHINFO_EXTENSION);
+        $imagebaseurl = substr($imageurl, 0, stripos($imageurl, $imageextension));
+        if (!$nodestyle || strpos($nodestyle, $imagebaseurl) === false || strpos($nodestyle, $imageextension) === false) {
             throw new \Behat\Mink\Exception\ExpectationException(
                 "Tile $sectionnumber :Photo not displaying as background tile $sectionnumber course $coursename"
-                . " could not find $imageurl in style string '$nodestyle' for tile style '$tilestyle'",
+                . " could not find image base URL '$imagebaseurl' or extension '$imageextension'"
+                . "in style string '$nodestyle' for tile style '$tilestyle'",
                 $this->getSession()
             );
         }

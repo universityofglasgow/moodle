@@ -99,7 +99,7 @@ class controlmenu extends controlmenu_base {
         $controls['setphoto'] = [
             'url'   => new \moodle_url(
                 '/course/format/tiles/editor/editimage.php',
-                ['courseid' => $course->id, 'sectionid' => $section->id]
+                ['sectionid' => $section->id]
             ),
             'icon' => 'i/messagecontentimage',
             'name' => get_string('setbackgroundphoto', 'format_tiles'),

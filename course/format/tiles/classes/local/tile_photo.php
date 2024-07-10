@@ -80,7 +80,10 @@ class tile_photo {
             $this->sectionid = $sectionid;
             $this->tilesoptiontype = format_option::OPTION_SECTION_PHOTO;
         } else {
-            debugging('Invalid photo context level: ' . $this->context->contextlevel . ' section ID ' . $sectionid);
+            debugging(
+                'Invalid photo context level: ' . $this->context->contextlevel . ' section ID ' . $sectionid,
+                DEBUG_DEVELOPER
+            );
         }
         // Init filename.
         $this->get_filename();
@@ -247,11 +250,8 @@ class tile_photo {
             $sourceimageinfo = $sourcefile->get_imageinfo();
             $newwidth = self::get_max_image_width();
 
-            // In case the new file has the same name as the old one, delete it early.
-            // Otherwise we do it in a few lines' time when we know we have the new one.
-            if ($this->get_filename() == $sourcefile->get_filename()) {
-                $this->delete_stored_file();
-            }
+            $newfilename = self::get_unique_filename($newfilename);
+
             $newfile = image_processor::adjust_and_copy_file(
                 $sourcefile,
                 $newfilename,
@@ -261,10 +261,6 @@ class tile_photo {
                 floor($sourceimageinfo['height'] * $newwidth / $sourceimageinfo['width'])
             );
             if ($newfile) {
-                if ($this->get_filename() && $this->get_filename() != $sourcefile->get_filename()) {
-                    // We didn't delete the old file a few lines ago so do it now.
-                    $this->delete_stored_file();
-                }
                 $this->set_file($newfile);
                 return $newfile;
             } else {
@@ -510,6 +506,23 @@ class tile_photo {
      */
     public static function get_sample_image_file(): ?\stored_file {
         return self::get_file_from_ids(\context_system::instance()->id, 0, 'sample_image.jpg');
+    }
+
+    /**
+     * Ensure file has a new name (to bust browser cache if name is same but content different).
+     * @param string $filename
+     * @return string new file name.
+     */
+    public static function get_unique_filename(string $filename): string {
+        $pathinfo = pathinfo($filename);
+        $basename = $pathinfo['filename'];
+        if ($basename) {
+            $newfilename = $basename . '_' . strtolower(random_string(3));
+        }
+        if (isset($pathinfo['extension'])) {
+            $newfilename .= '.' . $pathinfo['extension'];
+        }
+        return $newfilename;
     }
 }
 

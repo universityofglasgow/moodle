@@ -25,56 +25,46 @@
 require_once('../../../../config.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
-global $PAGE, $DB;
+global $PAGE, $DB, $OUTPUT;
 use format_tiles\form\upload_image_form;
 
-$courseid = required_param('courseid', PARAM_INT);
 $sectionid = required_param('sectionid', PARAM_INT);
-$cmid = optional_param('cmid', 0, PARAM_INT);
 $deletephoto = optional_param('delete', 0, PARAM_INT);
-$coursecontext = context_course::instance($courseid);
 
+$section = $DB->get_record('course_sections', ['id' => $sectionid], 'id, name, section, course');
+if (!$section || $section->section == 0) {
+    throw new invalid_parameter_exception("Invalid section");
+}
+
+$courseid = $section->course;
 require_login($courseid);
+$course = get_course($courseid);
+$coursecontext = context_course::instance($courseid);
 require_capability('moodle/course:update', $coursecontext);
-
+if ($course->format !== 'tiles') {
+    throw new invalid_parameter_exception("Invalid course");
+}
 if (!get_config('format_tiles', 'allowphototiles')) {
     throw new moodle_exception('disabledbyadmin', 'format_tiles');
 }
-$pageargs = ['courseid' => $courseid, 'sectionid' => $sectionid];
-$cm = null;
-$modulecontext = null;
-if ($cmid) {
-    $pageargs['cmid'] = $cmid;
-    $cm = get_fast_modinfo($courseid)->get_cm($cmid);
-    $modulecontext = context_module::instance($cmid);
-    require_capability('mod/' . $cm->modname . ':addinstance', $modulecontext);
-}
-$url = new moodle_url('/course/format/tiles/editor/editimage.php', $pageargs);
 
-$course = get_course($courseid);
-$section = $DB->get_record('course_sections', ['course' => $courseid, 'id' => $sectionid], 'id, name, section', MUST_EXIST);
+$pageargs = ['sectionid' => $sectionid];
+$sectionname = get_section_name($courseid, $section->section);
+$url = new moodle_url('/course/format/tiles/editor/editimage.php', $pageargs);
 $PAGE->set_url($url);
 $PAGE->set_context($coursecontext);
-$PAGE->set_heading($cm ? $cm->name : $course->fullname);
+$PAGE->set_heading($sectionname);
 $PAGE->navbar->add(
-    get_section_name($course->id, $section->section),
+    $sectionname,
     new moodle_url('/course/view.php', ['id' => $course->id, 'section' => $section->section])
 );
 
-if ($cmid) {
-    $PAGE->navbar->add(
-        $cm->get_formatted_name()
-    );
-}
-
 $PAGE->navbar->add(get_string('uploadnewphoto', 'format_tiles'));
 
-$photocontext = $modulecontext != null ? $modulecontext : $coursecontext;
-$tilephoto = new \format_tiles\local\tile_photo($photocontext, $sectionid);
+$tilephoto = new \format_tiles\local\tile_photo($coursecontext, $sectionid);
 
 if ($deletephoto) {
     $tilephoto->clear();
-    $sectionname = get_section_name($courseid, $section->section);
     \core\notification::success(get_string('imagedeletedfrom', 'format_tiles', $sectionname));
     redirect(new \moodle_url('/course/view.php', ['id' => $course->id]));
 }
@@ -104,10 +94,8 @@ $options = [
 ];
 
 $formparams = [
-    'courseid' => $courseid,
     'contextid' => $coursecontext->id,
     'sectionid' => $sectionid,
-    'cmid' => $cmid,
     'options' => $options,
 ];
 if ($url = $tilephoto->get_image_url()) {
@@ -120,7 +108,7 @@ if ($url = $tilephoto->get_image_url()) {
         );
     } else {
         $formparams['aspectratiomessage'] = html_writer::span(
-            $aspectratiocheck['messageshort'],
+            $aspectratiocheck['messageshort'] ?? '',
             'alert alert-success d-inline-block'
         );
     }
@@ -151,6 +139,10 @@ if ($mform->is_cancelled()) {
             $tempfile->delete();
         } else {
             try {
+
+                // Delete any existing file attached to this section.
+                \format_tiles\local\tile_photo::delete_files_from_ids($courseid, $sectionid);
+
                 $newfile = $tilephoto->set_file_from_stored_file($tempfile, $newfilename);
                 $verifyaspectratio = $tilephoto->verify_aspect_ratio();
                 if ($verifyaspectratio['status'] !== true) {
@@ -159,19 +151,14 @@ if ($mform->is_cancelled()) {
                         . html_writer::link(
                             new moodle_url(
                                 '/course/format/tiles/editor/editimage.php',
-                                ['courseid' => $courseid, 'sectionid' => $section->id]
+                                ['sectionid' => $section->id]
                             ),
                             get_string('back')
                         )
                     );
                 } else {
-                    if ($cmid) {
-                        $elementname = $cm->get_formatted_name();
-                    } else {
-                        $elementname = get_section_name($courseid, $section->section);
-                    }
                     \core\notification::success(
-                        get_string('imagesavedfor', 'format_tiles', "'" . $elementname . "'")
+                        get_string('imagesavedfor', 'format_tiles', "'" . $sectionname . "'")
                     );
                 }
                 $tempfile->delete();

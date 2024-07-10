@@ -58,7 +58,7 @@
                 {{#canedit}}
                     {{^editing}}
                         <a class="sectionbutton d-none d-md-inline-block" id="editsectiontbtn-{{tileid}}"
-                           href="{{{ config.wwwroot }}}/course/view.php?id={{courseid}}&sesskey={{sesskey}}&edit=on#section-{{tileid}}">
+                           href="{{{ config.wwwroot }}}/course/view.php?id={{courseid}}&sesskey={{sesskey}}&edit=on&expandsection={{tileid}}#section-{{tileid}}">
                         <span class="d-flex justify-content-center align-items-center h-100">
                             {{#pix}}pencil, format_tiles, {{#str}}edit{{/str}}{{/pix}}
                         </span>

@@ -137,7 +137,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
                             [$newsectionid]
                         );
                     } catch (\Exception $e) {
-                        debugging("Could not get old section ID " . $e->getMessage());
+                        debugging("Could not get old section ID " . $e->getMessage(), DEBUG_DEVELOPER);
                     }
                 }
             }
@@ -391,7 +391,7 @@ class restore_format_tiles_plugin extends restore_format_plugin {
                 $optionvalue
             );
             if (!$res) {
-                debugging('Error could not set file/icon name ' . $optionvalue);
+                debugging('Error could not set file/icon name ' . $optionvalue, DEBUG_DEVELOPER);
             }
             return $res;
         } catch (Exception $e) {

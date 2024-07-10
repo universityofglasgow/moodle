@@ -82,7 +82,8 @@ Feature: Teacher can allocate photos to tiles
     And "Pick a new icon or background photo" "dialogue" should be visible
     And I follow "Photo library"
     And I wait until the page is ready
-    And I click on ".photo[title=\"placeholder_1.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
+#    // We use title^= (starts with) because the image as saved will have had 3 random chars added e.g. placeholder_1_dwo.jpg
+    And I click on ".photo[title^=\"placeholder_1_\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
 
     And I turn editing mode off
@@ -157,7 +158,7 @@ Feature: Teacher can allocate photos to tiles
     And I follow "Photo library"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".photo[title=\"placeholder_1.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on ".photo[title^=\"placeholder_1_\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
 
     And I wait "1" seconds
@@ -168,7 +169,7 @@ Feature: Teacher can allocate photos to tiles
     And I follow "Photo library"
     And I wait until the page is ready
     And I wait "1" seconds
-    And I click on ".photo[title=\"placeholder_3.jpg\"]" "css_element" in the "#icon_picker_modal" "css_element"
+    And I click on ".photo[title^=\"placeholder_3_\"]" "css_element" in the "#icon_picker_modal" "css_element"
     And I wait until the page is ready
 
     And I turn editing mode off

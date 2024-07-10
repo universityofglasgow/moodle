@@ -67,7 +67,7 @@ class format_tiles extends core_courseformat\base {
      * @return bool
      */
     public function uses_indentation(): bool {
-        return false;
+        return isset($this->course->courseusesubtiles) && !$this->course->courseusesubtiles;
     }
 
     /**

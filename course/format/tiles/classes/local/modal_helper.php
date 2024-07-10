@@ -165,7 +165,7 @@ class modal_helper {
                     $cm = $modinfo->get_cm($cmid);
                 } catch (\Exception $e) {
                     // This is unexpected, but we don't want an exception in the footer so continue.
-                    debugging("Could not find course mod $cmid " . $e->getMessage());
+                    debugging("Could not find course mod $cmid " . $e->getMessage(), DEBUG_DEVELOPER);
                     continue;
                 }
 

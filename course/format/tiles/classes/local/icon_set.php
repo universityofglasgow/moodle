@@ -261,13 +261,10 @@ class icon_set {
             'format_tiles:star-o' => 'fa-star-o',
             'format_tiles:pencil' => 'fa-pencil',
             'format_tiles:random' => 'fa-random',
-            'format_tiles:star' => 'fa-star',
             'format_tiles:toggle-off' => 'fa-toggle-off',
             'format_tiles:toggle-on' => 'fa-toggle-on',
             'format_tiles:completion-check' => 'fa-check',
             'format_tiles:completion-fail' => 'fa-times',
-            'format_tiles:ellipsis-h' => 'fa-ellipsis-h',
-            'format_tiles:plus-circle' => 'fa-plus-circle',
         ];
 
         $tileicons = [];

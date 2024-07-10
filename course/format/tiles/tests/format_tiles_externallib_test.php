@@ -91,7 +91,7 @@ final class format_tiles_externallib_test extends \externallib_advanced_testcase
         $sectionid = get_fast_modinfo($course)->get_section_info_all()[1]->id;
 
         $result = \format_tiles\external\external::set_image(
-            $course->id, $sectionid, 0, $newicon, 'tileicon', 0, 0
+            $course->id, $sectionid, $newicon, 'tileicon', 0, 0
         );
         $result = \core_external\external_api::clean_returnvalue(\format_tiles\external\external::set_image_returns(), $result);
         // Check for 0 warnings.
@@ -108,7 +108,7 @@ final class format_tiles_externallib_test extends \externallib_advanced_testcase
         $this->unassignUserCapability('moodle/course:update', $contextid, $roleid);
         $this->expectException('required_capability_exception');
         $result = \format_tiles\external\external::set_image(
-            $course->id, $sectionid, 0, $newicon, 'tileicon'
+            $course->id, $sectionid, $newicon, 'tileicon'
         );
 
         // Student not allowed to do it.
@@ -119,14 +119,14 @@ final class format_tiles_externallib_test extends \externallib_advanced_testcase
             $studentrole->id);
         $this->setUser($student1);
         $this->expectException('required_capability_exception');
-        $result = \format_tiles\external\external::set_image($course->id, $sectionid, 0, $newicon, 'tileicon');
+        $result = \format_tiles\external\external::set_image($course->id, $sectionid, $newicon, 'tileicon');
         $result = \core_external\external_api::clean_returnvalue(\format_tiles\external\external::set_image_returns(), $result);
 
         // Fail when the user is not allow to access the course (enrolled) or is not teacher.
         $this->setGuestUser();
         $this->expectException('required_capability_exception');
 
-        $result = \format_tiles\external\external::set_image($course->id, $sectionid, 0, $newicon, 'tileicon');
+        $result = \format_tiles\external\external::set_image($course->id, $sectionid, $newicon, 'tileicon');
         $result = \core_external\external_api::clean_returnvalue(\format_tiles\external\external::set_image_returns(), $result);
     }
 

@@ -73,9 +73,7 @@ class upload_image_form extends moodleform {
                     new \moodle_url('/course/format/tiles/editor/editimage.php',
                         [
                             'delete' => 1,
-                            'courseid' => $instance['courseid'],
                             'sectionid' => $instance['sectionid'],
-                            'cmid' => $instance['cmid'],
                         ]
                     ),
                     get_string('deleteimage', 'format_tiles'),
@@ -101,12 +99,8 @@ class upload_image_form extends moodleform {
         $mform->setExpanded('uploadnewphotoheader', true);
 
         // Hidden params.
-        $mform->addElement('hidden', 'courseid', $instance['courseid']);
-        $mform->setType('courseid', PARAM_INT);
         $mform->addElement('hidden', 'contextid', $instance['contextid']);
         $mform->setType('contextid', PARAM_INT);
-        $mform->addElement('hidden', 'cmid', $instance['cmid']);
-        $mform->setType('cmid', PARAM_INT);
         $mform->addElement('hidden', 'sectionid', $instance['sectionid']);
         $mform->setType('sectionid', PARAM_INT);
         $mform->addElement('hidden', 'action', 'uploadfile');
