@@ -60,7 +60,7 @@ class template  extends base {
      * @return lang_string
      */
     protected function get_default_entity_title(): lang_string {
-        return new lang_string('template','local_template');
+        return new lang_string('template', 'local_template');
     }
     /**
      * Initialise the entity, add all fields
@@ -79,7 +79,7 @@ class template  extends base {
             $this->add_filter($filter);
         }
 
-        // TODO: conditions are not different from filters
+        // Conditions are not different from filters.
         $conditions = $this->get_all_filters();
         foreach ($conditions as $condition) {
             $this->add_condition($condition);
@@ -101,7 +101,7 @@ class template  extends base {
         // Full Name column.
         $columns[] = (new column(
             'fullname',
-            new lang_string('fullnamecreated','local_template'),
+            new lang_string('fullnamecreated', 'local_template'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -109,10 +109,10 @@ class template  extends base {
             ->add_fields("{$templatealias}.fullname")
             ->set_is_sortable(true);
 
-        // Short Name column
+        // Short Name column.
         $columns[] = (new column(
             'shortname',
-            new lang_string('shortnamecreated','local_template'),
+            new lang_string('shortnamecreated', 'local_template'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -123,7 +123,7 @@ class template  extends base {
         // ID number column.
         $columns[] = (new column(
             'idnumber',
-            new lang_string('idcreated','local_template'),
+            new lang_string('idcreated', 'local_template'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -167,7 +167,7 @@ class template  extends base {
 
         $templatealias = $this->get_table_alias('local_template');
 
-        // Created course fullname filter
+        // Created course fullname filter.
         $filters[] = (new filter(
             text::class,
             'fullnameselect',
@@ -177,7 +177,7 @@ class template  extends base {
         ))
             ->add_joins($this->get_joins());
 
-        // Created course shortname filter
+        // Created course shortname filter.
         $filters[] = (new filter(
             text::class,
             'shortnameselect',

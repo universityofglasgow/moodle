@@ -21,7 +21,7 @@ namespace local_template\reportbuilder\datasource;
 use core_reportbuilder\datasource;
 use core_reportbuilder\local\entities\course;;
 use core_reportbuilder\local\entities\user;
-// use core_reportbuilder\local\helpers\database;
+use core_course\reportbuilder\local\entities\course_category;
 
 /**
  * Template datasource
@@ -37,7 +37,7 @@ class template extends datasource {
      * @return string
      */
     public static function get_name(): string {
-        return get_string('template','local_template');
+        return get_string('template', 'local_template');
     }
 
     /**
@@ -62,11 +62,18 @@ class template extends datasource {
         $userjoin = "JOIN {user} {$useralias} ON {$useralias}.id = {$templatealias}.usercreated";
         $this->add_entity($userentity->add_join($userjoin));
 
-        //Add core course join.
+        // Add core course join.
         $coursentity = new course();
         $coursealias = $coursentity->get_table_alias('course');
         $coursejoin = "JOIN {course} {$coursealias} ON {$coursealias}.id = {$templatealias}.templatecourseid";
         $this->add_entity($coursentity->add_join($coursejoin));
+
+        // Join the course category entity.
+        $coursecatentity = new course_category();
+        $coursecattablealias = $coursecatentity->get_table_alias('course_categories');
+        $this->add_entity($coursecatentity
+            ->add_join("JOIN {course_categories} {$coursecattablealias}
+                ON {$coursecattablealias}.id = {$templatealias}.category"));
 
         $this->add_all_from_entities();
     }
