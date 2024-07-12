@@ -508,7 +508,11 @@ class format_tiles extends core_courseformat\base {
             ];
         }
         if ($foreditform) {
-            $sectionformatoptionsedit = [];
+            // Not ideal - we put an ignored option on section edit form, to ensure that create_edit_form_elements() is called.
+            $sectionformatoptionsedit = [
+                'formattilesignoredfield' => ['label' => '', 'element_type' => 'hidden', 'type' => PARAM_INT, 'default' => 0],
+            ];
+
             if ($usingoutcomesfilter) {
                 $outcomeslink = html_writer::link(
                     new moodle_url('/grade/edit/outcome/course.php', ['id' => $course->id]),
@@ -553,11 +557,19 @@ class format_tiles extends core_courseformat\base {
                 'pageType' => $PAGE->pagetype,
                 'courseDefaultIcon' => $this->get_format_options()['defaulttileicon'],
                 'courseId' => $COURSE->id,
-                'userId' => $USER->id,
                 get_config('format_tiles', 'allowphototiles'),
                 get_config('format_tiles', 'documentationurl'),
             ];
             $PAGE->requires->js_call_amd('format_tiles/edit_form_helper', 'init', $jsparams);
+        } else {
+            // Add a tip to the edit section form for anyone who does not know how to edit tile icon/photos.
+            $mform->addElement('html',
+                html_writer::div(
+                    html_writer::div(get_string('setbackgroundphoto', 'format_tiles'), 'col-md-3 col-form-label')
+                    . html_writer::div(get_string('tileselecttip', 'format_tiles'), 'col-md-9'),
+                    'row mb-3'
+                )
+            );
         }
 
         if (!$forsection && (empty($COURSE->id) || $COURSE->id == SITEID)) {

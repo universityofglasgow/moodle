@@ -483,3 +483,8 @@ Other
 - Add test to check course/edit.php works when tiles is on
 - Debugging messages set to DEBUG_DEVELOPER
 - Remove photo options from icon picker modal when user is on course edit form (avoid course_sections error)
+
+4.4.0.11 (2024071107)
+=====================
+- Add tip to section edit form for how to edit tile icon/photo
+- Remove section view menu item (for editors) which (points to /course/section.php)

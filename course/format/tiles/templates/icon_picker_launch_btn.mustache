@@ -52,9 +52,9 @@
         </span>
     {{/initialicon}}
 {{/photourl}}
-<div id="launchiconpicker" class="btn btn-secondary cursorpointer" data-tiles-action="launch-tiles-icon-picker" data-true-sectionid="{{sectionId}}">
+<button id="launchiconpicker" class="btn btn-secondary cursorpointer" data-tiles-action="launch-tiles-icon-picker" data-true-sectionid="{{sectionId}}">
     <span>
         {{^allowphototiles}}{{#str}}picknewicon, format_tiles{{/str}}{{/allowphototiles}}
         {{#allowphototiles}}{{#str}}picknewiconphoto, format_tiles{{/str}}{{/allowphototiles}}
     </span>
-</div>
+</button>

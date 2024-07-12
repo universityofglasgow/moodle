@@ -388,6 +388,7 @@ $string['tileicon_help'] = 'Item selected here will override, for this tile only
 $string['tileicons'] = 'Tile icons';
 $string['tileoutcome'] = 'Outcome for this tile';
 $string['tileoutcome_help'] = 'If you select an outcome for this tile, you will then under course settings be able to display a set of <em>filter buttons</em>, one for each outcome,  which when pressed filter the displayed tiles according to which outcome they have been assigned';
+$string['tileselecttip'] = "In the course, with editing mode on, simply click the icon or photo you want to change.  The icon picker window will pop up.";
 $string['tilesformatregistration'] = 'Tiles format registration';
 $string['tilesreset'] = 'Tiles & icons have been reset for this course';
 $string['tilestyle'] = 'Tile Style';

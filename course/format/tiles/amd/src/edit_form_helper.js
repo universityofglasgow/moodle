@@ -32,7 +32,7 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
     function ($, Notification, str, Templates) {
         "use strict";
         return {
-            init: function (pageType, courseDefaultIcon, courseId, userId, allowphototiles, documentationUrl) {
+            init: function (pageType, courseDefaultIcon, courseId, allowphototiles, documentationUrl) {
                 $(document).ready(function () {
                     const useSubTilesCheckBox = $("input#id_courseusesubtiles");
                     const useSubTilesSecZeroCheckBox = $("input#id_usesubtilesseczero");
