@@ -57,7 +57,7 @@ class mod_questionnaire {
 
         $mform->addGroup($cba, 'questionnaire', get_string('questionnaireattempts', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('questionnaire', 'questionnaireattempts', 'local_recompletion');
-        $mform->setDefault('questionnaire', $config->questionnaireattempts);
+        $mform->setDefault('questionnaire', $config->questionnaire);
 
         $mform->addElement('checkbox', 'archivequestionnaire',
             get_string('archive', 'local_recompletion'));
@@ -81,7 +81,7 @@ class mod_questionnaire {
             LOCAL_RECOMPLETION_DELETE => new lang_string('delete', 'local_recompletion'),
             LOCAL_RECOMPLETION_EXTRAATTEMPT => new lang_string('extraattempt', 'local_recompletion'));
 
-        $settings->add(new \admin_setting_configselect('local_recompletion/questionnaireattempts',
+        $settings->add(new \admin_setting_configselect('local_recompletion/questionnaire',
             new lang_string('questionnaireattempts', 'local_recompletion'),
             new lang_string('questionnaireattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

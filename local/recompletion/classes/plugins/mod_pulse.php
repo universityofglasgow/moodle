@@ -59,7 +59,7 @@ class mod_pulse {
 
         $mform->addGroup($cba, 'pulse', get_string('pulsenotifications', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('pulse', 'pulsenotifications', 'local_recompletion');
-        $mform->setDefault('pulse', $config->pulsenotifications);
+        $mform->setDefault('pulse', $config->pulse);
     }
 
     /**
@@ -73,7 +73,7 @@ class mod_pulse {
         }
         $choices = array(LOCAL_RECOMPLETION_NOTHING => get_string('donothing', 'local_recompletion'),
                 LOCAL_RECOMPLETION_DELETE => get_string('pulseresetnotifications', 'local_recompletion'));
-        $settings->add(new \admin_setting_configselect('local_recompletion/pulsenotifications',
+        $settings->add(new \admin_setting_configselect('local_recompletion/pulse',
                 new lang_string('pulsenotifications', 'local_recompletion'),
                 new lang_string('pulsenotifications_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
     }

@@ -56,7 +56,7 @@ class mod_hvp {
 
         $mform->addGroup($cba, 'hvp', get_string('hvpattempts', 'local_recompletion'), [' '], false);
         $mform->addHelpButton('hvp', 'hvpattempts', 'local_recompletion');
-        $mform->setDefault('hvp', $config->hvpattempts);
+        $mform->setDefault('hvp', $config->hvp);
 
         $mform->addElement('checkbox', 'archivehvp', get_string('archive', 'local_recompletion'));
         $mform->setDefault('archivehvp', $config->archivehvp);
@@ -81,7 +81,7 @@ class mod_hvp {
             LOCAL_RECOMPLETION_DELETE => get_string('delete', 'local_recompletion')
         ];
 
-        $settings->add(new admin_setting_configselect('local_recompletion/hvpattempts',
+        $settings->add(new admin_setting_configselect('local_recompletion/hvp',
                 new lang_string('hvpattempts', 'local_recompletion'),
                 new lang_string('hvpattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

@@ -52,7 +52,7 @@ class mod_lesson {
 
         $mform->addGroup($cba, 'lesson', get_string('lessonattempts', 'local_recompletion'), [' '], false);
         $mform->addHelpButton('lesson', 'lessonattempts', 'local_recompletion');
-        $mform->setDefault('lesson', $config->lessonattempts);
+        $mform->setDefault('lesson', $config->lesson);
 
         $mform->addElement('checkbox', 'archivelesson', get_string('archive', 'local_recompletion'));
         $mform->setDefault('archivelesson', $config->archivelesson);
@@ -73,7 +73,7 @@ class mod_lesson {
             LOCAL_RECOMPLETION_DELETE => get_string('delete', 'local_recompletion')
         ];
 
-        $settings->add(new admin_setting_configselect('local_recompletion/lessonattempts',
+        $settings->add(new admin_setting_configselect('local_recompletion/lesson',
                 new lang_string('lessonattempts', 'local_recompletion'),
                 new lang_string('lessonattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

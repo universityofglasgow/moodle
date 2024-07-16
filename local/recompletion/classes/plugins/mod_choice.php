@@ -54,7 +54,7 @@ class mod_choice {
 
         $mform->addGroup($cba, 'choice', get_string('choiceattempts', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('choice', 'choiceattempts', 'local_recompletion');
-        $mform->setDefault('choice', $config->choiceattempts);
+        $mform->setDefault('choice', $config->choice);
 
         $mform->addElement('checkbox', 'archivechoice',
             get_string('archive', 'local_recompletion'));
@@ -75,7 +75,7 @@ class mod_choice {
         $choices = array(LOCAL_RECOMPLETION_NOTHING => new lang_string('donothing', 'local_recompletion'),
                          LOCAL_RECOMPLETION_DELETE => new lang_string('delete', 'local_recompletion'));
 
-        $settings->add(new \admin_setting_configselect('local_recompletion/choiceattempts',
+        $settings->add(new \admin_setting_configselect('local_recompletion/choice',
             new lang_string('choiceattempts', 'local_recompletion'),
             new lang_string('choiceattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

@@ -56,7 +56,7 @@ class mod_hotpot {
 
         $mform->addGroup($cba, 'hotpot', get_string('hotpotattempts', 'local_recompletion'), [' '], false);
         $mform->addHelpButton('hotpot', 'hotpotattempts', 'local_recompletion');
-        $mform->setDefault('hotpot', $config->hotpotattempts);
+        $mform->setDefault('hotpot', $config->hotpot);
 
         $mform->addElement('checkbox', 'archivehotpot', get_string('archive', 'local_recompletion'));
         $mform->setDefault('archivehhotpot', $config->archivehotpot);
@@ -81,7 +81,7 @@ class mod_hotpot {
             LOCAL_RECOMPLETION_DELETE => get_string('delete', 'local_recompletion')
         ];
 
-        $settings->add(new admin_setting_configselect('local_recompletion/hotpotattempts',
+        $settings->add(new admin_setting_configselect('local_recompletion/hotpot',
                 new lang_string('hotpotattempts', 'local_recompletion'),
                 new lang_string('hotpotattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

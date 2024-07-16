@@ -56,27 +56,27 @@ if ($hassiteconfig) {
             ),
         ]));
 
-    $settings->add(new admin_setting_configstrtotime('local_recompletion/schedule',
+    $settings->add(new admin_setting_configstrtotime('local_recompletion/recompletionschedule',
         new lang_string('recompletionschedule', 'local_recompletion'),
         new lang_string('recompletionschedule_help', 'local_recompletion'), 'Jan 1', PARAM_TEXT));
 
-    $settings->add(new admin_setting_configduration('local_recompletion/duration',
+    $settings->add(new admin_setting_configduration('local_recompletion/recompletionduration',
         new lang_string('recompletionrange', 'local_recompletion'),
         new lang_string('recompletionrange_help', 'local_recompletion'), YEARSECS, PARAM_INT));
 
-    $settings->add(new admin_setting_configcheckbox('local_recompletion/emailenable',
+    $settings->add(new admin_setting_configcheckbox('local_recompletion/recompletionemailenable',
         new lang_string('recompletionemailenable', 'local_recompletion'),
         new lang_string('recompletionemailenable_help', 'local_recompletion'), 1));
 
-    $settings->add(new admin_setting_configtext('local_recompletion/emailsubject',
+    $settings->add(new admin_setting_configtext('local_recompletion/recompletionemailsubject',
         new lang_string('recompletionemailsubject', 'local_recompletion'),
         new lang_string('recompletionemailsubject_help', 'local_recompletion'), '', PARAM_TEXT));
 
-    $settings->add(new admin_setting_confightmleditor('local_recompletion/emailbody',
+    $settings->add(new admin_setting_confightmleditor('local_recompletion/recompletionemailbody',
         new lang_string('recompletionemailbody', 'local_recompletion'),
         new lang_string('recompletionemailbody_help', 'local_recompletion'), ''));
 
-    $settings->add(new admin_setting_configcheckbox('local_recompletion/unenrolenable',
+    $settings->add(new admin_setting_configcheckbox('local_recompletion/recompletionunenrolenable',
         new lang_string('recompletionunenrolenable', 'local_recompletion'),
         new lang_string('recompletionunenrolenable_help', 'local_recompletion'), 0));
 

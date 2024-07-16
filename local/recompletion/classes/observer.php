@@ -79,4 +79,42 @@ class observer {
             }
         }
     }
+
+    /**
+     * Observer function to handle saving default settings on course creation.
+     * @param \core\event\course_created $event
+     */
+    public static function course_created(\core\event\course_created $event) {
+        global $DB;
+
+        $defaultsettings = get_config('local_recompletion');
+
+        if (!empty($defaultsettings->recompletiontype)) {
+            foreach ($defaultsettings as $key => $value) {
+                if (is_null($value) || $key === 'forcearchivecompletiondata') {
+                    continue;
+                }
+                if ($key === 'recompletionemailbody' && !empty($value)) {
+                    $DB->insert_record('local_recompletion_config', [
+                        'course' => $event->courseid,
+                        'name' => 'recompletionemailbody_format',
+                        'value' => FORMAT_HTML]);
+                }
+                if ($key === 'recompletionschedule' && !empty($value)) {
+                    $nextresttime = local_recompletion_calculate_schedule_time($value);
+                    $DB->insert_record('local_recompletion_config', [
+                        'course' => $event->courseid,
+                        'name' => 'nextresettime',
+                        'value' => $nextresttime]);
+                }
+                $setting = [
+                    'name' => $key,
+                    'value' => $value,
+                    'course' => $event->courseid
+                ];
+
+                $DB->insert_record('local_recompletion_config', $setting);
+            }
+        }
+    }
 }

@@ -51,13 +51,15 @@ class mod_assign {
             get_string('donothing', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING);
         $cba[] = $mform->createElement('radio', 'assign', '',
             get_string('extraattempt', 'local_recompletion'), LOCAL_RECOMPLETION_EXTRAATTEMPT);
-        $cba[] = $mform->createElement('checkbox', 'assignevent', '', get_string('assignevent', 'local_recompletion'));
+
         $mform->addGroup($cba, 'assign', get_string('assignattempts', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('assign', 'assignattempts', 'local_recompletion');
+        $mform->setDefault('assign', $config->assign);
 
-        $mform->setDefault('assign', $config->assignattempts);
+        $mform->addElement('checkbox', 'assignevent', '', get_string('assignevent', 'local_recompletion'));
         $mform->setDefault('assignevent', $config->assignevent);
 
+        $mform->disabledIf('assignevent', 'enable', 'notchecked');
         $mform->disabledIf('assign', 'enable', 'notchecked');
     }
 
@@ -70,7 +72,7 @@ class mod_assign {
         $choices = array(LOCAL_RECOMPLETION_NOTHING => new lang_string('donothing', 'local_recompletion'),
             LOCAL_RECOMPLETION_EXTRAATTEMPT => new lang_string('extraattempt', 'local_recompletion'));
 
-        $settings->add(new \admin_setting_configselect('local_recompletion/assignattempts',
+        $settings->add(new \admin_setting_configselect('local_recompletion/assign',
             new lang_string('assignattempts', 'local_recompletion'),
             new lang_string('assignattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

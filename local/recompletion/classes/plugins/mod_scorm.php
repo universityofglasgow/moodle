@@ -54,7 +54,7 @@ class mod_scorm {
 
         $mform->addGroup($cba, 'scorm', get_string('scormattempts', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('scorm', 'scormattempts', 'local_recompletion');
-        $mform->setDefault('scorm', $config->scormattempts);
+        $mform->setDefault('scorm', $config->scorm);
 
         $mform->addElement('checkbox', 'archivescorm',
             get_string('archive', 'local_recompletion'));
@@ -74,7 +74,7 @@ class mod_scorm {
     public static function settings($settings) {
         $choices = array(LOCAL_RECOMPLETION_NOTHING => get_string('donothing', 'local_recompletion'),
             LOCAL_RECOMPLETION_DELETE => get_string('delete', 'local_recompletion'));
-        $settings->add(new \admin_setting_configselect('local_recompletion/scormattempts',
+        $settings->add(new \admin_setting_configselect('local_recompletion/scorm',
             new lang_string('scormattempts', 'local_recompletion'),
             new lang_string('scormattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

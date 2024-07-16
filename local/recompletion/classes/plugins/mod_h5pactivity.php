@@ -52,10 +52,10 @@ class mod_h5pactivity {
 
         $mform->addGroup($cba, 'h5pactivity', get_string('h5pattempts', 'local_recompletion'), [' '], false);
         $mform->addHelpButton('h5pactivity', 'h5pattempts', 'local_recompletion');
-        $mform->setDefault('h5pactivity', $config->h5pattempts);
+        $mform->setDefault('h5pactivity', $config->h5pactivity);
 
         $mform->addElement('checkbox', 'archiveh5pactivity', get_string('archive', 'local_recompletion'));
-        $mform->setDefault('archiveh5pactivity', $config->archiveh5p);
+        $mform->setDefault('archiveh5pactivity', $config->archiveh5pactivity);
 
         $mform->disabledIf('archiveh5pactivity', 'enable');
         $mform->hideIf('archiveh5pactivity', 'h5pactivity');
@@ -73,11 +73,11 @@ class mod_h5pactivity {
             LOCAL_RECOMPLETION_DELETE => get_string('delete', 'local_recompletion')
         ];
 
-        $settings->add(new admin_setting_configselect('local_recompletion/h5pattempts',
+        $settings->add(new admin_setting_configselect('local_recompletion/h5pactivity',
                 new lang_string('h5pattempts', 'local_recompletion'),
                 new lang_string('h5pattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 
-        $settings->add(new admin_setting_configcheckbox('local_recompletion/archiveh5p',
+        $settings->add(new admin_setting_configcheckbox('local_recompletion/archiveh5pactivity',
             new lang_string('archiveh5p', 'local_recompletion'), '', 1));
     }
 

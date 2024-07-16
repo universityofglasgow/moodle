@@ -56,7 +56,7 @@ class mod_quiz {
 
         $mform->addGroup($cba, 'quiz', get_string('quizattempts', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('quiz', 'quizattempts', 'local_recompletion');
-        $mform->setDefault('quiz', $config->quizattempts);
+        $mform->setDefault('quiz', $config->quiz);
 
         $mform->addElement('checkbox', 'archivequiz',
             get_string('archive', 'local_recompletion'));
@@ -83,7 +83,7 @@ class mod_quiz {
                          LOCAL_RECOMPLETION_DELETE => new lang_string('delete', 'local_recompletion'),
                          LOCAL_RECOMPLETION_EXTRAATTEMPT => new lang_string('extraattempt', 'local_recompletion'));
 
-        $settings->add(new \admin_setting_configselect('local_recompletion/quizattempts',
+        $settings->add(new \admin_setting_configselect('local_recompletion/quiz',
             new lang_string('quizattempts', 'local_recompletion'),
             new lang_string('quizattempts_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

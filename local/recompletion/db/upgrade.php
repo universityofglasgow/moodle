@@ -1064,5 +1064,37 @@ function xmldb_local_recompletion_upgrade($oldversion) {
         // Recompletion savepoint reached.
         upgrade_plugin_savepoint(true, 2024011601, 'local', 'recompletion');
     }
+    if ($oldversion < 2024071100) {
+        // We renamed some site admin settings.
+        $update = [
+            'assignattempts' => 'assign',
+            'choiceattempts' => 'choice',
+            'customcertcertificates' => 'customcert',
+            'h5pattempts' => 'h5pactivity',
+            'archiveh5p' => 'archiveh5pactivity',
+            'hotpotattempts' => 'hotpot',
+            'hvpattempts' => 'hvp',
+            'lessonattempts' => 'lesson',
+            'pulsenotifications' => 'pulse',
+            'questionnaireattempts' => 'questionnaire',
+            'quizattempts' => 'quiz',
+            'scormattempts' => 'scorm',
+            'schedule' => 'recompletionschedule',
+            'duration' => 'recompletionduration',
+            'emailenable' => 'recompletionemailenable',
+            'emailsubject' => 'recompletionemailsubject',
+            'emailbody' => 'recompletionemailbody',
+            'unenrolenable' => 'recompletionunenrolenable'
+        ];
+
+        foreach ($update as $old => $new) {
+            set_config($new, get_config('local_recompletion', $old), 'local_recompletion');
+            unset_config($old, 'local_recompletion');
+        }
+
+        // Recompletion savepoint reached.
+        upgrade_plugin_savepoint(true, 2024071100, 'local', 'recompletion');
+    }
+
     return true;
 }

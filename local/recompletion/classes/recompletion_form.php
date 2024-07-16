@@ -68,19 +68,19 @@ class local_recompletion_recompletion_form extends moodleform {
         $mform->addHelpButton('recompletiontype', 'recompletiontype', 'local_recompletion');
 
         $mform->addElement('checkbox', 'recompletionemailenable', get_string('recompletionemailenable', 'local_recompletion'));
-        $mform->setDefault('recompletionemailenable', $config->emailenable);
+        $mform->setDefault('recompletionemailenable', $config->recompletionemailenable);
         $mform->addHelpButton('recompletionemailenable', 'recompletionemailenable', 'local_recompletion');
         $mform->hideIf('recompletionemailenable', 'recompletiontype', 'eq', '');
 
         $mform->addElement('checkbox', 'recompletionunenrolenable', get_string('recompletionunenrolenable', 'local_recompletion'));
-        $mform->setDefault('recompletionunenrolenable', $config->unenrolenable);
+        $mform->setDefault('recompletionunenrolenable', $config->recompletionunenrolenable);
         $mform->addHelpButton('recompletionunenrolenable', 'recompletionunenrolenable', 'local_recompletion');
         $mform->hideIf('recompletionunenrolenable', 'recompletiontype', 'eq', '');
 
         $options = ['optional' => false, 'defaultunit' => 86400];
         $mform->addElement('duration', 'recompletionduration', get_string('recompletionrange', 'local_recompletion'), $options);
         $mform->addHelpButton('recompletionduration', 'recompletionrange', 'local_recompletion');
-        $mform->setDefault('recompletionduration', $config->duration);
+        $mform->setDefault('recompletionduration', $config->recompletionduration);
         $mform->hideif('recompletionduration', 'recompletiontype', 'neq', self::RECOMPLETION_TYPE_PERIOD);
 
         // Schedule / cron settings.
@@ -105,11 +105,11 @@ class local_recompletion_recompletion_form extends moodleform {
         $mform->addHelpButton('recompletionemailsubject', 'recompletionemailsubject', 'local_recompletion');
         $mform->disabledIf('recompletionemailsubject', 'recompletiontype', 'eq', '');
         $mform->disabledIf('recompletionemailsubject', 'recompletionemailenable', 'notchecked');
-        $mform->setDefault('recompletionemailsubject', $config->emailsubject);
+        $mform->setDefault('recompletionemailsubject', $config->recompletionemailsubject);
 
         $mform->addElement('editor', 'recompletionemailbody', get_string('recompletionemailbody', 'local_recompletion'),
             $editoroptions);
-        $mform->setDefault('recompletionemailbody', ['text' => $config->emailbody, 'format' => FORMAT_HTML]);
+        $mform->setDefault('recompletionemailbody', ['text' => $config->recompletionemailbody, 'format' => FORMAT_HTML]);
         $mform->addHelpButton('recompletionemailbody', 'recompletionemailbody', 'local_recompletion');
         $mform->disabledIf('recompletionemailbody', 'recompletiontype', 'eq', '');
         $mform->disabledIf('recompletionemailbody', 'recompletionemailenable', 'notchecked');

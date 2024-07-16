@@ -61,7 +61,7 @@ class mod_customcert {
 
         $mform->addGroup($cba, 'customcert', get_string('customcertcertificates', 'local_recompletion'), array(' '), false);
         $mform->addHelpButton('customcert', 'customcertcertificates', 'local_recompletion');
-        $mform->setDefault('customcert', $config->customcertcertificates);
+        $mform->setDefault('customcert', $config->customcert);
 
         $mform->addElement('checkbox', 'archivecustomcert',
                 get_string('archivecustomcertcertificates', 'local_recompletion'));
@@ -94,7 +94,7 @@ class mod_customcert {
         $choices = array(LOCAL_RECOMPLETION_NOTHING => get_string('donothing', 'local_recompletion'),
                 LOCAL_RECOMPLETION_DELETE => get_string('customcertresetcertificates', 'local_recompletion'));
 
-        $settings->add(new \admin_setting_configselect('local_recompletion/customcertcertificates',
+        $settings->add(new \admin_setting_configselect('local_recompletion/customcert',
                 new lang_string('customcertcertificates', 'local_recompletion'),
                 new lang_string('customcertcertificates_help', 'local_recompletion'), LOCAL_RECOMPLETION_NOTHING, $choices));
 

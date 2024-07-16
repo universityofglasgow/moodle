@@ -34,4 +34,8 @@ $observers = array (
         'eventname' => '\core\event\user_enrolment_deleted',
         'callback' => '\local_recompletion\observer::user_enrolment_deleted'
     ),
+    array(
+        'eventname' => '\core\event\course_created',
+        'callback' => '\local_recompletion\observer::course_created'
+    ),
 );
