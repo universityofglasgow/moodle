@@ -259,6 +259,7 @@ class check_recompletion extends \core\task\scheduled_task {
         }
         if (empty($config->recompletiontype)) {
             $errors[] = get_string('recompletionnotenabledincourse', 'local_recompletion', $course->id);
+            return $errors;
         }
 
         $restrictions = local_recompletion_get_supported_restrictions();

@@ -1088,8 +1088,10 @@ function xmldb_local_recompletion_upgrade($oldversion) {
         ];
 
         foreach ($update as $old => $new) {
-            set_config($new, get_config('local_recompletion', $old), 'local_recompletion');
-            unset_config($old, 'local_recompletion');
+            if ($DB->get_record('config_plugins', ['name' => $old, 'plugin' => 'local_recompletion']) != false) {
+                set_config($new, get_config('local_recompletion', $old), 'local_recompletion');
+                unset_config($old, 'local_recompletion');
+            }
         }
 
         // Recompletion savepoint reached.
