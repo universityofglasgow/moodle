@@ -64,7 +64,7 @@ class local_recompletion_recompletion_form extends moodleform {
             self::RECOMPLETION_TYPE_ONDEMAND => get_string('recompletiontype:ondemand', 'local_recompletion'),
             self::RECOMPLETION_TYPE_SCHEDULE => get_string('recompletiontype:schedule', 'local_recompletion'),
         ]);
-        $mform->setDefault('recompletiontype', RECOMPLETION_TYPE_DISABLED);
+        $mform->setDefault('recompletiontype', self::RECOMPLETION_TYPE_DISABLED);
         $mform->addHelpButton('recompletiontype', 'recompletiontype', 'local_recompletion');
 
         $mform->addElement('checkbox', 'recompletionemailenable', get_string('recompletionemailenable', 'local_recompletion'));
