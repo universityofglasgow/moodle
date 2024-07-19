@@ -41,3 +41,4 @@ $string['privacy:metadata:fullname'] = 'The fullname of the user accessing the E
 $string['privacy:metadata:lastname'] = 'The lastname of the user accessing the Echo360 Plugin (Tiny)';
 $string['privacy:metadata:roles'] = 'The roles in the course for the user accessing the Echo360 Plugin (Tiny)';
 $string['privacy:metadata:userid'] = 'The ID of the user accessing the Echo360 Plugin (Tiny)';
+$string['helplinktext'] = 'Echo360';

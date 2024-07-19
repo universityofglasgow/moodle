@@ -52,3 +52,4 @@ $string['tiny_checkbox_new_window_label'] = 'Open meeting in new window';
 $string['privacy:metadata'] = 'Tiny Teams Meeting plugin does not store any personal data';
 $string['privacy:metadata:msteamsapp'] = 'The Tiny Teams Meeting plugin does not store any data. However, it sends user language code to Microsoft Teams application to provide user interface based on user language.';
 $string['privacy:metadata:msteamsapp:userlang'] = 'User language code sent to Microsoft Teams application.';
+$string['helplinktext'] = 'Teams Meeting';
