@@ -734,7 +734,7 @@ export const init = function(addMethod) {
                 } else {
                     const $container = $('.course-content');
                     $container.prepend($clipboard);
-                    $container.find(M.course.format.get_section_wrapper(null)).each(function (index, sectionDOM) {
+                    $container.find('li.section').each(function (index, sectionDOM) {
                         const $section = $(sectionDOM);
                         const section = $section.attr('id').match(/(\d+)$/)[1];
                         $section.find('ul.section').first().append(create_target(id, section));
