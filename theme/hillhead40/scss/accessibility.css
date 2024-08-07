@@ -59,7 +59,7 @@ body.hillhead40-contrast-yb {
   background: #000 !important;
 }
 
-body.hillhead40-contrast-yb *:not([class^=ally]) {
+body.hillhead40-contrast-yb:not(.gugrades) *:not([class^=ally]) {
   background: #000 !important;
   color: #ee6;
   border-color: #ee6 !important;
@@ -130,7 +130,7 @@ body.hillhead40-contrast-by {
   background: #ee6 !important;
 }
 
-body.hillhead40-contrast-by *:not([class^=ally]) {
+body.hillhead40-contrast-by:not(.gugrades) *:not([class^=ally]) {
   background: #ee6 !important;
   color: #111;
   border-color: #111 !important;
@@ -196,7 +196,7 @@ body.hillhead40-contrast-wg {
   background: #666 !important;
 }
 
-body.hillhead40-contrast-wg *:not([class^=ally]) {
+body.hillhead40-contrast-wg:not(.gugrades) *:not([class^=ally]) {
   background: #666 !important;
   color: #eee;
   border-color: #eee !important;
@@ -262,7 +262,7 @@ body.hillhead40-contrast-bb {
   background: #B9D9EE !important;
 }
 
-body.hillhead40-contrast-bb *:not([class^=ally]) {
+body.hillhead40-contrast-bb:not(.gugrades) *:not([class^=ally]) {
   background: #B9D9EE !important;
   color: #111;
   border-color: #111 !important;
@@ -328,7 +328,7 @@ body.hillhead40-contrast-br {
   background: #EEB9B9 !important;
 }
 
-body.hillhead40-contrast-br *:not([class^=ally]) {
+body.hillhead40-contrast-br:not(.gugrades) *:not([class^=ally]) {
   background: #EEB9B9 !important;
   color: #111;
   border-color: #111 !important;
@@ -394,7 +394,7 @@ body.hillhead40-contrast-bw {
   background: #f6f6f6 !important;
 }
 
-body.hillhead40-contrast-bw *:not([class^=ally]) {
+body.hillhead40-contrast-bw:not(.gugrades) *:not([class^=ally]) {
   background: #f6f6f6 !important;
   color: #111;
   border-color: #111 !important;
@@ -460,7 +460,7 @@ body.hillhead40-contrast-wb {
   background: #111 !important;
 }
 
-body.hillhead40-contrast-wb *:not([class^=ally]) {
+body.hillhead40-contrast-wb:not(.gugrades) *:not([class^=ally]) {
   background: #111 !important;
   color: #f6f6f6;
   border-color: #f6f6f6 !important;
@@ -1274,6 +1274,4 @@ body.hillhead40-night img {
 }
 @media (prefers-color-scheme: light) {
   /* Light theme styles go here */
-}
-
-/*# sourceMappingURL=accessibility.css.map */
+}/*# sourceMappingURL=accessibility.css.map */
