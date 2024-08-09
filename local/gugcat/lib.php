@@ -41,9 +41,10 @@ function local_gugcat_extend_navigation($navigation) {
         return;
     }
 
-    require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
+    //require_once($CFG->dirroot . '/blocks/gu_spdetails/lib.php');
 
     // Link to MyAssessments
+    /*
     if (assessments_details::return_enrolledcourses($USER->id)) {
         $nodehome = $navigation->get('home');
         $myassessments = get_string('myassessments', 'block_gu_spdetails');
@@ -51,6 +52,7 @@ function local_gugcat_extend_navigation($navigation) {
         $nodemymedia = $nodehome->add($myassessments, new moodle_url('/blocks/gu_spdetails/index.php'), navigation_node::NODETYPE_LEAF, $myassessments, 'myassessments', $icon);
         $nodemymedia->showinflatnavigation = true;
     }
+     */
 
     // Check the current page context.
     // If the context is not of a course or module then we are in another area of Moodle and return void.
