@@ -777,8 +777,8 @@ body.hillhead40-night h1:not(page-header-headings), body.hillhead40-night h2, bo
   color: #617591;
 }
 
-body.hillhead40-night div > h1, body.hillhead40-night div > h2, body.hillhead40-night div > section > h2, body.hillhead40-night div > h3, body.hillhead40-night div > h5 {
-  color: inherit;
+body.hillhead40-night div > h1, body.hillhead40-night div > h2, body.hillhead40-night div > section > h2, body.hillhead40-night div > h3, body.hillhead40-night div > h5, body.hillhead40-night .assessments-details-container, body.hillhead40-night .return-assessments-text, body.hillhead40-night .subcategory-details-label {
+  color: inherit !important;
 }
 
 body.hillhead40-night .accessibility-tools .accessibility-group h4 {
@@ -864,7 +864,7 @@ body.hillhead40-night .drawercontent li.pageitem[aria-selected=false] > a.course
   color: inherit !important;
 }
 
-body.hillhead40-night .courseindex .courseindex-item.dimmed.pageitem a {
+body.hillhead40-night .courseindex .courseindex-item.dimmed.pageitem a, body.hillhead40-night .subcategory-details-value {
   color: #fff !important;
 }
 
@@ -888,6 +888,10 @@ body.hillhead40-night .nav-tabs .nav-link.active, body.hillhead40-night .nav-tab
 
 body.hillhead40-night .nav-tabs .nav-link:hover, body.hillhead40-night .nav-tabs .nav-link:focus {
   border-color: #274163;
+}
+
+body.hillhead40-night .assessments-details-container .nav-tabs .nav-item .nav-link.active {
+  background-color: #274163;
 }
 
 body.hillhead40-night table.grading-details th, body.hillhead40-night table.personal-deadline-details th, body.hillhead40-night table.grading-details td, body.hillhead40-night table.personal-deadline-details, body.hillhead40-night td {
