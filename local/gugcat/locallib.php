@@ -784,7 +784,10 @@ class local_gugcat {
      * @param int $contextid
      */
     public static function switch_display_of_assessment_on_student_dashboard($instanceid, $contextid) {
-        global $DB;
+	    global $DB;
+
+	// Disable all fo this
+	return;
 
         $customfieldcategory = $DB->get_record('customfield_category',
          array('name' => get_string('gugcatoptions', 'local_gugcat')), 'id');
