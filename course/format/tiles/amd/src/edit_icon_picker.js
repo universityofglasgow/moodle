@@ -186,6 +186,10 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                         // We are changing an icon for a specific section from within the course.
                         // We are doing this by clicking an existing icon.
                         changeUiTilePhoto($("#tileicon_" + sectionNum), response.imageurl, imageType);
+                        if (response.imageurl === '') {
+                            // We are resetting tile.  Refresh photo library as image may be deleted now.
+                            getAndStoreIconSet(courseId);
+                        }
                     } else if (pageType === "course-edit") {
                         // We are changing the icon using a drop down menu not the icon picker modal.
                         // For the whole course.
@@ -199,6 +203,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
                                     selectedIcon.html(newIcon);
                                 });
                         } else if (imageType === "tilephoto") {
+                            // We are changing a tile photo.
                             changeUiTilePhoto($("#tileicon_" + sectionNum), response.imageurl, imageType);
                         }
                     }
@@ -271,7 +276,7 @@ define(["jquery", "core/templates", "core/ajax", "core/str", "core/notification"
             };
 
             if (typeof modalStored !== "object") {
-                // We only have one modal per page which we recycle.  We dont have it yet so create it.
+                // We only have one modal per page which we recycle.  We don't have it yet so create it.
 
                 var renderModal = function() {
                     Templates.render("format_tiles/icon_picker_modal_body", {

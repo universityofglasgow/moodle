@@ -270,7 +270,6 @@ class behat_format_tiles extends behat_base {
      * @Then /^activity in format tiles is not dimmed "(?P<activityname_string>(?:[^"]|\\")*)"$/
      * @param string $activityname
      * @return bool
-     * @throws \Behat\Mink\Exception\ExpectationException
      */
     public function activity_in_format_tiles_is_not_dimmed($activityname) {
         return !$this->activity_in_format_tiles_is_dimmed($activityname);
@@ -284,10 +283,10 @@ class behat_format_tiles extends behat_base {
      * @throws Exception
      */
     public function i_click_on_tile($tileumber) {
-        $tileid = behat_context_helper::escape("tile-" . $tileumber);
+        $tileid = behat_context_helper::escape("sectionlink-" . $tileumber);
 
         // Click the tile.
-        $this->execute("behat_general::i_click_on", ["//li[@id=" . $tileid . "]", "xpath_element"]);
+        $this->execute("behat_general::i_click_on", ["//a[@id=" . $tileid . "]", "xpath_element"]);
         $this->getSession()->wait(1500); // Important to wait here as page is scrolling and might click wrong thing after.
         $this->wait_for_pending_js(); // Wait for AJAX request to complete.
     }
@@ -323,7 +322,7 @@ class behat_format_tiles extends behat_base {
 
         // Click the button.
         $this->wait_for_pending_js();
-        $this->execute("behat_general::i_click_on", ["//a[@id=" . $tileid . "]", "xpath_element"]);
+        $this->execute("behat_general::i_click_on", ["//button[@id=" . $tileid . "]", "xpath_element"]);
         $this->execute('behat_general::wait_until_the_page_is_ready');
         $this->getSession()->wait(2000);
         $this->wait_for_pending_js(); // Wait for AJAX request to complete.
@@ -448,7 +447,6 @@ class behat_format_tiles extends behat_base {
      * @Given /^I hide tile "(?P<section_number>\d+)"$/
      * @param int $sectionnumber
      * @throws coding_exception
-     * @throws \Behat\Mink\Exception\ExpectationException
      */
     public function i_hide_tile($sectionnumber) {
         // Ensures the section exists.
@@ -461,7 +459,6 @@ class behat_format_tiles extends behat_base {
      *
      * @Given /^I show tile "(?P<section_number>\d+)"$/
      * @param int $sectionnumber
-     * @throws \Behat\Mink\Exception\ExpectationException
      * @throws coding_exception
      */
     public function i_show_tile($sectionnumber) {

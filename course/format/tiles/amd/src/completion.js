@@ -283,7 +283,7 @@ define(["jquery", "core/templates", "core/config", "core/ajax", "core/str", "cor
                     }
 
                     // If an activity with an "onclick" attribute is clicked, this means core is launching an activity pop up.
-                    $('li.section').on('click', function(e) {
+                    $('li.section a').on('click', function(e) {
                         const target = $(e.target);
                         const isCorePopUp = target.attr('onclick')
                             && target.attr('onclick').indexOf('window.open') === 0;

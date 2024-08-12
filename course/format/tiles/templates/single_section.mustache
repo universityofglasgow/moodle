@@ -44,7 +44,7 @@
         * sesskey
         * courseid
         * useSubtiles
-        * coursemodules
+        * course_modules
         * single_sec_add_cm_control_html
         * single_sec_content_is_long
         * alt
@@ -64,7 +64,7 @@
         "sesskey": "12345678",
         "courseid": 99,
         "useSubtiles": 0,
-        "coursemodules": [],
+        "course_modules": [],
         "single_sec_add_cm_control_html": "",
         "single_sec_content_is_long": 0,
         "alt": "",
@@ -72,6 +72,6 @@
         }
 }}
 {{! this has to be an li for drag and drop sections to work properly (or at all) }}
-<li id="section-{{tileid}}" data-section="{{tileid}}" data-sectionid="{{secid}}" class="section main clearfix">
+<li id="section-{{tileid}}" data-section="{{tileid}}" data-sectionid="{{secid}}" class="section course-section main clearfix">
     {{>format_tiles/single_section_content}}
 </li>

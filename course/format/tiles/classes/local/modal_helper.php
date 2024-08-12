@@ -52,46 +52,70 @@ class modal_helper {
         }
     }
 
+
     /**
-     * Is a particular modname e.g. page allowed a modal.
-     * For resource we check the resource type as well e.g. pdf.
-     * @param string $modname e.g. page, resource, url.
-     * @param string $resourcetype only used for modname = resource, e.g. pdf, html, docx.
-     * @return bool
-     * @throws \dml_exception
+     * Get the course module IDs for any resource modules in this course that need a modal.
+     * @param int $courseid
+     * @param array $mimetypes
+     * @return array
      */
-    public static function is_allowed_modal(string $modname, string $resourcetype): bool {
-        if (!$modname) {
-            return false;
+    public static function get_resource_modal_cmids(int $courseid, array $mimetypes): array {
+        global $DB, $CFG;
+        if (empty($mimetypes)) {
+            return [];
         }
-        $allowedmodmodals = self::allowed_modal_modules();
-        if ($modname == 'resource' && $resourcetype && in_array($resourcetype, $allowedmodmodals['resources'])) {
-            return true;
-        }
-        if ($modname == 'url' && in_array($modname, $allowedmodmodals['resources'])) {
-            return true;
-        }
-        if (in_array($modname, $allowedmodmodals['modules'])) {
-            return true;
-        }
-        return false;
+
+        // To import RESOURCELIB_DISPLAY_XXX etc.
+        require_once("$CFG->libdir/resourcelib.php");
+
+        // This is not very efficient, so we cache the results elsewhere.
+        // When multiple files are uploaded to a single resource activity, Moodle displays the lowest sort order item
+        // Here we use the index on the files table component-filearea-contextid-itemid.
+        $excludeddisplaytypes = [
+            RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_DOWNLOAD,
+        ];
+        list($notinsql, $params) =
+            $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
+        $params['courseid'] = $courseid;
+        $params['contextmodule'] = CONTEXT_MODULE;
+
+        list($insql, $insqlparams) = $DB->get_in_or_equal($mimetypes, SQL_PARAMS_NAMED);
+
+        $params = array_merge($params, $insqlparams);
+
+        // First get file cmids of relevant mime type.
+        // There is an index on the files table component-filearea-contextid-itemid.
+        $sql = "SELECT DISTINCT cm.id
+                    FROM {course_modules} cm
+                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
+                    JOIN {resource} r ON cm.instance = r.id
+                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
+                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
+                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype $insql
+                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $notinsql";
+        return array_map(function($cmid) {
+            return (int)$cmid;
+        }, $DB->get_fieldset_sql($sql, $params));
     }
 
     /**
      * This is to avoid re-implementing multiple files from the course index.
      * To know which resources to launch in modals, we can get the cmids of all resources which will launch as modals.
-     * This takes no account of whether a user can see the module - handled elsewhere.
      * @param int $courseid
-     * @param array $allowedmodals // E.g. ['pdf', 'html', 'url', 'page'].
+     * @param bool $excludeunavailable should we check availability of each cm in list and exclude unavailable?
      * @return array course module IDs to launch in modals.
      */
-    public static function get_modal_allowed_cmids(int $courseid, array $allowedmodals): array {
+    public static function get_modal_allowed_cm_ids(int $courseid, bool $excludeunavailable): array {
         global $DB, $CFG;
+
+        // First check what modals site admin is allowing.
+        $allowedmodals = self::allowed_modal_modules();
+        $allowedmodals = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
         if (empty($allowedmodals)) {
             return [];
         }
-        $modinfo = get_fast_modinfo($courseid);
 
+        $modinfo = null;
         $cmids = [];
 
         // The cached value is for the course and does not take user visibility into account.
@@ -99,54 +123,53 @@ class modal_helper {
         $cache = \cache::make('format_tiles', 'modalcmids');
         $cachedvalue = $cache->get($courseid);
         if ($cachedvalue === false) {
-            // Config values to be added to templates for JS to retrieve.
-            // May move more to this from existing JS init in format.php.
+            $modinfo = get_fast_modinfo($courseid);
 
-            // To import RESOURCELIB_DISPLAY_XXX.
+            // To import RESOURCELIB_DISPLAY_XXX etc.
             require_once("$CFG->libdir/resourcelib.php");
 
             foreach ($allowedmodals as $allowedmodule) {
-                if ($allowedmodule == 'url') {
-                    $displayoptions = [
-                        RESOURCELIB_DISPLAY_AUTO, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_EMBED,
-                    ];
-                    list($insql, $params) = $DB->get_in_or_equal($displayoptions, SQL_PARAMS_NAMED);
+                if (in_array($allowedmodule, ['pdf', 'html'])) {
+                    // These are dealt with separately below, outside the loop, as more efficient.
+                    continue;
+                } else if ($allowedmodule == 'url') {
+                    $excludeddisplaytypes = [RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW];
+                    list($notinsql, $params) =
+                        $DB->get_in_or_equal($excludeddisplaytypes, SQL_PARAMS_NAMED, 'param', false);
                     $params['course'] = $courseid;
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                        "SELECT cm.id FROM {url} u
+                    $sql = "SELECT DISTINCT cm.id FROM {url} u
                              JOIN {course_modules} cm ON cm.instance = u.id
                              JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
-                             WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $insql", $params
-                    ));
-                } else if (in_array($allowedmodule, ['pdf', 'html'])) {
-                    // First get file cmids of relevant mime type.
-                    // There is an index on the files table component-filearea-contextid-itemid.
-                    $sql = "SELECT cm.id
-                    FROM {course_modules} cm
-                    JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
-                    JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
-                    JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
-                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype = :mimetype
-                    WHERE cm.course = :courseid AND cm.deletioninprogress = 0";
-                    $cmids = array_merge($cmids, $DB->get_fieldset_sql(
-                        $sql,
-                        [
-                            'courseid' => $courseid,
-                            'mimetype' => $allowedmodule == 'pdf' ? 'application/pdf' : 'text/html',
-                            'contextmodule' => CONTEXT_MODULE,
-                        ]
-                    ));
+                             WHERE u.course = :course AND cm.deletioninprogress = 0 AND u.display $notinsql";
+                    $cmids = array_merge($cmids, $DB->get_fieldset_sql($sql, $params));
 
                 } else if ($allowedmodule == 'page') {
                     $cmids = [];
-                    $pagecms = $modinfo->get_instances_of('page');
+                    $pagecms
+                        = $modinfo->get_instances_of('page');
                     foreach ($pagecms as $pagecm) {
-                        $cmids[] = $pagecm->id;
+                        $cmids[] = (int)$pagecm->id;
                     }
+                } else {
+                    debugging("Unexpected module: $allowedmodule", DEBUG_DEVELOPER);
                 }
             }
 
-            // Sort to ease debugging.
+            // Now deal with PDF and HTML files if any.
+            $mimemapping = ['pdf' => 'application/pdf', 'html' => 'text/html'];
+            $allowedresourcemimetypes = [];
+            foreach ($mimemapping as $key => $value) {
+                if (in_array($key, $allowedmodals)) {
+                    $allowedresourcemimetypes[] = $value;
+                }
+            }
+            $resourcecmids = self::get_resource_modal_cmids($courseid, $allowedresourcemimetypes);
+            $cmids = array_merge($cmids, $resourcecmids);
+
+            // Ensure all CM IDs are integers for JS and sort to ease debugging.
+            $cmids = array_map(function($cmid) {
+                return (int)$cmid;
+            }, $cmids);
             sort($cmids);
 
             // Now we can set the cached value for all users, before going on to check visibility for this user only.
@@ -157,9 +180,15 @@ class modal_helper {
             $cmids = $cachedvalue;
         }
 
+        if (!$excludeunavailable) {
+            // We may want to skip the availability check for efficiency, where it doesn't matter.
+            return $cmids;
+        }
+
         // Now we check user visibility for the cmids which may be relevant.
         $result = [];
         if (!empty($cmids)) {
+            $modinfo = $modinfo ?: get_fast_modinfo($courseid);
             foreach ($cmids as $cmid) {
                 try {
                     $cm = $modinfo->get_cm($cmid);
@@ -175,5 +204,36 @@ class modal_helper {
             }
         }
         return $result;
+    }
+
+    /**
+     * Does a particular course module use a modal.
+     * @param int $courseid
+     * @param int $cmid
+     * @return bool
+     */
+    public static function cm_has_modal(int $courseid, int $cmid): bool {
+        $cmids = self::get_modal_allowed_cm_ids($courseid, false);
+        return !empty($cmids) && in_array($cmid, $cmids);
+    }
+
+    /**
+     * Is this module one which uses the cache to store modal cm data?
+     * @param string $modname
+     * @return bool
+     */
+    public static function mod_uses_cm_modal_cache(string $modname): bool {
+        return in_array($modname, ['resource', 'page', 'url']);
+    }
+
+    /**
+     * Clear the cache of resource modal IDs for a given course.
+     * @param int $courseid
+     * @return void
+     */
+    public static function clear_cache_modal_cmids(int $courseid) {
+        // See also \cache_helper::purge_by_event('format_tiles/modaladminsettingchanged') in settings.php.
+        $cache = \cache::make('format_tiles', 'modalcmids');
+        $cache->delete($courseid);
     }
 }

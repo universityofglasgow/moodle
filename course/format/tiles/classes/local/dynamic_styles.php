@@ -33,6 +33,11 @@ namespace format_tiles\local;
 class dynamic_styles {
 
     /**
+     * Default hex tile colour if none other found.
+     */
+    const DEFAULT_COLOUR = '#1670CC';
+
+    /**
      * Get the tiles dynamic course CSS to be added to <head>.
      * @return string
      * @throws \coding_exception
@@ -57,37 +62,12 @@ class dynamic_styles {
         if ($idparam) {
             $courseid = $iscourseviewpage ? $idparam : $DB->get_field('course_sections', 'course', ['id' => $idparam]);
             if ($courseid) {
-                $csscontent = '';
-
-                $format = course_get_format($courseid);
-                $course = $courseid ? $format->get_course() : null;
-                $basecolour = !$course ? null : self::get_tile_base_colour($course->basecolour ?? '');
-
-                // Will be 1 or 0 for use or not use now.
-                // (Legacy values could be 'standard' for not use, or a colour for use, but in that case treat as 'use').
-                $shadeheadingbar = $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
-                    ? 1 : 0;
-
-                $usingtilefitter = self::using_tile_fitter();
-                $tilefittermaxwidth = self::get_tile_fitter_max_width($courseid);
-
-                // Course specific colours.
-                $data = self::data_for_template($basecolour, $shadeheadingbar, $course->courseusesubtiles ?? false);
+                $data = self::data_for_template($courseid);
                 $m = new \Mustache_Engine;
-                $csscontent .= $m->render(
+                return $m->render(
                     file_get_contents("$CFG->dirroot/course/format/tiles/templates/dynamic_styles.mustache"),
                     $data
                 );
-
-                // Tile fitter if used.
-                if ($usingtilefitter) {
-                    $csscontent .= self::get_tilefitter_extra_css($courseid, $tilefittermaxwidth);
-                }
-
-                // Site admin may have added additional CSS via the plugin settings.
-                $csscontent .= trim(get_config('format_tiles', 'customcss') ?? '');
-
-                return $csscontent;
             }
         }
         return '';
@@ -96,21 +76,29 @@ class dynamic_styles {
     /**
      * Export the data for the mustache template.
      * @see \format_tiles\local\util::width_template_data()
-     * @param string $basecolourhex The hex code for the base colour used in this course.
-     * @param bool $shadeheadingbar Whether the shade heading bar is set to yes for this course.
-     * @param bool $usesubtiles Whether the course uses subtiles.
+     * @param int $courseid
      * @return array
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public static function data_for_template(string $basecolourhex, bool $shadeheadingbar, bool $usesubtiles): array {
+    public static function data_for_template(int $courseid): array {
+        $format = course_get_format($courseid);
+        $course = $courseid ? $format->get_course() : null;
+        $basecolourhex = !$course ? self::DEFAULT_COLOUR : self::get_tile_base_colour($course->basecolour ?? '');
         $tilestyle = get_config('format_tiles', 'tilestyle') ?? \format_tiles\output\course_output::TILE_STYLE_STANDARD;
-        $basecolourrgb = self::rgbcolour($basecolourhex);
+
         $outputdata = [
+            'courseid' => $courseid,
             "isstyle-$tilestyle" => true,
             'isstyle1or2' => $tilestyle == 1 || $tilestyle == 2,
-            'base_colour_rgb' => $basecolourrgb,
-            'usesubtiles' => $usesubtiles,
+            'base_colour_rgb' => $basecolourhex ? self::rgbcolour($basecolourhex) : null,
+            'usesubtiles' => $course->courseusesubtiles ?? false,
+            // Shade heading bar will be 1 (used) or 0 (not used) now.
+            // (Legacy values could be 'standard' for not used, or a colour for used, but in that case treat as 'used').
+            'shade_heading_bar' => $course->courseusebarforheadings != 0 && $course->courseusebarforheadings != 'standard'
+                ? 1 : 0,
+            // Site admin may have added additional CSS via the plugin settings.
+            'pluginconfigcss' => trim(get_config('format_tiles', 'customcss') ?? ''),
         ];
 
         if (get_config('format_tiles', 'allowphototiles')) {
@@ -128,9 +116,11 @@ class dynamic_styles {
                 (float)get_config('format_tiles', 'phototitletitlelineheight') / 10, 1
             );
         }
-        $outputdata['shade_heading_bar'] = $shadeheadingbar;
-        $outputdata['ismoodle42minus'] = \format_tiles\local\util::get_moodle_release() <= 4.2;
-        $outputdata['ismoodle44'] = \format_tiles\local\util::get_moodle_release() === 4.4;
+
+        // Tile fitter if used.
+        $outputdata['usingtilefitter'] = \format_tiles\local\util::using_tile_fitter();
+        $outputdata['tilefittermaxwidth'] = $outputdata['usingtilefitter']
+            ? \format_tiles\local\util::get_tile_fitter_max_width($courseid) : 0;
 
         return $outputdata;
     }
@@ -155,7 +145,6 @@ class dynamic_styles {
      */
     public static function get_tile_base_colour($coursebasecolour): string {
         global $PAGE;
-        $result = null;
 
         $hexpattern = '/^#(?:[0-9a-fA-F]{3}){1,2}$/';
 
@@ -178,36 +167,9 @@ class dynamic_styles {
 
         if (!$result || !preg_match($hexpattern, $result)) {
             // If still no colour set, use a default colour.
-            $result = get_config('format_tiles', 'tilecolour1') ?? '#1670CC';
+            $result = get_config('format_tiles', 'tilecolour1') ?? self::DEFAULT_COLOUR;
         }
         return $result;
-    }
-
-
-    /**
-     * If we are not on a mobile device we may want to ensure that tiles are nicely fitted depending on our screen width.
-     * E.g. avoid a row with one tile, centre the tiles on screen.  JS will handle this post page load.
-     * However, we want to handle it pre-page load if we can to avoid tiles moving around once page is loaded.
-     * So we have JS send the width via AJAX on first load, and we remember the value and apply it next time using inline CSS.
-     * This function gets the data to enable us to add the inline CSS.
-     * This will hide the main tiles window on page load and display a loading icon instead.
-     * Then post page load, JS will get the screen width, re-arrange the tiles, then hide the loading icon and show the tiles.
-     * If session width var has already been set (because JS already ran), we set that width initially.
-     * Then we can load the page immediately at that width without hiding anything.
-     * The skipcheck URL param is there in case anyone gets stuck at loading icon and clicks it - they escape it for session.
-     * @param int $courseid the course ID we are in.
-     * @param int $maxwidth the max width for tiles if set.
-     * @see format_tiles_external::set_session_width() for where the session vars are set from JS.
-     * @return string the styles to print.
-     */
-    public static function get_tilefitter_extra_css(int $courseid, int $maxwidth): string {
-        if ($maxwidth == 0) {
-            // If no session screen width has yet been set, we hide the tiles initially, so we can calculate correct width in JS.
-            // We will remove this opacity later in JS.
-            return ".format-tiles.course-$courseid.jsenabled:not(.editing) ul.tiles {opacity: 0;}";
-        } else {
-            return ".format-tiles.course-$courseid.jsenabled ul.tiles {max-width: {$maxwidth}px;}";
-        }
     }
 
     /**
@@ -218,44 +180,9 @@ class dynamic_styles {
      * @throws \dml_exception
      */
     public static function page_needs_loading_icon(int $courseid): bool {
-        if (!self::using_tile_fitter()) {
+        if (!\format_tiles\local\util::using_tile_fitter()) {
             return false;
         }
-        return !self::get_tile_fitter_max_width($courseid);
-    }
-
-    /**
-     * If tile fitter has already set a max width for page, what is it?
-     * @param int $courseid
-     * @return int
-     */
-    public static function get_tile_fitter_max_width(int $courseid): int {
-        global $SESSION;
-        if (!$courseid) {
-            return 0;
-        }
-        $var = 'format_tiles_width_' . $courseid;
-        return $SESSION->$var ?? 0;
-    }
-
-    /**
-     * Is the current user using tile fitter?
-     * @return bool
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function using_tile_fitter(): bool {
-        global $SESSION;
-
-        if (optional_param('skipcheck', 0, PARAM_INT)) {
-            // The skipcheck param is for anyone stuck at loading icon who clicks it - they escape it for session.
-            $SESSION->format_tiles_skip_width_check = 1;
-            return false;
-        }
-
-        return \format_tiles\local\util::using_js_nav()
-            && get_config('format_tiles', 'fittilestowidth')
-            && \core_useragent::get_device_type() != \core_useragent::DEVICETYPE_MOBILE
-            && ($SESSION->format_tiles_skip_width_check ?? null) != 1;
+        return !\format_tiles\local\util::get_tile_fitter_max_width($courseid);
     }
 }

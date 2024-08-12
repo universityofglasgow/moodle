@@ -438,7 +438,7 @@ Other
 - Fix issue #208 overlap on tile when using style 2
 - Registration bug and other minor bug fixes
 
-4.4.0.6 (2024061101)
+4.3.0.29 (2024061100)
 =====================
 - Fix issue 210 progress indicator contrast
 - Fix issue 203 drawer scroll (Moodle 4.0 - 4.2)
@@ -488,3 +488,26 @@ Other
 =====================
 - Add tip to section edit form for how to edit tile icon/photo
 - Remove section view menu item (for editors) which (points to /course/section.php)
+
+4.4.0.12 (2024072510)
+=====================
+- Delete unused tile photos files when they are unset
+- Fix issue #211 icon fallbacks (previous fix incomplete)
+- Remove tile 1 focus on page load
+- Fix issue #214 Tile misalignment after 4.3 update
+- Simplify tile fitter JS to speed up tile re-org when course index opened/closed
+
+4.4.0.14 (2024073140)
+=====================
+- Accessibility improvements
+- Code simplification (modals incl pluginfile URLs)
+- Allow tile fitter to work without JS nav being on
+- Improve sub-tile icon border/background
+
+4.4.0.15 (2024080940)
+=====================
+- Minor style adjustments including chrome long tile title padding
+- Course index - click on label opens section
+- Fix scroll on tile open
+- Dismiss dialogues (e.g. glossary entries) when tile is closed or changed
+- Avoid double glossary dialogue when autolink in page modal is clicked

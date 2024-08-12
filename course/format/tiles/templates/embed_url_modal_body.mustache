@@ -31,20 +31,18 @@
 
     Context variables required for this template:
         * cmid - id of the course module
-        * pluginfileUrl - the url to get the resource directly"
         * width - width of the item
         * height - height of the item
 
     Example context (json):
     {
         "cmid": 123,
-        "pluginfileUrl": "https://www.moodle.org",
         "width": 1360,
         "height": 765
     }
 }}
 <iframe id="embedded-url-{{cmid}}" class="center-text" width="{{#width}}{{width}}{{/width}}{{^width}}800{{/width}}" height="{{#height}}{{height}}{{/height}}{{^height}}600{{/height}}"
-        src="{{{pluginfileUrl}}}"></iframe>
+        src="{{config.wwwroot}}/course/format/tiles/mod_view.php?cmid={{cmid}}"></iframe>
 <div class="embed-url-alt-link" id="embed-url-alt-link-{{cmid}}">{{#str}}embeddedurlerror, format_tiles{{/str}}
-    {{#secondaryurl}}<a class="secondary-url center-text" href="{{{secondaryurl}}}">{{#str}}alternativelink, format_tiles{{/str}}</a>{{/secondaryurl}}
+    <a class="secondary-url center-text" href="{{config.wwwroot}}/course/format/tiles/mod_view.php?cmid={{cmid}}&noembed=1">{{#str}}alternativelink, format_tiles{{/str}}</a>
 </div>

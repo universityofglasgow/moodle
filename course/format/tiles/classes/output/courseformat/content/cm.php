@@ -24,7 +24,6 @@
 
 namespace format_tiles\output\courseformat\content;
 
-use core_courseformat\base as course_format;
 use core_courseformat\output\local\content\cm as core_cm;
 
 /**
@@ -47,6 +46,7 @@ class cm extends core_cm {
     protected function add_format_data(\stdClass &$data, array $haspartials, \renderer_base $output): bool {
 
         $parentadded = parent::add_format_data($data, $haspartials, $output);
+        $data->cmtitle = $this->mod->get_name();
 
         // See also the higher level section where moodle release info is added e.g. ismoodle42minus.
         // I.e. format_tiles\output\courseformat\content\section.
@@ -58,7 +58,7 @@ class cm extends core_cm {
         $data->ismoodle44 = $moodlerelease === 4.4;
         $data->ismoodle40 = $moodlerelease === 4.0;
         $data->modcontextid = $this->mod->context->id;
-
+        $data->cmtitle = $this->mod->get_formatted_name();
         $childadded = true; // We did add some data above.
         return $parentadded || $childadded;
     }

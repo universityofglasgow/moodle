@@ -39,7 +39,7 @@
 }}
 <li
     class="activity activity-wrapper {{module}} modtype_{{module}} {{#hasinfo}}hasinfo{{/hasinfo}}
-        {{^clickable}} unclickable {{/clickable}} mod_{{modname}}{{#modresourceicon}}modtype_{{modresourceicon}}{{/modresourceicon}}{{extraclasses}}  {{#indent}}indented{{/indent}}"
+        {{^clickable}} unclickable {{/clickable}} mod_{{modname}} {{#modresourceicon}}modtype_{{modresourceicon}}{{/modresourceicon}}{{extraclasses}}  {{#indent}}indented{{/indent}}"
     {{#anchor}}id="{{anchor}}"{{/anchor}}
     data-for="cmitem"
     data-id="{{id}}"
@@ -47,8 +47,6 @@
     data-contextid="{{modcontextid}}"
     data-modinstance="{{modinstance}}"
     data-modtype="{{modname}}{{#modresourceicon}}_{{{modresourceicon}}}{{/modresourceicon}}"
-    {{#pluginfileUrl}}data-url="{{{pluginfileUrl}}}" {{/pluginfileUrl}}
-    {{#secondaryurl}}data-url-secondary="{{{secondaryurl}}}"{{/secondaryurl}}
     data-title="{{{activityname}}}"
     {{#hascompletion}}data-completion-state="{{completionstate}}"{{/hascompletion}} data-completion="{{completion}}"
 >

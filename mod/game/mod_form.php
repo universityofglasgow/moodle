@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once( $CFG->dirroot.'/course/moodleform_mod.php');
-require( 'locallib.php');
+require_once( 'locallib.php');
 
 /**
  * The class defines the form of game parameters

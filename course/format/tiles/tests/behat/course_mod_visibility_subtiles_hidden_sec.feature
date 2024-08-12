@@ -1,4 +1,4 @@
-@format @format_tiles @course_mod_visibility_subtiles_hidden_sec @javascript
+@format @format_tiles @format_tiles_course_mod_visibility_subtiles_hidden_sec @javascript
 Feature: Teacher can hide course modules when subtiles being used and this is respected
 
   Background:

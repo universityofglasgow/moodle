@@ -16,7 +16,6 @@
 .format-tiles #page .course-content ul li.section.main {
     background-color: #fff;
     border: 0;
-    border-radius: 10px;
 }
 .format-tiles li.section .sectionname {
     background-color: inherit;
@@ -31,4 +30,7 @@
 body.format-tiles.path-course-view.format-tiles-tile-open #page-content aside.block {
     /* Avoid empty white blocks showing on grey overlay at bottom of page*/
     background-color: inherit;
+}
+.format-tiles .expand-collapse-all-btns .btn-secondary {
+    min-height: unset;
 }

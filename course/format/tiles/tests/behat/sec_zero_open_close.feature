@@ -36,13 +36,11 @@ Feature: Section zero can be collapsed or expanded in tiles format
   @javascript
   Scenario: Collapse section zero then expand it again
     And I wait "2" seconds
-    When "#buttonhidesec0 a" "css_element" should be visible
-    And I click on "#buttonhidesec0 a" "css_element"
+    And I click on ".d-sm-block .buttonhidesec0" "css_element"
     And I wait "2" seconds
     And I should not see "Announcements Sec 0" in the "#section-0" "css_element"
 
-    And "#buttonhidesec0 a" "css_element" should be visible
-    And I click on "#buttonhidesec0 a" "css_element"
+    And I click on ".d-sm-block .buttonhidesec0" "css_element"
     And I wait "2" seconds
     And I should see "Announcements Sec 0" in the "#section-0" "css_element"
     And I log out tiles

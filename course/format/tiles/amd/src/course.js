@@ -38,7 +38,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         var reopenLastVisitedSection = false;
         var courseId;
         var courseContextId;
-        var resizeLocked = false;
+        let resizeTimeout;
         var enableCompletion;
         var reorgSectionsDisabledUntil = 0;
 
@@ -60,9 +60,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             ACTIVITY: ".activity",
             ACTIVITY_NAME: ".activityname",
             ABOVE_TILES: "#abovetiles",
+            FOCUSABLE_ELEMS: 'button, a, input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])',
             INSTANCE_NAME: ".instancename",
             SPACER: ".spacer",
-            SECTION_MOVEABLE: ".moveablesection",
             SECTION_ID: "#section-",
             SECTION_TITLE: ".sectiontitle",
             SECTION_MAIN: ".section.main",
@@ -71,7 +71,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             HIDE_SEC0_BTN: ".buttonhidesec0",
             SECTION_ZERO: "#section-0",
             MOODLE_VIDEO: ".mediaplugin.mediaplugin_videojs",
-            LAUNCH_STANDARD: '[data-action="launch-tiles-standard"]',
+            MOODLE_DIALOGUE: ".moodle-dialogue-confirm", // E.g. glossary entry.
             MANUAL_COMPLETION: '[data-action="toggle-manual-completion"]',
             TOOLTIP: "[data-toggle=tooltip]",
             MATHJAX_EQUATION: ".filter_mathjaxloader_equation"
@@ -80,7 +80,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             SELECTED: "selected",
             OPEN: "open",
             CLOSED: "closed",
-            LAUNCH_CM_MODAL: "launch-tiles-cm-modal",
             STATE_VISIBLE: 'state-visible', // This is a Snap theme class. Was added to make this format cooperate better with it.
             HAS_OPEN_TILE: 'format-tiles-tile-open',
             ON_TILE_CONTROL: 'on-tile-control' // Tiles may have controls on them which do not open the section when clicked.
@@ -89,7 +88,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         var Event = {
             CLICK: "click",
             KEYDOWN: "keydown",
-            SCROLL: "scroll"
         };
 
         var CSS = {
@@ -99,9 +97,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             BG_COLOUR: "background-color"
         };
         var Keyboard = {
-            ESCAPE: 27,
             TAB: 9,
-            RETURN: 13
+            ENTER: 13
         };
 
         const OVERLAY_ID = 'format_tiles_overlay';
@@ -159,9 +156,13 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             openTile = 0;
             $(Selector.BODY).removeClass(ClassNames.HAS_OPEN_TILE);
             overlay.fadeOut(300);
+
+            // If any moodle dialogues are open, close them (e.g. glossary auto links).
+            $(Selector.MOODLE_DIALOGUE).remove();
         };
 
         const overlay = $('#' + OVERLAY_ID);
+        overlay.attr('aria-hidden', true);
 
         /**
          * Used where the user clicks the window overlay but we want the active click to be behind the
@@ -208,48 +209,40 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // When user reaches last item, send them back to first.
                     // And vice versa if going backwards.
 
-                    var activities = contentArea.find(Selector.ACTIVITY).not(Selector.SPACER);
-                    contentArea.on(Event.KEYDOWN, function (e) {
-                        if (e.keyCode === Keyboard.ESCAPE) {
-                            // Close open tile, and return focus to closed tile, for screen reader user.
-                            browserStorage.setLastVisitedSection(0);
-                            cancelTileSelections(0);
-                            $(Selector.TILEID + contentArea.data('section')).focus();
-                        }
-                    });
-                    activities.on(Event.KEYDOWN, function (e) {
-                        if (e.keyCode === Keyboard.RETURN) {
+                    const activityLinks = contentArea.find(Selector.ACTIVITY).not(Selector.SPACER).find('a');
+                    activityLinks.on(Event.KEYDOWN, function (e) {
+                        if (e.keyCode === Keyboard.ENTER) {
                             var toClick = $(e.currentTarget).find("a");
-                            if (toClick.hasClass(ClassNames.LAUNCH_CM_MODAL)) {
-                                toClick.click();
-                            } else if (toClick.attr("href") !== undefined) {
-                                window.location.href = toClick.attr("href");
-                            }
+                            window.location.href = toClick.attr("href");
                         }
                     });
+
                     if (!isMobile) {
-                        activities.last().on(Event.KEYDOWN, function (e) {
+                        const focusableElements = contentArea.find(Selector.FOCUSABLE_ELEMS);
+                        const firstFocusableElement = focusableElements.eq(0);
+                        const lastFocusableElement = focusableElements.eq(focusableElements.length - 1);
+                        lastFocusableElement.on(Event.KEYDOWN, function (e) {
                             if (e.keyCode === Keyboard.TAB && !e.shiftKey
-                                    && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
+                                && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // RelatedTarget is the item we tabbed to.
                                 // If we reached here, the item we are on is not a member of the section we were in.
-                                // (I.e. we are trying to tab out of bottom of section) so move tab to section title instead.
+                                // (I.e. we are trying to tab out of bottom of section) so move tab to first item instead.
                                 setTimeout(function () {
-                                    // Allow very short delay so we dont skip forward on the basis of our last key press.
-                                    contentArea.find(Selector.SECTION_TITLE).focus();
+                                    // Allow very short delay so we don't skip forward on the basis of our last key press.
+                                    firstFocusableElement.focus();
                                     contentArea.find(Selector.SECTION_BUTTONS).css("top", "");
-                                }, 200);
+                                }, 100);
                             }
                         });
-                        contentArea.find(Selector.SECTION_TITLE).on(Event.KEYDOWN, function (e) {
+                        firstFocusableElement.on(Event.KEYDOWN, function (e) {
                             if (e.keyCode === Keyboard.TAB && e.shiftKey
-                                    && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
+                                && $(e.relatedTarget).closest(Selector.SECTION_MAIN).attr("id") !== contentArea.attr("id")) {
                                 // See explanation previous block.
                                 // Here we are trying to tab backwards out of the top of our section.
                                 // So take us to last item instead.
                                 setTimeout(function () {
-                                    activities.last().focus();
-                                }, 200);
+                                    lastFocusableElement.focus();
+                                }, 100);
                             }
                         });
                     }
@@ -364,10 +357,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     // Until mouse moves.
                     scrollTo += 1;
                 }
-                contentArea.find(Selector.SECTION_TITLE).focus();
+
                 // If user tries to scroll during animation, stop animation.
                 var events = "mousedown wheel DOMMouseScroll mousewheel keyup touchmove";
-                const page = $(Selector.PAGE);
+                const page = $("html, body");
                 page.on(events, function () {
                     page.stop();
                 });
@@ -377,11 +370,18 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     page.off(events, function () {
                         page.stop();
                     });
+                    // For users with screen readers, move focus to the first item within the tile.
+                    contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
                 });
-                openTile = sectionNumber;
 
-                // For users with screen readers, move focus to the section title within the tile.
-                contentArea.find(Selector.SECTION_TITLE).focus();
+                // For users with screen readers, move focus to the first item within the tile.
+                // Short timeout for this to allow for animation to finish.
+                // (Not relying on the animation callback alone for the delay as it's slightly too slow.)
+                setTimeout(() => {
+                    contentArea.find(Selector.FOCUSABLE_ELEMS).eq(0).focus();
+                }, 300);
+
+                openTile = sectionNumber;
 
                 // If we have any iframes in the section which were previous emptied out, re-populate.
                 // This will happen if we have previously closed a section with videos in, and they were muted.
@@ -424,11 +424,10 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          * Finally we re-open the section.
          * This is to ensure that the content bearing section is on the row under the tile clicked.
          * It is run at page load and again if window is re-sized etc.
-         * @param {boolean} delayBefore do we want a delay before we re-org.  This allows e.g. browser resizing to complete.
          * @param {boolean} fitTilesToScreenWidth whether we need to resize the tiles window while tiles are closed.
          * @returns {Promise}
          */
-        var reOrgSections = function (delayBefore, fitTilesToScreenWidth) {
+        var reOrgSections = function (fitTilesToScreenWidth) {
             var dfd = new $.Deferred();
             if (reorgSectionsDisabledUntil > Date.now()) {
                 dfd.resolve();
@@ -436,37 +435,23 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             const disableDurationMilliSeconds = 1000;
             reorgSectionsDisabledUntil = Date.now() + disableDurationMilliSeconds;
 
-            var openedSection = $(".moveablesection:visible");
-            var openedSectionNum = 0;
-            if (openedSection.length > 0) {
-                openedSectionNum = openedSection.data("section");
-                cancelTileSelections(0);
-            }
-            var reOrgFunc = function(delayBefore) {
-                tileFitter.runReOrg(delayBefore)
+            var reOrgFunc = function() {
+                tileFitter.runReOrg()
                     .done(function(result) {
-                        if (openedSectionNum !== 0) {
-                            expandSection(openedSection, openedSectionNum);
-                        }
                         dfd.resolve(result);
                     })
                     .fail(function(result) {
-                        if (openedSectionNum !== 0) {
-                            expandSection(openedSection, openedSectionNum);
-                        }
                         dfd.reject(result);
                     });
             };
 
             if (fitTilesToScreenWidth) {
-                setTimeout(function() {
-                    tileFitter.resizeTilesDivWidth(courseId).done(function() {
-                        reOrgFunc(false);
-                    }, delayBefore);
+                tileFitter.resizeTilesDivWidth(courseId).done(() => {
+                    // Wait until resize is done to start re-org to allow tiles to settle.
+                    reOrgFunc();
                 });
-
             } else {
-                reOrgFunc(delayBefore);
+                reOrgFunc();
             }
             return dfd.promise();
         };
@@ -591,6 +576,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 });
             }
             browserStorage.setLastVisitedSection(sectionNumber);
+
+            // If any moodle dialogues are open, close them (e.g. glossary auto links).
+            $(Selector.MOODLE_DIALOGUE).remove();
         };
 
         const removeUrlParam = function (pattern) {
@@ -614,7 +602,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 useSubTiles,
                 courseContextIdInit
             ) {
-                courseId = courseIdInit;
+                courseId = parseInt(courseIdInit);
                 courseContextId = courseContextIdInit;
                 isMobile = isMobileInit;
                 // Some args are strings or ints but we prefer bool.  Change to bool now as they are passed on elsewhere.
@@ -630,6 +618,8 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     userId
                 );
                 $(document).ready(function () {
+                    const isMultiSectionPage = $(Selector.TILES).length === 1;
+
                     if (useSubTiles) {
                         // We need to be able to style tooltips outside of ul.tiles element.
                         $(Selector.BODY).addClass('format-tiles-subtiles');
@@ -651,11 +641,32 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             // And click it.
                         }
                     }
+
+                    // If there is an anchor e.g. #module-123 then open relevant section.
+                    const anchorMatches = (window.location.href).match(/#module-(\d+)$/gi);
+                    if (anchorMatches && anchorMatches.length) {
+                        const anchorCmId = parseInt(anchorMatches[0].split('-')[1]);
+                        if (anchorCmId) {
+                            // Set openTile to null for now so that null is passed to tile fitter before AJAX below returns.
+                            openTile = null;
+                            ajax.call([{
+                                methodname: "format_tiles_get_course_mod_info", args: {cmid: anchorCmId}
+                            }])[0].done(function (data) {
+                                if (data && data.courseid === courseId) {
+                                    openTile = data.sectionnumber;
+                                    if (useJavascriptNav) {
+                                        populateAndExpandSection(
+                                            data.coursecontextid, data.sectionid, data.sectionnumber
+                                        );
+                                    }
+                                }
+                            });
+                        }
+                    }
+
                     if (openTile !== 0) {
                         tileFitter.init(courseId, openTile, fitTilesToWidth, false);
                     } else {
-                        // Set focus to the first tile (not section zero).
-                        $(Selector.TILEID + "1").focus();
                         tileFitter.init(courseId, null, fitTilesToWidth, false);
                     }
 
@@ -712,14 +723,14 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         const resizeObserver = new ResizeObserver(() => {
                             // On iOS resize events are triggered often on scroll because the address bar hides itself.
                             // Avoid this using observedElementWidth here.
-                            if (resizeLocked || observedElementWidth === widthObservedElement.outerWidth()) {
+                            if (observedElementWidth === widthObservedElement.outerWidth()) {
                                 return;
                             }
-                            resizeLocked = true;
 
                             // We wait for a short time before doing anything, as user may still be dragging window size change.
                             // We don't want to react to say 20 resize events happening over a single drag.
-                            setTimeout(function() {
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = setTimeout(function() {
 
                                 if (reorgSectionsDisabledUntil > Date.now()) {
                                     // We wait until inside our timeout for this as we may be responding to a fullscreen event.
@@ -748,25 +759,31 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                                 if (resizeRequired) {
                                     // Set global for comparison next time.
                                     observedElementWidth = widthObservedElement.outerWidth();
-                                    reOrgSections(true, fitTilesToWidth);
+                                    reOrgSections(fitTilesToWidth);
                                 }
-                                resizeLocked = false;
-                            }, 600);
+                            }, 100);
                         });
 
                         resizeObserver.observe(document.getElementById('page-content'));
 
                         // When user clicks to close a section using cross at top right in section.
                         pageContent.on(Event.CLICK, Selector.CLOSE_SEC_BTN, function (e) {
-                            cancelTileSelections($(e.currentTarget).data("section"));
+                            const currentSectionNumber = $(e.currentTarget).data("section");
+                            cancelTileSelections(currentSectionNumber);
+                            // For screen readers, move focus back to tile just closed so they can advance from there.
+                            $('#sectionlink-' + currentSectionNumber).focus();
                         });
 
                         setSectionZeroFromUserPref();
                         // Most filter button related JS is in filter_buttons.js module which is required below.
 
-                        // Remove section and cmid URL params is present as we are using JS nav.
-                        removeUrlParam(/(&|\\?)cmid=\d+/gi);
-                        removeUrlParam(/(&|\\?)section=\d+/gi);
+                        if (isMultiSectionPage) {
+                            // Remove section and cmid URL params if present as we are using JS nav and showing all tiles.
+                            removeUrlParam(/(&|\\?)cmid=\d+/gi);
+                            removeUrlParam(/(&|\\?)section=\d+/gi);
+                        }
+                    } else if (fitTilesToWidth) {
+                        tileFitter.resizeTilesDivWidth(courseId);
                     }
 
                     // If this event is triggered, user has updated a completion check box.
@@ -868,7 +885,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         if (useJavascriptNav) {
                             pageContent.on(Event.CLICK, Selector.FILTER_BUTTON, function () {
                                 cancelTileSelections(0);
-                                reOrgSections(true, false);
+                                reOrgSections(false);
                             });
                         }
 
@@ -914,44 +931,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             log.debug(err);
                         });
                     });
-
-                    // If a mobile user clicks an embedded video activity, we don't show them a modal.
-                    // It won't work well. Instead we direct them to the original site e.g. YouTube.
-                    if (isMobile) {
-                        pageContent.on(Event.CLICK, Selector.ACTIVITY + ".video a", function(e) {
-                            var target = $(e.currentTarget);
-                            var url = target.closest(Selector.ACTIVITY).data("url-secondary");
-                            if (url !== undefined) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                var cm = target.closest(Selector.ACTIVITY);
-                                ajax.call([{
-                                    methodname: "format_tiles_log_mod_view", args: {
-                                        courseid: courseId,
-                                        cmid: cm.data("cmid")
-                                    }
-                                }])[0].done(function () {
-                                    window.location.href = url;
-                                });
-                            }
-                        });
-                    } else {
-                        // If user is NOT on mobile device.
-
-                        // If return is pressed while an item is in focus, click the item.
-                        // This is to make the tiles keyboard navigable for users using screen readers.
-                        // User tabbing between tiles is handled by tabindex in the HTML.
-                        // Once the tile is clicked, the expand tile function will move focus to the first content item.
-                        // On escape key, we clear all selections and collapse tiles (handled above not here).
-                        $(Selector.TILE).on(Event.KEYDOWN, function (e) {
-                            if (e.keyCode === Keyboard.RETURN) { // Return key pressed.
-                                $(e.currentTarget).click();
-                            }
-                        });
-
-                        // Move focus to the first tile in the course (not sec zero contents if present).
-                        // $("ul.tiles .tile").first().focus();
-                    }
 
                     // When a section is open, fix close/edit buttons to top of screen (else hidden on scroll).
                     let fixButtonsDisabled = false;

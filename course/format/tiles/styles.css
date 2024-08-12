@@ -26,7 +26,8 @@
     border-top-color: var(--format-tiles-colour-5);
     transition: border-top-color 0s, transform .2s ease-in-out;
 }
-.format-tiles ul.tiles .tile.selected {
+.format-tiles .course-content ul.tiles .tile.tilestyle-1.selected,
+.format-tiles .course-content ul.tiles .tile.tilestyle-2.selected {
     border-top-color: var(--format-tiles-colour-5);
 }
 .format-tiles .embed_cm_modal .modal-header {
@@ -53,9 +54,13 @@
 }
 
 .format-tiles .filterbutton:hover,
-.sectionbutton:hover {
+.format-tiles .sectionbutton:hover {
     background-color: var(--format-tiles-colour-1);
     transition: all 0.1s ease-in-out;
+}
+.format-tiles .sectionbutton:focus-visible,
+.format-tiles .sectionbutton:focus {
+    outline: 1px solid black;
 }
 
 .format-tiles .filterbutton.selected {
@@ -298,8 +303,6 @@
 .format-tiles .course-content ul li.section.main.moveablesection {
     padding: 30px 10px 10px 10px;
     margin-left: 7px;
-    /* For snap theme*/
-    visibility: visible;
 }
 .format-tiles .course-content ul.tiles .tile {
     display: flex;
@@ -307,7 +310,7 @@
     max-width: 260px;
     flex-grow: 1;
     margin: 7px;
-    max-height: 175px;
+    height: 175px;
     vertical-align: top;
     background-color: #fff;
     border-top: 0.45em solid transparent;
@@ -316,8 +319,8 @@
     box-shadow: 2px 4px 5px 0 #bdbdbd;
     position: relative;
 }
-.format-tiles .course-content ul.tiles .tile:focus-visible {
-    border-top-color: red;
+.format-tiles .tile a.tile-link:focus-visible {
+    box-shadow: rgb(96, 96, 96) 2px 4px 5px 0;
 }
 .format-tiles .course-content ul.tiles .tile:focus-visible h3 {
     text-decoration: underline;
@@ -376,7 +379,7 @@
 }
 
 .format-tiles .course-content ul.tiles .tile-clickable:hover,
-li.activity.subtile:not(.unclickable):hover {
+.format-tiles li.activity.subtile:not(.unclickable):hover {
     transform: translateY(-6px);
     transition: 0.3s ease-in-out;
 }
@@ -425,6 +428,7 @@ li.activity.subtile:not(.unclickable):hover {
     max-width: 240px;
     flex-grow: 1;
     margin: 5px;
+    visibility: hidden;
 }
 .format-tiles ul.tiles .tile .topic-number {
     display: inline-block;
@@ -446,7 +450,7 @@ li.activity.subtile:not(.unclickable):hover {
     font-size: 1em;
 }
 
-li.activity .tileiconcontainer {
+.format-tiles li.activity .tileiconcontainer {
     padding: 10px;
     border-radius: 100%;
     width: 105px;
@@ -466,7 +470,7 @@ li.activity .tileiconcontainer {
     max-height: unset;
 }
 
-li.activity .tileiconcontainer .tile-icon .icon.fa {
+.format-tiles li.activity .tileiconcontainer .tile-icon .icon.fa {
     font-size: 60px;
 }
 .format-tiles li.section .tiles-editor-image .tile-icon img {
@@ -487,7 +491,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .iconpickericons .icon,
 .format-site .iconpickericons .icon,
 .format-tiles .sectionbutton {
-    color: #979797;
+    color: #8c8c8c;
     opacity: 1;
 }
 .format-tiles:not(.editing) .course-content .completioncheckbox.complete .icon {
@@ -519,9 +523,6 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles a.sectionbutton:hover {
     text-decoration: none;
 }
-.format-tiles .sectionbutton.closesectionbtn:focus {
-    outline: 1px dotted;
-}
 .format-tiles .sectionbutton img.icon {
     width: 18px;
     height: 18px;
@@ -534,7 +535,9 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     display: inline-block;
     /*z-index needs to be behind navigation-arrows as they may overlap*/
 }
-
+.format-tiles #single_section_tiles .pagesechead {
+    max-width: calc(100% - 175px);
+}
 .format-tiles .sectionbuttons {
     position: relative;
     right: 30px;
@@ -542,7 +545,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     z-index: 2;
 }
 .format-tiles .sectionbutton {
-    background-color: rgba(100, 100, 100, 0.05);
+    background-color: rgba(243, 243, 243);
     margin-left: 5px;
     opacity: 1;
     width: 45px;
@@ -550,6 +553,7 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     text-align: center;
     display: inline-block;
     border-radius: 50%;
+    border: none;
 }
 .format-tiles .expand-section,
 .format-tiles .collapse-section {
@@ -629,6 +633,9 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     /* stylelint-disable-next-line declaration-no-important */
     margin-top: 0 !important;
 }
+.format-tiles .single-section h3.sectionname {
+    text-align: left;
+}
 
 .format-tiles #section-0 ul.section {
     margin: 1rem 1rem 0 1rem;
@@ -645,21 +652,13 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
     margin-bottom: 0;
 }
 
-.format-tile .ul.tiles .single-section .section-navigation {
+.format-tiles .ul.tiles .single-section .section-navigation {
     margin-bottom: 0;
 }
 
 .format-tiles ul.tiles li.section .format_tiles_section_content .modtype_label .no-overflow,
 .format-tiles #section-0 .format_tiles_section_content .summary .no-overflow {
     margin-bottom: 5px;
-}
-.format-tiles ul.tiles li.section .format_tiles_section_content:not(.collapse) {
-    /*For snap theme*/
-    display: block;
-}
-
-.format-tiles.theme-snap .course-content {
-    max-width: inherit;
 }
 .format-tiles .label_content {
     overflow: hidden;
@@ -673,10 +672,6 @@ li.activity .tileiconcontainer .tile-icon .icon.fa {
 .format-tiles .expand-collapse-all-btns {
     width: 100%;
     text-align: right;
-}
-.format-tiles .expand-collapse-all-btns .btn-secondary {
-    /*Adatpable theme*/
-    min-height: unset;
 }
 .format-tiles .buttonhidesec0 {
     display: none;
@@ -912,11 +907,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     color: #333;
     word-wrap: break-word;
 }
-.format-tiles.theme-snap ul.tiles .tile h3,
-.format-tiles.theme-snap ul.tiles .subtile h4,
-.format-tiles.theme-snap ul.tiles .tile .tile-textinner.longtitle h3 {
-    font-size: 1em;
-}
 .format-tiles .sectiontitlecontainer {
     margin: 0 0 0.5em 0.5em;
     display: inline-block;
@@ -928,10 +918,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     font-size: 2em;
     padding-right: 7px;
 }
-.format-tiles .sectiontitle:focus {
-    outline: 1px dotted;
-}
-
 .format-tiles .sectiontitle::after,
 .format-tiles .sectiontitle::after {
     content: "";
@@ -959,6 +945,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     /* We use important here as core-course-dragdrop is not replacing this.originalstyle correctly. */
     /* stylelint-disable-next-line declaration-no-important */
     opacity: 1 !important;
+    border-radius: 10px;
 }
 .format-tiles .hidden #hiddeneye {
     background-image: url([[pix:format_tiles|eye-slash]]);
@@ -1536,7 +1523,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles li.activity.subtile:not(:focus) {
     outline: unset;
 }
-.format-tiles :link:focus {
+.format-tiles a.cm-link:focus,
+.format-tiles a.tile-link:focus {
     outline: unset;
     box-shadow: 2px 4px 5px 0 #bdbdbd;
 }
@@ -1561,10 +1549,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     margin-left: 30px;
 }
 
-/*Lambda theme*/
-.format-tiles .activity-information {
-    float: none;
-}
 .format-tiles .margin-rt .section-cm-edit-actions {
     margin-right: 35px;
 }
@@ -1674,6 +1658,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles .course-content ul.tiles .tile.phototile.tilestyle-2 .photo-tile-text h3 {
     font-size: 20px;
     box-decoration-break: clone;
+    /*Chrome needs this*/
+    -webkit-box-decoration-break: clone;
 }
 .format-tiles ul.tiles .tile.phototile .tile-text {
     margin-top: 35px;
@@ -1684,8 +1670,8 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     right: 0;
 }
 
-.section.main:not(.course-section) .activity.subtile .availabilityinfo,
-.section.main:not(.course-section) .activity.subtile .contentafterlink {
+.format_tiles .section.main:not(.course-section) .activity.subtile .availabilityinfo,
+.format_tiles .section.main:not(.course-section) .activity.subtile .contentafterlink {
     margin-left: 0;
     padding: 0;
 }
@@ -1869,15 +1855,13 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles .tile:not(.phototile) {
     background-color: #fff;
 }
-.format-tiles .tile-bg {
+.format-tiles .tile-bg,
+.format-tiles .tile-link {
     width: 100%;
     height: 100%;
     position: absolute;
     top: 0;
     left: 0;
-}
-.format-tiles .moveablesection .availabilityinfo {
-    margin: 15px;
 }
 .format-tiles .moveablesection .availabilityinfo i {
     font-size: 1.2em;
@@ -1907,48 +1891,60 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: 45px;
     height: 45px;
 }
-
 .format-tiles li.subtile .tileiconcontainer.administration {
-    border: 3px solid #da58ef;
+    border: 1px dashed #da58ef30;
 }
 .format-tiles li.subtile .tileiconcontainer.assessment {
-    border: 3px solid #f90086;
+    border: 1px dashed #f9008630;
+    background-color: #f9008606;
 }
 .format-tiles li.subtile .tileiconcontainer.content {
-    border: 3px solid #0099ad;
+    border: 1px dashed #0099ad30;
+    background-color: #0099ad06;
 }
 .format-tiles li.subtile .tileiconcontainer.collaboration {
-    border: 3px solid #6f46f7;
+    border: 1px dashed #6f46f730;
+    background-color: #6f46f706;
 }
 .format-tiles li.subtile .tileiconcontainer.communication {
-    border: 3px solid #eb6200;
+    border: 1px dashed #eb620030;
+    background-color: #eb620006;
 }
 .format-tiles li.subtile .tileiconcontainer.interactivecontent {
-    border: 3px solid #8d3d1b;
+    border: 1px dashed #8d3d1b30;
+    background-color: #8d3d1b06;
 }
-.format-tiles li.subtile .tileiconcontainer.other {
-    border: 3px solid #212529;
+/*Default will include .other*/
+.format-tiles li.subtile .tileiconcontainer {
+    border: 1px dashed #21252930;
+    background-color: #21252906;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.administration {
     background-color: #da58ef;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.assessment {
     background-color: #f90086;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.content {
     background-color: #0099ad;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.collaboration {
     background-color: #6f46f7;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.communication {
     background-color: #eb6200;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.interactivecontent {
     background-color: #8d3d1b;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .tileiconcontainer.other {
     background-color: #212529;
+    border: none;
 }
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .activityicon:not(.nofilter),
 .format-tiles .format-tiles-colour-subtile-icon-bg li.subtile .activityiconcontainer:not(.isbranded) .icon:not(.nofilter) {
@@ -1959,6 +1955,15 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/*Moodle 4.4+ specific styles*/
+.format-tiles li.activity.subtile .tileiconcontainer .tile-icon .icon {
+    max-width: 70px;
+    max-height: 70px;
+    width: 70px;
+    height: 70px;
+    padding: 0;
 }
 
 @media (min-width: 768px) {
@@ -1977,6 +1982,9 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     }
     body.jsenabled.format-tiles .section-zero-empty .above-tiles-buttons {
         min-width: 50px;
+    }
+    .format-tiles #single_section_tiles .pagesechead {
+        max-width: calc(100% - 175px);
     }
 }
 
@@ -2024,10 +2032,6 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
     .format-tiles .course-content .card-block {
         /* stylelint-disable-next-line declaration-no-important */
         padding-left: 0 !important;
-    }
-    .format-tiles .card .card-body {
-        /* Moove theme.*/
-        padding: 0;
     }
     .format-tiles .course-content ul.section {
         padding: 1em;
@@ -2078,7 +2082,7 @@ allow tiles to be taller and thinner so can fit two side by side in portrait on 
         font-size: 1em;
     }
     .format-tiles #page.container-fluid,
-    .path-course-view li.activity > div {
+    .format-tiles .path-course-view li.activity > div {
         /* stylelint-disable-next-line declaration-no-important */
         padding: 0 !important;
     }

@@ -1,22 +1,22 @@
 <div class="above-tiles-buttons text-right{{^section_zero_show}} section-zero-empty{{/section_zero_show}}">
     {{#section_zero_show}}
-        <a class="sectionbutton buttonhidesec0 open float-right ml-1" href="#" data-section="0">
-            <span class="sec-zero-open-icon justify-content-center align-items-center h-100" title="{{#str}}close, format_tiles{{/str}}">
-                {{#pix}}close, format_tiles, {{#str}}close, format_tiles{{/str}}{{/pix}}
+        <button class="sectionbutton buttonhidesec0 open float-right ml-1" data-section="0">
+            <span class="sec-zero-open-icon justify-content-center align-items-center h-100" title="{{#str}}closetopsection, format_tiles{{/str}}">
+                {{#pix}}close, format_tiles, {{#str}}closetopsection, format_tiles{{/str}}{{/pix}}
             </span>
-            <span class="sec-zero-closed-icon justify-content-center align-items-center h-100" title="{{#str}}expand, format_tiles{{/str}}">
+            <span class="sec-zero-closed-icon justify-content-center align-items-center h-100" title="{{#str}}expandtopsection, format_tiles{{/str}}">
                 {{#pix}}sort, format_tiles, {{#str}}expand, format_tiles{{/str}}{{/pix}}
             </span>
 
-        </a>
+        </button>
     {{/section_zero_show}}
     {{#jsnavadminallowed}}
         <div class="btn-group">
-            <a type="button" class="sectionbutton align-top" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{#str}}controls, format_tiles{{/str}}">
+            <button type="button" class="sectionbutton align-top" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{#str}}controls, format_tiles{{/str}}">
                 <span id="sec-zero-closed-icon" class="d-flex justify-content-center align-items-center h-100">
                     <i class="icon fa fa-ellipsis-h fa-fw m-0" aria-hidden="true"></i>
                 </span>
-            </a>
+            </button>
             <div class="dropdown-menu dropdown-menu-right">
                 <a class="dropdown-item" href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}&stopjsnav=1">
                     {{#jsnavuserenabled}}

@@ -173,21 +173,25 @@ class tile_photo {
     /**
      * When course_section_deleted / course_module_deleted is trigger we remove related files.
      * @param int $courseid the course id.
-     * @param int $sectionid the section id (if limiting to a section)
+     * @param int $sectionid the section id (pass in -1 if not limiting to a section)
      * @param int $cmid
      * @return bool
      */
-    public static function delete_files_from_ids($courseid, $sectionid = 0, $cmid = 0) {
+    public static function delete_files_from_ids(int $courseid, int $sectionid, $cmid = 0) {
         $params = self::file_api_params();
         $fs = get_file_storage();
         if (!$cmid) {
+            if (!$sectionid || $sectionid < -1) {
+                debugging("Must pass in a positive section ID or -1 if not limiting to a section", DEBUG_DEVELOPER);
+                throw new \Exception("Invalid section");
+            }
             $context = \context_course::instance($courseid, IGNORE_MISSING);
             if ($context) {
                 return $fs->delete_area_files(
                     $context->id,
                     $params['component'],
                     $params['filearea'],
-                    $sectionid ?? false
+                    $sectionid === -1 ? false : $sectionid
                 );
             }
         } else {
@@ -328,7 +332,6 @@ class tile_photo {
 
     /**
      * Clear the data associated with this tile_photo object.
-     * @throws \dml_exception
      */
     public function clear() {
         $this->delete_stored_file();
@@ -522,7 +525,7 @@ class tile_photo {
         if (isset($pathinfo['extension'])) {
             $newfilename .= '.' . $pathinfo['extension'];
         }
-        return $newfilename;
+        return $newfilename ?? '';
     }
 }
 

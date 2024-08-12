@@ -86,9 +86,16 @@
                 <div class="media-body align-self-center">
                     <div class="activityname">
                         {{#activityname}}
-                            {{$ core/inplace_editable }}
-                                {{> core/inplace_editable }}
-                            {{/ core/inplace_editable }}
+                            {{#editing}}
+                                {{! We use the core template for non subtiles if user is editing, so modals will not be launched}}
+                                {{$ core/inplace_editable }}
+                                    {{> core/inplace_editable }}
+                                {{/ core/inplace_editable }}
+                            {{/editing}}
+                            {{^editing}}
+                                {{! If user is not editing, we use this for non subtiles as we need to add data-action for modal launch}}
+                                <a href="{{url}}"{{#hasModal}} data-action="launch-tiles-cm-modal"{{/hasModal}} class="aalink stretched-link" onclick="{{onclick}}"><span class="instancename">{{cmtitle}}</span></a>
+                            {{/editing}}
                         {{/activityname}}
                         {{#activitybadge}}
                             {{$ core_courseformat/local/content/cm/activitybadge }}

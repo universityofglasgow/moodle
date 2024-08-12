@@ -64,7 +64,10 @@ $PAGE->navbar->add(get_string('uploadnewphoto', 'format_tiles'));
 $tilephoto = new \format_tiles\local\tile_photo($coursecontext, $sectionid);
 
 if ($deletephoto) {
+    require_sesskey();
     $tilephoto->clear();
+    // Delete any other stored photo files for this tile.
+    \format_tiles\local\tile_photo::delete_files_from_ids($courseid, $sectionid);
     \core\notification::success(get_string('imagedeletedfrom', 'format_tiles', $sectionname));
     redirect(new \moodle_url('/course/view.php', ['id' => $course->id]));
 }

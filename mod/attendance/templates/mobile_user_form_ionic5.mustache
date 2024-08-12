@@ -49,34 +49,34 @@
     <%#showmessage%>
         <%#messages%>
             <span class="messages">
-                <ion-item>
-                    {{ 'plugin.mod_attendance.<% string %>' | translate }}
+                <ion-item class="ion-text-wrap">
+                    <ion-label>{{ 'plugin.mod_attendance.<% string %>' | translate }}</ion-label>
                 </ion-item>
             </span>
         <%/messages%>
     <%/showmessage%>
     <%#showpassword%>
-    <ion-list [(ngModel)]="studentpass">
     <ion-item>
         <ion-label>{{ 'plugin.mod_attendance.enterpassword' | translate }}:</ion-label>
-        <ion-input type="text" name="studentpass"></ion-input>
+        <ion-input type="text" name="studentpass" [(ngModel)]="studentpass"></ion-input>
     </ion-item>
-    </ion-list>
     <%/showpassword%>
     <%#showstatuses%>
-    <ion-list radio-group [(ngModel)]="status">
+    <ion-radio-group [(ngModel)]="status" name="status">
         <%#statuses%>
-        <ion-item>
+        <ion-item class="ion-text-wrap">
             <ion-label><% description %></ion-label>
-            <ion-radio value="<% stid %>"></ion-radio>
+            <ion-radio slot="end" value="<% stid %>"></ion-radio>
         </ion-item>
         <%/statuses%>
-    </ion-list>
-    <button ion-button core-site-plugins-new-content component="mod_attendance" method="mobile_view_activity" [args]="{cmid: <% cmid %>, courseid: <% courseid %>, sessid: <% sessid %>, status: status, studentpass: studentpass}">
+    </ion-radio-group>
+    <ion-button class="ion-margin" expand="block" core-site-plugins-new-content component="mod_attendance" method="mobile_view_activity" [args]="{cmid: <% cmid %>, courseid: <% courseid %>, sessid: <% sessid %>, status: status, studentpass: studentpass}">
         {{ 'plugin.mod_attendance.submitattendance' | translate }}
-    </button>
+    </ion-button>
     <%/showstatuses%>
     <%#disabledduetotime%>
-    {{ 'plugin.mod_attendance.somedisabledstatus' | translate }}
+    <ion-item>
+        <ion-label>{{ 'plugin.mod_attendance.somedisabledstatus' | translate }}</ion-label>
+    </ion-item>
     <%/disabledduetotime%>
 </div>

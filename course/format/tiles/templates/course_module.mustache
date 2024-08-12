@@ -40,7 +40,7 @@
         * hasSpacersBefore - does this sub tile need spacer sub tiles before it?
         * previouswaslabel - was the previous sub tile a label?
         * useSubtiles - are we usign sub tiles here (or standard list form)?
-        * isEmbeddedResource - is this a resource whcih launces a modal when clicked?
+        * hasModal - is this a resource which launces a modal when clicked?
         * clickable - is this item clickable by user (or click disabled?)
         * extraclasses - any extra classes
         * content - some activities have content e.g. labels and pages, to be displayed in modal
@@ -68,7 +68,7 @@
         "hasSpacersBefore": 0,
         "previouswaslabel": 0,
         "useSubtiles": 1,
-        "isEmbeddedResource": 0,
+        "hasModal": 0,
         "clickable": 1,
         "extraclasses": "",
         "content": "This is a label",
@@ -92,21 +92,29 @@
     {{>format_tiles/local/content/section/cmitem}}
 {{/useSubtiles}}
 {{#useSubtiles}}
-    <li class="activity{{^is_label}} subtile{{/is_label}} {{#is_label}}fullwidth{{/is_label}} {{modname}} modtype_{{modname}}{{#modresourceicon}} resourcetype_{{modresourceicon}}{{/modresourceicon}}{{^clickable}} unclickable {{/clickable}}{{#clickable}} cursorpointer{{/clickable}} launch-tiles-{{launchtype}}{{#photourl}} hasphoto{{/photourl}} {{extraclasses}}"
+    <li class="activity{{^is_label}} subtile{{/is_label}} {{#is_label}}fullwidth{{/is_label}} {{modname}} modtype_{{modname}}{{#modresourceicon}} resourcetype_{{modresourceicon}}{{/modresourceicon}}{{^clickable}} unclickable {{/clickable}}{{#clickable}} cursorpointer{{/clickable}} {{#photourl}} hasphoto{{/photourl}} purpose_{{purpose}} {{extraclasses}}"
+    {{#hasSpacersBefore}}
+        {{! A label will have spacers before it to left align the items on the previous row }}
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+        <li class="activity subtile spacer" aria-hidden="true"></li>
+    {{/hasSpacersBefore}}
+    <li class="activity{{^is_label}} subtile{{/is_label}} {{#is_label}}fullwidth{{/is_label}} {{modname}} modtype_{{modname}} {{#modresourceicon}} resourcetype_{{modresourceicon}}{{/modresourceicon}}{{^clickable}} unclickable {{/clickable}}{{#clickable}} cursorpointer{{/clickable}} {{#photourl}} hasphoto{{/photourl}} purpose_{{purpose}} {{extraclasses}}"
         id="module-{{cmid}}" data-modtype="{{modname}}{{#modresourceicon}}_{{{modresourceicon}}}{{/modresourceicon}}"
-        tabindex="3"
         data-cmid="{{cmid}}" data-completion="{{completion}}"
         data-modinstance="{{modinstance}}" data-contextid="{{modcontextid}}"
-        {{#pluginfileUrl}}data-url="{{{pluginfileUrl}}}" {{/pluginfileUrl}}
-        {{#secondaryurl}}data-url-secondary="{{{secondaryurl}}}" {{/secondaryurl}}
         data-title="{{{activityname}}}"
         {{#hascompletion}}data-completion-state="{{completionstate}}"{{/hascompletion}}
     >
         {{^is_label}}
             {{#clickable}}
-                <a href="{{url}}" {{#isEmbeddedResource}} data-action="launch-tiles-resource-modal"{{/isEmbeddedResource}}{{#isEmbeddedModule}}
-                   data-action="launch-tiles-module-modal"{{/isEmbeddedModule}}{{#onclick}} onclick="{{{onclick}}}"{{/onclick}}
-                   data-title="{{{activityname}}}" class="cm-link {{{extraclasses}}}"  data-action="launch-tiles-{{launchtype}}">
+                <a href="{{url}}" {{#hasModal}} data-action="launch-tiles-cm-modal"{{/hasModal}}
+                    {{#onclick}} onclick="{{{onclick}}}"{{/onclick}}
+                   data-title="{{{activityname}}}" class="cm-link {{{extraclasses}}}">
                     {{> format_tiles/course_module_subtile_inner}}
                 </a>
             {{/clickable}}
@@ -135,9 +143,7 @@
 
         {{#dimmed}}
             {{#clickable}}
-                <a href="{{url}}" class="dim-overlay cm-link"
-                    {{#isEmbeddedResource}} data-action="launch-tiles-resource-modal"{{/isEmbeddedResource}}
-                    {{#isEmbeddedModule}} data-action="launch-tiles-module-modal"{{/isEmbeddedModule}}
+                <a href="{{url}}" class="dim-overlay cm-link"{{#hasModal}} data-action="launch-tiles-cm-modal"{{/hasModal}}
                     {{#onclick}} onclick="{{{onclick}}}"{{/onclick}}>
                 </a>
             {{/clickable}}

@@ -35,15 +35,6 @@ $functions = [
         'loginrequired' => true,
         'capabilities' => 'moodle/course:update',
     ],
-    'format_tiles_log_mod_view' => [
-        'classname' => 'format_tiles\external\external',
-        'methodname' => 'log_mod_view',
-        'description' => 'Trigger course module view event (for log) for a resource (for modal use)',
-        'type' => 'write',
-        'ajax' => true,
-        'loginrequired' => true,
-        'capabilities' => 'mod/[modulename]:view',
-    ],
     'format_tiles_log_tile_click' => [
         'classname' => 'format_tiles\external\external',
         'methodname' => 'log_tile_click',

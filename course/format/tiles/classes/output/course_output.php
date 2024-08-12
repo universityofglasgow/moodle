@@ -23,7 +23,6 @@
  */
 namespace format_tiles\output;
 
-use format_tiles\local\dynamic_styles;
 use format_tiles\local\format_option;
 use format_tiles\local\tile_photo;
 use format_tiles\local\filters;
@@ -61,10 +60,10 @@ class course_output implements \renderable, \templatable {
     private $courserenderer;
 
     /**
-     * Names of the modules for which modal windows should be used e.g. 'page'
-     * @var array of resources and modules
+     * Course Module IDs for which modal windows should be used.
+     * @var array of CM IDs
      */
-    private $usemodalsforcoursemodules;
+    private array $modalscmids;
 
     /**
      * User's device type e.g. DEVICE_TYPE_MOBILE ('mobile')
@@ -145,7 +144,7 @@ class course_output implements \renderable, \templatable {
             $this->courserenderer = $courserenderer;
         }
         $this->devicetype = \core_useragent::get_device_type();
-        $this->usemodalsforcoursemodules = \format_tiles\local\modal_helper::allowed_modal_modules();
+        $this->modalscmids = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($this->course->id, false);
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
@@ -234,7 +233,7 @@ class course_output implements \renderable, \templatable {
 
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
         $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
-        $data['ulextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
+        $data['outerextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
             ? 'format-tiles-colour-subtile-icon-bg' : '';
 
         foreach ($this->courseformatoptions as $k => $v) {
@@ -579,6 +578,7 @@ class course_output implements \renderable, \templatable {
                     'tileid' => $section->section,
                     'secid' => $section->id,
                     'title' => $title,
+                    'tilearialabel' => get_string('tilearialabel', 'format_tiles', $title),
                     'tileicon' => format_option::get($this->course->id, format_option::OPTION_SECTION_ICON, $section->id),
                     'current' => course_get_format($this->course)->is_section_current($section),
                     'hidden' => !$section->visible,
@@ -857,7 +857,6 @@ class course_output implements \renderable, \templatable {
         $moduleobject['modname'] = $mod->modname;
         $moduleobject['url'] = $mod->url;
         $moduleobject['visible'] = $mod->visible;
-        $moduleobject['launchtype'] = 'standard';
         $moduleobject['content'] = $mod->get_formatted_content(['overflowdiv' => true, 'noclean' => true]);
         if (!$this->courseformatoptions['courseusesubtiles'] && $mod->indent) {
             $moduleobject['indentlevel'] = $mod->indent;
@@ -870,7 +869,7 @@ class course_output implements \renderable, \templatable {
         if ($treataslabel) {
             $moduleobject['is_label'] = true;
             $moduleobject['long_label'] = strlen($mod->content) > 300 ? 1 : 0;
-            if ($isfirst && !$previouswaslabel && $this->courseformatoptions['courseusesubtiles']) {
+            if (!$isfirst && !$previouswaslabel && $this->courseformatoptions['courseusesubtiles']) {
                 $moduleobject['hasSpacersBefore'] = 1;
             }
         }
@@ -879,9 +878,8 @@ class course_output implements \renderable, \templatable {
             $moduleobject['modinstance'] = $mod->instance;
         }
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
-            ? \format_tiles\local\util::get_mod_resource_icon_name($mod->context->id) : null;
+            ? \format_tiles\local\util::get_mod_resource_type($mod->icon) : null;
 
-        $treataslabel = $mod->has_custom_cmlist_item();
         if (!$treataslabel && get_config('format_tiles', 'allowphototiles')) {
             $iconclass = '';
             if ($mod->modname == 'resource' && $this->moodlerelease <= 4.2) {
@@ -905,6 +903,12 @@ class course_output implements \renderable, \templatable {
             } else if ($mod->modname == 'customcert') {
                 // Temporary icon for mod_customcert.
                 $modiconurl = $output->image_url('tileicon/award-solid', 'format_tiles');
+            } else if (in_array($moduleobject['modresourceicon'], ['video', 'audio'])) {
+                // Override icon with local version.
+                $modiconurl = $output->image_url(
+                    'resource_subtile/' . $moduleobject['modresourceicon'],
+                    'format_tiles'
+                );
             } else {
                 $modiconurl = $mod->get_icon_url($output);
             }
@@ -921,36 +925,14 @@ class course_output implements \renderable, \templatable {
         }
 
         // Specific handling for embedded resource items (e.g. PDFs)  as allowed by site admin.
-        if ($mod->modname == 'resource') {
-            if (in_array($moduleobject['modresourceicon'], $this->usemodalsforcoursemodules['resources'])) {
-                // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
-                $moduleobject['isEmbeddedResource'] = $mod->onclick ? 0 : 1;
-                $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'resource-modal';
-                $moduleobject['pluginfileUrl'] = self::plugin_file_url($mod);
-                $moduleobject['secondaryurl'] = $moduleobject['pluginfileUrl'] . '?redirect=1';
-            } else {
-                // We are not using modal, so add the standard moodle onclick event to the link to launch pop up if appropriate.
-                if ($mod->onclick) {
-                    $moduleobject['onclick'] = htmlspecialchars_decode($mod->onclick, ENT_QUOTES);
-                    $moduleobject['launchtype'] = 'standard';
-                }
-            }
-        }
+        $moduleobject['hasModal'] = $mod->onclick ? 0 : in_array($mod->id, $this->modalscmids);
 
         // Issue 67 handling for LTI set to open in new window.
         // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
         if ($mod->onclick) {
             $moduleobject['onclick'] = htmlspecialchars_decode($mod->onclick, ENT_QUOTES);
-            $moduleobject['launchtype'] = 'standard';
         }
 
-        // Specific handling for embedded course module items (e.g. page) as allowed by site admin.
-        if (in_array($mod->modname, $this->usemodalsforcoursemodules['modules'])) {
-            // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
-            $moduleobject['isEmbeddedModule'] = $mod->onclick ? 0 : 1;
-            $moduleobject['launchtype'] = $mod->onclick ? 'standard' : 'module-modal';
-
-        }
         $moduleobject['showdescription'] =
             isset($mod->showdescription) && !$treataslabel ? $mod->showdescription : 0;
         if ($moduleobject['showdescription']) {
@@ -1003,20 +985,6 @@ class course_output implements \renderable, \templatable {
             $externalurl = $DB->get_field('url', 'externalurl', ['id' => $mod->instance]);
             $modifiedvideourl = self::check_modify_embedded_url($externalurl);
 
-            $usemodalsforurl = in_array('url', $this->usemodalsforcoursemodules['resources']);
-            if (!$mod->onclick && $usemodalsforurl) {
-                // We will be launching modal so need secondary URL under embed so users can click if embed doesn't work.
-                // We will also use it to redirect mobile users to YouTube or wherever since embed won't work well for them.
-                if ($modifiedvideourl) {
-                    $moduleobject['pluginfileUrl'] = $modifiedvideourl;
-                    $moduleobject['secondaryurl'] = $externalurl;
-                } else {
-                    $moduleobject['pluginfileUrl'] = $externalurl;
-                    $moduleobject['secondaryurl'] = $externalurl;
-                }
-                $moduleobject['launchtype'] = 'url-modal';
-            }
-
             if ($modifiedvideourl || self::is_video_url($externalurl)) {
                 // Even though it's really a URL activity, display it as "video" activity with video icon.
                 $videostring = get_string('displaytitle_mod_mp4', 'format_tiles');
@@ -1025,7 +993,7 @@ class course_output implements \renderable, \templatable {
                     $moduleobject['modnameDisplay'] = $videostring;
                 }
                 $moduleobject['icon'] = [
-                    'url' => $output->image_url("circle-play", 'format_tiles'),
+                    'url' => $output->image_url("resource_subtile/mp4", 'format_tiles'),
                     'label' => $videostring,
                 ];
             }
@@ -1079,31 +1047,6 @@ class course_output implements \renderable, \templatable {
             }
         }
         return $moduleobject;
-    }
-
-    /**
-     * Adapted from mod/resource/view.php
-     * @param \cm_info $cm the course module object
-     * @return string url for file
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function plugin_file_url($cm) {
-        global $DB, $CFG;
-        $context = \context_module::instance($cm->id);
-        $resource = $DB->get_record('resource', ['id' => $cm->instance], '*', MUST_EXIST);
-        $fs = get_file_storage();
-        $files = $fs->get_area_files(
-            $context->id, 'mod_resource', 'content', 0, 'sortorder DESC, id ASC', false
-        );
-        if (!empty($files)) {
-            $file = reset($files);
-            unset($files);
-            $resource->mainfile = $file->get_filename();
-            return $CFG->wwwroot . '/pluginfile.php/' . $context->id . '/mod_resource/content/'
-                . $resource->revision . $file->get_filepath() . rawurlencode($file->get_filename());
-        }
-        return '';
     }
 
     /**

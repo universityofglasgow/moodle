@@ -178,18 +178,22 @@ class external extends external_api {
      * @throws stored_file_creation_exception
      */
     private static function set_tile_photo($data, $context): array {
-        $optiontype = \format_tiles\local\format_option::OPTION_SECTION_ICON;
-        $elementid = $data['sectionid'];
+        $sectionid = $data['sectionid'];
 
         if (!$data['image']) {
+            // If image is empty we are trying to delete the photo.
             $tilephoto = new tile_photo(
                 $context,
-                $context->contextlevel === CONTEXT_COURSE ? $elementid : 0
+                $context->contextlevel === CONTEXT_COURSE ? $sectionid : 0
             );
             $tilephoto->clear();
+            // Delete all files associated with this section.
+            \format_tiles\local\tile_photo::delete_files_from_ids($data['courseid'], $sectionid);
 
-            // If there is an icon attached to this element, clear it (as here we are setting a photo).
-            \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
+            // If there is an icon attached to this element, clear it (as in this function we are setting a photo).
+            \format_tiles\local\format_option::unset(
+                $data['courseid'], \format_tiles\local\format_option::OPTION_SECTION_ICON, $sectionid
+            );
 
             return ['status' => true, 'imageurl' => ''];
         }
@@ -231,7 +235,9 @@ class external extends external_api {
         $file = $tilephoto->set_file_from_stored_file($sourcefile, $data['image']);
         if ($file) {
             // If there is an icon attached to this element, clear it (as here we are setting a photo).
-            \format_tiles\local\format_option::unset($data['courseid'], $optiontype, $elementid);
+            \format_tiles\local\format_option::unset(
+                $data['courseid'], \format_tiles\local\format_option::OPTION_SECTION_ICON, $sectionid
+            );
             return ['status' => true, 'imageurl' => $tilephoto->get_image_url()];
         } else {
             return ['status' => false, 'imageurl' => ''];
@@ -255,7 +261,7 @@ class external extends external_api {
 
         // An icon for a single section or cm - use custom Tiles format options.
         $optiontype = \format_tiles\local\format_option::OPTION_SECTION_ICON;
-        $elementid = $data['sectionid'];
+        $sectionid = $data['sectionid'];
 
         // We are dealing with a tile icon for one particular section, so check if user has picked the course default.
         $defaulticonthiscourse = $DB->get_field(
@@ -265,18 +271,22 @@ class external extends external_api {
         if ($data['image'] == $defaulticonthiscourse) {
             // Using default icon for a tile do don't store anything in database = default.
             // Unset any icon.
-            format_option::unset($data['courseid'], format_option::OPTION_SECTION_ICON, $elementid);
+            format_option::unset($data['courseid'], format_option::OPTION_SECTION_ICON, $sectionid);
             // Also unset any photo.
-            format_option::unset($data['courseid'], format_option::OPTION_SECTION_PHOTO, $elementid);
+            format_option::unset($data['courseid'], format_option::OPTION_SECTION_PHOTO, $sectionid);
+            // Delete any related photo files.
+            \format_tiles\local\tile_photo::delete_files_from_ids($data['courseid'], $sectionid);
             return true;
         } else {
-            $result = format_option::set($data['courseid'], $optiontype, $elementid, $data['image']);
+            $result = format_option::set($data['courseid'], $optiontype, $sectionid, $data['image']);
         }
 
         if ($result) {
             // If there is a photo attached to this element, clear it (as here we are setting an icon).
             $tilephoto = new tile_photo($context, $data['sectionid']);
             $tilephoto->clear();
+            // Delete any related photo files.
+            \format_tiles\local\tile_photo::delete_files_from_ids($data['courseid'], $sectionid);
         }
         return $result;
     }
@@ -405,103 +415,6 @@ class external extends external_api {
             ['status' => new external_value(PARAM_BOOL, 'status: true if success')]
         );
     }
-
-    /**
-     * Simulate the resource/view.php and page/view.php etc logging when called from AJAX.
-     *
-     * This is a re-implementation of the core service only required because the core
-     * version is not callable from AJAX
-     * @see mod_resource_external::log_resource_view() for example
-     * @param int $courseid the course id where the module is
-     * @param int $cmid the resource module instance id
-     * @return array of warnings and status result
-     * @since Moodle 3.0
-     * @throws moodle_exception
-     */
-    public static function log_mod_view($courseid, $cmid) {
-        global $DB, $USER;
-        $params = self::validate_parameters(
-            self::log_mod_view_parameters(),
-            ['courseid' => $courseid, 'cmid' => $cmid]
-        );
-        list($course, $cm) = get_course_and_cm_from_cmid($params['cmid'], '', $params['courseid']);
-
-        // Request and permission validation.
-        $context = context_module::instance($cm->id);
-        self::validate_context($context);
-        require_capability('mod/' . $cm->modname . ':view', $context);
-
-        $allowedmodalmodules = \format_tiles\local\modal_helper::allowed_modal_modules();
-        if (!in_array($cm->modname, $allowedmodalmodules['modules'])
-            && count($allowedmodalmodules['resources']) == 0) {
-            throw new invalid_parameter_exception(
-                'Not allowed to log views of this mod type - disabled by site admin or incorrect device type.'
-                . ' If you are testing this may be because you have not refreshed since switching device types');
-        }
-        $modobject = $DB->get_record($cm->modname, ['id' => $cm->instance], '*', MUST_EXIST);
-
-        // Trigger course_module_viewed event.
-        switch ($cm->modname) {
-            case 'page':
-                page_view($modobject, $course, $cm, $context);
-                break;
-            case 'resource':
-                resource_view($modobject, $course, $cm, $context);
-                break;
-            case 'url':
-                url_view($modobject, $course, $cm, $context);
-                break;
-            default:
-                throw new invalid_parameter_exception('No logging method provided for type |' . $cm->modname . '|');
-        }
-
-        // If this item is using automatic completion, mark the item as complete.
-        $completion = new \completion_info($course);
-        if ($completion->is_enabled() && $cm->completion == COMPLETION_TRACKING_AUTOMATIC) {
-            $completion->update_state($cm, COMPLETION_COMPLETE, $USER->id);
-        }
-
-        $result = [];
-        $result['status'] = true;
-        return $result;
-    }
-
-    /**
-     * Simulate the resource/view.php web interface page: trigger events, completion, etc...
-     *
-     * This is a re-implementation of the core service, only required because the core
-     * version is not callable from AJAX
-     * @see mod_resource_external::log_resource_view_parameters()
-     * Returns description of method parameters
-     *
-     * @return external_function_parameters
-     * @since Moodle 3.0
-     */
-    public static function log_mod_view_parameters() {
-        return new external_function_parameters(
-            [
-                'courseid' => new external_value(PARAM_INT, 'course id'),
-                'cmid' => new external_value(PARAM_INT, 'course module id'),
-            ]
-        );
-    }
-
-    /**
-     *
-     * Returns description of method result value
-     *
-     * This is a re-implementation of the core service only required because the core
-     * version is not callable from AJAX
-     * @see mod_resource_external::log_resource_view_returns()
-     * @return external_description
-     * @since Moodle 3.0
-     */
-    public static function log_mod_view_returns() {
-        return new external_single_structure(
-            ['status' => new external_value(PARAM_BOOL, 'status: true if success')]
-        );
-    }
-
 
     /**
      * Get the available icon set
@@ -876,7 +789,6 @@ class external extends external_api {
             'iscomplete' => new external_value(PARAM_BOOL, 'Whether complete for current user'),
             'ismanualcompletion' => new external_value(PARAM_BOOL, 'Whether is manual completion'),
             'resourcetype' => new external_value(PARAM_TEXT, 'The resource type e.g. PDF if modname is resource'),
-            'pluginfileurl' => new external_value(PARAM_TEXT, 'The pluginfileurl e.g. PDF if modname is resource'),
             'modalallowed' => new external_value(PARAM_BOOL, 'Whether the UI can launch this in a modal'),
         ]);
     }

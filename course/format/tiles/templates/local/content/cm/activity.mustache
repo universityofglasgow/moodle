@@ -61,10 +61,8 @@
 {{/ismoodle42minus}}
 {{^ismoodle42minus}}
     {{#moveicon}} {{{moveicon}}} {{/moveicon}}
-    <div class="activity-grid {{^hasname}}noname-grid{{/hasname}} tiles-activity-container" {{#clickable}}data-cmid="{{cmid}}" data-modinstance="{{modinstance}}"
-         {{#pluginfileUrl}}data-url="{{{pluginfileUrl}}}"{{/pluginfileUrl}}
-        {{#secondaryurl}}data-url-secondary="{{{secondaryurl}}}"{{/secondaryurl}} data-title="{{{activityname}}}"
-         data-action="launch-tiles-{{launchtype}}"{{/clickable}}>
+    <div class="activity-grid {{^hasname}}noname-grid{{/hasname}} tiles-activity-container"
+        {{#clickable}}data-cmid="{{cmid}}" data-modinstance="{{modinstance}}" data-title="{{{activityname}}}"{{/clickable}}>
         {{! Icon, Name & Badge }}
         {{#hasname}}
             {{#cmname}}

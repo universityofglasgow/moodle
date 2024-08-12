@@ -99,6 +99,9 @@ if ($ADMIN->fulltree) {
 
     // Modal activities / resources.
     $page = new admin_settingpage('format_tiles/tab-modalwindows', get_string('modalwindows', 'format_tiles'));
+    $cachecallback = function() {
+        \cache_helper::purge_by_event('format_tiles/modaladminsettingchanged');
+    };
 
     // Modal windows for course modules.
     $allowedmodtypes = ['page' => 1]; // Number is default to on or off.
@@ -119,6 +122,7 @@ if ($ADMIN->fulltree) {
         $allowedmodtypes,
         $options
     );
+    $setting->set_updatedcallback($cachecallback);
     $page->add($setting);
 
     // Modal windows for resources.
@@ -143,6 +147,7 @@ if ($ADMIN->fulltree) {
         $allowedresourcetypes
     );
     $page->add($setting);
+    $setting->set_updatedcallback($cachecallback);
     $settingscategory->add($page);
 
     // Photo tile settings.

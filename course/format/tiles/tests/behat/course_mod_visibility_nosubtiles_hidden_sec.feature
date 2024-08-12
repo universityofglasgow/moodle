@@ -1,4 +1,4 @@
-@format @format_tiles @course_mod_visibility_nosubtiles_hidden_sec @javascript
+@format @format_tiles @format_tiles_course_mod_visibility_nosubtiles_hidden_sec @javascript
 Feature:  In a section for Teacher, hidden activities are dimmed where subtiles are not being used.
   In this specific case when Teacher hides a whole section, its contents are *all* dimmed even if not individually hidden
 

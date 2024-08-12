@@ -1,4 +1,4 @@
-@format @format_tiles @course_mod_visibility_nosubtiles @javascript
+@format @format_tiles @format_tiles_course_mod_visibility_nosubtiles @javascript
 Feature: In a section for Teacher, hidden activities are dimmed
 
   Background:
