@@ -10,17 +10,14 @@ Feature: Teachers can embed images into instructions and conclusion fields
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
     And the following "user private files" exist:
-      | user     | filepath                                   | filename       |
-      | teacher1 | mod/workshop/tests/fixtures/moodlelogo.png | moodlelogo.png |
+      | user     | filepath                                   |
+      | teacher1 | mod/workshop/tests/fixtures/moodlelogo.png |
     And the following "courses" exist:
       | fullname | shortname |
       | Course 1 | C1        |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
-    And the following "blocks" exist:
-      | blockname     | contextlevel | reference | pagetypepattern | defaultregion |
-      | private_files | System       | 1         | my-index        | side-post     |
     And the following "activities" exist:
       | activity | course | name                          |
       | workshop | C1     | Workshop with embedded images |
@@ -40,7 +37,7 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodlelogo.png" "link"
     And I click on "Select this file" "button"
-    And I set the field "How would you describe this image to someone who can't see it:" to "How to submit"
+    And I set the field "How would you describe this image to someone who can't see it?" to "How to submit"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I press "Save and display"
     # Embed the image into Instructions for assessment.
@@ -51,7 +48,7 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodlelogo.png" "link"
     And I click on "Select this file" "button"
-    And I set the field "How would you describe this image to someone who can't see it:" to "How to assess"
+    And I set the field "How would you describe this image to someone who can't see it?" to "How to assess"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I press "Save and display"
     # Embed the image into Conclusion.
@@ -62,7 +59,7 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodlelogo.png" "link"
     And I click on "Select this file" "button"
-    And I set the field "How would you describe this image to someone who can't see it:" to "Well done"
+    And I set the field "How would you describe this image to someone who can't see it?" to "Well done"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I press "Save and display"
     # Save the form and check the images are displayed in appropriate phases.

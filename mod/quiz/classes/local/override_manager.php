@@ -22,6 +22,7 @@ use mod_quiz\event\group_override_updated;
 use mod_quiz\event\user_override_created;
 use mod_quiz\event\user_override_deleted;
 use mod_quiz\event\user_override_updated;
+use mod_quiz\quiz_settings;
 
 /**
  * Manager class for quiz overrides
@@ -298,7 +299,7 @@ class override_manager {
 
     /**
      * Deletes overrides given just their ID.
-     * Note, the given IDs must exist otherwise an exception will be thrown.
+     * Note, the given IDs must exist and user must have access to them otherwise an exception will be thrown.
      * Also note, capabilities are not checked, {@see require_manage_capability()}
      *
      * @param array $ids IDs of overrides to delete
@@ -306,12 +307,22 @@ class override_manager {
      */
     public function delete_overrides_by_id(array $ids, bool $shouldlog = true): void {
         global $DB;
+
+        $quizsettings = quiz_settings::create($this->quiz->id);
+
+        // Filter for those overrides user can access.
         [$sql, $params] = self::get_override_in_sql($this->quiz->id, $ids);
-        $records = $DB->get_records_select('quiz_overrides', $sql, $params, '', 'id,userid,groupid');
+        $records = array_filter(
+            $DB->get_records_select('quiz_overrides', $sql, $params, '', 'id,userid,groupid'),
+            fn(\stdClass $override) => $this->can_view_override(
+                $override,
+                $quizsettings->get_course(),
+                $quizsettings->get_cm(),
+            ),
+        );
 
         // Ensure all the given ids exist, so the user is aware if they give a dodgy id.
         $missingids = array_diff($ids, array_keys($records));
-
         if (!empty($missingids)) {
             throw new \invalid_parameter_exception(get_string('overridemissingdelete', 'quiz', implode(',', $missingids)));
         }
@@ -444,6 +455,22 @@ class override_manager {
         // It would not make sense to be able to create and edit overrides without being able to view them.
         if (!has_any_capability(['mod/quiz:viewoverrides', 'mod/quiz:manageoverrides'], $this->context)) {
             throw new \required_capability_exception($this->context, 'mod/quiz:viewoverrides', 'nopermissions', '');
+        }
+    }
+
+    /**
+     * Determine whether user can view a given override record
+     *
+     * @param \stdClass $override
+     * @param \stdClass $course
+     * @param \cm_info $cm
+     * @return bool
+     */
+    public function can_view_override(\stdClass $override, \stdClass $course, \cm_info $cm): bool {
+        if ($override->groupid) {
+            return groups_group_visible($override->groupid, $course, $cm);
+        } else {
+            return groups_user_groups_visible($course, $override->userid, $cm);
         }
     }
 

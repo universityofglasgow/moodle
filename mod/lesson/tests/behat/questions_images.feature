@@ -20,12 +20,9 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
       | course   | C1               |
       | activity | lesson           |
       | name     | Test lesson name |
-    And the following "blocks" exist:
-      | blockname     | contextlevel | reference | pagetypepattern | defaultregion |
-      | private_files | System       | 1         | my-index        | side-post     |
     And the following "user private files" exist:
-      | user     | filepath                                  | filename        |
-      | teacher1 | mod/lesson/tests/fixtures/moodle_logo.jpg | moodle_logo.jpg |
+      | user     | filepath                                  |
+      | teacher1 | mod/lesson/tests/fixtures/moodle_logo.jpg |
     And I log in as "teacher1"
     When I am on the "Test lesson name" "lesson activity" page
     And I follow "Add a question page"
@@ -51,7 +48,7 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
-    And I set the field "How would you describe this image to someone who can't see it:" to "It's the logo"
+    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I press "Save page"
     And I set the field "qtype" to "Add a question page"
@@ -71,7 +68,7 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
-    And I set the field "How would you describe this image to someone who can't see it:" to "It's the logo"
+    And I set the field "How would you describe this image to someone who can't see it?" to "It's the logo"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I press "Save page"
     When I am on the "Test lesson name" "lesson activity" page logged in as student1

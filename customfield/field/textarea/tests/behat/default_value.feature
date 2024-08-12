@@ -21,12 +21,9 @@ Feature: Default value for the textarea custom field can contain images
     And the following "custom field categories" exist:
       | name              | component   | area   | itemid |
       | Category for test | core_course | course | 0      |
-    And the following "blocks" exist:
-      | blockname     | contextlevel | reference | pagetypepattern | defaultregion |
-      | private_files | System       | 1         | my-index        | side-post     |
     And the following "user private files" exist:
-      | user  | filepath                       | filename    |
-      | admin | lib/tests/fixtures/gd-logo.png | gd-logo.png |
+      | user  | filepath                       |
+      | admin | lib/tests/fixtures/gd-logo.png |
     And I log in as "admin"
     And I navigate to "Courses > Default settings > Course custom fields" in site administration
     And I click on "Add a new custom field" "link"
@@ -40,7 +37,7 @@ Feature: Default value for the textarea custom field can contain images
     And I click on "Private files" "link" in the ".fp-repo-area" "css_element"
     And I click on "gd-logo.png" "link"
     And I click on "Select this file" "button"
-    And I set the field "How would you describe this image to someone who can't see it:" to "Example"
+    And I set the field "How would you describe this image to someone who can't see it?" to "Example"
     And I click on "Save" "button" in the "Image details" "dialogue"
     And I click on "Save changes" "button" in the "Adding a new Text area" "dialogue"
     And I log out
