@@ -1,0 +1,105 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_newgu_spdetails/coursecategory
+
+    This template should display all of the top level categories within a course.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+        "result": [
+        {
+            "coursename":"GCAT2023TWEX",
+            "subcategories": [
+                {
+                    "id":27,
+                    "name":"Summative  - Various 22 Point Scale Aggregations - course weighting 75%",
+                    "assessmenttype":"Summative",
+                    "weight":0.75
+                },
+                {
+                    "id":29,
+                    "name":"Summative - Converting Points to 22 point Scale - 25% Course Weighting", 
+                    "assessmenttype":"Summative",
+                    "weight":25
+                }
+            ]
+        }
+        ]
+    }
+}}
+<div id="course_data" class="assessments-details-sort-container">
+    {{^data.coursedata}}
+    <div class="alert alert-warning" role="alert">
+    {{#str}} nocoursesfound, block_newgu_spdetails {{/str}}
+    </div>
+    {{/data.coursedata}}
+    {{#data.coursedata.length}}
+    <table id="category_table" class="table table-striped table-responsive assessments-details-table">
+        <thead>
+            <tr>
+                <th id="sortby_shortname" data-sortby="shortname" class="td{{^data.hasstartdate}}15{{/data.hasstartdate}}{{#data.hasstartdate}}10{{/data.hasstartdate}} th-sortable">{{#str}} header_course, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_fullname" data-sortby="fullname" class="td60 th-sortable">{{#str}} header_category, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_assessmenttype" data-sortby="assessmenttype" class="td15 th-sortable">{{#str}} header_type, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_weight" data-sortby="weight" class="td{{^data.hasstartdate}}15{{/data.hasstartdate}}{{#data.hasstartdate}}05{{/data.hasstartdate}} th-sortable">{{#str}} header_weight, block_newgu_spdetails {{/str}}</th>
+                {{#data.hasstartdate}}
+                <th id="sortby_startdate" data-sortby="startdate" class="td15 th-sortable">{{#str}} header_coursestartdate, block_newgu_spdetails {{/str}}</th>
+                {{/data.hasstartdate}}
+                {{#data.hasenddate}}
+                <th id="sortby_enddate" data-sortby="enddate" class="td15 th-sortable">{{#str}} header_courseenddate, block_newgu_spdetails {{/str}}</th>
+                {{/data.hasenddate}}
+            </tr>
+        </thead>
+        <tbody>
+        {{#data.coursedata}}
+            {{#subcategories}}
+            <tr data-id="{{id}}">
+                <td class="td{{^startdate}}15{{/startdate}}{{#startdate}}10{{/startdate}}"><a href="{{courseurl}}">{{coursename}}</a></td>
+                <td class="td60 subcategory-row"><a href="#"><i class="icon fa fa-fw  fa-sharp fa-solid fa-folder"></i><strong>{{name}}</strong></a></td>
+                <td class="td15">{{assessmenttype}}</td>
+                <td class="td{{^startdate}}15{{/startdate}}{{#startdate}}05{{/startdate}}" data-rawcategoryweight="{{raw_category_weight}}">{{subcatweight}}</td>
+                {{#startdate}}
+                <td class="td15" data-rawstartdate="{{raw_startdate}}">{{startdate}}</td>
+                {{/startdate}}
+                {{#enddate}}
+                <td class="td15" data-rawenddate="{{raw_enddate}}">{{enddate}}</td>
+                {{/enddate}}
+            </tr>
+            {{/subcategories}}
+        {{/data.coursedata}}
+        </tbody>
+    </table>
+
+    <div class="d-flex flex-row mb-2 justify-content-end">
+        <div class="p-0">
+            <a target='_blank' href='{{data.pdf_link}}' aria-label='PDF icon' aria-description='Download as a PDF document'><i style='color:red;' class='fa fa-file-pdf-o fa-2x' aria-hidden='true'><div style="display:none">Download as a PDF document</div></i></a>
+        </div>
+        <div class="p-0">
+            <a target='_blank' href='{{data.excel_link}}'><i style='padding-left:20px; color:green;' class='fa fa-file-excel-o fa-2x' aria-hidden='true'><div style="display:none">Download as an Excel document</div></i></a>
+        </div>
+    </div>
+    {{/data.coursedata.length}}
+</div>

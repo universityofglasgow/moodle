@@ -1,0 +1,165 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_newgu_spdetails/coursesubcategory
+
+    This template should display the sub categories and any individual elements as part of this course.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+        "result": [
+            {
+                "coursename":"GCAT2023TWEX",
+                "subcategories": [
+                    {
+                        "id":27,
+                        "name":"Average of assignments - Sub components - Simple Weighted Mean",
+                        "assessmenttype":"Average",
+                        "weight":""
+                    }
+                ],
+                "assessmentitems": [
+                    {
+                        "id":705,
+                        "itemname":"Assessment 1",
+                        "itemurl":"/mod/assign/view.php?id=705",
+                        "weight":"",
+                        "duedate":"2023-10-30",
+                        "status":"Overdue",
+                        "grade":"To be confirmed",
+                        "feedback":"To be confirmed"
+                    }
+                ]
+            }
+        ]
+    }
+}}
+<div id="subcategory-container" class="assessments-details-container">
+    <div id="subcategory-return-assessment" class="return-assessments-container" tabindex="0">
+        <div class="return-assessments-img-container">
+            <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.2912 1.99499V4.99499H4.12124L7.00124 2.11499C7.39124 1.72499 7.39124 1.09499 7.00124 0.704992C6.81441 0.517739 6.56076 0.412506 6.29624 0.412506C6.03172 0.412506 5.77807 0.517739 5.59124 0.704992L1.00124 5.29499C0.61124 5.68499 0.61124 6.31499 1.00124 6.70499L5.59124 11.295C5.98124 11.685 6.61124 11.685 7.00124 11.295C7.39124 10.905 7.39124 10.275 7.00124 9.88499L4.12124 6.99499H18.2912C18.8412 6.99499 19.2912 6.54499 19.2912 5.99499V1.99499C19.2912 1.44499 18.8412 0.994992 18.2912 0.994992C17.7412 0.994992 17.2912 1.44499 17.2912 1.99499Z" fill="#005C8A"/>
+            </svg>
+        </div>
+        <div class="return-assessments-text">{{#str}} previous, block_newgu_spdetails{{/str}}</div>
+    </div>
+    <div class="subcategory-details-container">
+        <div>
+            <span class="subcategory-details-label">{{#str}} label_course, block_newgu_spdetails {{/str}}</span>
+            <span id="subcategory-details-course" class="subcategory-details-value">{{#data.coursedata}}{{coursename}}{{/data.coursedata}}</span>
+        </div>
+        <div>
+            <span class="subcategory-details-label">{{#str}} label_componentname, block_newgu_spdetails {{/str}}</span>
+            <span id="subcategory-details-name" class="subcategory-details-value">{{#data.coursedata}}{{subcatfullname}}{{/data.coursedata}}</span>
+        </div>
+        <div>
+            <span class="subcategory-details-label">{{#str}} label_weight, block_newgu_spdetails {{/str}}</span>
+            <span id="subcategory-details-weight" class="subcategory-details-value">{{#data.coursedata}}{{weight}}{{/data.coursedata}}</span>
+        </div>
+    </div>
+</div>
+<div id="current_subassessments" class="assessments-details-sort-container">
+    {{^data.coursedata.hasdata}}
+    <div class="alert alert-warning" role="alert">
+    {{#str}} noactivitiesfound, block_newgu_spdetails {{/str}}
+    </div>
+    {{/data.coursedata.hasdata}}
+    {{#data.coursedata.hasdata}}
+    <table id="category_table" class="table table-striped table-responsive assessments-details-table">
+        <thead>
+            <tr>
+                <th id="sortby_fullname" data-sortby="fullname" class="td50 th-sortable">{{#str}} header_category, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_assessmenttype" data-sortby="assessmenttype" class="td10 th-sortable">{{#str}} header_type, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_weight" data-sortby="weight" class="td5 th-sortable">{{#str}} header_weight, block_newgu_spdetails {{/str}}</th>
+                {{#data.coursedata}}
+                    {{#assessmentitems.length}}
+                <th id="sortby_duedate" data-sortby="duedate" class="td10 th-sortable"{{#data.coursedata}}{{#hidestatuscol}} colspan="2"{{/hidestatuscol}}{{/data.coursedata}}>{{#str}} header_duedate, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_status" data-sortby="status" class="td15 th-sortable">{{#str}} header_status, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_grade" data-sortby="grade" class="td10 th-sortable">{{#str}} header_grade, block_newgu_spdetails {{/str}}</th>
+                <th class="td10">{{#str}} header_feedback, block_newgu_spdetails {{/str}}</th>
+                    {{/assessmentitems.length}}
+                {{/data.coursedata}}
+            </tr>
+        </thead>
+        <tbody>
+        {{#data.coursedata}}
+            {{#subcategories}}
+            <tr data-id="{{id}}">
+                <td class="td50 subcategory-row"><a href="#"><i class="icon fa fa-fw  fa-sharp fa-solid fa-folder"></i><strong>{{name}}</strong></a></td>
+                <td class="td15 subcategory-row">{{assessment_type}}</td>
+                <td class="td5 subcategory-row" data-rawcategoryweight="{{raw_category_weight}}">{{subcatweight}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {{/subcategories}}
+            {{#assessmentitems}}
+            <tr data-assessmentid="{{id}}">
+                <td class="td50">{{#assessment_url}}<a href="{{assessment_url}}">{{#item_icon}}<img class="icon itemicon" src="{{item_icon}}" title="{{icon_alt}}" alt="{{icon_alt}}" />{{/item_icon}}{{/assessment_url}}{{^assessment_url}}<span title="{{item_name}}" tabindex="0"><i class="icon fa fa-pencil-square-o fa-fw icon itemicon" title="{{icon_alt}}" role="img" aria-label="{{icon_alt}}"></i>{{/assessment_url}}{{item_name}}{{^assessment_url}}</span>{{/assessment_url}}{{#assessment_url}}</a>{{/assessment_url}}</td>
+                <td class="td10">{{assessment_type}}</td>
+                <td class="td5" data-rawassessmentweight="{{raw_assessment_weight}}">{{assessment_weight}}</td>
+                <td class="td15"{{#data.coursedata}}{{#hidestatuscol}} colspan="2"{{/hidestatuscol}}{{/data.coursedata}} data-rawduedate="{{raw_due_date}}">{{due_date}}</td>
+                {{#data.coursedata}}{{^hidestatuscol}}
+                <td class="td15">
+                {{#grade_status}}
+                    {{#status_link}}
+                        <a href="{{status_link}}">
+                    {{/status_link}}
+                        <span class="status-item{{#status_class}} {{status_class}}{{/status_class}}">{{status_text}}</span>
+                    {{#status_link}}
+                        </a>
+                    {{/status_link}}
+                {{/grade_status}}
+                </td>
+                {{/hidestatuscol}}{{/data.coursedata}}
+                <td class="td10">{{#grade_class}}<span class="{{#str}} status_graded, block_newgu_spdetails {{/str}}">{{/grade_class}}{{grade}}{{#grade_class}}</span>{{/grade_class}}{{#grade_provisional}} ({{#str}} status_text_provisional, block_newgu_spdetails {{/str}}){{/grade_provisional}}
+                </td>
+                <td class="td10">
+                {{#grade_feedback_link}}
+                    <a href="{{grade_feedback_link}}">
+                {{/grade_feedback_link}}
+                {{grade_feedback}}
+                {{#grade_feedback_link}}
+                    </a>
+                {{/grade_feedback_link}}
+                </td>
+            </tr>
+            {{/assessmentitems}}
+        {{/data.coursedata}}
+        </tbody>
+    </table>
+
+    <div class="d-flex flex-row mb-2 justify-content-end">
+        <div class="p-0">
+            <a target='_blank' href='{{data.pdf_link}}'><i style='color:red;' class='fa fa-file-pdf-o fa-2x' aria-hidden='true'><div style="display:none">x</div></i></a>
+        </div>
+        <div class="p-0">
+            <a target='_blank' href='{{data.excel_link}}'><i style='padding-left:20px; color:green;' class='fa fa-file-excel-o fa-2x' aria-hidden='true'><div style="display:none">x</div></i></a>
+        </div>
+    </div>
+    {{/data.coursedata.hasdata}}
+</div>

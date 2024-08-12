@@ -1,0 +1,95 @@
+
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_newgu_spdetails/coursetabs
+
+    This template should display the At A Glance Summary as well as the tabs
+    for viewing both current and past courses.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+        
+    }
+}}
+{{^showdetails}}
+    <div class="alert alert-warning">
+        {{message}}
+    </div>
+{{/showdetails}}
+{{#showdetails}}
+    <div class="assessments-overview-container border rounded my-2 p-2">
+        <h2>{{#str}}headingataglance, block_newgu_spdetails{{/str}}</h2>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div id="assessements-overview" class="card" style="width: 33rem;">
+                        <div class="card-header">
+                            <h3>{{#str}}overview_cardheader, block_newgu_spdetails{{/str}}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="assessmentSummaryContainer" class="align-middle"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div id="assessments-due" class="card" style="width: 33rem;">
+                        <div class="card-header">
+                            <h3>{{#str}}due_cardheader, block_newgu_spdetails{{/str}}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="assessmentsDueSoonContainer" style="height:300px" class="align-middle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="border rounded my-2 p-2">
+        <div class="alert alert-info m-0 text-center">
+            <strong>{{#str}}provisionalgradeinfo, block_newgu_spdetails{{/str}}</strong>
+        </div>
+    </div>
+    <div class="border rounded p-2">
+        <div id="courseTab-container" class="assessments-details-container mt-2">
+            <h3>{{#str}}heading, block_newgu_spdetails{{/str}}</h3>
+            <div id="courseNav-container" class="hidden-container">
+                <ul class="nav nav-tabs" id="courses-Tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link h5 active" id="current_tab" data-toggle="tab" type="button" role="tab" aria-controls="current" aria-selected="true" tabindex="0">{{tab_current}}</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link h5" id="past_tab" data-toggle="tab" type="button" role="tab" aria-controls="past" aria-selected="false" tabindex="0">{{tab_past}}</button>
+                    </li>
+                </ul>
+            </div>
+            <div id="course_contents_container" class="tab-content"></div>
+        </div>
+        <div id="assessmentsDue-container" class="container-xxl hidden-container">
+            <div id="assessmentsdue_content" class="tab-content"></div>
+        </div>
+    </div>
+{{/showdetails}}

@@ -1,0 +1,115 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_newgu_spdetails/assessments
+
+    This template should display the assessments due - given the chart type selected.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+        "result": [
+        {
+            "assessmentitems": [
+                {
+                    "id":705,
+                    "coursecode":"MYGRADE-TW1",
+                    "courseurl":"",
+                    "itemname":"Assessment 1",
+                    "itemurl":"/mod/assign/view.php?id=705",
+                    "weight":"",
+                    "duedate":"2023-10-30",
+                    "status":"Overdue",
+                    "grade":"To be confirmed",
+                    "feedback":"To be confirmed"
+                }
+            ]
+        }
+        ]
+    }
+}}
+<h3>{{data.chart_header}}</h3>
+<div id="assessments-due-header" class="assessments-details-container">
+    <div id="assessments-due-return" class="return-assessments-container" tabindex="0">
+        <div class="return-assessments-img-container">
+            <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.2912 1.99499V4.99499H4.12124L7.00124 2.11499C7.39124 1.72499 7.39124 1.09499 7.00124 0.704992C6.81441 0.517739 6.56076 0.412506 6.29624 0.412506C6.03172 0.412506 5.77807 0.517739 5.59124 0.704992L1.00124 5.29499C0.61124 5.68499 0.61124 6.31499 1.00124 6.70499L5.59124 11.295C5.98124 11.685 6.61124 11.685 7.00124 11.295C7.39124 10.905 7.39124 10.275 7.00124 9.88499L4.12124 6.99499H18.2912C18.8412 6.99499 19.2912 6.54499 19.2912 5.99499V1.99499C19.2912 1.44499 18.8412 0.994992 18.2912 0.994992C17.7412 0.994992 17.2912 1.44499 17.2912 1.99499Z" fill="#005C8A"/>
+            </svg>
+        </div>
+        <div class="return-assessments-text">{{#str}} back_to, block_newgu_spdetails{{/str}}</div>
+    </div>
+</div>
+{{^data.assessmentitems}}
+<div class="alert alert-warning" role="alert">
+    {{#str}} noassessmentfound, block_newgu_spdetails {{/str}}
+</div>
+{{/data.assessmentitems}}
+{{#data.assessmentitems.length}}
+<div id="assessments_due" class="assessments-details-sort-container">
+    <table id="assessment_data_table" class="table table-striped table-responsive assessments-details-table">
+        <thead>
+            <tr>
+                <th id="sortby_shortname2" data-sortby="shortname2" class="td15 th-sortable">{{#str}} header_course, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_fullname2" data-sortby="fullname2" class="td50 th-sortable">{{#str}} header_assessment, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_assessmenttype2" data-sortby="assessmenttype2" class="td10 th-sortable">{{#str}} header_type, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_weight2" data-sortby="weight2" class="td5 th-sortable">{{#str}} header_weight, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_duedate2" data-sortby="duedate2" class="td10 th-sortable">
+                    {{#data.date_header}}
+                        {{data.date_header}}
+                    {{/data.date_header}}
+                    {{^data.date_header}}
+                        {{#str}} header_duedate, block_newgu_spdetails {{/str}}
+                    {{/data.date_header}}
+                </th>
+                <th id="sortby_status2" data-sortby="status2" class="td15 th-sortable">{{#str}} header_status, block_newgu_spdetails {{/str}}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{#data.assessmentitems.length}}
+            {{#data.assessmentitems}}
+            <tr data-assessmentid="{{id}}">
+                <td class="td15"><a href="{{courseurl}}">{{coursename}}</a></td>
+                <td class="td50">{{#assessment_url}}<a href="{{assessment_url}}">{{#item_icon}}<img class="icon itemicon" src="{{item_icon}}" title="{{icon_alt}}" alt="{{icon_alt}}" />{{/item_icon}}{{/assessment_url}}{{^assessment_url}}<span title="{{item_name}}" tabindex="0"><i class="icon fa fa-pencil-square-o fa-fw icon itemicon" title="{{icon_alt}}" role="img" aria-label="{{icon_alt}}"></i>{{/assessment_url}}{{item_name}}{{^assessment_url}}</span>{{/assessment_url}}{{#assessment_url}}</a>{{/assessment_url}}</td>
+                <td class="td10">{{assessment_type}}</td>
+                <td class="td5" data-rawassessmentweight="{{raw_assessment_weight}}">{{assessment_weight}}</td>
+                <td class="td15" data-rawduedate="{{raw_due_date}}">{{due_date}}</td>
+                {{#grade_status}}
+                <td class="td15">
+                    {{#status_link}}
+                        <a href="{{status_link}}">
+                    {{/status_link}}
+                        <span class="status-item{{#status_class}} {{status_class}}{{/status_class}}">{{status_text}}</span>
+                    {{#status_link}}
+                        </a>
+                    {{/status_link}}
+                </td>
+                {{/grade_status}}
+            </tr>
+            {{/data.assessmentitems}}
+        {{/data.assessmentitems.length}}
+        </tbody>
+    </table>
+</div>
+{{/data.assessmentitems.length}}
