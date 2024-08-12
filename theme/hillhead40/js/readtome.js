@@ -1,8 +1,7 @@
 require(['jquery'], function($) { $(document).ready(function(){
     if(typeof window.speechSynthesis !== 'undefined') {
-    	$('p, h1, h2, h3, h4, h5, span, a, label, button').hover(
+		$('p, h1, h2, h3, h4, h5, span, a, label, button, strong, canvas').hover(
     	    function() {
-        	    
         	    $(this).addClass('currentlySpeaking');
         	    $(this).addClass('currentlySpeakingHighlight');
         	    if(typeof speakTimer !== 'undefined') {
