@@ -1,0 +1,46 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Summer exam",
+                "category": true,
+                "weight": 1.0,
+                "children": [
+                    {
+                        "name": "Question 1",
+                        "category": false,
+                        "type": "points",
+                        "weight": 0.25,
+                        "grademax": 100
+                    },
+                    {
+                        "name": "Question 2",
+                        "category": false,
+                        "type": "points",
+                        "weight": 0.5,
+                        "grademax": 50
+                    },
+                    {
+                        "name": "Question 3",
+                        "category": false,
+                        "type": "points",
+                        "weight": 0.125,
+                        "grademax": 75
+                    },
+                    {
+                        "name": "Question 4",
+                        "category": false,
+                        "type": "points",
+                        "weight": 0.6,
+                        "grademax": 15
+                    }
+                ]
+            }
+
+        ]
+    }
+]

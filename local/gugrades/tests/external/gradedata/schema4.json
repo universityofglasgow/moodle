@@ -1,0 +1,81 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Item 1",
+                "category": false,
+                "type": "points",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 2",
+                "category": false,
+                "type": "points",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 3",
+                "category": false,
+                "type": "points",
+                "weight": 0.5
+            },
+            {
+                "name": "Summer exam",
+                "category": true,
+                "weight": 1.0,
+                "children": [
+                    {
+                        "name": "Question 1",
+                        "category": false,
+                        "type": "points",
+                        "grademax": 50
+                    },
+                    {
+                        "name": "Question 2",
+                        "category": false,
+                        "type": "points",
+                        "grademax": 75
+                    },
+                    {
+                        "name": "Question 3",
+                        "category": false,
+                        "type": "points",
+                        "grademax": 10
+                    },
+                    {
+                        "name": "Question 4",
+                        "category": false,
+                        "type": "points",
+                        "grademax": 27
+                    }
+                ]
+            }
+
+        ]
+    },
+    {
+        "name": "SummativeB",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Item B1",
+                "category": false,
+                "type": "scheduleb",
+                "weight": 0.5
+            },
+            {
+                "name": "Item B2",
+                "category": false,
+                "type": "scheduleb",
+                "weight": 0.5
+            }
+        ]
+
+    }
+
+]
