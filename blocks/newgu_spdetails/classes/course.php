@@ -25,6 +25,8 @@
 
  namespace block_newgu_spdetails;
 
+use stdClass;
+
 /**
  * This class provides methods for extracting course attributes.
  */
@@ -630,7 +632,7 @@ class course {
      */
     public static function get_assessmentsummary(): array {
 
-        global $USER, $PAGE;
+        global $DB, $USER, $PAGE;
 
         $PAGE->set_context(\context_system::instance());
 
@@ -674,32 +676,85 @@ class course {
                                 }
                             }
 
-                            $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
-                                $activityitem->id,
-                                $USER->id,
-                                $activityitem->gradetype,
-                                $activityitem->scaleid,
-                                $activityitem->grademax,
-                                ''
-                            );
+                            // We had overlooked that we needed to check the course type when collating these numbers.
+                            // If the course that this activity belongs to is a MyGrades course, first check if we have
+                            // any 'Released' grades, for the Graded section - and then increment the total accordingly.
+                            if ($course->gugradesenabled) {
+                                $params = [
+                                    'courseid' => $activityitem->courseid,
+                                    'gradeitemid' => $activityitem->id,
+                                    'userid' => $USER->id,
+                                    'gradetype' => 'RELEASED',
+                                    'iscurrent' => 1,
+                                ];
+                                if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
+                                    // Swap all of this for the relevant mygrades API calls - if/when one exists.
+                                    foreach ($usergrades as $usergrade) {
+                                        // MGU-631 - Honour hidden grades and hidden activities.
+                                        $isgradehidden = \local_gugrades\api::is_grade_hidden($activityitem->id, $USER->id);
+                                        if (!$isgradehidden) {
+                                            $marked++;
+                                        }
+                                        break;
+                                    }
+                                } else {
+                                    $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                        $activityitem->id,
+                                        $USER->id,
+                                        $activityitem->gradetype,
+                                        $activityitem->scaleid,
+                                        $activityitem->grademax,
+                                        ''
+                                    );
+                                    $status = $gradestatus->grade_status;
+                                    if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
+                                        $totalsubmissions++;
+                                    }
 
-                            $status = $gradestatus->grade_status;
-                            if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
-                                $totalsubmissions++;
-                            }
+                                    if ($status == get_string('status_submit', 'block_newgu_spdetails')) {
+                                        $totaltosubmit++;
+                                    }
 
-                            if ($status == get_string('status_submit', 'block_newgu_spdetails')) {
-                                $totaltosubmit++;
-                            }
+                                    if ($status == get_string('status_overdue', 'block_newgu_spdetails')) {
+                                        $totaloverdue++;
+                                    }
 
-                            if ($status == get_string('status_overdue', 'block_newgu_spdetails')) {
-                                $totaloverdue++;
-                            }
+                                    if ($status == get_string('status_graded', 'block_newgu_spdetails')) {
+                                        if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display !=
+                                        get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                            $marked++;
+                                        }
+                                    }
+                                }
 
-                            if ($status == get_string('status_graded', 'block_newgu_spdetails')) {
-                                if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display !=
-                                get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
-                                    $marked++;
+                            } else {
+
+                                $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                    $activityitem->id,
+                                    $USER->id,
+                                    $activityitem->gradetype,
+                                    $activityitem->scaleid,
+                                    $activityitem->grademax,
+                                    ''
+                                );
+                                $status = $gradestatus->grade_status;
+                                if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
+                                    $totalsubmissions++;
+                                }
+
+                                if ($status == get_string('status_submit', 'block_newgu_spdetails')) {
+                                    $totaltosubmit++;
+                                }
+
+                                if ($status == get_string('status_overdue', 'block_newgu_spdetails')) {
+                                    $totaloverdue++;
+                                }
+
+                                if ($status == get_string('status_graded', 'block_newgu_spdetails')) {
+                                    if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display !=
+                                    get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                        $marked++;
+                                    }
                                 }
                             }
                         }
@@ -729,7 +784,7 @@ class course {
      * @return array
      */
     public static function get_assessmentsummarybytype(int $charttype): array {
-        global $USER, $PAGE;
+        global $DB, $CFG, $USER, $PAGE;
 
         $PAGE->set_context(\context_system::instance());
 
@@ -794,15 +849,69 @@ class course {
                                 }
                             }
 
-                            // Get the activity based on its type...
-                            $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
-                                $activityitem->id,
-                                $USER->id,
-                                $activityitem->gradetype,
-                                $activityitem->scaleid,
-                                $activityitem->grademax,
-                                '',
-                            );
+                            // We had overlooked that we needed to check the course type when collating these numbers.
+                            // If the course that this activity belongs to is a MyGrades course, first check if we have
+                            // any 'Released' grades, for the Graded section - and then increment the total accordingly. 
+                            if ($charttype == 3) {
+                                if ($course->gugradesenabled) {
+                                    $params = [
+                                        'courseid' => $activityitem->courseid,
+                                        'gradeitemid' => $activityitem->id,
+                                        'userid' => $USER->id,
+                                        'gradetype' => 'RELEASED',
+                                        'iscurrent' => 1,
+                                    ];
+                                    if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
+                                        // Swap all of this for the relevant mygrades API calls - if/when one exists.
+                                        $gradestatus = new stdClass();
+                                        foreach ($usergrades as $usergrade) {
+                                            // MGU-631 - Honour hidden grades and hidden activities.
+                                            $isgradehidden = \local_gugrades\api::is_grade_hidden($activityitem->id, $USER->id);
+                                            if (!$isgradehidden) {
+                                                $gradestatus->grade_date = $usergrade->audittimecreated;
+                                                $gradestatus->assessment_url = $CFG->wwwroot . '/' . $activityitem->itemtype . '/'
+                                                . $activityitem->itemmodule . '/view.php?id=' . $cm->id;
+                                                $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
+                                                $gradestatus->status_link = '';
+                                                $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
+                                                $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
+                                            }
+                                            break;
+                                        }
+                                    } else {
+                                        // Get the activity based on its type...
+                                        $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                            $activityitem->id,
+                                            $USER->id,
+                                            $activityitem->gradetype,
+                                            $activityitem->scaleid,
+                                            $activityitem->grademax,
+                                            '',
+                                        );
+                                    }
+                                } else {
+                                    // Get the activity based on its type...
+                                    $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                        $activityitem->id,
+                                        $USER->id,
+                                        $activityitem->gradetype,
+                                        $activityitem->scaleid,
+                                        $activityitem->grademax,
+                                        '',
+                                    );
+                                }
+                            } else {
+
+                                // Get the activity based on its type...
+                                $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                    $activityitem->id,
+                                    $USER->id,
+                                    $activityitem->gradetype,
+                                    $activityitem->scaleid,
+                                    $activityitem->grademax,
+                                    '',
+                                );
+                            }
 
                             $status = $gradestatus->grade_status;
                             $date = '';
