@@ -1173,10 +1173,10 @@ class api {
             $context = \context_course::instance($id, true);
 
             // Skip courses with showgrades == 0.
-            if (!$course->showgrades) {
-                unset($courses[$id]);
-                continue;
-            }
+            //if (!$course->showgrades) {
+            //    unset($courses[$id]);
+            //    continue;
+            //}
 
             // Current/past cutoff is enddate.
             $cutoffdate = $course->enddate;
