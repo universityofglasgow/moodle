@@ -38,6 +38,8 @@ $context = context_course::instance($courseid);
 $url = new moodle_url('/local/gustaffview/sduserdetails.php', ['courseid' => $courseid]);
 $PAGE->set_url($url);
 
+require_capability('local/gustaffview:staffview', $context);
+
 if (!$course = $DB->get_record('course', ['id' => $courseid])) {
     throw new \moodle_exception('invalidcourseid');
 }
