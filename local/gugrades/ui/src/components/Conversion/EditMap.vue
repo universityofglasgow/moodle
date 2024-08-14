@@ -1,4 +1,7 @@
 <template>
+    <div class="alert alert-info mb-2">
+        {{  mstrings.examplevalues }}
+    </div>
     <FormKit v-if="loaded" type="form" submit-label="Save" @submit="submit_form">
         <FormKit
             type="text"

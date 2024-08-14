@@ -101,6 +101,7 @@ $string['eventselectconversion'] = 'Select conversion';
 $string['eventsettingsupdate'] = 'Settings updated';
 $string['eventuploadcsv'] = 'Upload from CSV';
 $string['eventviewgugrades'] = 'View grading tool';
+$string['examplevalues'] = 'Replace these example values with your own required mapping.';
 $string['expand'] = 'Expand';
 $string['export'] = 'Export';
 $string['exportcapture'] = 'Export capture';
