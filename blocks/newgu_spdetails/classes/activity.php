@@ -361,9 +361,11 @@ class activity {
                         if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
                             // Swap all of this for the relevant mygrades API calls - if/when one exists.
                             foreach ($usergrades as $usergrade) {
-                                $dateobj = \DateTime::createFromFormat('U', $cm->customdata['duedate']);
+                                // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
+                                $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
+                                $dateobj = \DateTime::createFromFormat('U', $activityduedate);
                                 $duedate = $dateobj->format('jS F Y');
-                                $rawduedate = $cm->customdata['duedate'];
+                                $rawduedate = $activityduedate;
                                 $statusclass = get_string('status_class_graded', 'block_newgu_spdetails');
                                 $statustext = get_string('status_text_graded', 'block_newgu_spdetails');
                                 // MGU-631 - Honour hidden grades and hidden activities.

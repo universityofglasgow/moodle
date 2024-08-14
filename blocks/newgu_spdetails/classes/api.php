@@ -325,4 +325,39 @@ class api extends external_api {
         return $ltiactivities;
     }
 
+    /**
+     * Method to return the value the notional 'due' date column of the activity.
+     *
+     * The customdata property is an array of keys that we need to search and match.
+     * Gak - I thought there might have been an easier way to match and return said
+     * key from a source array of keys - looks like we've got to go the old skool way.
+     *
+     * @param object $cm - The course module object. Our key 'customdata' is an array.
+     * @return int
+     */
+    public static function get_activity_end_date_name(object $cm):int {
+        $activitydate = 0;
+        $keys = [
+            'duedate',
+            'timeclose',
+            'sessdate',
+            'timeavailableto',
+            'timedue',
+            'deadline',
+            'submissionend'
+        ];
+        $key = '';
+        foreach ($cm->customdata as $k => $v) {
+            if(in_array($k, $keys)) {
+                $key = $k;
+                break;
+            }
+        }
+        if ($key != null) {
+            $activitydate = $cm->customdata[$key];
+        }
+
+        return $activitydate;
+    }
+
 }
