@@ -56,8 +56,9 @@ if ($ADMIN->fulltree) {
     // As there are no events we can listen for in order to maintain consistency, this is one
     // way of keeping things in sync.
 
-    $settings->add(new admin_setting_heading('includeltilabel',
-        get_string('includeltilabel', 'block_newgu_spdetails'), ''));
+    $settings->add(new admin_setting_heading('block_newgu_spdetails/headinglti',
+        new lang_string('includeltilabel', 'block_newgu_spdetails'),
+        new lang_string('includeltidescription', 'block_newgu_spdetails')));
 
     // Include the current setting in the description, someone may find this useful.
     foreach ($ltitypes as $keyltitypes) {
