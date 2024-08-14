@@ -41,10 +41,10 @@ $string['assessment'] = 'Assessment';
 $string['assessments'] = 'Assessments';
 $string['clicktoview'] = 'MyGrades on Moodle';
 $string['headingataglance'] = 'Your assessments at a glance';
-$string['provisionalgradeinfo'] = 'All individual or aggregated grades presented on this page are provisional. All final course
+$string['provisionalgradeinfo'] = 'All individual or aggregated assessment grades presented on this page are provisional. All final course
 grades can be viewed directly in the <a href="https://uogstudents.mycampus.gla.ac.uk/psc/campus/EMPLOYEE/SA/c/NUI_FRAMEWORK.
 PT_AGSTARTPAGE_NUI.GBL?CONTEXTIDPARAMS=TEMPLATE_ID%3aPTPPNAVCOL&scname=UOG_ACADEMICS&PanelCollapsible=Y&PTPPB_GROUPLET_ID=
-UOG_ACADEMICS_TILE&CRefName=UOG_NAVCOLL_4&AJAXTRANSFER=Y&ptgpid=UOG_MY_RESULTS_FL_GBL">student records system</a>.';
+UOG_ACADEMICS_TILE&CRefName=UOG_NAVCOLL_4&AJAXTRANSFER=Y&ptgpid=UOG_MY_RESULTS_FL_GBL">MyCampus</a> system.';
 $string['heading'] = 'Your assessment details';
 $string['blocktitle'] = 'MyGrades';
 $string['overview_cardheader'] = 'Assessments overview';
@@ -77,6 +77,7 @@ $string['extended'] = 'Due date extension';
 $string['source'] = 'Source';
 $string['includelti'] = 'Include LTI';
 $string['includeltilabel'] = 'Select LTI activities to include on the Student dashboard.';
+$string['includeltidescription'] = 'Select only the LTI Activities which have been verified by stakeholder owners / users as being activities which will be graded and need to be visible on the MyGrades Student and MyGrades Staff view pages. (Note: If staff include an LTI on a course and select to ‘create a grade item’ for an instance of an LTI, if Admin have not also indicted to make visible to students, no activity or grade information will show on Student MyGrades.  Both settings must aligned.)';
 $string['staffclicktoview'] = 'Assessment details of students';
 $string['currently_enrolled'] = 'Currently enrolled in';
 $string['currentcourses'] = 'Current Courses';
