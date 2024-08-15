@@ -113,6 +113,15 @@
             </template>
 
         </EasyDataTable>
+
+        <!-- display debugging/timing information -->
+        <div v-if="debug.length > 0" class="my-3 pt-2 rounded border text-monospace bg-secondary text-dark">
+            <ul>
+                <li v-for="line in debug">
+                    {{ line.line }}
+                </li>
+            </ul>
+        </div>
     </div>
 </template>
 
@@ -145,6 +154,7 @@
     const formattedatype = ref('');
     const warnings = ref([]);
     const strategy = ref('');
+    const debug = ref([]);
 
     let firstname = '';
     let lastname = '';
@@ -363,6 +373,7 @@
             toplevel.value = result.toplevel;
             atype.value = result.atype;
             strategy.value = result.strategy;
+            debug.value = result.debug;
 
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;

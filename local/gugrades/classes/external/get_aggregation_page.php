@@ -91,6 +91,11 @@ class get_aggregation_page extends external_api {
             'toplevel' => new external_value(PARAM_BOOL, 'Is this the topmost level?'),
             'atype' => new external_value(PARAM_TEXT, 'Aggregated grade type (A, B, P, E - if mixed'),
             'strategy' => new external_value(PARAM_TEXT, 'Aggregation strategy formatted for display'),
+            'debug' => new external_multiple_structure(
+                new external_single_structure([
+                    'line' => new external_value(PARAM_RAW, 'Line of debug info, available when DEBUG_DEVELOPER is enabled'),
+                ])
+            ),
             'warnings' => new external_multiple_structure(
                 new external_single_structure([
                     'message' => new external_value(PARAM_TEXT, 'Warning message'),

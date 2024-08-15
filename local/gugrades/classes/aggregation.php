@@ -255,12 +255,16 @@ class aggregation {
         $gradecatitem = $DB->get_record('grade_items',
             ['itemtype' => 'category', 'iteminstance' => $gradecategoryid], '*', MUST_EXIST);
 
+        // debugging stuff.
+        $userhelpercount = 0;
+
         foreach ($users as $user) {
 
             // The agregated 'CATEGORY' field should already be in the grades table.
             // If it's not, we need to aggregate this user
             if (!$DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1])) {
                 self::aggregate_user_helper($courseid, $gradecategoryid, $user->id);
+                $userhelpercount++;
             }
 
             $fields = [];
@@ -314,7 +318,11 @@ class aggregation {
             $user->error = $item->auditcomment;
         }
 
-        return $users;
+        // Debug stuff.
+        $debug = [];
+        $debug[]['line'] = "$userhelpercount User helper calls count.";
+
+        return [$users, $debug];
     }
 
     /**
