@@ -230,6 +230,13 @@ class assign_activity extends base {
             $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         }
 
+        // Check if this assessment requires any submissions.
+        if ($assigninstance->nosubmissions == 1) {
+            $statusobj->grade_status = get_string('status_unavailable', 'block_newgu_spdetails');
+            $statusobj->status_text = get_string('status_text_submissionunavailable', 'block_newgu_spdetails');
+            $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+        }
+
         // If our grade_status hasn't changed at this point, continue on.
         if ($statusobj->grade_status == '') {
 

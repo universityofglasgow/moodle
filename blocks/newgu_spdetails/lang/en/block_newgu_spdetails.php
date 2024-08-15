@@ -143,6 +143,7 @@ $string['status_class_graded'] = 'status-graded';
 
 $string['status_text_hidden'] = 'Hidden';
 $string['status_text_submissionnotopen'] = 'Submission not open';
+$string['status_text_submissionunavailable'] = 'Submission unavailable';
 $string['status_text_tosubmit'] = 'To submit';
 $string['status_text_tobesubmitted'] = 'To be submitted';
 $string['status_text_submit'] = 'Submit';
