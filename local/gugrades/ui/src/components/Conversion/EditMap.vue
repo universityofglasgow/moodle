@@ -217,16 +217,17 @@
      * computed to check that points/percentages are in order
      */
     const ordervalidated = computed(() => {
-        let currentpercent = 0;
-        let currentpoints = 0;
+        let currentpercent = -1;
+        let currentpoints = -1;
         let inorder = true;
         items.value.forEach((item) => {
-            if (currentpercent > Number(item.boundpc)) {
+            if (currentpercent >= Number(item.boundpc)) {
                 inorder = false;
             } else {
                 currentpercent = Number(item.boundpc);
             }
-            if (currentpoints > Number(item.boundpoints)) {
+            if (currentpoints >= Number(item.boundpoints)) {
+                window.console.log(currentpoints);
                 inorder = false;
             } else {
                 currentpoints = Number(item.boundpoints);
