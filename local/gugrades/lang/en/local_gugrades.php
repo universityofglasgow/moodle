@@ -183,7 +183,7 @@ $string['manual'] = 'Manual grade';
 $string['mapdefaultinfo'] = 'Comma separated list of boundary values for conversion maps (H=0 is assumed).';
 $string['mapdefaultschedulea'] = 'Default mappings for Schedule A';
 $string['mapdefaultscheduleb'] = 'Default mappings for Schedule B';
-$string['mapnotinorder'] = 'Map values are not in ascending order';
+$string['mapnotinorder'] = 'Map values are not in ascending order or are duplicated';
 $string['maxgrade'] = "Maximum grade";
 $string['maxparticipants'] = 'Maximum participants';
 $string['maxparticipants_help'] = 'Courses with more than this number of participants cannot use MyGrades';
