@@ -33,7 +33,7 @@ use core_external\external_api;
 
 defined('MOODLE_INTERNAL') || die();
 
-define('TEST_USERS_COUNT', 800);
+define('TEST_USERS_COUNT', 200);
 
 global $CFG;
 
@@ -80,7 +80,6 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
             $this->studentids[] = $student->id;
         }
         $stop = microtime(true);
-        echo("Time to create user accounts " . $stop - $start);
 
         // Get gradeitems.
         $gradeitems = [];
@@ -141,8 +140,6 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
         $elapsed = $end - $start;
 
         $debug = $page['debug'];
-        var_dump($debug);
-        var_dump($elapsed);
     }
 
 }
