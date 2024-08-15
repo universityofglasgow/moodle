@@ -206,10 +206,11 @@ class conversion {
             }
 
             // Write main record.
-            // Name is the only thing you can change. Do a de-duplicate only if name has changed.
+            // Name and maxgrade are the only things you can change. Do a de-duplicate only if name has changed.
             if ($name != $mapinfo->name) {
                 $mapinfo->name = self::unique_name($name);
             }
+            $mapinfo->maxgrade = $maxgrade;
             $mapinfo->timemodified = time();
             $DB->update_record('local_gugrades_map', $mapinfo);
 
