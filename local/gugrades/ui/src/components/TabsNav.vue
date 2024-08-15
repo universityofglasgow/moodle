@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary rounded mb-2">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded mb-2">
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -91,3 +91,13 @@
 
     });
 </script>
+
+<style>
+    .navbar-dark .navbar-nav .active > .nav-link {
+        font-weight: bold;
+    }
+
+    .navbar-dark .navbar-nav .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+    }
+</style>
