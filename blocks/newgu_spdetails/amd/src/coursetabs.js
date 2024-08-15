@@ -176,8 +176,8 @@ const showPastCourseNotification = (activetab) => {
         let div = document.createElement('div');
         let strong = document.createElement('strong');
         div.classList.add('alert', 'alert-info', 'm-0', 'text-center');
-        strong.append('Past courses will be displayed only for Academic Year 2024/25 onwards.' +
-            ' Any past courses/grades before this can be accessed from Moodle / My Courses.');
+        strong.append('Past provisional assessment grades will be displayed only for Academic Year 2024/25 onwards.' +
+            ' Any before this, can be accessed from the MyCourses tab on Moodle or your individual course Moodle page.');
         div.appendChild(strong);
         containerDiv.appendChild(div);
         document.querySelector("#course_contents_container").prepend(containerDiv);
