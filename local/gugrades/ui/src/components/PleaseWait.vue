@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-    import {ref, computed, inject} from '@vue/runtime-core';
+    import {inject} from '@vue/runtime-core';
     import { VueSpinner } from 'vue3-spinners';
 
     const mstrings = inject('mstrings');

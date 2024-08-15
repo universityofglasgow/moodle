@@ -46,9 +46,8 @@
         <div v-if="itemid && gradesupported" class="mt-2">
             <NameFilter v-if="!usershidden" @selected="filter_selected" ref="namefilterref"></NameFilter>
 
-            <div v-if="!loaded" class="d-flex justify-content-center">
-                <VueSpinner size="50" color="#005c8a"></VueSpinner>
-            </div>
+            <!-- Please wait spinner -->
+            <PleaseWait v-if="!loaded"></PleaseWait>
 
             <div v-if="showtable && loaded">
 
@@ -161,16 +160,14 @@
     import {ref, computed, inject, watch} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
     import CaptureSelect from '@/components/CaptureSelect.vue';
-    //import CaptureGrades from '@/components/CaptureGrades.vue';
     import CaptureMenu from '@/components/CaptureMenu.vue';
-    import PreLoader from '@/components/PreLoader.vue';
     import { useToast } from "vue-toastification";
     import CaptureButtons from '@/components/Capture/CaptureButtons.vue';
     import CaptureAlerts from '@/components/CaptureAlerts.vue';
     import CaptureColumnEditCog from '@/components/CaptureColumnEditCog.vue';
     import EditCaptureCell from '@/components/Capture/EditCaptureCell.vue';
     import { useWindowScroll, watchDebounced } from '@vueuse/core';
-    import { VueSpinner } from 'vue3-spinners';
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const users = ref([]);
     const userids = ref([]);

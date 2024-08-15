@@ -33,9 +33,8 @@
             </ul>
         </div>
 
-        <div v-if="loading" class="d-flex justify-content-center">
-            <VueSpinner size="50" color="#005c8a"></VueSpinner>
-        </div>
+        <!-- Please wait spinner -->
+        <PleaseWait v-if="loading"></PleaseWait>
 
         <EasyDataTable
             v-if="!loading"
@@ -131,8 +130,8 @@
     import NameFilter from '@/components/NameFilter.vue';
     import GroupSelect from '@/components/GroupSelect.vue';
     import { useToast } from "vue-toastification";
-    import { VueSpinner } from 'vue3-spinners';
     import InfoButton from '@/components/InfoButton.vue';
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const toast = useToast();
 
