@@ -33,7 +33,7 @@ use core_external\external_api;
 
 defined('MOODLE_INTERNAL') || die();
 
-define('TEST_USERS_COUNT', 200);
+define('TEST_USERS_COUNT', 800);
 
 global $CFG;
 
@@ -71,6 +71,7 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
 
         // Create LOTS of users.
         // ID number is just in sequence so it's unique.
+        $start = microtime(true);
         $this->studentids = [];
         $idnumber = 1111111;
         for ($i = 0; $i <= TEST_USERS_COUNT; $i++) {
@@ -78,6 +79,8 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
             $this->getDataGenerator()->enrol_user($student->id, $this->course->id, 'student');
             $this->studentids[] = $student->id;
         }
+        $stop = microtime(true);
+        echo("Time to create user accounts " . $stop - $start);
 
         // Get gradeitems.
         $gradeitems = [];
@@ -110,6 +113,9 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
     public function test_big_aggregation(): void {
         global $DB;
 
+        // Turn debugging up full
+        set_debugging(DEBUG_DEVELOPER);
+
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
 
@@ -133,6 +139,10 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
         );
         $end = microtime(true);
         $elapsed = $end - $start;
+
+        $debug = $page['debug'];
+        var_dump($debug);
+        var_dump($elapsed);
     }
 
 }

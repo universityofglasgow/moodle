@@ -76,6 +76,24 @@
                         "type": "schedulea"
                     }
                 ]
+            },
+            {
+                "name": "Item 4",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 5",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 6",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
             }
         ]
     }
