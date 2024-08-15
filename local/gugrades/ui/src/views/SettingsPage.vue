@@ -32,7 +32,7 @@
 
     const mstrings = inject('mstrings');
     const disabledashboard = ref(false);
-    const gradesreleased = ref(false);
+    const gradesreleased = ref(true);
 
     const toast = useToast();
 
