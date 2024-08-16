@@ -245,8 +245,11 @@ const fetchAssessmentSummary = () => {
         }
 
         tempPanel.insertAdjacentHTML("afterbegin", "<canvas id='assessmentSummaryChart'\n" +
-            " width='400' height='300' aria-label='Assessment Summary chart data' role='graphics-object'>\n" +
-            "<p>The &lt;canvas&gt; element appears to be unsupported in your browser.</p>\n" +
+            " width='400' height='300' aria-label='Assessments overview. A chart displaying" +
+            " assessments to be submitted, overdue, submitted and graded.' role='img' tabindex='0'>\n" +
+            "<p>The 'Assessments Overview' chart displays information relating to assessments that are" +
+            " to be submitted, are overdue, have been submitted, and those that have been graded. Links to" +
+            " further information about these assessments also form part of this chart.</p>\n" +
             "</canvas>");
 
         const data = [

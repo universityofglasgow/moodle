@@ -157,8 +157,11 @@ const fetchAssessmentsDueSoon = () => {
     }])[0].done(function(response) {
         document.querySelector('.loader').remove();
         tempPanel.insertAdjacentHTML("afterbegin", "<canvas id='assessmentsDueSoonChart'\n" +
-            " width='400' height='200' aria-label='Assessments Due Soon chart data' role='graphics-object'>\n" +
-            "<p>The &lt;canvas&gt; element appears to be unsupported in your browser.</p>\n" +
+            " width='400' height='200' aria-label='Assessments Due Soon. A chart displaying" +
+            " assessments that are due in the next 24 hours, 7 days, or month.' role='img' tabindex='0'>\n" +
+            "<p>The 'Assessments due in the next' chart displays information about assessments that are due" +
+            " in the next 24 hours, 7 days and 1 calendar month. Links to further information about these" +
+            " assessments also form part of this chart.</p>\n" +
             "</canvas>");
 
         // This is lame, but we have no other way (in Chart.js) but to target these elements when using the accessibility tool.
