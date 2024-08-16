@@ -468,6 +468,24 @@ class aggregation {
     }
 
     /**
+     * Invalidate the cache data
+     * @param int courseid
+     */
+    public static function invalidate_cache(int $courseid) {
+        global $DB;
+
+        $cache = \cache::make('local_gugrades', 'gradeitems');
+
+        // Get all grade category ids for this course
+        $gradecats = $DB->get_records('grade_categories', ['courseid' => $courseid]);
+
+        foreach ($gradecats as $gradecat) {
+            $cachetag = 'CATEGORY_' . $courseid . '_' . $gradecat->id;
+            $cache->delete($cachetag);
+        }
+    }
+
+    /**
      * Recursive helper to build grade-item tree
      * force==true, disregard caches and build new structure (and cache)
      * @param int $courseid

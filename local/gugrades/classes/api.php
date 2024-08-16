@@ -1341,9 +1341,8 @@ class api {
         $DB->delete_records('local_gugrades_map_item', ['courseid' => $courseid]);
         $DB->delete_records('local_gugrades_map', ['courseid' => $courseid]);
 
-        // Clear cache.
-        $cache = \cache::make('local_gugrades', 'gradeitems');
-        $cache->purge();
+        // Clear cache items for this course.
+        \local_gugrades\aggregation::invalidate_cache($courseid);
     }
 
     /**

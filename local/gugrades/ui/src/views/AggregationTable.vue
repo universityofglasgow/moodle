@@ -20,6 +20,9 @@
             </small>
         </div>
 
+        <!-- Buttons line -->
+        <AggregationButtons></AggregationButtons>
+
         <!-- Filter on initials -->
         <NameFilter @selected="filter_selected" ref="namefilterref"></NameFilter>
 
@@ -132,6 +135,7 @@
     import { useToast } from "vue-toastification";
     import InfoButton from '@/components/InfoButton.vue';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import AggregationButtons from '@/components/Aggregation/AggregationButtons.vue';
 
     const toast = useToast();
 
