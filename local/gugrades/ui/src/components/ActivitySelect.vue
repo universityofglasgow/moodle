@@ -9,8 +9,8 @@
             </div>
         </div>
         <div v-else>
-            <b><i class="fa fa-list-alt" aria-hidden="true"></i> {{ categoryname }}</b>
-            <ActivityTree :nodes="activitytree" @activityselected="activity_selected"></ActivityTree>
+            <b>{{ categoryname }}</b>
+            <ActivityTree :nodes="activitytree" @activityselected="activity_selected" depth="1"></ActivityTree>
         </div>
     </div>
 </template>
