@@ -24,7 +24,7 @@
  */
 
 /**
- * upgrade this recompletion
+ * upgrade local_gugrades
  * @param int $oldversion The old version of the assign module
  * @return bool
  */
@@ -82,6 +82,32 @@ function xmldb_local_gugrades_upgrade($oldversion) {
 
         // Gugrades savepoint reached.
         upgrade_plugin_savepoint(true, 2024080500, 'local', 'gugrades');
+    }
+
+    if ($oldversion < 2024081900) {
+
+        // Define table local_gugrades_agg_conversion to be created.
+        $table = new xmldb_table('local_gugrades_agg_conversion');
+
+        // Adding fields to table local_gugrades_agg_conversion.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('gradecategoryid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('mapid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_gugrades_agg_conversion.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table local_gugrades_agg_conversion.
+        $table->add_index('logu_gugid', XMLDB_INDEX_UNIQUE, ['gradecategoryid']);
+
+        // Conditionally launch create table for local_gugrades_agg_conversion.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024081900, 'local', 'gugrades');
     }
 
     return true;
