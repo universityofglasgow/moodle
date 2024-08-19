@@ -298,4 +298,85 @@ final class format_tiles_test extends \advanced_testcase {
             )
         );
     }
+
+    /**
+     * Test modal helper CM ID getter.
+     * @covers \format_tiles\local\modal_helper::get_resource_modal_cmids
+     */
+    public function test_modal_resource_cmids(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course(
+            $this->tilescourseformatoptions,
+            ['createsections' => true]);
+
+        // Must be a non-guest user to create resources.
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_resource');
+        $generator->create_instance(['course' => $course->id]);
+
+        $allowedmodals = ['application/pdf', 'text/html'];
+        $component = 'mod_resource';
+        $filearea = 'content';
+        $textfilepath = 'mod/resource/tests/fixtures/samplefile.txt';
+
+        // A resource with a txt file attached should not results in any modals.
+        $generator->create_instance(['course' => $course->id, 'uploaded' => true, 'defaultfilename' => $textfilepath]);
+        $this->assertTrue(
+            \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals) === []
+        );
+
+        // A resource with a PDF file attached should result in one modal.
+        $pdfresource = $generator->create_instance([
+            'course' => $course->id,
+            'uploaded' => true,
+            'defaultfilename' => 'course/format/tiles/tests/fixtures/test.pdf',
+        ]);
+        $this->assertTrue(
+            \format_tiles\local\modal_helper::get_resource_modal_cmids(
+                $course->id, $allowedmodals) === [$pdfresource->cmid]
+        );
+
+        // A resource with an HTML file attached should result in another modal.
+        $htmlresource = $generator->create_instance([
+            'course' => $course->id,
+            'uploaded' => true,
+            'defaultfilename' => 'course/format/tiles/tests/fixtures/test.html',
+        ]);
+        $this->assertEquals(
+            [$pdfresource->cmid, $htmlresource->cmid],
+            \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals)
+        );
+
+        // Add a text file to the PDF activity.
+        $pdfcmcontext = \context_module::instance($pdfresource->cmid);
+        $filerecord = ['component' => $component, 'filearea' => $filearea,
+            'contextid' => $pdfcmcontext->id, 'itemid' => 0,
+            'filename' => basename('test.txt'), 'filepath' => '/'];
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname($filerecord, $textfilepath);
+
+        // At this point we added the HTML file so the PDF should still be the main file so it's still a modal activity.
+        $this->assertEquals(
+            [$pdfresource->cmid, $htmlresource->cmid],
+            \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals)
+        );
+
+        // Now set the newly added text file as the main file so this is no longer a modal activity.
+        file_reset_sortorder($pdfcmcontext->id, $component, $filearea, 0);
+        file_set_sortorder($pdfcmcontext->id, $component, $filearea, 0, '/', 'test.txt', 1);
+        $this->assertEquals(
+            [$htmlresource->cmid],
+            \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals)
+        );
+
+        // Now set the PDF back to main file so it's a modal activity again.
+        file_reset_sortorder($pdfcmcontext->id, $component, $filearea, 0);
+        file_set_sortorder($pdfcmcontext->id, $component, $filearea, 0, '/', 'test.pdf', 1);
+
+        $this->assertEquals(
+            [$pdfresource->cmid, $htmlresource->cmid],
+            \format_tiles\local\modal_helper::get_resource_modal_cmids($course->id, $allowedmodals)
+        );
+    }
 }

@@ -69,8 +69,6 @@ class modal_helper {
         require_once("$CFG->libdir/resourcelib.php");
 
         // This is not very efficient, so we cache the results elsewhere.
-        // When multiple files are uploaded to a single resource activity, Moodle displays the lowest sort order item
-        // Here we use the index on the files table component-filearea-contextid-itemid.
         $excludeddisplaytypes = [
             RESOURCELIB_DISPLAY_POPUP, RESOURCELIB_DISPLAY_NEW, RESOURCELIB_DISPLAY_DOWNLOAD,
         ];
@@ -79,23 +77,49 @@ class modal_helper {
         $params['courseid'] = $courseid;
         $params['contextmodule'] = CONTEXT_MODULE;
 
-        list($insql, $insqlparams) = $DB->get_in_or_equal($mimetypes, SQL_PARAMS_NAMED);
-
-        $params = array_merge($params, $insqlparams);
-
         // First get file cmids of relevant mime type.
         // There is an index on the files table component-filearea-contextid-itemid.
-        $sql = "SELECT DISTINCT cm.id
+        // For resources with > 1 file attached, we are interested in the last file, if it's the right MIME type.
+        // We use the last file (highest sort order) as that's the "main" file and what /mod/resource/view.php does.
+        $basesql = "SELECT cm.id AS cmid, MAX(f.sortorder) AS sortorder
                     FROM {course_modules} cm
                     JOIN {modules} m ON m.id = cm.module and m.name = 'resource'
                     JOIN {resource} r ON cm.instance = r.id
                     JOIN {context} ctx ON ctx.contextlevel = :contextmodule AND ctx.instanceid = cm.id
                     JOIN {files} f ON f.component = 'mod_resource' AND f.filearea = 'content' AND f.contextid = ctx.id
-                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.' AND f.mimetype $insql
+                        AND f.itemid = 0 AND f.filesize > 0 and f.filename != '.'
                     WHERE cm.course = :courseid AND cm.deletioninprogress = 0 AND r.display $notinsql";
-        return array_map(function($cmid) {
-            return (int)$cmid;
-        }, $DB->get_fieldset_sql($sql, $params));
+
+        $result = [];
+
+        // Get the details of the highest sortorder file on each CM of the relevant mime type, to check against main files.
+        list($insql, $insqlparams) = $DB->get_in_or_equal($mimetypes, SQL_PARAMS_NAMED);
+        $params = array_merge($params, $insqlparams);
+        $lastmimetypefilecms = $DB->get_records_sql(
+            "$basesql AND f.mimetype $insql GROUP BY cm.id",
+            $params
+        );
+
+        if (empty($lastmimetypefilecms)) {
+            return $result;
+        }
+
+        // Get the details of the highest sortorder ("main") file on each CM, as that's the only one that could be relevant.
+        $mainfilecms = $DB->get_recordset_sql("$basesql GROUP BY cm.id", $params);
+
+        // Now check if the highest sortorder ("main") file on each CM is of the right MIME type.
+        if ($mainfilecms->valid()) {
+            foreach ($mainfilecms as $mainfilecm) {
+                $ismimetypefile = isset($lastmimetypefilecms[$mainfilecm->cmid])
+                    && $lastmimetypefilecms[$mainfilecm->cmid]->sortorder == $mainfilecm->sortorder;
+                if ($ismimetypefile) {
+                    // The "main" file has the right MIME type, so we have a hit for this CM.
+                    $result[] = (int)$mainfilecm->cmid;
+                }
+            }
+        }
+        $mainfilecms->close();
+        return $result;
     }
 
     /**

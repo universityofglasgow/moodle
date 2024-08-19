@@ -187,6 +187,7 @@ if ($canedit) {
 
     $options = new stdClass();
     $options->courseid = $cm->id;
+    $options->uniqueid = $participanttable->uniqueid;
     $options->stateHelpIcon = $OUTPUT->help_icon('publishstate', 'notes');
 
     if ($bulkoperations) {

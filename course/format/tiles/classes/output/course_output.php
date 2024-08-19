@@ -177,7 +177,7 @@ class course_output implements \renderable, \templatable {
         if ($this->fromajax) {
             try {
                 // Issue #153 avoid multiple glossary auto link JS onclick events.
-                $PAGE->requires->set_one_time_item_created('filter_glossary_autolinker');
+                $PAGE->requires->should_create_one_time_item_now('filter_glossary_autolinker');
 
             } catch (\Exception $e) {
                 debugging('Could not set glossary autolink created', DEBUG_DEVELOPER);
@@ -880,7 +880,7 @@ class course_output implements \renderable, \templatable {
         $moduleobject['modresourceicon'] = $mod->modname == 'resource'
             ? \format_tiles\local\util::get_mod_resource_type($mod->icon) : null;
 
-        if (!$treataslabel && get_config('format_tiles', 'allowphototiles')) {
+        if (!$treataslabel) {
             $iconclass = '';
             if ($mod->modname == 'resource' && $this->moodlerelease <= 4.2) {
                 // We may want to use a specific icon instead like PDF.

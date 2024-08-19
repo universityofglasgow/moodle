@@ -15,19 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * This library exposes functions for LTI Dynamic Registration.
  *
- * @package    mod_reengagement
- * @author     Peter Bulmer <peter.bulmer@catlayst.net.nz>
- * @copyright  2016 Catalyst IT {@link http://www.catalyst.net.nz}
+ * @package    mod_lti
+ * @copyright  2020 Claude Vervoort (Cengage), Carlos Costa, Adrian Hutchinson (Macgraw Hill)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_lti\local\ltiopenid;
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2023020805;   // The current module version.
-$plugin->release   = 2023020805;
-$plugin->requires  = 2021091700; // Requires 4.0.
-$plugin->component = 'mod_reengagement';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->supported = [400, 404];
+/**
+ * Exception when transforming the registration to LTI config.
+ *
+ * Code is the HTTP Error code.
+ */
+class registration_exception extends \Exception {
+}

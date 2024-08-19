@@ -33,6 +33,8 @@ Feature: Teacher can allocate icons to tiles
   Scenario: Teacher can use icon picker to pick icons, and can rename section afterwards
     When I log in as "teacher1"
     And I am on "Business Law" course homepage with editing mode on
+    And I wait until the page is ready
+    And I wait "1" seconds
     And I click on "#tileicon_1" "css_element"
     And I wait until the page is ready
     And I wait "3" seconds

@@ -161,27 +161,35 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         template = 'format_tiles/embed_url_modal_body';
                     }
 
-                    Templates.render(template, templateData).done(function (html) {
-                        modal.setBody(html);
-                        modalRoot.find(Selector.modalBody).animate({"min-height": Math.round(win.height() - 120)}, "fast");
+                    const redirectModule =
+                        objectType.includes('_') ? objectType.split('_')[0] : objectType;
+                    if (template !== null) {
+                        Templates.render(template, templateData).done(function (html) {
+                            modal.setBody(html);
+                            modalRoot.find(Selector.modalBody).animate({"min-height": Math.round(win.height() - 120)}, "fast");
 
-                        if (objectType === "resource_html" || objectType === 'url') {
-                            // HTML files only - set widths to 100% since they may contain embedded videos etc.
-                            modalRoot.find(Selector.modal).animate({"max-width": "100%"}, "fast");
-                            modalRoot.find(Selector.modalDialog).animate({"max-width": "100%"}, "fast");
-                            modalRoot.find(Selector.modalBody).animate({"max-width": "100%"}, "fast");
-                            stopAllVideosOnDismiss(modalRoot);
-                            if (objectType === 'url') {
-                                modalRoot.find(Selector.modalBody).addClass("text-center");
+                            if (objectType === "resource_html" || objectType === 'url') {
+                                // HTML files only - set widths to 100% since they may contain embedded videos etc.
+                                modalRoot.find(Selector.modal).animate({"max-width": "100%"}, "fast");
+                                modalRoot.find(Selector.modalDialog).animate({"max-width": "100%"}, "fast");
+                                modalRoot.find(Selector.modalBody).animate({"max-width": "100%"}, "fast");
+                                stopAllVideosOnDismiss(modalRoot);
+                                if (objectType === 'url') {
+                                    modalRoot.find(Selector.modalBody).addClass("text-center");
+                                }
+                            } else if (objectType === "resource_pdf") {
+                                // Otherwise (e.g. for PDF) we don't need 100% width.
+                                modalRoot.find(Selector.modal).animate({"max-width": modalMinWidth()}, "fast");
+                                // We do modal-dialog too since Moove theme uses it.
+                                modalRoot.find(Selector.modalDialog).animate({"max-width": modalMinWidth()}, "fast");
                             }
-                        } else if (objectType === "resource_pdf") {
-                            // Otherwise (e.g. for PDF) we don't need 100% width.
-                            modalRoot.find(Selector.modal).animate({"max-width": modalMinWidth()}, "fast");
-                            // We do modal-dialog too since Moove theme uses it.
-                            modalRoot.find(Selector.modalDialog).animate({"max-width": modalMinWidth()}, "fast");
-                        }
 
-                    }).fail(Notification.exception);
+                        }).fail(() => {
+                            window.location.href = `${config.wwwroot}/mod/${redirectModule}/view.php?id=${cmId}`;
+                        });
+                    } else {
+                        window.location.href = `${config.wwwroot}/mod/${redirectModule}/view.php?id=${cmId}`;
+                    }
                 }
 
                 // Render the modal header / title and set it to the page.

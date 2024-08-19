@@ -1914,7 +1914,10 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     border: 1px dashed #8d3d1b30;
     background-color: #8d3d1b06;
 }
-/*Default will include .other*/
+.format-tiles li.subtile .tileiconcontainer.other {
+    background-color: var(--format-tiles-colour-05);
+}
+/*Default*/
 .format-tiles li.subtile .tileiconcontainer {
     border: 1px dashed #21252930;
     background-color: #21252906;

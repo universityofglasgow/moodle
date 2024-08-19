@@ -51,9 +51,10 @@ $modobject = $DB->get_record($cm->modname, ['id' => $cm->instance], '*', MUST_EX
 
 if ($cm->modname === 'resource') {
     $fs = get_file_storage();
+    // We show the file with the highest sort order, like on mod/resource/view.php.
     $files = $fs->get_area_files(
         $context->id, 'mod_resource', 'content', 0,
-        'sortorder', false, 0, 0, 10
+        'sortorder DESC, id ASC', false, 0, 0, 10
     );
     if (!empty($files)) {
         $allowedmimetypes = ['application/pdf', 'text/html'];

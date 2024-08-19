@@ -15,19 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * This file returns an array of available public keys
  *
- * @package    mod_reengagement
- * @author     Peter Bulmer <peter.bulmer@catlayst.net.nz>
- * @copyright  2016 Catalyst IT {@link http://www.catalyst.net.nz}
+ * @package    mod_lti
+ * @copyright  2019 Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+use block_onlinesurvey\local\ltiopenid\jwks_helper;
 
-defined('MOODLE_INTERNAL') || die();
+define('NO_DEBUG_DISPLAY', true);
+define('NO_MOODLE_COOKIES', true);
 
-$plugin->version   = 2023020805;   // The current module version.
-$plugin->release   = 2023020805;
-$plugin->requires  = 2021091700; // Requires 4.0.
-$plugin->component = 'mod_reengagement';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->supported = [400, 404];
+require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/classes/local/ltiopenid/jwks_helper.php');
+
+@header('Content-Type: application/json; charset=utf-8');
+try {
+    $jwks = jwks_helper::get_jwks();
+    $json = json_encode($jwks, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    echo $json;
+} catch(Exception $e) {
+    // nothing here yet
+}

@@ -511,3 +511,13 @@ Other
 - Fix scroll on tile open
 - Dismiss dialogues (e.g. glossary entries) when tile is closed or changed
 - Avoid double glossary dialogue when autolink in page modal is clicked
+
+4.4.0.16 (2024081640)
+=====================
+- Fix modal bug where resource activity has multiple files
+- Icon background colour is course colour for activities which don't support "purpose"
+- Add branch description to readme
+
+4.4.0.17 (2024081641)
+=====================
+- Icon background colour correction for purpose "other" activities

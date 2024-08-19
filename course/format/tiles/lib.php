@@ -1019,7 +1019,7 @@ function format_tiles_output_fragment_get_cm_content(array $args): string {
         }
         try {
             // Issue #153 avoid multiple glossary auto link JS onclick events.
-            $PAGE->requires->set_one_time_item_created('filter_glossary_autolinker');
+            $PAGE->requires->should_create_one_time_item_now('filter_glossary_autolinker');
 
         } catch (\Exception $e) {
             debugging('Could not set glossary autolink created', DEBUG_DEVELOPER);
