@@ -867,6 +867,7 @@ class grades {
 
     /**
      * Delete all data for gradeitemid
+     * TODO: Don't forget to add anything new that we add in db.
      * @param int $gradeitemid
      */
     public static function delete_grade_item(int $gradeitemid) {
@@ -874,6 +875,29 @@ class grades {
 
         $DB->delete_records('local_gugrades_grade', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_audit', ['gradeitemid' => $gradeitemid]);
+        $DB->delete_records('local_gugrades__column', ['gradeitemid' => $gradeitemid]);
+        $DB->delete_records('local_gugrades_hidden', ['gradeitemid' => $gradeitemid]);
+    }
+
+    /**
+     * Delete all data for gradeitemid
+     * TODO: Don't forget to add anything new that we add in db.
+     * @param int $courseid
+     */
+    public static function delete_course(int $courseid) {
+        global $DB;
+
+        $DB->delete_records('local_gugrades_agg_conversion', ['courseid' => $courseid]);
+        $DB->delete_records('local_gugrades_config', ['courseid' => $courseid]);
+
+        // Delete conversion maps
+        $maps = $DB->get_records('local_gugrades_map', ['courseid' => courseid]);
+        foreach ($maps as $map) {
+            $DB->delete_records('local_gugrades_map_item', ['mapid' => $map->id]);
+            $DB->delete_records('local_gugrades_map_value', ['mapid' => $map->id]);
+        }
+        $DB->delete_records('local_gugrades_map', ['courseid' => $courseid]);
+        $DB->delete_records('local_gugrades_resit_required', ['courseid' => $courseid]);
     }
 
     /**

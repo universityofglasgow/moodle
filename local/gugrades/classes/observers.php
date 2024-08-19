@@ -42,4 +42,15 @@ class observers {
         \local_gugrades\grades::delete_grade_item($gradeitemid);
     }
 
+    /**
+     * Handle deleted course
+     * @param \core\event\grade_item_deleted $event
+     */
+    public static function course_deleted(\core\event\course_deleted $event) {
+        $data = $event->get_data();
+        $courseid = $data['objectid'];
+
+        \local_gugrades\grades::delete_course($courseid);
+    }
+
 }

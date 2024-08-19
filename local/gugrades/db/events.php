@@ -30,5 +30,9 @@ $observers = [
         'eventname' => '\core\event\grade_item_deleted',
         'callback' => '\local_gugrades\observers::grade_item_deleted',
     ],
+    [
+        'eventname' => '\core\event\course_deleted',
+        'callback' => '\local_gugrades\observers::course_deleted',
+    ],
 
 ];
