@@ -191,6 +191,20 @@ final class dashboard_get_courses_test extends \local_gugrades\external\gugrades
             $courses
         );
         $this->assertCount(0, $courses);
+
+        // Test disable 'show grades' in course
+        $course = $DB->get_record('course', ['id' => $this->course->id], '*', MUST_EXIST);
+        $course->showgrades = 0;
+        $DB->update_record('course', $course);
+
+        $courses = dashboard_get_courses::execute($studentid, true, false, '');
+        $courses = external_api::clean_returnvalue(
+            dashboard_get_courses::execute_returns(),
+            $courses
+        );
+
+        // Should only be two courses (not 3).
+        $this->assertCount(2, $courses);
     }
 
 }
