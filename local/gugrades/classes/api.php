@@ -1831,4 +1831,23 @@ class api {
 
         return $csv;
     }
+
+    /**
+     * Recalculate aggregation
+     * @param int $courseid
+     * @param int $gradecategoryid
+     */
+    public static function recalculate(int $courseid, int $gradecategoryid) {
+
+        // Get all the students.
+        $users = \local_gugrades\aggregation::get_users($courseid, '', '', 0);
+
+        // Get the level 1 parent category.
+        $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
+
+        // Run over users running aggregation
+        foreach ($users as $user) {
+            \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $user->id);
+        }
+    }
 }

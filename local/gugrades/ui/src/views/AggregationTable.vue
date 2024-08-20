@@ -4,12 +4,9 @@
             <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
             <GroupSelect v-if="level1category" @groupselected="groupselected"></GroupSelect>
         </div>
-    </div>
-
-    <div v-if="level1category" class="mt-2">
 
         <!-- display warnings -->
-        <div>
+        <div class="mt-2">
             <small>
                 <div v-for="warning in warnings" class="alert alert-warning alert-dismissible fade show mb-1" role="alert">
                     {{ warning.message }}
@@ -21,7 +18,14 @@
         </div>
 
         <!-- Buttons line -->
-        <AggregationButtons></AggregationButtons>
+        <AggregationButtons
+            v-if="level1category"
+            :categoryid="level1category"
+            @refreshtable="table_update"
+            ></AggregationButtons>
+    </div>
+
+    <div v-if="level1category" class="mt-2">
 
         <!-- Filter on initials -->
         <NameFilter @selected="filter_selected" ref="namefilterref"></NameFilter>
