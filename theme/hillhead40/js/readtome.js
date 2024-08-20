@@ -14,14 +14,14 @@ async function waitForElement(timeout = 2000) {
 
     while (Date.now() - start < timeout) {
         if(typeof window.speechSynthesis !== 'undefined') {
-			document.querySelectorAll('p, h1, h2, h3, h4, h5, span, a, label, button, strong, canvas, table>thead>tr>th, a[href*="downloadspdetails.php"]>i').forEach((v) => {
+			document.querySelectorAll('p, h1, h2, h3, h4, h5, span, a, label, button, strong, canvas, table>thead>tr>th, div.border div.alert.alert-info, a[href*="downloadspdetails.php"]>i').forEach((v) => {
 				v.addEventListener('mouseover', (e) => {
 					e.target.classList.add('currentlySpeaking', 'currentlySpeakingHighlight');
 					if(typeof speakTimer !== 'undefined') {
 						clearTimeout(speakTimer);
 					}
 					window.speechSynthesis.cancel();
-					let speakText = e.target.textContent;
+					let speakText = ((e.target.ariaLabel != null) ? e.target.ariaLabel : e.target.textContent);
         	        let $hillheadCurrentlySpeaking = e.target;
         	        speakTimer = setTimeout( function() {
             		    var msg = new SpeechSynthesisUtterance(speakText);
