@@ -57,6 +57,7 @@ class aggregation {
     /**
      * Get aggregation strategy formatted for display
      * @param int $gradecategoryid
+     * @param int $level
      * @return string
      *
      */
@@ -65,6 +66,17 @@ class aggregation {
 
         $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
         $agg = $gcat->aggregation;
+
+        // The 'level' we are at is the depth in the grade_items table minus 1
+        // (depth = 1 is the course level).
+        $level = $gcat->depth - 1;
+
+        // If level >=2 then check for droplow. It's not supported at level 1.
+        if (($level >= 2) && ($gcat->droplow > 0)) {
+            $droplow = " (Drop lowest {$gcat->droplow})";
+        } else {
+            $droplow = '';
+        }
 
         // Array translates aggregation id.
         $lookup = [
@@ -80,7 +92,7 @@ class aggregation {
         ];
 
         if (array_key_exists($agg, $lookup)) {
-            return $lookup[$agg];
+            return $lookup[$agg] . $droplow;
         } else {
             throw new \moodle_exception('Unknown aggregation strategy - ' . $agg);
         }
@@ -736,7 +748,8 @@ class aggregation {
         $items = $aggregation->pre_process_items($items);
 
         // "drop lowest" items.
-        if ($droplow > 0) {
+        // NOTE: droplow is NOT supported for level 1
+        if (($droplow > 0) && ($level > 1)) {
             $items = $aggregation->droplow($items, $droplow);
         }
 
@@ -947,15 +960,16 @@ class aggregation {
      * @param int $courseid
      * @param int $gradecategoryid
      * @param int $userid
+     * @param bool $force
      */
-    public static function aggregate_user_helper(int $courseid, int $gradecategoryid, int $userid) {
+    public static function aggregate_user_helper(int $courseid, int $gradecategoryid, int $userid, bool $force = false) {
 
         // As $gradecategoryid could be second level + then we first need to find the 1st level
         // categoryid (as we're aggregating everything).
         $level1categoryid = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
         // We need the recursed category tree for this categoryid. Hopefully, this should be cached.
-        $toplevel = self::recurse_tree($courseid, $level1categoryid, false);
+        $toplevel = self::recurse_tree($courseid, $level1categoryid, $force);
 
         // Basic user object.
         $user = self::get_user($courseid, $userid);

@@ -1877,7 +1877,7 @@ class api {
 
         // Run over users running aggregation
         foreach ($users as $user) {
-            \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $user->id);
+            \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $user->id, true);
         }
     }
 }
