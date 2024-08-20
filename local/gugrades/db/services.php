@@ -72,6 +72,7 @@ $services = [
             'local_gugrades_get_capture_export_data',
             'local_gugrades_get_capture_user',
             'local_gugcat_recalculate',
+            'local_gugcat_get_aggregation_user',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -347,6 +348,12 @@ $functions = [
     'local_gugrades_recalculate' => [
         'classname' => 'local_gugrades\external\recalculate',
         'description' => 'Complete recalculation of aggregation.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_aggregation_user' => [
+        'classname' => 'local_gugrades\external\get_aggregation_user',
+        'description' => 'get the aggregation page data for a single user.',
         'type' => 'read',
         'ajax' => true,
     ],

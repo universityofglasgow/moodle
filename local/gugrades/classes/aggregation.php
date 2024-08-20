@@ -202,6 +202,8 @@ class aggregation {
         $user->displayname = fullname($user);
         $user->resitrequired = self::is_resit_required($courseid, $userid);
 
+        $user = \local_gugrades\users::add_picture_and_profile_to_user_record($courseid, $user);
+
         return $user;
     }
 
@@ -237,6 +239,77 @@ class aggregation {
     }
 
     /**
+     * Add aggregation data for a single user
+     * @param int $courseid
+     * @param int gradecategoryid
+     * @param object $user
+     * @param array $columns
+     * @return object
+     */
+    public static function add_aggregation_fields_to_user(int $courseid, int $gradecategoryid, object $user, array $columns) {
+        global $DB;
+
+        // We're assuming that this user is fully aggregated and no further checks are required.
+
+        // Get the grade item corresponding to this category.
+        $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+        $gradecatitem = $DB->get_record('grade_items',
+            ['itemtype' => 'category', 'iteminstance' => $gradecategoryid], '*', MUST_EXIST);
+
+        $fields = [];
+        $items = [];
+        foreach ($columns as $column) {
+
+            // Basic fields.
+            $fieldname = 'AGG_' . $column->gradeitemid;
+            $data = [
+                'fieldname' => $fieldname, // Required by WS.
+                'itemname' => $column->shortname, // Required by WS.
+                'display' => '', // Required by WS.
+                'schedule' => $column->schedule,
+                'weight' => $column->weight,
+                'grademissing' => true,
+                'isscale' => $column->isscale,
+            ];
+
+            // Field identifier based on gradeitemid (which is unique even for categories).
+            $provisional = \local_gugrades\grades::get_provisional_from_id($column->gradeitemid, $user->id);
+            if ($provisional) {
+                $data['rawgrade'] = $provisional->rawgrade;
+                $data['display'] = $provisional->displaygrade;
+                $data['grademissing'] = is_null($provisional->rawgrade);
+                $data['admingrade'] = $provisional->admingrade;
+            } else {
+                $data['display'] = get_string('nodata', 'local_gugrades');
+            }
+
+            $fields[] = $data;
+            $items[] = (object)$data;
+        }
+
+        $user->fields = $fields;
+
+        // Get atype and aggregation rules.
+        // This is why we needed items - array of array vs. array of objects.
+        [$atype, $warnings] = self::get_aggregation_type($items, $gradecategoryid);
+        $aggregation = self::aggregation_factory($courseid, $atype);
+
+        // Read "top level" category for user info
+        // This is needed if no aggregation is performed.
+        $item = $DB->get_record('local_gugrades_grade',
+            ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1],
+            '*', MUST_EXIST);
+        $user->rawgrade = $item->rawgrade;
+        $user->total = $item->convertedgrade;
+        $user->displaygrade = $item->displaygrade;
+        $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
+        $user->completed = $aggregation->completion($items, $weighted);
+        $user->error = $item->auditcomment;
+
+        return $user;
+    }
+
+    /**
      * Add aggregation data to users.
      * Each user record contains list based on columns
      * Formatted to survive web services (will need reformatted for EasyDataTable)
@@ -258,7 +331,7 @@ class aggregation {
         // debugging stuff.
         $userhelpercount = 0;
 
-        foreach ($users as $user) {
+        foreach ($users as $id => $user) {
 
             // The agregated 'CATEGORY' field should already be in the grades table.
             // If it's not, we need to aggregate this user
@@ -267,6 +340,9 @@ class aggregation {
                 $userhelpercount++;
             }
 
+            $users[$id] = self::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
+
+/*
             $fields = [];
             $items = [];
             foreach ($columns as $column) {
@@ -316,6 +392,7 @@ class aggregation {
             $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
             $user->completed = $aggregation->completion($items, $weighted);
             $user->error = $item->auditcomment;
+            */
         }
 
         // Debug stuff.

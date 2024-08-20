@@ -210,7 +210,8 @@
             }
         }])[0]
         .then(() => {
-            table_update();
+            user_update(userid);
+
         })
         .catch((error) => {
             window.console.error(error);
@@ -229,6 +230,17 @@
         });
 
         return users;
+    }
+
+    /**
+     * Process columns for single user
+     */
+    function process_user(user) {
+        user.fields.forEach(field => {
+                user[field.fieldname] = field.display;
+        });
+
+        return user;
     }
 
     /**
@@ -342,6 +354,36 @@
         // Reset page
         //currentpage.value = 1;
         table_update();
+    }
+
+    /**
+     * Update single user (when something changes)
+     */
+    function user_update(userid) {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_get_aggregation_user',
+            args: {
+                courseid: courseid,
+                gradecategoryid: categoryid.value,
+                userid: userid,
+            }
+        }])[0]
+        .then((result) => {
+            const found = users.value.findIndex((user) => {
+                return user.id == userid;
+            });
+            if (found > -1) {
+                users.value[found] = process_user(result);
+            }
+        })
+        .catch((error) => {
+            window.console.error(error);
+            toast.error('Error communicating with server (see console)');
+        });
     }
 
     /**

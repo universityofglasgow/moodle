@@ -1597,6 +1597,36 @@ class api {
     }
 
     /**
+     * Get aggregation user
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_aggregation_user(int $courseid, int $gradecategoryid, int $userid) {
+        global $DB;
+
+        // Get the level 1 parent category.
+        $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
+
+        // (Re-)aggregate this user. Regardless.
+        \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $userid);
+
+        // Build (and cache) grade structure (whole tree).
+        \local_gugrades\aggregation::recurse_tree($courseid, $level1id, false);
+
+        // Get categories and items at this level.
+        [$columns, $atype, $warnings] = \local_gugrades\aggregation::get_columns($courseid, $gradecategoryid);
+
+        // Get user aggregation data
+        $context = \context_course::instance($courseid);
+        $user = \local_gugrades\aggregation::get_user($courseid, $userid);
+        $user = \local_gugrades\aggregation::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
+
+        return $user;
+    }
+
+    /**
      * Resit required
      * @param int $courseid
      * @param int $userid
