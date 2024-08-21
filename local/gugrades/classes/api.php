@@ -1876,8 +1876,6 @@ class api {
         $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
         // Run over users running aggregation
-        foreach ($users as $user) {
-            \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $user->id, true);
-        }
+        \local_gugrades\aggregation::aggregate($courseid, $gradecategoryid, $users);
     }
 }

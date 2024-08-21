@@ -979,8 +979,7 @@ class aggregation {
     }
 
     /**
-     * Entry point for calculating complete aggregations
-     * In reality, we shouldn't really need this.
+     * Entry point for calculating complete aggregations of array of users.
      * @param int $courseid
      * @param int $gradecategoryid
      * @param array $users
@@ -989,26 +988,19 @@ class aggregation {
     public static function aggregate(int $courseid, int $gradecategoryid, array $users) {
         global $DB;
 
-        // Get the category data (for later).
-        $gradecat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
-        $gradecatitem = $DB->get_record('grade_items',
-            ['itemtype' => 'category', 'iteminstance' => $gradecategoryid], '*', MUST_EXIST);
+        // As $gradecategoryid could be second level + then we first need to find the 1st level
+        // categoryid (as we're aggregating everything).
+        $level1categoryid = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
-        // The 'level' we are at is the depth in the grade_items table minus 1
-        // (depth = 1 is the course level).
-        $level = $gradecat->depth - 1;
-
-        // First get category tree structure, including all required
-        // weighting drop high/low and so on. So we only have to do it once.
-        $toplevel = self::recurse_tree($courseid, $gradecategoryid, false);
+        // We need the recursed category tree for this categoryid. Hopefully, this should be cached.
+        $toplevel = self::recurse_tree($courseid, $level1categoryid, true);
 
         // Run through each user and aggregate their grades.
         foreach ($users as $user) {
 
             // 1 = level 1 (we need to know what level we're at). Level is incremented
             // as call recurses.
-            [$usertotal, $rawgrade, $admingrade, $displaygrade, $completion, $error] =
-                self::aggregate_user($courseid, $toplevel, $user->id, $level);
+            self::aggregate_user($courseid, $toplevel, $user->id, 1);
         }
     }
 
