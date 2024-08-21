@@ -574,6 +574,23 @@ class conversion {
     }
 
     /**
+     * Has a grade category got an associated map
+     * Return the mapid or false
+     * @param int $gradecategoryid
+     * @return int|bool
+     *
+     */
+    public static function get_mapid_for_category(int $gradecategoryid) {
+        global $DB;
+
+        if ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradecategoryid' => $gradecategoryid])) {
+            return $mapitem->mapid;
+        }
+
+        return false;
+    }
+
+    /**
      * Get value => scale item for map
      * Compare with \local_gugrades\grade::get_scale()
      * @param int $courseid

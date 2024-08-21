@@ -229,7 +229,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         // Convert
         // Apply the test conversion map to all items.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $nothing = select_conversion::execute($this->course->id, $gradeitemid, $this->mapid);
+            $nothing = select_conversion::execute($this->course->id, $gradeitemid, 0, $this->mapid);
             $nothing = external_api::clean_returnvalue(
                 select_conversion::execute_returns(),
                 $nothing

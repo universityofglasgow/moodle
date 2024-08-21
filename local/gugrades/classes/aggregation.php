@@ -783,6 +783,13 @@ class aggregation {
                 return [$parentgrade, $aggregatedgrade, '', $displaygrade, $completion, ''];
             }
 
+            // We have an aggregated points score. However, is this a candidate for converting?
+            // Must be >=level2 and have an entry in map_item table.
+            if (($level >= 2) && ($mapid = \local_gugrades\conversion::get_mapid_for_category($category->categoryid))) {
+
+            }
+
+            // Return points grades.
             return [$aggregatedgrade, $aggregatedgrade, '', $aggregatedgrade, $completion, ''];
         }
 
