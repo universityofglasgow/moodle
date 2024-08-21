@@ -21,6 +21,8 @@
         <AggregationButtons
             v-if="level1category"
             :categoryid="level1category"
+            :toplevel="toplevel"
+            :atype="atype"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>

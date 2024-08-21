@@ -11,10 +11,6 @@
                 {{ mstrings.nomaps }}
             </div>
 
-            <div v-else class="alert alert-warning">
-                {{ mstrings.noimportafterconversion }}
-            </div>
-
             <EasyDataTable v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
                 <template #item-select="item">
                     <input type="radio" :value="item.id" v-model="mapid"/>
@@ -60,7 +56,7 @@
     ]);
 
     const props = defineProps({
-        itemid: Number,
+        categoryid: Number,
     });
 
     const emits = defineEmits(['converted']);
@@ -102,8 +98,8 @@
             methodname: 'local_gugrades_get_selected_conversion',
             args: {
                 courseid: courseid,
-                gradeitemid: props.itemid,
-                gradecategoryid: 0,
+                gradeitemid: 0,
+                gradecategoryid: props.categoryid,
             }
         }])[0]
         .then((result) => {
@@ -138,8 +134,8 @@
             methodname: 'local_gugrades_select_conversion',
             args: {
                 courseid: courseid,
-                gradeitemid: props.itemid,
-                gradecategoryid: 0,
+                gradeitemid: 0,
+                gradecategoryid: props.categoryid,
                 mapid: mapid.value,
             }
         }])[0]
@@ -168,8 +164,8 @@
             methodname: 'local_gugrades_select_conversion',
             args: {
                 courseid: courseid,
-                gradeitemid: props.itemid,
-                gradecategoryid: 0,
+                gradeitemid: 0,
+                gradecategoryid: props.categoryid,
                 mapid: 0,
             }
         }])[0]

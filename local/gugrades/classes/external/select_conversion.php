@@ -42,7 +42,8 @@ class select_conversion extends external_api {
     public static function execute_parameters() {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'gradeitemid' => new external_value(PARAM_INT, 'Grade item id'),
+            'gradeitemid' => new external_value(PARAM_INT, 'Grade item id (or 0)'),
+            'gradecategoryid' => new external_value(PARAM_INT, 'Grade category id (or 0)'),
             'mapid' => new external_value(PARAM_INT, 'Conversion map ID. 0 means remove existing.'),
         ]);
     }
@@ -51,16 +52,18 @@ class select_conversion extends external_api {
      * Execute function
      * @param int $courseid
      * @param int $gradeitemid
+     * @param int $gradecategoryid
      * @param int $mapid
      * @return int
      */
-    public static function execute($courseid, $gradeitemid, $mapid) {
+    public static function execute($courseid, $gradeitemid, $gradecategoryid, $mapid) {
         global $DB;
 
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'gradeitemid' => $gradeitemid,
+            'gradecategoryid' => $gradecategoryid,
             'mapid' => $mapid,
         ]);
 
@@ -68,9 +71,10 @@ class select_conversion extends external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        \local_gugrades\api::select_conversion($courseid, $gradeitemid, $mapid);
+        \local_gugrades\api::select_conversion($courseid, $gradeitemid, $gradecategoryid, $mapid);
 
         // Log.
+        // TODO: Improve for gradecategoryid
         $event = \local_gugrades\event\select_conversion::create([
             'objectid' => $gradeitemid,
             'context' => \context_course::instance($courseid),
@@ -81,7 +85,12 @@ class select_conversion extends external_api {
         $event->trigger();
 
         // Audit.
-        \local_gugrades\audit::write($courseid, $gradeitemid, 0, 'Conversion map selected = ' . $mapid);
+        if ($mapid) {
+            $map = $DB->get_record('local_gugrades_map', ['id' => $mapid], '*', MUST_EXIST);
+            \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Conversion map selected = ' . $map->name);
+        } else {
+            \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Conversion map removed');
+        }
 
         return [];
     }

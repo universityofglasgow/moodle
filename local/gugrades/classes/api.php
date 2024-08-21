@@ -1440,20 +1440,22 @@ class api {
      * Select conversion (map).
      * @param int $courseid
      * @param int $gradeitemid
+     * @param int $gradecategoryid
      * @param int $mapid
      */
-    public static function select_conversion(int $courseid, int $gradeitemid, int $mapid) {
-        \local_gugrades\conversion::select_conversion($courseid, $gradeitemid, $mapid);
+    public static function select_conversion(int $courseid, int $gradeitemid, int $gradecategoryid, int $mapid) {
+        \local_gugrades\conversion::select_conversion($courseid, $gradeitemid, $gradecategoryid, $mapid);
     }
 
     /**
      * get select conversion (map) info.
      * @param int $courseid
      * @param int $gradeitemid
+     * @param int $gradecategoryid
      * @return array
      */
-    public static function get_selected_conversion(int $courseid, int $gradeitemid) {
-        return \local_gugrades\conversion::get_selected_conversion($courseid, $gradeitemid);
+    public static function get_selected_conversion(int $courseid, int $gradeitemid, int $gradecategoryid) {
+        return \local_gugrades\conversion::get_selected_conversion($courseid, $gradeitemid, $gradecategoryid);
     }
 
     /**

@@ -320,22 +320,41 @@ class conversion {
      * TODO: Take action when conversion is applied/changed.
      * @param int $courseid
      * @param int $gradeitemid
+     * @param int $gradecategoryid
      * @param int $mapid
      */
-    public static function select_conversion(int $courseid, int $gradeitemid, int $mapid) {
+    public static function select_conversion(int $courseid, int $gradeitemid, int $gradecategoryid, int $mapid) {
         global $DB, $USER;
+
+        // Appropriate params for item or category.
+        if ($gradeitemid) {
+            $params = ['gradeitemid' => $gradeitemid];
+        } else if ($gradecategoryid) {
+            $params = ['gradecategoryid' => $gradecategoryid];
+        } else {
+            throw new \moodle_exception('One of gradeitemid or gradecategoryid must be specified');
+        }
 
         // The $mapid==0 means delete the mappings for this item.
         // Also set any grades that have been added since (i.e. any grades
         // with points == 1) to not current.
         if ($mapid == 0) {
-            $DB->delete_records('local_gugrades_map_item', ['gradeitemid' => $gradeitemid]);
-            $sql = 'UPDATE {local_gugrades_grade}
-                SET iscurrent = 0
-                WHERE points = 0
-                AND gradeitemid = :gradeitemid';
-            $DB->execute($sql, ['gradeitemid' => $gradeitemid]);
-            \local_gugrades\grades::cleanup_empty_columns($gradeitemid);
+            $DB->delete_records('local_gugrades_map_item', $params);
+
+            // Un-current all grades if a gradeitem (i.e. capture page)
+            if ($gradeitemid) {
+                $sql = 'UPDATE {local_gugrades_grade}
+                    SET iscurrent = 0
+                    WHERE points = 0
+                    AND gradeitemid = :gradeitemid';
+                $DB->execute($sql, ['gradeitemid' => $gradeitemid]);
+                \local_gugrades\grades::cleanup_empty_columns($gradeitemid);
+            } else {
+
+                // TODO: Something if it's a category (aggegation).
+
+            }
+
             return;
         }
 
@@ -350,6 +369,7 @@ class conversion {
             $mapitem->courseid = $courseid;
             $mapitem->mapid = $mapid;
             $mapitem->gradeitemid = $gradeitemid;
+            $mapitem->gradecategoryid = $gradecategoryid;
             $mapitem->maxgrade = $mapinfo->maxgrade;
             $mapitem->userid = $USER->id;
             $mapitem->timemodified = time();
@@ -364,19 +384,35 @@ class conversion {
             $DB->update_record('local_gugrades_map_item', $mapitem);
         }
 
-        self::apply_capture_conversion($courseid, $gradeitemid, $mapinfo);
+        if ($gradeitemid) {
+            self::apply_capture_conversion($courseid, $gradeitemid, $mapinfo);
+        } else {
+
+            // TODO: Grade aggregation conversion
+
+        }
     }
 
     /**
      * get select conversion (map) info.
      * @param int $courseid
      * @param int $gradeitemid
+     * @param int $gradecategoryid
      * @return array
      */
-    public static function get_selected_conversion(int $courseid, int $gradeitemid) {
+    public static function get_selected_conversion(int $courseid, int $gradeitemid, int $gradecategoryid) {
         global $DB;
 
-        if ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradeitemid' => $gradeitemid])) {
+        // Is it gradeitem or gradecategory?
+        if ($gradeitemid) {
+            $params = ['gradeitemid' => $gradeitemid];
+        } else if ($gradecategoryid) {
+            $params = ['gradecategoryid' => $gradecategoryid];
+        } else {
+            throw new \moodle_exception('One of gradeitemid or gradecategoryid must be specified');
+        }
+
+        if ($mapitem = $DB->get_record('local_gugrades_map_item', $params)) {
             if ($courseid != $mapitem->courseid) {
                 throw new \moodle_exception('courseid does not match ' . $courseid);
             }

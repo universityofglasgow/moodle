@@ -42,7 +42,8 @@ class get_selected_conversion extends external_api {
     public static function execute_parameters() {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID'),
+            'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID (or 0'),
+            'gradecategoryid' => new external_value(PARAM_INT, 'Grade category ID (or 0'),
         ]);
     }
 
@@ -50,22 +51,24 @@ class get_selected_conversion extends external_api {
      * Execute function
      * @param int $courseid
      * @param int $gradeitemid
+     * @param int gradecategoryid
      * @return array
      */
-    public static function execute($courseid, $gradeitemid) {
+    public static function execute($courseid, $gradeitemid, $gradecategoryid) {
         global $DB;
 
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'gradeitemid' => $gradeitemid,
+            'gradecategoryid' => $gradecategoryid,
         ]);
 
         // More security.
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        $mapinfo = \local_gugrades\api::get_selected_conversion($courseid, $gradeitemid);
+        $mapinfo = \local_gugrades\api::get_selected_conversion($courseid, $gradeitemid, $gradecategoryid);
 
         return $mapinfo;
     }

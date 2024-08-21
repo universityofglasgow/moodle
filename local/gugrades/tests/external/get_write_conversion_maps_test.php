@@ -447,7 +447,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         $mapidb = $mapidb['mapid'];
 
         // Select this map.
-        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, $mapida);
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapida);
         $nothing = external_api::clean_returnvalue(
             select_conversion::execute_returns(),
             $nothing
@@ -459,7 +459,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         $this->assertEquals($this->gradeitemidassign1, $mapitems[0]->gradeitemid);
 
         // Check it's set through the API.
-        $mapstuff = get_selected_conversion::execute($this->course->id, $this->gradeitemidassign1);
+        $mapstuff = get_selected_conversion::execute($this->course->id, $this->gradeitemidassign1, 0);
         $mapstuff = external_api::clean_returnvalue(
             get_selected_conversion::execute_returns(),
             $mapstuff
@@ -469,7 +469,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         $this->assertEquals('schedulea', $mapstuff['scale']);
 
         // Select the other map.
-        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, $mapidb);
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapidb);
         $nothing = external_api::clean_returnvalue(
             select_conversion::execute_returns(),
             $nothing
@@ -481,7 +481,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         $this->assertEquals($mapidb, $mapitems[0]->mapid);
 
         // Remove maps.
-        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0);
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, 0);
         $nothing = external_api::clean_returnvalue(
             select_conversion::execute_returns(),
             $nothing
@@ -536,7 +536,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         );
 
         // Apply the test conversion map to Assign1.
-        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, $mapida);
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapida);
         $nothing = external_api::clean_returnvalue(
             select_conversion::execute_returns(),
             $nothing
@@ -662,7 +662,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         );
 
         // Apply the test conversion map to Assign3.
-        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign3, $mapida);
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign3, 0, $mapida);
         $nothing = external_api::clean_returnvalue(
             select_conversion::execute_returns(),
             $nothing
@@ -745,7 +745,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         );
 
         // Apply the test conversion map to Assign1.
-        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, $mapida);
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapida);
         $nothing = external_api::clean_returnvalue(
             select_conversion::execute_returns(),
             $nothing
