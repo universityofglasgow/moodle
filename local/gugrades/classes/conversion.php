@@ -351,8 +351,8 @@ class conversion {
                 \local_gugrades\grades::cleanup_empty_columns($gradeitemid);
             } else {
 
-                // TODO: Something if it's a category (aggegation).
-
+                // Recalculate everything :(
+                \local_gugrades\api::recalculate($courseid, $gradecategoryid);
             }
 
             return;
@@ -388,8 +388,8 @@ class conversion {
             self::apply_capture_conversion($courseid, $gradeitemid, $mapinfo);
         } else {
 
-            // TODO: Grade aggregation conversion
-
+            // Recalculate everything :(
+            \local_gugrades\api::recalculate($courseid, $gradecategoryid);
         }
     }
 
@@ -468,6 +468,27 @@ class conversion {
 
         return null;
     }
+
+    /**
+     * Helper for aggregation page conversion
+     * @param float $rawgrade
+     * @param float $maxgrade
+     * @param int $mapid
+     * @return [string, int]
+     */
+    public static function aggregation_conversion(float $rawgrade, float $maxgrade, int $mapid) {
+        global $DB;
+
+        $mapvalues = $DB->get_records('local_gugrades_map_value', ['mapid' => $mapid], 'scalevalue ASC');
+        $scalegrade = self::convert_grade($rawgrade, $maxgrade, $mapvalues);
+
+        if (!$scalegrade) {
+            throw new \moodle_exception('Unable to convert aggregated grade');
+        }
+
+        return [$scalegrade->band, $scalegrade->scalevalue];
+    }
+
 
     /**
      * Apply the conversion to the grade data.
@@ -588,6 +609,23 @@ class conversion {
         }
 
         return false;
+    }
+
+    /**
+     * Get map name for category
+     * @param int $gradecategoryid
+     * @return string
+     */
+    public static function get_map_name_for_category(int $gradecategoryid) {
+        global $DB;
+
+        if ($mapid = self::get_mapid_for_category($gradecategoryid)) {
+            $map = $DB->get_record('local_gugrades_map', ['id' => $mapid], '*', MUST_EXIST);
+
+            return $map->name;
+        }
+
+        return '';
     }
 
     /**

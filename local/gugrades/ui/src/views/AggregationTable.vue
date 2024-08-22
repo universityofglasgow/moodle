@@ -20,7 +20,7 @@
         <!-- Buttons line -->
         <AggregationButtons
             v-if="level1category"
-            :categoryid="level1category"
+            :categoryid="categoryid"
             :toplevel="toplevel"
             :atype="atype"
             @refreshtable="table_update"
@@ -164,6 +164,7 @@
     const warnings = ref([]);
     const strategy = ref('');
     const debug = ref([]);
+    const conversion = ref('');
 
     let firstname = '';
     let lastname = '';
@@ -425,6 +426,9 @@
             atype.value = result.atype;
             strategy.value = result.strategy;
             debug.value = result.debug;
+            conversion.value = result.conversion;
+
+            window.console.log(conversion.value);
 
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;

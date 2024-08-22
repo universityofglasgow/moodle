@@ -532,6 +532,14 @@ class aggregation {
             throw new \moodle_exception('Cannot evaluate aggregation type');
         }
 
+        // If we have decided it's points but a conversion map has been applied,
+        // then it's whatever that map says
+        if (($atype == \local_gugrades\GRADETYPE_POINTS) && ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradecategoryid' => $gradecategoryid]))) {
+            $mapid = $mapitem->mapid;
+            $map = $DB->get_record('local_gugrades_map', ['id' => $mapid], '*', MUST_EXIST);
+            $atype = $map->scale == 'schedulea' ? \local_gugrades\GRADETYPE_SCHEDULEA : \local_gugrades\GRADETYPE_SCHEDULEB;
+        }
+
         return [$atype, []];
     }
 
@@ -657,7 +665,6 @@ class aggregation {
         // Human name of whatever grade type this contains.
         $categorynode->gradetype = self::translate_atype($atype);
 
-
         // Write the completed node to the cache
         $cache->set($cachetag, $categorynode);
 
@@ -781,12 +788,6 @@ class aggregation {
                     $convertedgrade, $aggregatedgrade, $convertedgradevalue, $completion, $level);
 
                 return [$parentgrade, $aggregatedgrade, '', $displaygrade, $completion, ''];
-            }
-
-            // We have an aggregated points score. However, is this a candidate for converting?
-            // Must be >=level2 and have an entry in map_item table.
-            if (($level >= 2) && ($mapid = \local_gugrades\conversion::get_mapid_for_category($category->categoryid))) {
-
             }
 
             // Return points grades.
@@ -941,6 +942,13 @@ class aggregation {
         // to aggregate.
         [$total, $rawgrade, $admingrade, $display, $completion, $error] =
             self::aggregate_user_category($courseid, $category, $items, $level);
+
+        // If this is a points grade, level 2 or deeper, a grade is returned and a map exists then
+        // we need to deal with this as a converted grade
+        if (($level >= 2) && ($mapid = \local_gugrades\conversion::get_mapid_for_category($category->categoryid)) && $rawgrade) {
+            [$display, $total] = \local_gugrades\conversion::aggregation_conversion($rawgrade, $category->grademax, $mapid);
+
+        }
 
         // Write the aggregated category to the gugrades_grades table.
         $aggregatedcategory = (object)[

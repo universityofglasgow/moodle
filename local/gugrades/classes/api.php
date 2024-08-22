@@ -1590,6 +1590,7 @@ class api {
             'toplevel' => $istoplevel,
             'atype' => $atype,
             'strategy' => \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid),
+            'conversion' => \local_gugrades\conversion::get_map_name_for_category($gradecategoryid),
             'warnings' => $warnings,
             'columns' => $columns,
             'users' => $users,
@@ -1878,6 +1879,6 @@ class api {
         $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
         // Run over users running aggregation
-        \local_gugrades\aggregation::aggregate($courseid, $gradecategoryid, $users);
+        \local_gugrades\aggregation::aggregate($courseid, $level1id, $users);
     }
 }
