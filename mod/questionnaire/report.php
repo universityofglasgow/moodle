@@ -92,7 +92,7 @@ if (!$questionnaire->can_view_all_responses() && !$individualresponse) {
     throw new \moodle_exception('nopermissions', 'mod_questionnaire');
 }
 
-$questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+//$questionnaire->canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 $sid = $questionnaire->survey->id;
 
 $url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/report.php');
@@ -485,7 +485,7 @@ switch ($action) {
 
     case 'dfs':
         require_capability('mod/questionnaire:downloadresponses', $context);
-        require_once($CFG->dirroot . '/lib/dataformatlib.php');
+        //require_once($CFG->dirroot . '/lib/dataformatlib.php');
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
