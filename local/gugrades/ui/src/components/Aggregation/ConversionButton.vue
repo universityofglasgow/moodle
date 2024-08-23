@@ -5,6 +5,11 @@
 
     <VueModal v-model="showselectmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
+        <!-- Show the selected map name (if there is one)-->
+        <p v-if="mapname" class="mb-2">
+            {{ mstrings.selectedmap }}: <b>{{ mapname }}</b>
+        </p>
+
         <!--  If no map is currently selected, show the selection dialogue -->
         <div v-if="!selection">
             <div v-if="nomaps && loaded" class="alert alert-warning">
@@ -46,6 +51,7 @@
     const selection = ref(0);
     const mapid = ref(0);
     const showselectmodal = ref(false);
+    const mapname = ref('');
 
     const toast = useToast();
 
@@ -106,6 +112,7 @@
 
             // id==0 if no selection (which is fine).
             selection.value = result.id;
+            mapname.value = result.name;
         })
         .catch((error) => {
             window.console.error(error);

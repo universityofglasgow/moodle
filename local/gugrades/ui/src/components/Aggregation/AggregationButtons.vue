@@ -1,7 +1,7 @@
 <template>
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
-        <ConversionButton v-if="!props.toplevel && (props.atype == 'P')" :categoryid="props.categoryid"></ConversionButton>
+        <ConversionButton v-if="allowconversion" :categoryid="props.categoryid"></ConversionButton>
     </div>
 </template>
 
@@ -14,6 +14,7 @@
         categoryid: Number,
         toplevel: Boolean,
         atype: String,
+        allowconversion: Boolean,
     });
 
     const emits = defineEmits([

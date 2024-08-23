@@ -1586,11 +1586,16 @@ class api {
             $debug = array_merge($debug, $addaggdebug);
         }
 
+        // Can we show the conversion controls for this category?
+        $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
+        $allowconversion = !$istoplevel && (!empty($mapname) || ($atype == 'P'));
+
         return [
             'toplevel' => $istoplevel,
             'atype' => $atype,
             'strategy' => \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid),
-            'conversion' => \local_gugrades\conversion::get_map_name_for_category($gradecategoryid),
+            'conversion' => $mapname,
+            'allowconversion' => $allowconversion,
             'warnings' => $warnings,
             'columns' => $columns,
             'users' => $users,

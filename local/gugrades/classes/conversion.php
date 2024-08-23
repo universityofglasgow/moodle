@@ -403,6 +403,9 @@ class conversion {
     public static function get_selected_conversion(int $courseid, int $gradeitemid, int $gradecategoryid) {
         global $DB;
 
+        // Are there any grades to convert?
+        $anygrades = \local_gugrades\grades::any_grades($gradeitemid);
+
         // Is it gradeitem or gradecategory?
         if ($gradeitemid) {
             $params = ['gradeitemid' => $gradeitemid];
@@ -422,6 +425,8 @@ class conversion {
                 throw new \moodle_exception('courseid does not match ' . $courseid);
             }
 
+            $mapinfo->anygrades = $anygrades;
+
             return $mapinfo;
         } else {
             return [
@@ -429,6 +434,7 @@ class conversion {
                 'name' => '',
                 'maxgrade' => 0,
                 'scale' => '',
+                'anygrades' => $anygrades,
             ];
         }
     }

@@ -83,6 +83,7 @@ class get_selected_conversion extends external_api {
             'name' => new external_value(PARAM_TEXT, 'Conversion map name'),
             'maxgrade' => new external_value(PARAM_FLOAT, 'Maximum grade assigned'),
             'scale' => new external_value(PARAM_ALPHANUM, 'schedulea, scheduleb'),
+            'anygrades' => new external_value(PARAM_BOOL, 'Are there any grades to convert?'),
         ]);
     }
 }

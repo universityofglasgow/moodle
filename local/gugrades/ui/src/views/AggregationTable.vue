@@ -23,6 +23,7 @@
             :categoryid="categoryid"
             :toplevel="toplevel"
             :atype="atype"
+            :allowconversion="allowconversion"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>
@@ -165,6 +166,7 @@
     const strategy = ref('');
     const debug = ref([]);
     const conversion = ref('');
+    const allowconversion = ref(false);
 
     let firstname = '';
     let lastname = '';
@@ -427,6 +429,7 @@
             strategy.value = result.strategy;
             debug.value = result.debug;
             conversion.value = result.conversion;
+            allowconversion.value = result.allowconversion;
 
             window.console.log(conversion.value);
 

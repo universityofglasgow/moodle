@@ -5,25 +5,39 @@
 
     <VueModal v-model="showselectmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
+        <!-- Show the selected map name (if there is one)-->
+        <p v-if="mapname" class="mb-2">
+            {{ mstrings.selectedmap }}: <b>{{ mapname }}</b>
+        </p>
+
         <!--  If no map is currently selected, show the selection dialogue -->
         <div v-if="!selection">
-            <div v-if="nomaps && loaded" class="alert alert-warning">
-                {{ mstrings.nomaps }}
-            </div>
 
-            <div v-else class="alert alert-warning">
-                {{ mstrings.noimportafterconversion }}
-            </div>
-
-            <EasyDataTable v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
-                <template #item-select="item">
-                    <input type="radio" :value="item.id" v-model="mapid"/>
-                </template>
-            </EasyDataTable>
-
-            <div>
-                <button class="btn btn-primary mr-1" @click="save_clicked" :disabled="mapid == 0">{{ mstrings.save }}</button>
+            <!-- if there are no grades then don't try to convert -->
+            <div v-if="!anygrades" class="alert alert-warning">
+                {{ mstrings.nogradestoconvert }}
                 <button class="btn btn-warning" @click="showselectmodal = false">{{ mstrings.cancel }}</button>
+            </div>
+
+            <div v-if="anygrades">
+                <div v-if="nomaps && loaded" class="alert alert-warning">
+                    {{ mstrings.nomaps }}
+                </div>
+
+                <div v-else class="alert alert-warning">
+                    {{ mstrings.noimportafterconversion }}
+                </div>
+
+                <EasyDataTable v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
+                    <template #item-select="item">
+                        <input type="radio" :value="item.id" v-model="mapid"/>
+                    </template>
+                </EasyDataTable>
+
+                <div>
+                    <button class="btn btn-primary mr-1" @click="save_clicked" :disabled="mapid == 0">{{ mstrings.save }}</button>
+                    <button class="btn btn-warning" @click="showselectmodal = false">{{ mstrings.cancel }}</button>
+                </div>
             </div>
         </div>
 
@@ -33,7 +47,8 @@
                 {{ mstrings.conversionremovewarning }}
             </div>
             <div class="mt-1 mb-4">
-                <button class="btn btn-danger rounded" @click="remove_clicked">{{ mstrings.remove }}</button>
+                <button class="btn btn-danger rounded mr-1" @click="remove_clicked">{{ mstrings.remove }}</button>
+                <button class="btn btn-warning" @click="showselectmodal = false">{{ mstrings.cancel }}</button>
             </div>
         </div>
     </VueModal>
@@ -50,6 +65,8 @@
     const selection = ref(0);
     const mapid = ref(0);
     const showselectmodal = ref(false);
+    const anygrades = ref(false);
+    const mapname = ref('');
 
     const toast = useToast();
 
@@ -110,6 +127,8 @@
 
             // id==0 if no selection (which is fine).
             selection.value = result.id;
+            anygrades.value = result.anygrades;
+            mapname.value = result.name;
         })
         .catch((error) => {
             window.console.error(error);

@@ -92,6 +92,7 @@ class get_aggregation_page extends external_api {
             'atype' => new external_value(PARAM_TEXT, 'Aggregated grade type (A, B, P, E - if mixed'),
             'strategy' => new external_value(PARAM_TEXT, 'Aggregation strategy formatted for display'),
             'conversion' => new external_value(PARAM_TEXT, 'Name of conversion map, or empty'),
+            'allowconversion' => new external_value(PARAM_BOOL, 'Should conversion controls be shown?'),
             'debug' => new external_multiple_structure(
                 new external_single_structure([
                     'line' => new external_value(PARAM_RAW, 'Line of debug info, available when DEBUG_DEVELOPER is enabled'),
