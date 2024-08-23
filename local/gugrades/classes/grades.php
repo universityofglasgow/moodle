@@ -891,7 +891,7 @@ class grades {
         $DB->delete_records('local_gugrades_config', ['courseid' => $courseid]);
 
         // Delete conversion maps
-        $maps = $DB->get_records('local_gugrades_map', ['courseid' => courseid]);
+        $maps = $DB->get_records('local_gugrades_map', ['courseid' => $courseid]);
         foreach ($maps as $map) {
             $DB->delete_records('local_gugrades_map_item', ['mapid' => $map->id]);
             $DB->delete_records('local_gugrades_map_value', ['mapid' => $map->id]);
@@ -946,5 +946,16 @@ class grades {
         $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
 
         return $gradecategory->depth - 1;
+    }
+
+    /**
+     * Are there any grades imported/added for this grade item?
+     * @param int $gradeitemid
+     * @return bool
+     */
+    public static function any_grades(int $gradeitemid) {
+        global $DB;
+
+        return $DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'iscurrent' => 1]);
     }
 }
