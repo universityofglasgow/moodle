@@ -18,7 +18,7 @@
             outer-class="mb-3"
             :label="mstrings.maxgrade"
             number="float"
-            validation="required|between:0,100"
+            validation="required|between:0,200"
             validation-visibility="live"
             name="maxgrade"
             v-model="maxgrade"
