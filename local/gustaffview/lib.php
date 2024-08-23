@@ -34,11 +34,13 @@
  * @return void
  */
 function local_gustaffview_extend_navigation_course($parentnode, $course, $context) {
-    if (has_capability('local/gustaffview:staffview', $context)) {
-        $url = new moodle_url('/local/gustaffview/sduserdetails.php', ['courseid' => $course->id]);
-        $name = get_string('staffview', 'local_gustaffview');
-        $icon = new pix_icon('t/grades', '');
-        $parentnode->add($name, $url, navigation_node::NODETYPE_LEAF, 'gustaffview', null, $icon);
-        $parentnode->make_active();
+    if ($course->showgrades == 1) {
+        if (has_capability('local/gustaffview:staffview', $context)) {
+            $url = new moodle_url('/local/gustaffview/sduserdetails.php', ['courseid' => $course->id]);
+            $name = get_string('staffview', 'local_gustaffview');
+            $icon = new pix_icon('t/grades', '');
+            $parentnode->add($name, $url, navigation_node::NODETYPE_LEAF, 'gustaffview', null, $icon);
+            $parentnode->make_active();
+        }
     }
 }
