@@ -329,13 +329,19 @@
             });
         } else {
 
+            // Build up strategy text including conversion applied
+            let headerstrategy = strategy.value;
+            if (conversion.value) {
+                headerstrategy = headerstrategy + ' by ' + conversion.value;
+            }
+
             // Sub-category total
             heads.push({
                 text: mstrings.subcattotal,
                 atype: atype.value,
                 value: "total",
                 infocol: true,
-                strategy: strategy.value,
+                strategy: headerstrategy,
             });
         }
         return heads;

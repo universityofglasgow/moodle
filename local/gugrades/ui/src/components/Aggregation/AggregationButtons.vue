@@ -1,7 +1,7 @@
 <template>
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
-        <ConversionButton v-if="allowconversion" :categoryid="props.categoryid"></ConversionButton>
+        <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
     </div>
 </template>
 

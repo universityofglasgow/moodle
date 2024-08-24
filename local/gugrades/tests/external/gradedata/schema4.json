@@ -8,19 +8,19 @@
             {
                 "name": "Item 1",
                 "category": false,
-                "type": "points",
+                "type": "schedulea",
                 "weight": 0.5
             },
             {
                 "name": "Item 2",
                 "category": false,
-                "type": "points",
+                "type": "schedulea",
                 "weight": 0.5
             },
             {
                 "name": "Item 3",
                 "category": false,
-                "type": "points",
+                "type": "schedulea",
                 "weight": 0.5
             },
             {

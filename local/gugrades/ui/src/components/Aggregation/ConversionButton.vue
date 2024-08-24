@@ -5,43 +5,51 @@
 
     <VueModal v-model="showselectmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
-        <!-- Show the selected map name (if there is one)-->
-        <p v-if="mapname" class="mb-2">
-            {{ mstrings.selectedmap }}: <b>{{ mapname }}</b>
-        </p>
+        <PleaseWait v-if="waiting"></PleaseWait>
 
-        <!--  If no map is currently selected, show the selection dialogue -->
-        <div v-if="!selection">
-            <div v-if="nomaps && loaded" class="alert alert-warning">
-                {{ mstrings.nomaps }}
+        <div v-if="!waiting">
+
+            <!-- Show the selected map name (if there is one)-->
+            <p v-if="mapname" class="mb-2">
+                {{ mstrings.selectedmap }}: <b>{{ mapname }}</b>
+            </p>
+
+            <!--  If no map is currently selected, show the selection dialogue -->
+            <div v-if="!selection">
+                <div v-if="nomaps && loaded" class="alert alert-warning">
+                    {{ mstrings.nomaps }}
+                </div>
+
+                <EasyDataTable v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
+                    <template #item-select="item">
+                        <input type="radio" :value="item.id" v-model="mapid"/>
+                    </template>
+                </EasyDataTable>
+
+                <div>
+                    <button class="btn btn-primary mr-1" @click="save_clicked" :disabled="mapid == 0">{{ mstrings.save }}</button>
+                    <button class="btn btn-warning" @click="showselectmodal = false">{{ mstrings.cancel }}</button>
+                </div>
             </div>
 
-            <EasyDataTable v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
-                <template #item-select="item">
-                    <input type="radio" :value="item.id" v-model="mapid"/>
-                </template>
-            </EasyDataTable>
+            <!-- if a map is selected then show warning message and option to remove -->
+            <div v-if="selection">
+                <div class="alert alert-danger">
+                    {{ mstrings.conversionremovewarning }}
+                </div>
+                <div class="mt-1 mb-4">
+                    <button class="btn btn-danger rounded mr-1" @click="remove_clicked">{{ mstrings.remove }}</button>
+                    <button class="btn btn-warning" @click="showselectmodal = false">{{ mstrings.cancel }}</button>
+                </div>
+            </div>
 
-            <div>
-                <button class="btn btn-primary mr-1" @click="save_clicked" :disabled="mapid == 0">{{ mstrings.save }}</button>
-                <button class="btn btn-warning" @click="showselectmodal = false">{{ mstrings.cancel }}</button>
-            </div>
-        </div>
-
-        <!-- if a map is selected then show warning message and option to remove -->
-        <div v-if="selection">
-            <div class="alert alert-danger">
-                {{ mstrings.conversionremovewarning }}
-            </div>
-            <div class="mt-1 mb-4">
-                <button class="btn btn-danger rounded" @click="remove_clicked">{{ mstrings.remove }}</button>
-            </div>
         </div>
     </VueModal>
 </template>
 
 <script setup>
     import {ref, inject, defineProps, defineEmits} from '@vue/runtime-core';
+    import PleaseWait from '@/components/PleaseWait.vue';
     import { useToast } from "vue-toastification";
 
     const mstrings = inject('mstrings');
@@ -52,6 +60,7 @@
     const mapid = ref(0);
     const showselectmodal = ref(false);
     const mapname = ref('');
+    const waiting = ref(false);
 
     const toast = useToast();
 
@@ -137,6 +146,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_select_conversion',
             args: {
@@ -147,15 +158,16 @@
             }
         }])[0]
         .then(() => {
+            waiting.value = false;
             toast.success('Map selection saved');
+            showselectmodal.value = false;
             emits('converted');
         })
         .catch((error) => {
             window.console.error(error);
             toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
         });
-
-        showselectmodal.value = false;
     }
 
     /**
@@ -167,6 +179,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_select_conversion',
             args: {
@@ -177,14 +191,15 @@
             }
         }])[0]
         .then(() => {
+            waiting.value = false;
             toast.success('Map selection removed');
+            showselectmodal.value = false;
             emits('converted');
         })
         .catch((error) => {
             window.console.error(error);
             toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
         });
-
-        showselectmodal.value = false;
     }
 </script>

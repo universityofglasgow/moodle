@@ -173,7 +173,28 @@ final class aggregation_schema4_test extends \local_gugrades\external\gugrades_a
             $page
         );
 
-        var_dump($page);
+        $this->assertEquals('B', $page['atype']);
+        $this->assertTrue($page['allowconversion']);
+        $this->assertEquals('Test import map', $page['conversion']);
+        $users = $page['users'];
+        $this->assertEquals('A0', $users[0]['displaygrade']);
+        $this->assertEquals(18.75704, $users[0]['rawgrade']);
+        $this->assertEquals(22, $users[0]['total']);
+
+        // Now check page at Level 1 (Summative)
+        $gradecatsummative = $DB->get_record('grade_categories', ['fullname' => 'Summative'], '*', MUST_EXIST);
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummative->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertTrue($page['toplevel']);
+        $this->assertEquals('A', $page['atype']);
+        $users = $page['users'];
+        $this->assertEquals('A5 (17.8)', $users[0]['displaygrade']);
+        $this->assertEquals(17.8, $users[0]['rawgrade']);
+        $this->assertEquals(18, $users[0]['total']);
     }
 
 }
