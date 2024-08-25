@@ -195,6 +195,21 @@ final class aggregation_schema4_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals('A5 (17.8)', $users[0]['displaygrade']);
         $this->assertEquals(17.8, $users[0]['rawgrade']);
         $this->assertEquals(18, $users[0]['total']);
+
+        // Try with 07 admin grade in summer
+        $q3itemid = $this->get_gradeitemid('Question 3');
+        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $q3itemid, $this->student->id, '07');
+
+        // Get aggregation page for sub-category with 07 admin.
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // TODO - some checks here
+
+
     }
 
 }

@@ -437,8 +437,6 @@
             conversion.value = result.conversion;
             allowconversion.value = result.allowconversion;
 
-            window.console.log(conversion.value);
-
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;
 

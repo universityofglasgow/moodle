@@ -28,6 +28,7 @@ $string['activityname'] = 'Activity name';
 $string['addconversionmap'] = 'Add map...';
 $string['addgrade'] = 'Add grade';
 $string['addmultiple'] = 'Add multiple';
+$string['admin07'] = 'On hold';
 $string['admincw'] = 'Credit withheld';
 $string['admingrades'] = 'Admin grade';
 $string['adminis'] = 'Interruption of Studies';

@@ -125,6 +125,16 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(9.33333, $fred['rawgrade']);
         $this->assertEquals(67, $fred['completed']);
 
+        // Change question 3 to 07 admingrade
+        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $q3itemid, $this->student->id, '07');
+
+        // Get aggregation page for above.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
     }
 
 }

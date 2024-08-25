@@ -96,6 +96,7 @@ class base {
      *
      * NOTE:  MV/IS - both treated as MV
      *        NS/CW - both treated as NS
+     *        07 - any return 07
      * @param array $items
      * @return string
      */
@@ -108,6 +109,7 @@ class base {
         $countnscw = 0;
         $countmv = 0;
         $countis = 0;
+        $count07 = 0;
         foreach ($items as $item) {
             $grade = $item->admingrade;
             if (($grade == 'NS') || ($grade == 'CW')) {
@@ -116,7 +118,14 @@ class base {
                 $countmv++;
             } else if ($grade == 'IS') {
                 $countis++;
+            } else if (strcmp($grade, '07') == 0) {
+                $count07++;
             }
+        }
+
+        // Any 07 means result is 07
+        if ($count07) {
+            return '07';
         }
 
         // Check about conditions.
@@ -139,6 +148,43 @@ class base {
         // currently returning MV.
         if ($countis && $countmv) {
             return 'MV';
+        }
+
+        // No admin grade.
+        return '';
+    }
+
+    /**
+     * Logic for admingrades in >= level2, TODO Ticket?
+     * Works out if aggregated grade is some admin grade
+     * Returns this or empty string if not.
+     *
+     * @param array $items
+     * @return string
+     */
+    public function admin_grades_level1(array $items) {
+
+        // Condition 1: Any 07 - result is 07
+        $countnscw = 0;
+        $countmv = 0;
+        $countis = 0;
+        $count07 = 0;
+        foreach ($items as $item) {
+            $grade = $item->admingrade;
+            if (($grade == 'NS') || ($grade == 'CW')) {
+                $countnscw++;
+            } else if ($grade == 'MV') {
+                $countmv++;
+            } else if ($grade == 'IS') {
+                $countis++;
+            } else if (strcmp($grade, '07') == 0) {
+                $count07++;
+            }
+        }
+
+        // Any 07 means result is 07
+        if ($count07) {
+            return '07';
         }
 
         // No admin grade.

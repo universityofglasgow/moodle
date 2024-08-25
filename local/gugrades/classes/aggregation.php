@@ -716,9 +716,10 @@ class aggregation {
      * @param object $category
      * @param array $items
      * @param int $level
+     * @param int $userid
      * @return array ['rounded' grade, grade val, admingrade, grade disp, completion, error]
      */
-    protected static function aggregate_user_category(int $courseid, object $category, array $items, int $level) {
+    protected static function aggregate_user_category(int $courseid, object $category, array $items, int $level, int $userid) {
 
         // Get basic data about aggregation
         // (this is also a check that it actually exists).
@@ -726,6 +727,7 @@ class aggregation {
         $droplow = $category->droplow;
         $aggmethod = $category->aggregation;
         $atype = $category->atype;
+        $itemid = $category->itemid;
 
         // Get appropriate aggregation 'rule' set.
         $aggregation = self::aggregation_factory($courseid, $category->atype);
@@ -769,6 +771,13 @@ class aggregation {
             // If >=level2 then check for admin grades (see MGU-726).
             if ($level >= 2) {
                 if ($admingrade = $aggregation->admin_grades_level2($items)) {
+                    return [0, 0, $admingrade, $admingrade, $completion, ''];
+                }
+            }
+
+            // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
+            if ($level == 1) {
+                if ($admingrade = $aggregation->admin_grades_level1($items)) {
                     return [0, 0, $admingrade, $admingrade, $completion, ''];
                 }
             }
@@ -941,7 +950,7 @@ class aggregation {
         // List of items should hold list for this gradecategory only, ready
         // to aggregate.
         [$total, $rawgrade, $admingrade, $display, $completion, $error] =
-            self::aggregate_user_category($courseid, $category, $items, $level);
+            self::aggregate_user_category($courseid, $category, $items, $level, $userid);
 
         // If this is a points grade, level 2 or deeper, a grade is returned and a map exists then
         // we need to deal with this as a converted grade
