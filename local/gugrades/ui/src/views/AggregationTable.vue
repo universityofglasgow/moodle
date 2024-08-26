@@ -102,6 +102,9 @@
                 <!-- strikethrough if data is dropped -->
                 <s v-if="item[header.value].dropped">{{ item[header.value].data }}</s>
                 <span v-else>{{ item[header.value].data }}</span>
+
+                <!-- add/override grade -->
+                <AddGrade></AddGrade>
             </template>
 
             <!-- User picture column -->
@@ -152,6 +155,7 @@
     import InfoButton from '@/components/InfoButton.vue';
     import PleaseWait from '@/components/PleaseWait.vue';
     import AggregationButtons from '@/components/Aggregation/AggregationButtons.vue';
+    import AddGrade from '@/components/Aggregation/AddGrade.vue';
 
     const toast = useToast();
 
