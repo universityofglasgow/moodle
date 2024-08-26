@@ -167,21 +167,10 @@ class activity {
     string $activetab, string $assessmenttype, string $sortby, string $sortorder): array {
         $data = [];
 
-        // We've lost all knowledge at this point of the course type - fetch it again.
-        $mygradesenabled = course::is_type_mygrades($courseid);
-
         if ($activityitems->categories) {
             $categorydata = [];
-            if ($mygradesenabled) {
-                $categorydata = course::process_mygrades_subcategories($courseid,
-                $activityitems->categories,
-                $assessmenttype, $sortorder);
-            }
-
-            if (!$mygradesenabled) {
-                $categorydata = course::process_default_subcategories($courseid, $activityitems->categories,
-                $assessmenttype, $sortorder);
-            }
+            $categorydata = course::process_subcategories($courseid, $activityitems->categories, $assessmenttype, 
+            $sortorder);
 
             $data['subcategories'] = $categorydata;
         }
@@ -190,6 +179,9 @@ class activity {
             $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
 
             $activitydata = [];
+
+            // We've lost all knowledge at this point of the course type - fetch it again.
+            $mygradesenabled = course::is_type_mygrades($courseid);
             if ($mygradesenabled) {
                 $activitydata = self::process_mygrades_items($activityitems->items, $activetab, $ltiactivities,
                 $assessmenttype, $sortby, $sortorder);

@@ -75,15 +75,22 @@ class course {
                         $subcatname = $subcategory['fullname'];
                         $item = \grade_item::fetch(['courseid' => $course->id, 'iteminstance' => $subcatid,
                         'itemtype' => 'category']);
-                        $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
-                        $subcatweight = self::return_weight($item->aggregationcoef);
-                        $subcatdata[] = [
-                            'id' => $subcatid,
-                            'name' => $subcatname,
-                            'assessmenttype' => $assessmenttype,
-                            'subcatweight' => $subcatweight . '%',
-                            'raw_category_weight' => $subcatweight,
-                        ];
+                        // MGU-973 - Don't display the category if it doesn't contain any grade items.
+                        // However, it may only contain further sub categories.
+                        $items = \grade_item::fetch_all(['courseid' => $course->id, 'categoryid' => $subcatid,
+                        'hidden' => 0]);
+                        $subcategories = \grade_category::fetch_all(['parent' => $subcatid, 'hidden' => 0]);
+                        if ($items || $subcategories) {
+                            $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
+                            $subcatweight = self::return_weight($item->aggregationcoef);
+                            $subcatdata[] = [
+                                'id' => $subcatid,
+                                'name' => $subcatname,
+                                'assessmenttype' => $assessmenttype,
+                                'subcatweight' => $subcatweight . '%',
+                                'raw_category_weight' => $subcatweight,
+                            ];
+                        }
                     }
                 } else {
                     // Our course appears to contain no sub categories. We want to filter out PLUGIN RELATED items.
@@ -121,31 +128,46 @@ class course {
     }
 
     /**
-     * Process and prepare for display MyGrades specific sub categories.
+     * Process and prepare for display sub categories for this course.
+     * As there is nothing fundamentally different for a MyGrades course or a Gradebook course,
+     * we no longer need the previous approach of having 2 methods doing effectively the same thing.
      *
      * @param int $courseid
-     * @param array $mygradecategories
+     * @param array $gradecategories
      * @param string $assessmenttype
      * @param string $sortorder
      * @return array
      */
-    public static function process_mygrades_subcategories(int $courseid, array $mygradecategories, string $assessmenttype,
+    public static function process_subcategories(int $courseid, array $gradecategories, string $assessmenttype,
     string $sortorder): array {
-        $mygradessubcatdata = [];
+        $gradessubcatdata = [];
         $tmp = [];
-        foreach ($mygradecategories as $obj) {
-            $item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $obj->category->id, 'itemtype' => 'category']);
-            $subcatweight = self::return_weight($item->aggregationcoef);
-            // We need to work out the grade aggregate for any graded items w/in this sub category...
-            // Is there an API call for this?
-            $subcat = new \stdClass();
-            $subcat->id = $obj->category->id;
-            $subcat->name = $obj->category->fullname;
-            $subcat->assessment_type = $assessmenttype;
-            $subcat->subcatweight = $subcatweight . '%';
-            $subcat->raw_category_weight = $subcatweight;
+        foreach ($gradecategories as $obj) {
+            // We've no way of filtering out the PLUGIN RELATED DATA items by this point, so we need to do this.
+            if ($obj->category->hidden) {
+                continue;
+            }
+            
+            // MGU-973 - Don't display the category if it doesn't contain any grade items.
+            // However, it may only contain further sub categories.
+            $items = \grade_item::fetch_all(['courseid' => $courseid, 'categoryid' => $obj->category->id,
+            'hidden' => 0]);
+            $subcategories = \grade_category::fetch_all(['parent' => $obj->category->id, 'hidden' => 0]);
+            if ($items || $subcategories) {
+                $item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $obj->category->id,
+                'itemtype' => 'category']);
+                $subcatweight = self::return_weight($item->aggregationcoef);
+                // We need to work out the grade aggregate for any graded items w/in this sub category...
+                // Is there an API call for this?
+                $subcat = new \stdClass();
+                $subcat->id = $obj->category->id;
+                $subcat->name = $obj->category->fullname;
+                $subcat->assessment_type = $assessmenttype;
+                $subcat->subcatweight = $subcatweight . '%';
+                $subcat->raw_category_weight = $subcatweight;
 
-            $tmp[] = $subcat;
+                $tmp[] = $subcat;
+            }
         }
 
         // This needs redone. $mygradecategories comes in as an array of
@@ -156,55 +178,10 @@ class course {
         // by the mustache engine. @todo!
         $tmp2 = self::sort_items($tmp, $sortorder);
         foreach ($tmp2 as $sortedarray) {
-            $mygradessubcatdata[] = $sortedarray;
+            $gradessubcatdata[] = $sortedarray;
         }
 
-        return $mygradessubcatdata;
-    }
-
-    /**
-     * Process and prepare for display Gradebook specific sub categories.
-     *
-     * @param int $courseid
-     * @param array $subcategories
-     * @param string $assessmenttype
-     * @param string $sortorder
-     * @return array
-     */
-    public static function process_default_subcategories(int $courseid, array $subcategories, string $assessmenttype,
-    string $sortorder): array {
-        $defaultsubcatdata = [];
-        $tmp = [];
-
-        foreach ($subcategories as $obj) {
-            // We've no way of filtering out the PLUGIN RELATED DATA items by this point, so we need to do this.
-            if ($obj->category->hidden) {
-                continue;
-            }
-            $item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $obj->category->id, 'itemtype' => 'category']);
-            $subcatweight = self::return_weight($item->aggregationcoef);
-            $subcat = new \stdClass();
-            $subcat->id = $obj->category->id;
-            $subcat->name = $obj->category->fullname;
-            $subcat->assessment_type = $assessmenttype;
-            $subcat->subcatweight = $subcatweight . '%';
-            $subcat->raw_category_weight = $subcatweight;
-
-            $tmp[] = $subcat;
-        }
-
-        // This needs redone. $subcategories comes in as an array of
-        // objects, whose category property is also an object - making
-        // sorting a tad awkward. The items property that comes in also,
-        // is an array of objects containing the necessary property/key
-        // which ^can^ get sorted and returned in the correct order needed
-        // by the mustache engine. @todo!
-        $tmp2 = self::sort_items($tmp, $sortorder);
-        foreach ($tmp2 as $sortedarray) {
-            $defaultsubcatdata[] = $sortedarray;
-        }
-
-        return $defaultsubcatdata;
+        return $gradessubcatdata;
     }
 
     /**
