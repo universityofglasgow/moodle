@@ -282,6 +282,7 @@ class aggregation {
                 'weight' => $column->weight,
                 'grademissing' => true,
                 'isscale' => $column->isscale,
+                'dropped' => false,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
@@ -291,6 +292,7 @@ class aggregation {
                 $data['display'] = $provisional->displaygrade;
                 $data['grademissing'] = is_null($provisional->rawgrade);
                 $data['admingrade'] = $provisional->admingrade;
+                $data['dropped'] = $provisional->dropped;
             } else {
                 $data['display'] = get_string('nodata', 'local_gugrades');
             }
@@ -353,58 +355,6 @@ class aggregation {
             }
 
             $users[$id] = self::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
-
-/*
-            $fields = [];
-            $items = [];
-            foreach ($columns as $column) {
-
-                // Basic fields.
-                $fieldname = 'AGG_' . $column->gradeitemid;
-                $data = [
-                    'fieldname' => $fieldname, // Required by WS.
-                    'itemname' => $column->shortname, // Required by WS.
-                    'display' => '', // Required by WS.
-                    'schedule' => $column->schedule,
-                    'weight' => $column->weight,
-                    'grademissing' => true,
-                    'isscale' => $column->isscale,
-                ];
-
-                // Field identifier based on gradeitemid (which is unique even for categories).
-                $provisional = \local_gugrades\grades::get_provisional_from_id($column->gradeitemid, $user->id);
-                if ($provisional) {
-                    $data['rawgrade'] = $provisional->rawgrade;
-                    $data['display'] = $provisional->displaygrade;
-                    $data['grademissing'] = is_null($provisional->rawgrade);
-                    $data['admingrade'] = $provisional->admingrade;
-                } else {
-                    $data['display'] = get_string('nodata', 'local_gugrades');
-                }
-
-                $fields[] = $data;
-                $items[] = (object)$data;
-            }
-
-            $user->fields = $fields;
-
-            // Get atype and aggregation rules.
-            // This is why we needed items - array of array vs. array of objects.
-            [$atype, $warnings] = self::get_aggregation_type($items, $gradecategoryid);
-            $aggregation = self::aggregation_factory($courseid, $atype);
-
-            // Read "top level" category for user info
-            // This is needed if no aggregation is performed.
-            $item = $DB->get_record('local_gugrades_grade',
-                ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1],
-                '*', MUST_EXIST);
-            $user->rawgrade = $item->rawgrade;
-            $user->total = $item->convertedgrade;
-            $user->displaygrade = $item->displaygrade;
-            $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
-            $user->completed = $aggregation->completion($items, $weighted);
-            $user->error = $item->auditcomment;
-            */
         }
 
         // Debug stuff.
@@ -701,6 +651,27 @@ class aggregation {
     }
 
     /**
+     * Record dropped items in grade table
+     * @param int $userid
+     * @param array $items
+     */
+    private static function flag_dropped_items(array $items, int $userid) {
+        global $DB;
+
+        foreach ($items as $item) {
+            $itemid = $item->itemid;
+
+            // There can be multiple reasons (which we don't know here), so we'll just mark them
+            // all to make our lives easier.
+            $grades = $DB->get_records('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid, 'iscurrent' => 1]);
+            foreach ($grades as $grade) {
+                $grade->dropped = 1;
+                $DB->update_record('local_gugrades_grade', $grade);
+            }
+        }
+    }
+
+    /**
      * Use the array of items for a given gradecategory and produce
      * an aggregated grade (or not).
      * The category object is provided to identify aggregation settings
@@ -759,7 +730,8 @@ class aggregation {
         // "drop lowest" items.
         // NOTE: droplow is NOT supported for level 1
         if (($droplow > 0) && ($level > 1)) {
-            $items = $aggregation->droplow($items, $droplow);
+            [$items, $droppeditems] = $aggregation->droplow($items, $droplow);
+            self::flag_dropped_items($droppeditems, $userid);
         }
 
         // Need to have a valid aggregation type to actually do the aggregation.
@@ -833,21 +805,6 @@ class aggregation {
             $rawgrade = $category->rawgrade;
         }
 
-        // Does this category grade already exist?
-        // Give up, if not.
-        /*
-        if ($DB->record_exists('local_gugrades_grade', [
-            'gradetype' => 'CATEGORY',
-            'gradeitemid' => $category->itemid,
-            'userid' => $userid,
-            'rawgrade' => $grade,
-            'iserror' => $iserror,
-            'iscurrent' => 1,
-        ])) {
-            return;
-        }
-        */
-
         \local_gugrades\grades::write_grade(
             courseid:       $courseid,
             gradeitemid:    $category->itemid,
@@ -865,6 +822,25 @@ class aggregation {
             ispoints:       !$category->isscale,
             overwrite:      true,
         );
+    }
+
+    /**
+     * Set droplow flag to zero (not dropped)
+     * @param int $gradeitemid
+     * @param int $userid
+     */
+    private static function clear_droplow(int $gradeitemid, int $userid) {
+        global $DB;
+
+        $sql = "UPDATE {local_gugrades_grade}
+            SET dropped = 0
+            WHERE userid = :userid
+            AND gradeitemid = :gradeitemid
+            AND iscurrent = 1";
+        $DB->execute($sql, [
+            'userid' => $userid,
+            'gradeitemid' => $gradeitemid,
+        ]);
     }
 
     /**
@@ -894,6 +870,9 @@ class aggregation {
         $children = $category->children;
         $items = [];
         foreach ($children as $child) {
+
+            // Clear droplow flag. We'll put it back later if required
+            self::clear_droplow($child->itemid, $userid);
 
             // If this is itself a grade category then we need to recurse to get the aggregated total
             // of this category (and any error). Call with the 'child' segment of the category tree.

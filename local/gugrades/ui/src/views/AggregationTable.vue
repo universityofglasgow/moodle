@@ -95,6 +95,15 @@
                 </div>
             </template>
 
+            <!-- all items (yes this is complicated) -->
+            <!-- point is to iterate over field names to maniuplate data in individual field items -->
+            <template v-for="header in headers" v-slot:[header.slot]="item">
+
+                <!-- strikethrough if data is dropped -->
+                <s v-if="item[header.value].dropped">{{ item[header.value].data }}</s>
+                <span v-else>{{ item[header.value].data }}</span>
+            </template>
+
             <!-- User picture column -->
             <template #item-slotuserpicture="item">
                 <a :href="item.profileurl">
@@ -230,7 +239,10 @@
     function process_users(users) {
         users.forEach(user => {
             user.fields.forEach(field => {
-                user[field.fieldname] = field.display;
+                user[field.fieldname] = {
+                    data: field.display,
+                    dropped: field.dropped
+                };
             })
         });
 
@@ -242,7 +254,10 @@
      */
     function process_user(user) {
         user.fields.forEach(field => {
-                user[field.fieldname] = field.display;
+                user[field.fieldname] = {
+                    data: field.display,
+                    dropped: field.dropped
+                };
         });
 
         return user;
@@ -293,6 +308,7 @@
                 gradeitemid: column.gradeitemid,
                 text: column.shortname,
                 value: column.fieldname,
+                slot: 'item-' + column.fieldname,
                 weight: column.weight,
                 fullname: column.fullname,
                 categoryid: column.categoryid,

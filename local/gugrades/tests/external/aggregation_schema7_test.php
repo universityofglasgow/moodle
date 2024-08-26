@@ -103,6 +103,8 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $fred = $page['users'][0];
         $this->assertEquals("B2", $fred['displaygrade']);
         $this->assertEquals(15.8, $fred['rawgrade']);
+        $this->assertTrue($fred['fields'][2]['dropped']);
+        $this->assertTrue($fred['fields'][5]['dropped']);
     }
 
     /**

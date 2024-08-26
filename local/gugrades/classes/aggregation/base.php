@@ -66,13 +66,13 @@ class base {
      * Drop lowest n items from grades
      * @param array $items
      * @param int $n
-     * @return array
+     * @return [array, array]
      */
     public function droplow(array $items, int $n) {
 
         // If we're not going to return anything, anyway...
         if ($n >= count($items)) {
-            return [];
+            return [[], []];
         }
 
         // Sort items by grade (ascending).
@@ -84,9 +84,13 @@ class base {
             return $normalised1 - $normalised2;
         });
 
-        $dropitems = array_slice($items, $n);
+        $notdropitems = array_slice($items, $n);
 
-        return $dropitems;
+        // Find gradeitems that are being dropped
+        // (So that they can be marked as such)
+        $droppeditems = array_slice($items, 0, $n);
+
+        return [$notdropitems, $droppeditems];
     }
 
     /**
