@@ -14,29 +14,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Javascript to initialise the Student Dashboard.
+ * Javascript to insert the beta notification as we can't do this via the rendering mechanism.
  *
- * @module     block_newgu_spdetails/main
+ * @module     block_newgu_spdetails/betanotification
  * @author     Greg Pedder <greg.pedder@glasgow.ac.uk>
- * @copyright  2023 University of Glasgow
+ * @copyright  2024 University of Glasgow
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import * as BetaNotification from 'block_newgu_spdetails/betanotification';
-import * as AssessmentSummary from 'block_newgu_spdetails/assessmentsummary';
-import * as AssessmentsDueSoon from 'block_newgu_spdetails/assessmentsduesoon';
-import * as CourseTabs from 'block_newgu_spdetails/coursetabs';
+"use strict";
+
+import {get_string as getString} from 'core/str';
+
+const Selectors = {
+    PAGE_HEADER_CONTENT: '#page-header>div',
+};
 
 /**
- * Initialise the Student Dashboard.
+ * @method insertBetaNotification
+ */
+const insertBetaNotification = () => {
+    let tempPanel = document.querySelector(Selectors.PAGE_HEADER_CONTENT);
+    getString('beta_notification', 'block_newgu_spdetails').then((str) => tempPanel.insertAdjacentHTML("afterend",
+        "<div class='alert alert-info'>" + str + "</div>"));
+};
+
+/**
+ * @constructor
  */
 export const init = () => {
-    // Insert the Beta notification as we can't do this via the rendering mechanism.
-    BetaNotification.init();
-    // Initialise the assessment summary section.
-    AssessmentSummary.init();
-    // Initialise the assessments due soon section
-    AssessmentsDueSoon.init();
-    // Initialise the assessment tabs section.
-    CourseTabs.init();
+    insertBetaNotification();
 };
