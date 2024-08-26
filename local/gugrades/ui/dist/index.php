@@ -24,6 +24,7 @@
  */
 
 require_once(dirname(__FILE__) . '/../../../../config.php');
+require_once($CFG->dirroot . '/local/gugrades/locallib.php');
 
 $courseid = required_param('id', PARAM_INT);
 
@@ -49,6 +50,9 @@ $event = \local_gugrades\event\view_gugrades::create([
     'context' => context_course::instance($courseid),
 ]);
 $event->trigger();
+
+// Check that the MyGrade custom course field exists
+custom_course_field();
 
 // VueJS stuff gets injected here.
 echo $OUTPUT->header();

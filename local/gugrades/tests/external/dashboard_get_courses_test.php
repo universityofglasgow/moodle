@@ -39,6 +39,40 @@ require_once($CFG->dirroot . '/local/gugrades/tests/external/gugrades_advanced_t
 final class dashboard_get_courses_test extends \local_gugrades\external\gugrades_advanced_testcase {
 
     /**
+     * Enable customfield setting for course
+     * @param int $courseid
+     * @param bool $enable
+     */
+    protected function enable_course(int $courseid, bool $enable): void {
+        global $DB;
+
+        $context = \context_course::instance($courseid);
+
+        // Find the custom field
+        $field = $DB->get_record('customfield_field', ['shortname' => 'studentmygrades'], '*', MUST_EXIST);
+
+        // does the field exist
+        if (!$data = $DB->get_record('customfield_data', ['fieldid' => $field->id, 'instanceid' => $courseid])) {
+            $data = new \stdClass;
+            $data->fieldid = $field->id;
+            $data->instanceid = $courseid;
+            $data->intvalue = $enable ? 1 : 0;
+            $data->value = $enable ? 1 : 0;
+            $data->valueformat = 0;
+            $data->valuetrust = 0;
+            $data->timecreated = time();
+            $data->timemodified = time();
+            $data->context = $context;
+            $DB->insert_record('customfield_data', $data);
+        } else {
+            $data->intvalue = $enable ? 1 : 0;
+            $data->value = $enable ? 1 : 0;
+            $data->timemodified = time();
+            $DB->update_record('customfield_data', $data);
+        }
+    }
+
+    /**
      * Check that weird current/past filter works properly
      * Note that past/future 'cutoff' date is 30 days in the future
      *
@@ -91,14 +125,36 @@ final class dashboard_get_courses_test extends \local_gugrades\external\gugrades
         // We're the test student.
         $this->setUser($this->student->id);
 
-        // Check that all courses are returned if no past/current.
+        // Check that NO courses are returned as they have not been enabled.
         $courses = dashboard_get_courses::execute($studentid, false, false, '');
         $courses = external_api::clean_returnvalue(
             dashboard_get_courses::execute_returns(),
             $courses
         );
         $this->assertIsArray($courses);
-        $this->assertCount(5, $courses);
+        $this->assertCount(0, $courses);
+
+        // Enable some courses and try again.
+        $this->enable_course($currentcourse1->id, true);
+        $this->enable_course($pastcourse2->id, true);
+        $courses = dashboard_get_courses::execute($studentid, false, false, '');
+        $courses = external_api::clean_returnvalue(
+            dashboard_get_courses::execute_returns(),
+            $courses
+        );
+
+        $this->assertIsArray($courses);
+        $this->assertCount(2, $courses);
+
+        // Just enable the rest
+        $this->enable_course($currentcourse2->id, true);
+        $this->enable_course($pastcourse1->id, true);
+        $this->enable_course($this->course->id, true);
+        $courses = dashboard_get_courses::execute($studentid, false, false, '');
+        $courses = external_api::clean_returnvalue(
+            dashboard_get_courses::execute_returns(),
+            $courses
+        );
 
         // Check top-level grade categories.
         $catcourse = $courses[4];

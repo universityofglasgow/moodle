@@ -1138,6 +1138,27 @@ class api {
     }
 
     /**
+     * Check if MyGrades custom course field is enabled
+     * @param int $courseid
+     * @return bool
+     */
+    public static function is_mygrades_customfield_enabled(int $courseid) {
+        global $DB;
+
+        // Find the custom field
+        $field = $DB->get_record('customfield_field', ['shortname' => 'studentmygrades'], '*', MUST_EXIST);
+
+        // See if there is a data field for this
+        if ($data = $DB->get_record('customfield_data', ['fieldid' => $field->id, 'instanceid' => $courseid])) {
+            $enabled = $data->value;
+        } else {
+            $enabled = false;
+        }
+
+        return (Boolean)$enabled;
+    }
+
+    /**
      * Get list of user's courses
      * (and first level categories)
      * @param int $userid UserID of student
@@ -1174,6 +1195,12 @@ class api {
 
             // Skip courses with showgrades == 0.
             if (!$course->showgrades) {
+                unset($courses[$id]);
+                continue;
+            }
+
+            // Skip courses which don't have enabled in the customfield.
+            if (!self::is_mygrades_customfield_enabled($id)) {
                 unset($courses[$id]);
                 continue;
             }

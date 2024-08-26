@@ -181,6 +181,52 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Check for MyGrades custom course category and field
+    */
+    protected function custom_course_field() {
+        global $DB;
+
+        // Check if the category exists
+        if (!$category = $DB->get_record('customfield_category', ['name' => 'MyGrades'])) {
+            $category = new \stdClass;
+            $category->name = 'MyGrades';
+            $category->descriptionformat = 0;
+            $category->sortorder = 0;
+            $category->component = 'core_course';
+            $category->area = 'course';
+            $category->itemid = 0;
+            $category->contextid = 1;
+            $category->timecreated = time();
+            $category->timemodified = time();
+            $categoryid = $DB->insert_record('customfield_category', $category);
+        } else {
+            $categoryid = $category->id;
+        }
+
+        // Check if the customfield exists
+        if (!$field = $DB->get_record('customfield_field', ['shortname' => 'studentmygrades', 'categoryid' => $categoryid])) {
+            $field = new \stdClass;
+            $field->shortname = 'studentmygrades';
+            $field->name = 'Enable Student MyGrades';
+            $field->type = 'checkbox';
+            $field->description = get_string('customfielddescription', 'local_gugrades');
+            $field->descriptionformat = 1;
+            $field->sortorder = 0;
+            $field->categoryid = $categoryid;
+            $field->configdata = json_encode((object) [
+                'required' => '0',
+                'uniquevalues' => '0',
+                'checkbydefault' => '0',
+                'locked' => '0',
+                'visibility' => '2',
+            ]);
+            $field->timecreated = time();
+            $field->timemodified = time();
+            $DB->insert_record('customfield_field', $field);
+        }
+    }
+
+    /**
      * Called before every test
      * This sets up the basic course, scales and some users
      */
@@ -189,6 +235,9 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
 
         parent::setUp();
         $this->resetAfterTest(true);
+
+        // create custom course field
+        $this->custom_course_field();
 
         // Create a course to apply settings to.
         $course = $this->getDataGenerator()->create_course();
