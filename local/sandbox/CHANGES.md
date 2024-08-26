@@ -4,6 +4,19 @@ moodle-local_sandbox
 Changes
 -------
 
+### v4.4-r1
+
+* 2024-08-24 - Development: Rename master branch to main, please update your clones.
+* 2024-08-22 - Upgrade: Make the scheduled task non-blocking as this has been deprecated in Moodle core.
+* 2024-08-22 - Upgrade: Replace deprecated Behat steps and fix a Behat scenario which broke on 4.4.
+* 2024-08-20 - Prepare compatibility for Moodle 4.4.
+
+### v4.3-r2
+
+* 2024-08-19 - Fix a behat test which broke recently
+* 2024-08-11 - Add section for scheduled tasks to README
+* 2024-08-11 - Updated Moodle Plugin CI to latest upstream recommendations
+
 ### v4.3-r1
 
 * 2023-10-20 - Prepare compatibility for Moodle 4.3.

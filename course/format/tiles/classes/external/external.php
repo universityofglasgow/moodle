@@ -790,6 +790,8 @@ class external extends external_api {
             'ismanualcompletion' => new external_value(PARAM_BOOL, 'Whether is manual completion'),
             'resourcetype' => new external_value(PARAM_TEXT, 'The resource type e.g. PDF if modname is resource'),
             'modalallowed' => new external_value(PARAM_BOOL, 'Whether the UI can launch this in a modal'),
+            'modaltype' => new external_value(PARAM_TEXT, 'Type of modal the UI can launch for this e.g. pdf'),
+            'description' => new external_value(PARAM_RAW, 'The formatted description/intro field for the course module'),
         ]);
     }
 }

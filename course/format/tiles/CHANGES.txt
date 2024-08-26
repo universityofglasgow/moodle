@@ -521,3 +521,18 @@ Other
 4.4.0.17 (2024081641)
 =====================
 - Icon background colour correction for purpose "other" activities
+
+4.4.0.18 (2024081642)
+=====================
+- Refactor modal handling for reliability
+- Show description in PDF modal if set to display in course
+- When JS navigation is deactivated by user, alert no longer persists
+- Fix issue #217 cm list padding
+
+4.4.0.19 (2024082440)
+=====================
+- Modal cache efficiency improvement
+
+4.4.0.20 (2024082441)
+=====================
+- Correct mustache template example typos

@@ -40,7 +40,7 @@
         * hasSpacersBefore - does this sub tile need spacer sub tiles before it?
         * previouswaslabel - was the previous sub tile a label?
         * useSubtiles - are we usign sub tiles here (or standard list form)?
-        * hasModal - is this a resource which launces a modal when clicked?
+        * modalType - if this a cm which launces a modal when clicked, what type e.g. pdf?
         * clickable - is this item clickable by user (or click disabled?)
         * extraclasses - any extra classes
         * content - some activities have content e.g. labels and pages, to be displayed in modal
@@ -68,7 +68,7 @@
         "hasSpacersBefore": 0,
         "previouswaslabel": 0,
         "useSubtiles": 1,
-        "hasModal": 0,
+        "modalType": "pdf",
         "clickable": 1,
         "extraclasses": "",
         "content": "This is a label",
@@ -108,15 +108,21 @@
         data-cmid="{{cmid}}" data-completion="{{completion}}"
         data-modinstance="{{modinstance}}" data-contextid="{{modcontextid}}"
         data-title="{{{activityname}}}"
+        {{#modalType}}data-modal="{{modalType}}" {{/modalType}}
         {{#hascompletion}}data-completion-state="{{completionstate}}"{{/hascompletion}}
     >
         {{^is_label}}
             {{#clickable}}
-                <a href="{{url}}" {{#hasModal}} data-action="launch-tiles-cm-modal"{{/hasModal}}
+                <a href="{{url}}" {{#modalType}} data-action="launch-tiles-cm-modal"{{/modalType}}
                     {{#onclick}} onclick="{{{onclick}}}"{{/onclick}}
                    data-title="{{{activityname}}}" class="cm-link {{{extraclasses}}}">
                     {{> format_tiles/course_module_subtile_inner}}
                 </a>
+                {{#modalDescriptionHTML}}
+                    {{! If this is a modal capable course module, we may include the description HTML here, hidden }}
+                    {{! This enables JS to grab it and add it to the modal }}
+                    <div class="modal-description" style="display: none;">{{{modalDescriptionHTML}}}</div>
+                {{/modalDescriptionHTML}}
             {{/clickable}}
             {{^clickable}}
                 <div class="cm-inner">
@@ -143,7 +149,7 @@
 
         {{#dimmed}}
             {{#clickable}}
-                <a href="{{url}}" class="dim-overlay cm-link"{{#hasModal}} data-action="launch-tiles-cm-modal"{{/hasModal}}
+                <a href="{{url}}" class="dim-overlay cm-link"{{#modalType}} data-action="launch-tiles-cm-modal"{{/modalType}}
                     {{#onclick}} onclick="{{{onclick}}}"{{/onclick}}>
                 </a>
             {{/clickable}}

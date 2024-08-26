@@ -48,6 +48,7 @@
     data-modinstance="{{modinstance}}"
     data-modtype="{{modname}}{{#modresourceicon}}_{{{modresourceicon}}}{{/modresourceicon}}"
     data-title="{{{activityname}}}"
+    {{#modalType}}data-modal="{{modalType}}" {{/modalType}}
     {{#hascompletion}}data-completion-state="{{completionstate}}"{{/hascompletion}} data-completion="{{completion}}"
 >
 {{#cmformat}}

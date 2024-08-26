@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'MyGrades';
+$string['pluginname'] = 'MyGrades (BETA)';
 $string['title'] = 'Assessments';
 
 $string['cachedef_studentdashboarddata'] = 'The cache for student dashboard data.';
@@ -40,13 +40,14 @@ $string['newgu_spdetails:myaddinstance'] = 'Add a new Your Assessment Details (N
 $string['assessment'] = 'Assessment';
 $string['assessments'] = 'Assessments';
 $string['clicktoview'] = 'MyGrades on Moodle';
+$string['beta_notification'] = 'Some courses are not applicable for display on this page.  You can view and access all your courses via the My courses page.';
 $string['headingataglance'] = 'Your assessments at a glance';
 $string['provisionalgradeinfo'] = 'All individual or aggregated assessment grades presented on this page are provisional. All final course
 grades can be viewed directly in the <a href="https://uogstudents.mycampus.gla.ac.uk/psc/campus/EMPLOYEE/SA/c/NUI_FRAMEWORK.
 PT_AGSTARTPAGE_NUI.GBL?CONTEXTIDPARAMS=TEMPLATE_ID%3aPTPPNAVCOL&scname=UOG_ACADEMICS&PanelCollapsible=Y&PTPPB_GROUPLET_ID=
 UOG_ACADEMICS_TILE&CRefName=UOG_NAVCOLL_4&AJAXTRANSFER=Y&ptgpid=UOG_MY_RESULTS_FL_GBL">MyCampus</a> system.';
 $string['heading'] = 'Your assessment details';
-$string['blocktitle'] = 'MyGrades';
+$string['blocktitle'] = 'MyGrades (BETA)';
 $string['overview_cardheader'] = 'Assessments overview';
 $string['due_cardheader'] = 'Assessments due in the next:';
 $string['tobesubmitted'] = 'To be submitted';

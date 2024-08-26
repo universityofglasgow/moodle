@@ -94,7 +94,7 @@
                             {{/editing}}
                             {{^editing}}
                                 {{! If user is not editing, we use this for non subtiles as we need to add data-action for modal launch}}
-                                <a href="{{url}}"{{#hasModal}} data-action="launch-tiles-cm-modal"{{/hasModal}} class="aalink stretched-link" onclick="{{onclick}}"><span class="instancename">{{cmtitle}}</span></a>
+                                <a href="{{url}}"{{#modalType}} data-action="launch-tiles-cm-modal"{{/modalType}} class="aalink stretched-link" onclick="{{onclick}}"><span class="instancename">{{cmtitle}}</span></a>
                             {{/editing}}
                         {{/activityname}}
                         {{#activitybadge}}

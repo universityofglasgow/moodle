@@ -144,7 +144,9 @@ class course_output implements \renderable, \templatable {
             $this->courserenderer = $courserenderer;
         }
         $this->devicetype = \core_useragent::get_device_type();
-        $this->modalscmids = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($this->course->id, false);
+        $this->modalscmids = \format_tiles\local\modal_helper::get_modal_allowed_cm_ids_integer_list(
+            $this->course->id, false
+        );
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
@@ -924,8 +926,12 @@ class course_output implements \renderable, \templatable {
             $moduleobject['purpose'] = plugin_supports('mod', $mod->modname, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
         }
 
-        // Specific handling for embedded resource items (e.g. PDFs)  as allowed by site admin.
-        $moduleobject['hasModal'] = $mod->onclick ? 0 : in_array($mod->id, $this->modalscmids);
+        // Specific handling for modal items (e.g. PDFs) as allowed by site admin.
+        if (\format_tiles\local\modal_helper::mod_uses_cm_modal_cache($mod->modname)) {
+            $moduleobject['modalType'] = in_array($mod->id, $this->modalscmids)
+                ? \format_tiles\local\modal_helper::cm_modal_type($this->course->id, $mod->id)
+                : null;
+        }
 
         // Issue 67 handling for LTI set to open in new window.
         // Where onclick is truthy, suggests core JS will open in new window so don't treat as tiles modal.
@@ -937,7 +943,12 @@ class course_output implements \renderable, \templatable {
             isset($mod->showdescription) && !$treataslabel ? $mod->showdescription : 0;
         if ($moduleobject['showdescription']) {
             // The reason we need 'noclean' arg here is that otherwise youtube etc iframes will be stripped out.
-            $moduleobject['description'] = $mod->get_formatted_content(['overflowdiv' => true, 'noclean' => true]);
+            $moduleobject['description'] = $mod->get_formatted_content(['overflowdiv' => false, 'noclean' => true]);
+            if ($moduleobject['modalType'] ?? null == 'pdf' && $this->courseformatoptions['courseusesubtiles']) {
+                // In this case we may want to add the PDF description to the markup so that modal can grab it from JS.
+                $moduleobject['modalDescriptionHTML'] =
+                    trim(strip_tags($moduleobject['description'])) ? $moduleobject['description'] : '';
+            }
         }
         $moduleobject['extraclasses'] = $mod->extraclasses;
         $moduleobject['afterlink'] = $mod->afterlink;

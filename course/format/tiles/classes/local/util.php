@@ -66,6 +66,9 @@ class util {
             $resourcetype = '';
         }
 
+        $modaltype = \format_tiles\local\modal_helper::cm_modal_type($courseid, $cmrecord->id);
+        $description = $cm->showdescription ? $cm->get_formatted_content() : '';
+        $description = $description && trim(strip_tags($description)) ? $description : '';
         return (object)[
             'id' => $cm->id,
             'courseid' => $courseid,
@@ -81,7 +84,9 @@ class util {
                 ? 1 : 0,
             'ismanualcompletion' => $cm->completion == COMPLETION_TRACKING_MANUAL,
             'resourcetype' => $resourcetype,
-            'modalallowed' => \format_tiles\local\modal_helper::cm_has_modal($courseid, $cmrecord->id),
+            'modalallowed' => (bool)$modaltype,
+            'modaltype' => $modaltype,
+            'description' => $description,
         ];
     }
 
@@ -292,7 +297,7 @@ class util {
             $modnames = array_merge($allowedmodals['modules'] ?? [], $allowedmodals['resources'] ?? []);
             $jsconfigvalues['modalAllowedModNames'] = json_encode($modnames);
             $jsconfigvalues['modalAllowedCmids'] = json_encode(
-                \format_tiles\local\modal_helper::get_modal_allowed_cm_ids($courseid, true)
+                \format_tiles\local\modal_helper::get_modal_allowed_cm_ids_integer_list($courseid, true)
             );
         }
 

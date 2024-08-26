@@ -64,7 +64,7 @@ class observer {
      */
     public static function course_module_deleted(\core\event\course_module_deleted $event) {
         if (modal_helper::mod_uses_cm_modal_cache($event->other['modulename'])) {
-            modal_helper::clear_cache_modal_cmids($event->courseid);
+            modal_helper::clear_cache_modal_cmids($event->courseid, $event->other['modulename']);
         }
 
     }
@@ -75,7 +75,7 @@ class observer {
      */
     public static function course_module_created(\core\event\course_module_created $event) {
         if (modal_helper::mod_uses_cm_modal_cache($event->other['modulename'])) {
-            modal_helper::clear_cache_modal_cmids($event->courseid);
+            modal_helper::clear_cache_modal_cmids($event->courseid, $event->other['modulename']);
         }
     }
 
@@ -85,7 +85,7 @@ class observer {
      */
     public static function course_module_updated(\core\event\course_module_updated $event) {
         if (modal_helper::mod_uses_cm_modal_cache($event->other['modulename'])) {
-            modal_helper::clear_cache_modal_cmids($event->courseid);
+            modal_helper::clear_cache_modal_cmids($event->courseid, $event->other['modulename']);
         }
     }
 

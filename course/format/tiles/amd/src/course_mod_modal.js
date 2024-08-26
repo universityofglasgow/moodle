@@ -100,11 +100,12 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
          * @param {boolean} completionEnabled
          * @param {number} existingCompletionState
          * @param {boolean} isManualCompletion
+         * @param {string} descriptionHTML
          * @returns {boolean}
          */
         const launchCmModal = function (
                 cmId, moduleContextId, sectionNum, title, objectType,
-                completionEnabled, existingCompletionState, isManualCompletion
+                completionEnabled, existingCompletionState, isManualCompletion, descriptionHTML
             ) {
             modalFactory.create({
                 type: modalFactory.types.DEFAULT,
@@ -146,14 +147,15 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                         sesskey: config.sesskey,
                         activityname: title,
                         config: {wwwroot: config.wwwroot},
-                        completionstring: ''
+                        completionstring: '',
+                        description: descriptionHTML
                     };
 
                     var template = null;
-                    if (["resource_html", 'resource_markup'].includes(objectType)) {
+                    if (objectType === "html") {
                         templateData.objectType = "text/html";
                         template = 'format_tiles/embed_file_modal_body';
-                    } else if (objectType === "resource_pdf") {
+                    } else if (objectType === "pdf") {
                         templateData.objectType = 'application/pdf';
                         template = 'format_tiles/embed_file_modal_body';
                     } else if (objectType === "url") {
@@ -162,13 +164,13 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     }
 
                     const redirectModule =
-                        objectType.includes('_') ? objectType.split('_')[0] : objectType;
+                        ['pdf', 'html'].includes(objectType) ? 'resource' : objectType;
                     if (template !== null) {
                         Templates.render(template, templateData).done(function (html) {
                             modal.setBody(html);
                             modalRoot.find(Selector.modalBody).animate({"min-height": Math.round(win.height() - 120)}, "fast");
 
-                            if (objectType === "resource_html" || objectType === 'url') {
+                            if (objectType === "html" || objectType === 'url') {
                                 // HTML files only - set widths to 100% since they may contain embedded videos etc.
                                 modalRoot.find(Selector.modal).animate({"max-width": "100%"}, "fast");
                                 modalRoot.find(Selector.modalDialog).animate({"max-width": "100%"}, "fast");
@@ -177,7 +179,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                 if (objectType === 'url') {
                                     modalRoot.find(Selector.modalBody).addClass("text-center");
                                 }
-                            } else if (objectType === "resource_pdf") {
+                            } else if (objectType === "pdf") {
                                 // Otherwise (e.g. for PDF) we don't need 100% width.
                                 modalRoot.find(Selector.modal).animate({"max-width": modalMinWidth()}, "fast");
                                 // We do modal-dialog too since Moove theme uses it.
@@ -197,8 +199,8 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                     cmid: cmId,
                     activityname: title,
                     tileid: sectionNum,
-                    showDownload: objectType === "resource_pdf" ? 1 : 0,
-                    showNewWindow: ["resource_pdf", 'url'].includes(objectType) ? 1 : 0,
+                    showDownload: objectType === "pdf" ? 1 : 0,
+                    showNewWindow: ["pdf", 'url'].includes(objectType) ? 1 : 0,
                     forModal: true,
                     config: {wwwroot: config.wwwroot}
                 };
@@ -404,11 +406,11 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                                         data.modulecontextid,
                                                         data.sectionnumber,
                                                         data.name,
-                                                        data.modname === 'resource'
-                                                            ? `resource_${data.resourcetype}` : data.modname,
+                                                        data.modaltype,
                                                         data.completionenabled ? 1 : 0,
                                                         data.iscomplete ? 1 : 0,
-                                                        data.ismanualcompletion
+                                                        data.ismanualcompletion,
+                                                        data.description,
                                                     );
                                                 } else {
                                                     window.location.href = config.wwwroot
@@ -470,10 +472,11 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                         data.modulecontextid,
                                         data.sectionnumber,
                                         data.name,
-                                        data.modname === 'resource' ? `resource_${data.resourcetype}` : data.modname,
+                                        data.modaltype,
                                         data.completionenabled ? 1 : 0,
                                         data.iscomplete ? 1 : 0,
                                         data.ismanualcompletion,
+                                        data.description,
                                     );
                                 }
                             });
@@ -530,11 +533,12 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                     moduleContextId,
                                     sectionNum,
                                     clickedCmObject.data('title'),
-                                    clickedCmObject.data('modtype'),
+                                    clickedCmObject.data('modal'),
                                     clickedCmObject.hasClass(CLASS.COMPLETION_ENABLED),
                                     clickedCmObject.data('completion-state')
                                         ? parseInt(clickedCmObject.data('completion-state')) : null,
                                     clickedCmObject.hasClass(CLASS.COMPLETION_MANUAL),
+                                    clickedCmObject.find('.modal-description').html(),
                                 );
                             }
                         });
