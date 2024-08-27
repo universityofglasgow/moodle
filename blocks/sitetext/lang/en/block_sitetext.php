@@ -30,3 +30,5 @@ $string['sitetext:myaddinstance'] = 'Add a new sitetext block to Dashboard';
 $string['newhtmlblock'] = '(new text block)';
 $string['pluginname'] = 'SiteText';
 $string['privacy:metadata:block'] = 'The Text block stores all of its data within the block subsystem.';
+$string['title'] = 'Title';
+$string['title_help'] = 'Title text in header';

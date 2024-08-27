@@ -40,6 +40,11 @@ class block_sitetext extends block_base {
         return false;
     }
 
+    function specialization() {
+        $title = get_config('block_sitetext', 'title');
+        $this->title = $title;
+    }
+
     function get_content() {
         global $CFG;
 

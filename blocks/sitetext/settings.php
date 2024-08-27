@@ -25,6 +25,14 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
+    $title = new admin_setting_configtext(
+        'block_sitetext/title',
+        get_string('title', 'block_sitetext'),
+        get_string('title_help', 'block_sitetext'),
+        ''
+    );
+    $settings->add($title);
+
     $editor = new admin_setting_confightmleditor(
         'block_sitetext/content',
         get_string('content', 'block_sitetext'),
