@@ -104,7 +104,12 @@
                 <span v-else>{{ item[header.value].data }}</span>
 
                 <!-- add/override grade -->
-                <AddGrade></AddGrade>
+                <OverrideGrade
+                    :itemid = "header.gradeitemid"
+                    :categoryid = "header.categoryid"
+                    :userid = "item.id"
+                    @gradeadded = "grade_changed(item.id)"
+                ></OverrideGrade>
             </template>
 
             <!-- User picture column -->
@@ -155,7 +160,7 @@
     import InfoButton from '@/components/InfoButton.vue';
     import PleaseWait from '@/components/PleaseWait.vue';
     import AggregationButtons from '@/components/Aggregation/AggregationButtons.vue';
-    import AddGrade from '@/components/Aggregation/AddGrade.vue';
+    import OverrideGrade from '@/components/Aggregation/OverrideGrade.vue';
 
     const toast = useToast();
 
@@ -235,6 +240,13 @@
             window.console.error(error);
             toast.error('Error communicating with server (see console)');
         });
+    }
+
+    /**
+     * Grade has been modified for user
+     */
+    function grade_changed(userid) {
+        user_update(userid);
     }
 
     /**
