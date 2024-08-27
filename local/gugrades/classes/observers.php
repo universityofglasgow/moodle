@@ -44,13 +44,24 @@ class observers {
 
     /**
      * Handle deleted course
-     * @param \core\event\grade_item_deleted $event
+     * @param \core\event\course_deleted $event
      */
     public static function course_deleted(\core\event\course_deleted $event) {
         $data = $event->get_data();
         $courseid = $data['objectid'];
 
         \local_gugrades\grades::delete_course($courseid);
+    }
+
+    /**
+     * Handle dpdated grade item
+     * @param \core\event\grade_item_updated $event
+     */
+    public static function grade_item_updated(\core\event\grade_item_updated $event) {
+        $courseid = $event->courseid;
+        $itemid = $event->objectid;
+
+        \local_gugrades\grades::grade_item_updated($courseid, $itemid);
     }
 
 }

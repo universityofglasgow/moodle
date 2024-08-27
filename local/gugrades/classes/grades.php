@@ -958,4 +958,33 @@ class grades {
 
         return $DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'iscurrent' => 1]);
     }
+
+    /**
+     * Handle event for grade item being updated
+     * Basically, we'll re-aggregate if there's anything to aggregate
+     * @param int $courseid
+     * @param int $gradeitemid
+     */
+    public static function grade_item_updated(int $courseid, int $gradeitemid) {
+        global $DB;
+
+        // If there are no grades then there's little point
+        if (!self::any_grades($gradeitemid)) {
+            return;
+        }
+
+        // Need the categoryid.
+        if ($gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid])) {
+            if ($gradeitem->itemtype == 'category') {
+                $categoryid = $gradeitem->iteminstance;
+            } else {
+                $categoryid = $gradeitem->categoryid;
+            }
+            $level1 = self::get_level_one_parent($categoryid);
+
+            // Queue an adhoc-task
+            $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
+            \core\task\manager::queue_adhoc_task($task);
+        }
+    }
 }
