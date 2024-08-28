@@ -102,13 +102,15 @@
                 <!-- strikethrough if data is dropped -->
                 <!-- bold if admin -->
                 <!-- there HAS to be an easier way -->
-                <s v-if="item[header.value].dropped">
-                    <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
-                    <span v-else>{{ item[header.value].data }}</span>
-                </s>
-                <span v-else>
-                    <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
-                    <span v-else>{{ item[header.value].data }}</span>
+                <span :class="hiddenclasses(item[header.value].hidden)">
+                    <s v-if="item[header.value].dropped">
+                        <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
+                        <span v-else>{{ item[header.value].data }}</span>
+                    </s>
+                    <span v-else>
+                        <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
+                        <span v-else>{{ item[header.value].data }}</span>
+                    </span>
                 </span>
 
                 <!-- add/override grade -->
@@ -116,6 +118,7 @@
                     :itemid = "header.gradeitemid"
                     :categoryid = "header.categoryid"
                     :userid = "item.id"
+                    :gradehidden = "item[header.value].hidden"
                     @gradeadded = "grade_changed(item.id)"
                 ></OverrideGrade>
             </template>
@@ -198,6 +201,19 @@
     let lastname = '';
 
     /**
+     * Hidden border
+     */
+    function hiddenclasses(hidden) {
+        if (hidden) {
+            return [
+                'border', 'border-warning', 'rounded', 'p-1'
+            ];
+        } else {
+            return [];
+        }
+    };
+
+    /**
      * Capture change to top level category dropdown
      * @param {*} level
      */
@@ -266,7 +282,8 @@
                 user[field.fieldname] = {
                     data: field.display,
                     dropped: field.dropped,
-                    isadmin: field.isadmin
+                    isadmin: field.isadmin,
+                    hidden: field.hidden
                 };
             })
         });
@@ -282,7 +299,8 @@
                 user[field.fieldname] = {
                     data: field.display,
                     dropped: field.dropped,
-                    isadmin: field.isadmin
+                    isadmin: field.isadmin,
+                    hidden: field.hidden
                 };
         });
 
@@ -527,5 +545,9 @@
 
     .vue3-easy-data-table__main table {
         border-radius: 25px;
+    }
+
+    .border-lg {
+        border-width: thick !important;
     }
 </style>

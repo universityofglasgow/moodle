@@ -123,6 +123,7 @@ class get_aggregation_page extends external_api {
                             'display' => new external_value(PARAM_TEXT, 'Grade for display'),
                             'dropped' => new external_value(PARAM_BOOL, 'Has this grade been dropped?'),
                             'isadmin' => new external_value(PARAM_BOOL, 'Is this an admin grade (for styling purposes)?'),
+                            'hidden' => new external_value(PARAM_BOOL, 'Is grade hidden?'),
                         ])
                     ),
                 ])

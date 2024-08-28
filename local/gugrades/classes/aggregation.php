@@ -251,6 +251,17 @@ class aggregation {
     }
 
     /**
+     * Is grade hidden in MyGrades?
+     * @param int $gradeitemid
+     * @param int $userid
+     */
+    private static function is_grade_hidden(int $gradeitemid, int $userid) {
+        global $DB;
+
+        return $DB->record_exists('local_gugrades_hidden', ['gradeitemid' => $gradeitemid, 'userid' => $userid]);
+    }
+
+    /**
      * Add aggregation data for a single user
      * @param int $courseid
      * @param int gradecategoryid
@@ -284,6 +295,7 @@ class aggregation {
                 'isscale' => $column->isscale,
                 'dropped' => false,
                 'isadmin' => false,
+                'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
