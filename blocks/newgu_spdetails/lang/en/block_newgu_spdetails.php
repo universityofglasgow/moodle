@@ -40,7 +40,7 @@ $string['newgu_spdetails:myaddinstance'] = 'Add a new Your Assessment Details (N
 $string['assessment'] = 'Assessment';
 $string['assessments'] = 'Assessments';
 $string['clicktoview'] = 'MyGrades on Moodle';
-$string['beta_notification'] = 'Some courses are not applicable for display on this page. You can view and access all your courses via the My courses page. Any questions about visibility of courses on MyGrades, please contact your course lecturer and/or administrator in the first instance. Course contact details can be found in your specific course Moodle site.';
+$string['beta_notification'] = 'The default view on MyGrades is summative (credit) assessments, to view other assessments alter the filter under \'Currently Enrolled in\'. Please also be aware that some courses are not applicable for display on this page. You can continue to view and access all your courses via the \'My courses\' page. Any questions about visibility of courses or assessments on MyGrades, please contact your course lecturer and/or administrator. Additional guidance on MyGrades can be found at <a href="https://www.gla.ac.uk/myglasgow/sld/">Student Learning Development</a>.';
 $string['headingataglance'] = 'Your assessments at a glance';
 $string['provisionalgradeinfo'] = 'All individual or aggregated assessment grades presented on this page are provisional. All final course
 grades can be viewed directly in the <a href="https://uogstudents.mycampus.gla.ac.uk/psc/campus/EMPLOYEE/SA/c/NUI_FRAMEWORK.
@@ -167,3 +167,11 @@ $string['released'] = 'Released';
 
 $string['tab_current'] = 'Currently enrolled in';
 $string['tab_past'] = 'Past courses';
+$string['aria:filterdropdown'] = 'Filter drop-down menu';
+$string['aria:controls'] = 'Course overview controls';
+$string['creditcourses'] = 'Credit courses';
+$string['noncreditcourses'] = 'Non credit courses';
+$string['all'] = 'All';
+$string['filterbycredit'] = 'Filter by Credit Courses';
+$string['filterbynoncredit'] = 'Filter by Non Credit Courses';
+$string['filterall'] = 'Show all courses';
