@@ -119,6 +119,8 @@
                     :categoryid = "header.categoryid"
                     :userid = "item.id"
                     :gradehidden = "item[header.value].hidden"
+                    :itemname = "header.fullname"
+                    :name = "item.displayname"
                     @gradeadded = "grade_changed(item.id)"
                 ></OverrideGrade>
             </template>
