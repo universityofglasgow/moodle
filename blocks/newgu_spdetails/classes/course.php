@@ -96,18 +96,27 @@ class course {
                     // Our course appears to contain no sub categories. We want to filter out PLUGIN RELATED items.
                     $gradecat = \grade_category::fetch_all(['courseid' => $course->id, 'hidden' => 0]);
                     if ($gradecat) {
-                        $item = \grade_item::fetch(['courseid' => $course->id, 'itemtype' => 'course']);
-                        $assessmenttype = self::return_assessmenttype($course->fullname, $item->aggregationcoef);
-                        $subcatweight = self::return_weight($item->aggregationcoef);
-                        if (count($gradecat) > 0) {
-                            foreach ($gradecat as $gradecategory) {
-                                $subcatdata[] = [
-                                    'id' => $gradecategory->id,
-                                    'name' => $course->fullname,
-                                    'assessmenttype' => $assessmenttype,
-                                    'subcatweight' => $subcatweight . '%',
-                                    'raw_category_weight' => $subcatweight,
-                                ];
+                        
+                        // MGU-973 - Don't display the category if it doesn't contain any grade items.
+                        // However, it may only contain further sub categories.
+                        $items = \grade_item::fetch_all(['courseid' => $course->id, 'categoryid' => $course->category,
+                        'hidden' => 0]);
+                        $subcategories = \grade_category::fetch_all(['parent' => $course->category, 'hidden' => 0]);
+                        if ($items || $subcategories) {
+                        
+                            $item = \grade_item::fetch(['courseid' => $course->id, 'itemtype' => 'course']);
+                            $assessmenttype = self::return_assessmenttype($course->fullname, $item->aggregationcoef);
+                            $subcatweight = self::return_weight($item->aggregationcoef);
+                            if (count($gradecat) > 0) {
+                                foreach ($gradecat as $gradecategory) {
+                                    $subcatdata[] = [
+                                        'id' => $gradecategory->id,
+                                        'name' => $course->fullname,
+                                        'assessmenttype' => $assessmenttype,
+                                        'subcatweight' => $subcatweight . '%',
+                                        'raw_category_weight' => $subcatweight,
+                                    ];
+                                }
                             }
                         }
                     }
