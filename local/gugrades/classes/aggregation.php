@@ -283,6 +283,7 @@ class aggregation {
                 'grademissing' => true,
                 'isscale' => $column->isscale,
                 'dropped' => false,
+                'isadmin' => false,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
@@ -293,6 +294,7 @@ class aggregation {
                 $data['grademissing'] = is_null($provisional->rawgrade);
                 $data['admingrade'] = $provisional->admingrade;
                 $data['dropped'] = $provisional->dropped;
+                $data['isadmin'] = !empty($provisional->admingrade);
             } else {
                 $data['display'] = get_string('nodata', 'local_gugrades');
             }

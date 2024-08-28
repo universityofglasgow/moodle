@@ -100,8 +100,16 @@
             <template v-for="header in headers" v-slot:[header.slot]="item">
 
                 <!-- strikethrough if data is dropped -->
-                <s v-if="item[header.value].dropped">{{ item[header.value].data }}</s>
-                <span v-else>{{ item[header.value].data }}</span>
+                <!-- bold if admin -->
+                <!-- there HAS to be an easier way -->
+                <s v-if="item[header.value].dropped">
+                    <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
+                    <span v-else>{{ item[header.value].data }}</span>
+                </s>
+                <span v-else>
+                    <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
+                    <span v-else>{{ item[header.value].data }}</span>
+                </span>
 
                 <!-- add/override grade -->
                 <OverrideGrade
@@ -257,7 +265,8 @@
             user.fields.forEach(field => {
                 user[field.fieldname] = {
                     data: field.display,
-                    dropped: field.dropped
+                    dropped: field.dropped,
+                    isadmin: field.isadmin
                 };
             })
         });
@@ -272,7 +281,8 @@
         user.fields.forEach(field => {
                 user[field.fieldname] = {
                     data: field.display,
-                    dropped: field.dropped
+                    dropped: field.dropped,
+                    isadmin: field.isadmin
                 };
         });
 
