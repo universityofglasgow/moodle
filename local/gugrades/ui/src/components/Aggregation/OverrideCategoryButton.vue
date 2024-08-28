@@ -1,12 +1,9 @@
 <template>
-    <a class="dropdown-item" href="#" @click="add_grade()">
-        {{ buttontitle }}
-    </a>
+    <a class="dropdown-item" href="#" @click="add_grade()">{{ mstrings.overridecategory }}</a>
 
-    <VueModal v-model="showaddgrademodal" modalClass="col-11 col-lg-5 rounded" :title="buttontitle">
+    <VueModal v-model="showaddgrademodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.addgrade">
         <ul class="list-unstyled">
-            <li v-if="props.categoryid"><b>{{ mstrings.category }}:</b> {{ itemname }}</li>
-            <li v-else><b>{{ mstrings.itemname }}:</b> {{ itemname }}</li>
+            <li><b>{{ mstrings.itemname }}:</b> {{ itemname }}</li>
             <li><b>{{ mstrings.username }}:</b> {{ name }}</li>
             <li><b>{{ mstrings.idnumber }}:</b> {{ idnumber }}</li>
             <li>{{ reason }}</li>
@@ -88,7 +85,7 @@
 </template>
 
 <script setup>
-    import {ref, defineProps, defineEmits, inject, computed} from '@vue/runtime-core';
+    import {ref, defineProps, defineEmits, inject} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
 
     const showaddgrademodal = ref(false);
@@ -119,17 +116,6 @@
         categoryid: Number,
         itemname: String,
         name: String,
-    });
-
-    /**
-     * The title can be for grade or category
-     */
-    const buttontitle = computed(() => {
-        if (props.categoryid) {
-            return mstrings.overridecategory;
-        } else {
-            return mstrings.addgrade;
-        }
     });
 
     /**

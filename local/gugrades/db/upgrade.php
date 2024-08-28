@@ -125,5 +125,20 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024082600, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024082800) {
+
+        // Define field catoverride to be added to local_gugrades_grade.
+        $table = new xmldb_table('local_gugrades_grade');
+        $field = new xmldb_field('catoverride', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'dropped');
+
+        // Conditionally launch add field catoverride.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024082800, 'local', 'gugrades');
+    }
+
     return true;
 }

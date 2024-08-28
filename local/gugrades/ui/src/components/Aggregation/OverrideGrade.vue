@@ -8,6 +8,16 @@
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
             <HideShowButton :gradehidden="props.gradehidden" :itemid="props.itemid" :userid="props.userid" @changed="grade_added()"></HideShowButton>
         </div>
+        <div v-else class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <AddGradeButton
+                :itemid="props.itemid"
+                :categoryid="props.categoryid"
+                :userid="props.userid"
+                :name="props.name"
+                :itemname="props.itemname"
+                @gradeadded = "grade_added()">
+        </AddGradeButton>
+        </div>
     </span>
 </template>
 
@@ -16,6 +26,7 @@
     import HistoryButton from '@/components/Capture/HistoryButton.vue';
     import AddGradeButton from '@/components/Capture/AddGradeButton.vue';
     import HideShowButton from '@/components/Capture/HideShowButton.vue';
+    import OverrideCategoryButton from '@/components/Aggregation/OverrideCategoryButton.vue'
 
     const props = defineProps({
         userid: Number,

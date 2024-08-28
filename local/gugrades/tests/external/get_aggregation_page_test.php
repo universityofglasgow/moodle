@@ -458,4 +458,55 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals(15.5, $fred['rawgrade']);
         $this->assertEquals(17, $fred['total']);
     }
+
+    /**
+     * Test get_add_grade_form for aggregated categories
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     */
+    public function test_override_category(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1a', $this->student->id);
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Get categoryid for 'Scale exam' which should be Schedule A
+        $scaleexamid = $this->get_grade_category('Scale exam');
+
+        // Get aggregation page for above.
+        $page = get_aggregation_page::execute($this->course->id, $scaleexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Get corresponding itemid for Scaleexam
+        $scaleexamitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $scaleexamid], '*', MUST_EXIST);
+
+        // Get the corresponding form for this category
+        $form = get_add_grade_form::execute($this->course->id, $scaleexamitem->id, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        var_dump($form);
+    }
 }
