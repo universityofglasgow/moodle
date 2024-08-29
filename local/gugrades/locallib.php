@@ -88,9 +88,9 @@ function custom_course_field() {
     global $DB;
 
     // Check if the category exists
-    if (!$category = $DB->get_record('customfield_category', ['name' => 'MyGrades'])) {
+    if (!$category = $DB->get_record('customfield_category', ['name' => 'Student MyGrades'])) {
         $category = new stdClass;
-        $category->name = 'MyGrades';
+        $category->name = 'Student MyGrades';
         $category->descriptionformat = 0;
         $category->sortorder = 0;
         $category->component = 'core_course';
@@ -110,7 +110,7 @@ function custom_course_field() {
         $field->shortname = 'studentmygrades';
         $field->name = 'Enable Student MyGrades';
         $field->type = 'checkbox';
-        $field->description = get_string('customfielddescription', 'local_gugrades') . ' (' . get_string('sharepointurl', 'local_gugrades') . ')';
+        $field->description = 'Insert description here.';
         $field->descriptionformat = 1;
         $field->sortorder = 0;
         $field->categoryid = $categoryid;
