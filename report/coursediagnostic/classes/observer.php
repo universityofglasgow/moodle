@@ -309,6 +309,45 @@ class observer {
     }
 
     /**
+     * We're looking specifically for when a course category has been created.
+     * @param \core\event\course_category_created $event
+     * @return bool
+     */
+    public static function course_category_created(\core\event\course_category_created $event): bool {
+        if ((!empty($event->courseid)) && $event->courseid != 1) {
+            return self::delete_key_from_cache($event->courseid);
+        }
+
+        return false;
+    }
+
+    /**
+     * We're looking specifically for when a course category has been updated.
+     * @param \core\event\course_category_updated $event
+     * @return bool
+     */
+    public static function course_category_updated(\core\event\course_category_updated $event): bool {
+        if ((!empty($event->courseid)) && $event->courseid != 1) {
+            return self::delete_key_from_cache($event->courseid);
+        }
+
+        return false;
+    }
+
+    /**
+     * We're looking specifically for when a course category has been deleted.
+     * @param \core\event\course_category_deleted $event
+     * @return bool
+     */
+    public static function course_category_deleted(\core\event\course_category_deleted $event): bool {
+        if ((!empty($event->courseid)) && $event->courseid != 1) {
+            return self::delete_key_from_cache($event->courseid);
+        }
+
+        return false;
+    }
+
+    /**
      * Utility method to save violating DRY rules.
      * @param $courseid
      * @return bool

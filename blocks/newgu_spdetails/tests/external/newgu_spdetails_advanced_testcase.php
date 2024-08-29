@@ -365,10 +365,9 @@ class newgu_spdetails_advanced_testcase extends externallib_advanced_testcase {
     /**
      * Set up our test conditions...
      *
-     * Our tests will need to cover the 3 course types - namely:
+     * Our tests will need to cover the 2 course types - namely:
      * 1) MyGrades
-     * 2) GCAT
-     * 3) GradeBook
+     * 2) GradeBook
      *
      * @return void
      * @throws dml_exception

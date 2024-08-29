@@ -241,6 +241,24 @@ if ($hassiteconfig) {
     $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
     $settings->add($setting);
 
+    // Course Grade tests
+    $name = new lang_string('coursegrade', 'report_coursediagnostic');
+    $desc = '';
+    $setting = new admin_setting_heading('coursegradehdr',
+        $name,
+        $desc);
+    $settings->add($setting);
+
+    $name = new lang_string('mygradescompatible', 'report_coursediagnostic');
+    $desc = new lang_string('mygradescompatible_desc', 'report_coursediagnostic');
+    $default = 1;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/mygradescompatible',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
     // Enrolment plugin tests.
     $name = new lang_string('enrolmentplugins', 'report_coursediagnostic');
     $desc = '';

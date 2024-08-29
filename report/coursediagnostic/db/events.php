@@ -44,6 +44,30 @@ $observers = [
         'callback' => 'report_coursediagnostic\observer::course_deleted'
     ],
     [
+        'eventname' => '\core\event\course_module_created',
+        'callback' => 'report_coursediagnostic\observer::course_module_created'
+    ],
+    [
+        'eventname' => '\core\event\course_module_updated',
+        'callback' => 'report_coursediagnostic\observer::course_module_updated'
+    ],
+    [
+        'eventname' => '\core\event\course_module_deleted',
+        'callback' => 'report_coursediagnostic\observer::course_module_deleted'
+    ],
+    [
+        'eventname' => '\core\event\course_category_created',
+        'callback' => 'report_coursediagnostic\observer::course_category_created'
+    ],
+    [
+        'eventname' => '\core\event\course_category_updated',
+        'callback' => 'report_coursediagnostic\observer::course_category_updated'
+    ],
+    [
+        'eventname' => '\core\event\course_category_deleted',
+        'callback' => 'report_coursediagnostic\observer::course_category_deleted'
+    ],
+    [
         'eventname' => '\core\event\user_enrolment_created',
         'callback' => 'report_coursediagnostic\observer::user_enrolment_created'
     ],
@@ -70,17 +94,5 @@ $observers = [
     [
         'eventname' => '\core\event\enrol_instance_deleted',
         'callback' => 'report_coursediagnostic\observer::enrol_instance_deleted'
-    ],
-    [
-        'eventname' => '\core\event\course_module_created',
-        'callback' => 'report_coursediagnostic\observer::course_module_created'
-    ],
-    [
-        'eventname' => '\core\event\course_module_updated',
-        'callback' => 'report_coursediagnostic\observer::course_module_updated'
-    ],
-    [
-        'eventname' => '\core\event\course_module_deleted',
-        'callback' => 'report_coursediagnostic\observer::course_module_deleted'
     ]
 ];

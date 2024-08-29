@@ -38,9 +38,10 @@ class course {
      *
      * @param array $courses - an array of courses the user is enrolled in
      * @param bool $active - indicate if this is a current or past course
+     * @param string $coursefilter - MGU-971 - now filter course elements
      * @return array
      */
-    public static function get_course_structure(array $courses, bool $active): array {
+    public static function get_course_structure(array $courses, bool $active, string $coursefilter): array {
         global $USER;
         $coursedata = [];
         $data = [
@@ -49,6 +50,19 @@ class course {
 
         if (!$courses) {
             return $data;
+        }
+
+        $filtercourseby = '';
+        switch($coursefilter) {
+            case "creditcourses":
+                $filtercourseby = 'summative';
+            break;
+            case "noncreditcourses":
+                $filtercourseby = 'formative';
+            break;
+            case "allcourses":
+                $filtercourseby = '';
+            break;
         }
 
         foreach ($courses as $course) {
@@ -81,15 +95,17 @@ class course {
                         'hidden' => 0]);
                         $subcategories = \grade_category::fetch_all(['parent' => $subcatid, 'hidden' => 0]);
                         if ($items || $subcategories) {
-                            $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
-                            $subcatweight = self::return_weight($item->aggregationcoef);
-                            $subcatdata[] = [
-                                'id' => $subcatid,
-                                'name' => $subcatname,
-                                'assessmenttype' => $assessmenttype,
-                                'subcatweight' => $subcatweight . '%',
-                                'raw_category_weight' => $subcatweight,
-                            ];
+                            if (empty($filtercourseby) || stripos($subcatname, $filtercourseby) !== false) {
+                                $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
+                                $subcatweight = self::return_weight($item->aggregationcoef);
+                                $subcatdata[] = [
+                                    'id' => $subcatid,
+                                    'name' => $subcatname,
+                                    'assessmenttype' => $assessmenttype,
+                                    'subcatweight' => $subcatweight . '%',
+                                    'raw_category_weight' => $subcatweight,
+                                ];
+                            }
                         }
                     }
                 } else {

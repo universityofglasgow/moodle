@@ -26,8 +26,8 @@
 
 import * as Log from 'core/log';
 import * as ajax from 'core/ajax';
-import {Chart, DoughnutController} from 'core/chartjs';
-import {exception as displayException} from 'core/notification';
+import { Chart, DoughnutController } from 'core/chartjs';
+import { exception as displayException } from 'core/notification';
 import Templates from 'core/templates';
 import sortTable from 'block_newgu_spdetails/sorting';
 
@@ -38,8 +38,7 @@ const Selectors = {
     ASSESSMENTSDUE_CONTENTS: '#assessmentsdue_content'
 };
 
-const viewAssessmentSummaryByChartType = function(event, legendItem, legend) {
-    Log.debug('viewAssessmentSummaryByChartType called');
+const viewAssessmentSummaryByChartType = function (event, legendItem, legend) {
     // We don't want this firing from the main Dashboard page.
     if (!document.querySelector('#student_dashboard')) {
         const chartType = ((legendItem) ? legendItem.index : legend);
@@ -68,17 +67,17 @@ const viewAssessmentSummaryByChartType = function(event, legendItem, legend) {
             args: {
                 charttype: chartType
             },
-        }])[0].done(function(response) {
+        }])[0].done(function (response) {
             document.querySelector('.loader').remove();
             let assessmentdata = JSON.parse(response.result);
-            Templates.renderForPromise('block_newgu_spdetails/assessmentsdue', {data: assessmentdata})
-            .then(({html, js}) => {
-                Templates.appendNodeContents(assessmentsDueContents, html, js);
-                returnToAssessmentsHandler();
-                let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
-                sortingEventHandler(sortColumns);
-                return true;
-            }).catch((error) => displayException(error));
+            Templates.renderForPromise('block_newgu_spdetails/assessmentsdue', { data: assessmentdata })
+                .then(({ html, js }) => {
+                    Templates.appendNodeContents(assessmentsDueContents, html, js);
+                    returnToAssessmentsHandler();
+                    let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
+                    sortingEventHandler(sortColumns);
+                    return true;
+                }).catch((error) => displayException(error));
         }).fail(function(response) {
             if (response) {
                 document.querySelector('.loader').remove();
@@ -119,7 +118,7 @@ const sortingEventHandler = (rows) => {
     if (rows.length > 0) {
         rows.forEach((element) => {
             element.addEventListener('click', () => sortTable(element.cellIndex, element.getAttribute('data-sortby'),
-            'assessment_data_table'));
+                'assessment_data_table'));
         });
     }
 };
@@ -136,7 +135,7 @@ const returnToAssessmentsHandler = () => {
             containerBlock.classList.remove('hidden-container');
         });
 
-        document.querySelector('#assessments-due-return').addEventListener('keyup', function(event) {
+        document.querySelector('#assessments-due-return').addEventListener('keyup', function (event) {
             let element = document.activeElement;
             if (event.keyCode === 13 && element.hasAttribute('tabindex')) {
                 event.preventDefault();
@@ -159,7 +158,7 @@ const fetchAssessmentSummary = () => {
     ajax.call([{
         methodname: 'block_newgu_spdetails_get_assessmentsummary',
         args: {},
-    }])[0].done(function(response) {
+    }])[0].done(function (response) {
         document.querySelector('.loader').remove();
         // With the 'block' now being a link in the top nav, users can still add this,
         // either in the side drawer or to the main dashboard. Check and set the position
@@ -176,31 +175,31 @@ const fetchAssessmentSummary = () => {
         // Check for the contrast setting
         if (document.querySelector('.hillhead40-night')) {
             tmpFontColour = '#95B7E6';
-            document.querySelector('.alert.alert-info a').style.color='#95B7E6';
+            document.querySelector('.alert.alert-info a').style.color = '#95B7E6';
         }
         if (document.querySelector('.hillhead40-contrast-wb')) {
             tmpFontColour = '#eee';
-            document.querySelector('.alert.alert-info a').style.color='#eee';
+            document.querySelector('.alert.alert-info a').style.color = '#eee';
         }
         if (document.querySelector('.hillhead40-contrast-yb')) {
             tmpFontColour = '#ee6';
-            document.querySelector('.alert.alert-info a').style.color='#ee6';
+            document.querySelector('.alert.alert-info a').style.color = '#ee6';
         }
         if (document.querySelector('.hillhead40-contrast-by')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         if (document.querySelector('.hillhead40-contrast-wg')) {
             tmpFontColour = '#eee';
-            document.querySelector('.alert.alert-info a').style.color='#eee';
+            document.querySelector('.alert.alert-info a').style.color = '#eee';
         }
         if (document.querySelector('.hillhead40-contrast-br')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         if (document.querySelector('.hillhead40-contrast-bb')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         if (document.querySelector('.hillhead40-contrast-bw')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         // Check for the font setting
         let tmpFontFamily = "'Hillhead', 'Ubuntu', 'Trebuchet MS', 'Arial', sans-serif";
@@ -244,13 +243,19 @@ const fetchAssessmentSummary = () => {
             tmpLineHeight = '2rem';
         }
 
-        tempPanel.insertAdjacentHTML("afterbegin", "<canvas id='assessmentSummaryChart'\n" +
-            " width='400' height='300' aria-label='Assessments overview. A chart displaying" +
-            " assessments to be submitted, overdue, submitted and graded.' role='img' tabindex='0'>\n" +
-            "<p>The 'Assessments Overview' chart displays information relating to assessments that are" +
-            " to be submitted, are overdue, have been submitted, and those that have been graded. Links to" +
-            " further information about these assessments also form part of this chart.</p>\n" +
-            "</canvas>");
+        tempPanel.insertAdjacentHTML("afterbegin", "<canvas id='assessmentSummaryChart' width='400' height='300' " +
+            "role='img' aria-label='Assessments overview chart. The chart displays assessments that are to be submitted, are " +
+            "overdue, have been submitted, and have been graded.' tabindex='0'><p>The 'Assessments Overview' chart displays " +
+            "information relating to assessments that are to be submitted, are overdue, have been submitted, and those that have" +
+            " been graded. Links to further information about these assessments also form part of this chart.</p><nav " +
+            "aria-label='Assessments overview chart navigation'><ul><li><a aria-label='To be submitted' href='#' " +
+            "tabindex='0' onkeydown='if(event.keyCode==13 || event.keyCode==32){event.preventDefault(); keyUpHandler(this)}'>To " +
+            "be submitted</a></li><li><a href='#' tabindex='0'>Overdue</a>" +
+            "</li><li><a href='#' " +
+            "tabindex='0'>Submitted</a>" +
+            "</li><li><a href='#' tabindex='0'>Graded</a></li></ul></nav></canvas><script>function keyUpHandler(event) { " +
+            "lastKeyUpCode = event.code;lastKeyUpKey = event.key;console.log(\"key:\", lastKeyUpKey, \"code:\", lastKeyUpCode);}" +
+            "</script>");
 
         const data = [
             {
@@ -353,15 +358,15 @@ const fetchAssessmentSummary = () => {
 
         const canvas = document.getElementById('assessmentSummaryChart');
         canvas.onclick = (evt) => {
-            const points = chart.getElementsAtEventForMode(evt, 'nearest', {intersect: true}, true);
+            const points = chart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
 
             if (points.length) {
                 const firstPoint = points[0];
                 viewAssessmentSummaryByChartType(evt, null, firstPoint.index);
             }
-          };
+        };
 
-    }).fail(function(err) {
+    }).fail(function (err) {
         document.querySelector('.loader').remove();
         tempPanel.insertAdjacentHTML("afterbegin", "<div class='d-flex justify-content-center'>\n" +
             err.message + "</div>");

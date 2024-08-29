@@ -46,6 +46,7 @@ class get_assessments extends external_api {
             'sortby' => new external_value(PARAM_ALPHA, 'Sort columns by', VALUE_DEFAULT),
             'sortorder' => new external_value(PARAM_ALPHA, 'Sort by order', VALUE_DEFAULT),
             'subcategory' => new external_value(PARAM_INT, 'Subcategory id', VALUE_DEFAULT),
+            'coursefilter' => new external_value(PARAM_ALPHA, 'The course filter', VALUE_DEFAULT),
         ]);
     }
 
@@ -61,7 +62,7 @@ class get_assessments extends external_api {
      * @throws \invalid_parameter_exception
      */
     public static function execute(string $activetab, int $page, string $sortby, string $sortorder,
-    int $subcategory = null): array {
+    int $subcategory = null, string $coursefilter): array {
         $params = self::validate_parameters(self::execute_parameters(),
             [
                 'activetab' => $activetab,
@@ -69,6 +70,7 @@ class get_assessments extends external_api {
                 'sortby' => $sortby,
                 'sortorder' => $sortorder,
                 'subcategory' => $subcategory,
+                'coursefilter' => $coursefilter,
             ]);
         return [
             'result' => json_encode(
@@ -77,7 +79,8 @@ class get_assessments extends external_api {
                     $params['page'],
                     $params['sortby'],
                     $params['sortorder'],
-                    $params['subcategory']
+                    $params['subcategory'],
+                    $params['coursefilter']
             )),
         ];
     }

@@ -51,6 +51,11 @@
         ]
     }
 }}
+<div role="search" data-region="filter" class="d-flex align-items-center my-2" aria-label="{{#str}} aria:controls, block_newgu_spdetails {{/str}}">
+    <div class="row no-gutters">
+        {{> block_newgu_spdetails/course-filter-selector }}
+    </div>
+</div>
 <div id="course_data" class="assessments-details-sort-container">
     {{^data.coursedata}}
     <div class="alert alert-warning" role="alert">
