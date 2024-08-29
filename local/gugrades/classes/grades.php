@@ -566,6 +566,7 @@ class grades {
     /**
      * Analyse grade item. Is it...
      * - is it valid at all
+     * - an aggregated category?
      * - points value
      * - if so, is the max points 22 (proxy for 22 point scale)
      * - scale
@@ -585,6 +586,13 @@ class grades {
         }
 
         $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+
+        // Could be an (aggregated) category.
+        // In this case, the grade details are determined by aggregation.
+        if ($gradeitem->itemtype == 'category') {
+            return ['category', $gradeitem];
+        }
+
         $gradetype = $gradeitem->gradetype;
         if ($gradetype == GRADE_TYPE_VALUE) {
             if ($gradeitem->grademax == 22) {
@@ -815,20 +823,42 @@ class grades {
     }
 
     /**
+     * Define ScheduleB "default" mapping
+     * @return array
+     */
+    private static function get_scheduleb_map() {
+        return [
+            0 => 'H',
+            2 => 'G0',
+            5 => 'F0',
+            8 => 'E0',
+            11 => 'D0',
+            14 => 'C0',
+            17 => 'B0',
+            22 => 'A0',
+        ];
+    }
+
+    /**
      * Get scale as value => name associative array
      * This is from our 'scalevalue' table.
-     * If scaleid=0 then we'll return a default Schedule A scale
+     * If scaleid=0 then we'll return a default Schedule A or B scale
      * (this is for maxgrade=22 which doesn't have a scale)
      * @param int $scaleid
+     * @param string $schedule
      * @return array
      *
      */
-    public static function get_scale(int $scaleid) {
+    public static function get_scale(int $scaleid, string $schedule = 'schedulea') {
         global $DB;
 
         // Scaleid=0 used for grademax=22.
         if (!$scaleid) {
-            return self::get_schedulea_map();
+            if ($schedule == 'scheduleb') {
+                return self::get_scheduleb_map();
+            } else {
+                return self::get_schedulea_map();
+            }
         }
 
         if ($items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $scaleid])) {

@@ -801,6 +801,46 @@ class api {
     }
 
     /**
+     * Get add grade form for an aggregated category
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @param object $gradeitem
+     * @return array
+     */
+    public static function get_category_add_grade_form(int $courseid, int $gradeitemid, int $userid, object $gradeitem) {
+        global $DB;
+
+        // Sanity check
+        if ($gradeitem->itemtype != 'category') {
+            throw new \moodle_exception('Not a category');
+        }
+
+        // Get the aggregated category
+        $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradeitem->iteminstance);
+
+        // Is this scale or points?
+        $isscale = !$category->atype == 'P';
+
+        // Get various menu items.
+        $gradetypes = \local_gugrades\gradetype::get_menu($gradeitemid, LOCAL_GUGRADES_FORMENU);
+        $wsgradetypes = self::formkit_menu($gradetypes);
+        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
+
+        return [
+            'gradetypes' => $wsgradetypes,
+            'rawgradetypes' => $gradetypes,
+            'itemname' => $gradeitem->itemname,
+            'fullname' => fullname($user),
+            'idnumber' => $user->idnumber,
+            'usescale' => $isscale,
+            'grademax' => $category->grademax,
+            'scalemenu' => $scalemenu,
+            'adminmenu' => $adminmenu,
+        ];
+    }
+
+    /**
      * Get add grade form
      * Various 'stuff' to construct the form
      * @param int $courseid
@@ -810,6 +850,18 @@ class api {
      */
     public static function get_add_grade_form(int $courseid, int $gradeitemid, int $userid) {
         global $DB;
+
+        // Check gradeitem.
+        list($itemtype, $gradeitem) = \local_gugrades\grades::analyse_gradeitem($gradeitemid);
+        if ($gradeitem == false) {
+            throw new \moodle_exception('Unsupported grade item encountered in get_add_grade_form. Gradeitemid = ' . $gradeitemid);
+        }
+
+        // Is this actually a category?
+        if ($itemtype == 'category') {
+
+            return self::get_category_add_grade_form($courseid, $gradeitemid, $userid, $gradeitem);
+        }
 
         // Has it been converted?
         $converted = \local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid);
@@ -837,14 +889,18 @@ class api {
         // Username.
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
+        // Administrative grades.
+        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $adminmenu = self::formkit_menu($admingrades, true);
+
         // Gradeitem.
         list($itemtype, $gradeitem) = \local_gugrades\grades::analyse_gradeitem($gradeitemid);
         if ($gradeitem == false) {
             throw new \moodle_exception('Unsupported grade item encountered in get_add_grade_form. Gradeitemid = ' . $gradeitemid);
         }
-        $grademax = ($gradeitem->gradetype == GRADE_TYPE_VALUE) ? $gradeitem->grademax : 0;
 
         // Get the right scale.
+        $grademax = ($gradeitem->gradetype == GRADE_TYPE_VALUE) ? $gradeitem->grademax : 0;
         if ($converted) {
             $scale = \local_gugrades\conversion::get_conversion_scale($courseid, $gradeitemid);
             $scalemenu = self::formkit_menu($scale, true);
@@ -859,9 +915,7 @@ class api {
             $scalemenu = [];
         }
 
-        // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
-        $adminmenu = self::formkit_menu($admingrades, true);
+
 
         return [
             'gradetypes' => $wsgradetypes,

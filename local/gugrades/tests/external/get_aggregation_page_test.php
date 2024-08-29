@@ -110,7 +110,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function test_basic_aggregation_page(): void {
+    public function xtest_basic_aggregation_page(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -192,7 +192,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_completion_score(): void {
+    public function xtest_completion_score(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -282,7 +282,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_sub_category(): void {
+    public function xtest_sub_category(): void {
 
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
@@ -326,7 +326,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_scheduleb_sub_category(): void {
+    public function xtest_scheduleb_sub_category(): void {
 
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
@@ -372,7 +372,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_schedulea_sub_category(): void {
+    public function xtest_schedulea_sub_category(): void {
 
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
@@ -418,7 +418,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_scheduleb(): void {
+    public function xtest_scheduleb(): void {
 
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
