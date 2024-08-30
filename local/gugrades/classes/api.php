@@ -820,17 +820,32 @@ class api {
         $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradeitem->iteminstance);
 
         // Is this scale or points?
-        $isscale = !$category->atype == 'P';
+        $isscale = !($category->atype == 'P');
 
         // Get various menu items.
         $gradetypes = \local_gugrades\gradetype::get_menu($gradeitemid, LOCAL_GUGRADES_FORMENU);
         $wsgradetypes = self::formkit_menu($gradetypes);
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
+        // Get scalemenu
+        if ($category->atype == 'A') {
+            $scale = \local_gugrades\grades::get_scale(0, 'schedulea');
+            $scalemenu = self::formkit_menu($scale, true);
+        } else if ($category->atype == 'B') {
+            $scale = \local_gugrades\grades::get_scale(0, 'scheduleb');
+            $scalemenu = self::formkit_menu($scale, true);
+        } else {
+            $scalemenu = [];
+        }
+
+        // Admin grades menu
+        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $adminmenu = self::formkit_menu($admingrades, true);
+
         return [
             'gradetypes' => $wsgradetypes,
             'rawgradetypes' => $gradetypes,
-            'itemname' => $gradeitem->itemname,
+            'itemname' => $category->name,
             'fullname' => fullname($user),
             'idnumber' => $user->idnumber,
             'usescale' => $isscale,
@@ -914,8 +929,6 @@ class api {
         } else {
             $scalemenu = [];
         }
-
-
 
         return [
             'gradetypes' => $wsgradetypes,

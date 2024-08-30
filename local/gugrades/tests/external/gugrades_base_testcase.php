@@ -189,7 +189,7 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
         // Check if the category exists
         if (!$category = $DB->get_record('customfield_category', ['name' => 'MyGrades'])) {
             $category = new \stdClass;
-            $category->name = 'MyGrades';
+            $category->name = 'Student MyGrades';
             $category->descriptionformat = 0;
             $category->sortorder = 0;
             $category->component = 'core_course';
@@ -209,7 +209,7 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
             $field->shortname = 'studentmygrades';
             $field->name = 'Enable Student MyGrades';
             $field->type = 'checkbox';
-            $field->description = get_string('customfielddescription', 'local_gugrades');
+            $field->description = 'Your text here';
             $field->descriptionformat = 1;
             $field->sortorder = 0;
             $field->categoryid = $categoryid;
