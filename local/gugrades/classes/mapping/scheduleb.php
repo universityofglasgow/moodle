@@ -114,9 +114,31 @@ class scheduleb extends base {
     }
 
     /**
-     * Get the scale item
-     * @param $
+     * Convert numeric 0-22 to Schedule B
+     * @param float $rawgrade
+     * @return [string, int]
      */
+    public static function convert(float $rawgrade) {
+        if ($rawgrade < 1) {
+            return ['H', 0];
+        } else if ($rawgrade < 3) {
+            return ['G0', 2];
+        } else if ($rawgrade < 6) {
+            return ['F0', 5];
+        } else if ($rawgrade < 9) {
+            return ['E0', 8];
+        } else if ($rawgrade < 12) {
+            return ['D0', 11];
+        } else if ($rawgrade < 15) {
+            return ['C0', 14];
+        } else if ($rawgrade < 18) {
+            return ['B0', 17];
+        } else if ($rawgrade <= 22) {
+            return ['A0', 22];
+        } else {
+            throw new \moodle_exception('Raw grade out of valid range - ' . $rawgrade);
+        }
+    }
 
     /**
      * Handle imported grade

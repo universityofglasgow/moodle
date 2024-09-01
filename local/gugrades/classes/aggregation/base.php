@@ -463,31 +463,7 @@ class base {
      * @return [string, int]
      */
     protected function convert_schedulea(float $rawgrade) {
-        $schedulea = [
-            0 => 'H',
-            1 => 'G2',
-            2 => 'G1',
-            3 => 'F3',
-            4 => 'F2',
-            5 => 'F1',
-            6 => 'E3',
-            7 => 'E2',
-            8 => 'E1',
-            9 => 'D3',
-            10 => 'D2',
-            11 => 'D1',
-            12 => 'C3',
-            13 => 'C2',
-            14 => 'C1',
-            15 => 'B3',
-            16 => 'B2',
-            17 => 'B1',
-            18 => 'A5',
-            19 => 'A4',
-            20 => 'A3',
-            21 => 'A2',
-            22 => 'A1',
-        ];
+        $schedulea = \local_gugrades\mapping\schedulea::get_map();
 
         // This MATTERS - round the float rawgrade to an integer
         // "15.5 and all higher values less than 16.5 should become 16
@@ -507,25 +483,7 @@ class base {
      * @return [string, int]
      */
     protected function convert_scheduleb(float $rawgrade) {
-        if ($rawgrade < 1) {
-            return ['H', 0];
-        } else if ($rawgrade < 3) {
-            return ['G0', 2];
-        } else if ($rawgrade < 6) {
-            return ['F0', 5];
-        } else if ($rawgrade < 9) {
-            return ['E0', 8];
-        } else if ($rawgrade < 12) {
-            return ['D0', 11];
-        } else if ($rawgrade < 15) {
-            return ['C0', 14];
-        } else if ($rawgrade < 18) {
-            return ['B0', 17];
-        } else if ($rawgrade <= 22) {
-            return ['A0', 22];
-        } else {
-            throw new \moodle_exception('Raw grade out of valid range - ' . $rawgrade);
-        }
+        return \local_gugrades\mapping\scheduleb::convert($rawgrade);
     }
 
     /**
