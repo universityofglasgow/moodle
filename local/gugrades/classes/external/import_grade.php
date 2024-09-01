@@ -70,9 +70,9 @@ class import_grade extends external_api {
             throw new \moodle_exception('Import is not permitted after conversion applied.');
         }
 
-        $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitemid);
+        $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
-        $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $conversion, $activity, $userid, false, false);
+        $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $mapping, $activity, $userid, false, false);
 
         // Audit?
         if ($success) {

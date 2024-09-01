@@ -165,17 +165,17 @@ class aggregation {
             ];
         }
         foreach ($gradeitems as $gradeitem) {
-            $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitem->gradeitemid);
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitem->gradeitemid);
             $columns[] = (object)[
                 'fieldname' => 'AGG_' . $gradeitem->gradeitemid,
                 'gradeitemid' => $gradeitem->gradeitemid,
                 'categoryid' => 0,
                 'shortname' => $gradeitem->shortname,
                 'fullname' => $gradeitem->itemname,
-                'gradetype' => $conversion->name(),
-                'grademax' => $conversion->get_maximum_grade(),
-                'isscale' => $conversion->is_scale(),
-                'schedule' => $conversion->get_schedule(),
+                'gradetype' => $mapping->name(),
+                'grademax' => $mapping->get_maximum_grade(),
+                'isscale' => $mapping->is_scale(),
+                'schedule' => $mapping->get_schedule(),
                 'strategy' => '',
                 'strategyid' => 0,
 
@@ -602,15 +602,15 @@ class aggregation {
 
             // Get the conversion object, so we can tell what sort of grade we're dealing with.
             if (!($node = $cache->get($item->id)) || $force) {
-                $conversion = \local_gugrades\grades::conversion_factory($courseid, $item->id);
+                $mapping = \local_gugrades\grades::mapping_factory($courseid, $item->id);
                 $node = (object)[
                     'itemid' => $item->id,
                     'name' => $item->itemname,
                     'iscategory' => false,
-                    'isscale' => $conversion->is_scale(),
-                    'schedule' => $conversion->get_schedule(),
+                    'isscale' => $mapping->is_scale(),
+                    'schedule' => $mapping->get_schedule(),
                     'weight' => $item->aggregationcoef,
-                    'grademax' => $conversion->get_grademax(),
+                    'grademax' => $mapping->get_grademax(),
                 ];
             }
 

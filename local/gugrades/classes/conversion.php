@@ -38,9 +38,9 @@ class conversion {
     protected static function get_scale(string $schedule) {
 
         // Get the name of the class and see if it exists.
-        $classname = 'local_gugrades\\conversion\\' . $schedule;
+        $classname = 'local_gugrades\\mapping\\' . $schedule;
         if (!class_exists($classname, true)) {
-            throw new \moodle_exception('Unknown conversion class - "' . $classname . '"');
+            throw new \moodle_exception('Unknown mapping class - "' . $classname . '"');
         }
 
         return $classname::get_map();

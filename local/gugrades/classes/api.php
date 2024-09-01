@@ -229,8 +229,8 @@ class api {
             }
         }
 
-        // Get the grade conversion class.
-        $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitemid);
+        // Get the grade mapping class.
+        $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
 
         // Only for testrun, accumulate output.
         $testrunlines = [];
@@ -290,7 +290,7 @@ class api {
 
             // Check if valid grade.
             if ($grade) {
-                list($gradevalid, $gradevalue) = $conversion->csv_value($grade);
+                list($gradevalid, $gradevalue) = $mapping->csv_value($grade);
                 if (!$gradevalid) {
                     $testrunline['error'] = get_string('csvgradeinvalid', 'local_gugrades');
                     $errors['csvgradeinvalid']++;
@@ -326,12 +326,12 @@ class api {
                     iscurrent:      true,
                     iserror:      false,
                     auditcomment:   'CSV import',
-                    ispoints:       !$conversion->is_scale(),
+                    ispoints:       !$mapping->is_scale(),
                 );
                 $addcount++;
 
                 // Re-aggregate this user
-                \local_gugrades\aggregation::aggregate_user_helper($courseid, $conversion->get_gradecategoryid(), $user->id);
+                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $user->id);
             }
         }
 
@@ -361,23 +361,25 @@ class api {
         $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);
         $courseid = $item->courseid;
 
-        // Get the 'conversion' class.
-        $conversion = \local_gugrades\grades::conversion_factory($courseid, $itemid);
+        // Get the mapping class.
+        $mapping = \local_gugrades\grades::mapping_factory($courseid, $itemid);
 
         // If the type is a category, get that as well.
         if ($item->itemtype == 'category') {
             $category = $DB->get_record('grade_categories', ['id' => $item->iteminstance], '*', MUST_EXIST);
+            $categoryid = $item->iteminstance;
             $itemname = $category->fullname;
 
             // Get 'enhanced' version from aggregation.
             $enhancedcat = \local_gugrades\aggregation::get_enhanced_grade_category($category->courseid, $category->id);
         } else {
             $itemname = $item->itemname;
+            $categoryid = $item->categoryid;
             $enhancedcat = null;
         }
 
         // Get the scale name.
-        $scalename = $conversion->name();
+        $scalename = $mapping->name();
 
         // Get module name.
         if ($item->itemtype == 'mod') {
@@ -399,12 +401,12 @@ class api {
         return [
             'id' => $item->id,
             'courseid' => $item->courseid,
-            'categoryid' => $item->categoryid,
+            'categoryid' => $categoryid,
             'itemname' => $itemname,
             'itemtype' => get_string($item->itemtype, 'local_gugrades'),
             'itemmodule' => $modname,
             'iteminstance' => $item->iteminstance,
-            'isscale' => $conversion->is_scale(),
+            'isscale' => $mapping->is_scale(),
             'scalename' => $scalename,
             'grademax' => $item->itemtype == 'category' ? $enhancedcat->grademax : $item->grademax,
             'weight' => round($item->aggregationcoef * 100),
@@ -434,7 +436,7 @@ class api {
      * Import grade
      * @param int $courseid
      * @param int $gradeitemid
-     * @param \local_gugrades\conversion\base $conversion
+     * @param \local_gugrades\mapping\base $mapping
      * @param \local_gugrades\activities\base $activity
      * @param int $userid
      * @param bool $additional
@@ -444,7 +446,7 @@ class api {
     public static function import_grade(
         int $courseid,
         int $gradeitemid,
-        \local_gugrades\conversion\base $conversion,
+        \local_gugrades\mapping\base $mapping,
         \local_gugrades\activities\base $activity,
         int $userid,
         bool $additional,
@@ -464,8 +466,8 @@ class api {
             // Can (sometimes) come back as string, for some reason.
             $rawgrade = floatval($rawgrade);
 
-            if ($conversion->validate($rawgrade)) {
-                [$convertedgrade, $displaygrade] = $conversion->import($rawgrade);
+            if ($mapping->validate($rawgrade)) {
+                [$convertedgrade, $displaygrade] = $mapping->import($rawgrade);
 
                 // TODO: Is rawgrade correct? For scheduleB this will be completely
                 // unrelated. E.g. rawgrade 6 = converted grade = 14.
@@ -474,7 +476,8 @@ class api {
                     gradeitemid:    $gradeitemid,
                     userid:         $userid,
                     admingrade:     '',
-                    rawgrade:       $rawgrade,
+                    //rawgrade:       $rawgrade,
+                    rawgrade:       $convertedgrade,
                     convertedgrade: $convertedgrade,
                     displaygrade:   $displaygrade,
                     weightedgrade:  0,
@@ -483,11 +486,11 @@ class api {
                     iscurrent:      true,
                     iserror:        false,
                     auditcomment:   get_string('import', 'local_gugrades'),
-                    ispoints:       !$conversion->is_scale(),
+                    ispoints:       !$mapping->is_scale(),
                 );
 
                 // Re-aggregate this user
-                \local_gugrades\aggregation::aggregate_user_helper($courseid, $conversion->get_gradecategoryid(), $userid);
+                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
 
                 return true;
             }
@@ -514,7 +517,7 @@ class api {
             );
 
             // Re-aggregate this user
-            \local_gugrades\aggregation::aggregate_user_helper($courseid, $conversion->get_gradecategoryid(), $userid);
+            \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
 
             return true;
         }
@@ -694,14 +697,14 @@ class api {
 
         foreach ($items as $item) {
             $activity = \local_gugrades\users::activity_factory($item->id, $courseid, $groupid);
-            $conversion = \local_gugrades\grades::conversion_factory($courseid, $item->id);
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $item->id);
 
             // Get all the permitted users in this activity.
             $users = $activity->get_users();
 
             // Iterate over these users importing grade.
             foreach ($users as $user) {
-                if (self::import_grade($courseid, $item->id, $conversion, $activity, $user->id, $additional, $fillns)) {
+                if (self::import_grade($courseid, $item->id, $mapping, $activity, $user->id, $additional, $fillns)) {
                     $gradecount++;
                 }
             }
@@ -772,7 +775,7 @@ class api {
 
         // Scale.
         if ($converted) {
-            $scale = \local_gugrades\conversion::get_conversion_scale($courseid, $gradeitemid);
+            $scale = \local_gugrades\mapping::get_conversion_scale($courseid, $gradeitemid);
             $scalemenu = self::formkit_menu($scale, true);
         } else if ($gradeitem->gradetype == GRADE_TYPE_SCALE) {
             $scale = \local_gugrades\grades::get_scale($gradeitem->scaleid);
@@ -882,8 +885,8 @@ class api {
         // Has it been converted?
         $converted = \local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid);
 
-        // Get "conversion" class.
-        $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitemid);
+        // Get "mapping" class.
+        $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
 
         // Get gradetype.
         $gradetypes = \local_gugrades\gradetype::get_menu($gradeitemid, LOCAL_GUGRADES_FORMENU);
@@ -920,8 +923,8 @@ class api {
         if ($converted) {
             $scale = \local_gugrades\conversion::get_conversion_scale($courseid, $gradeitemid);
             $scalemenu = self::formkit_menu($scale, true);
-        } else if ($conversion->is_scale()) {
-            if ($conversion->is_exactgrade22()) {
+        } else if ($mapping->is_scale()) {
+            if ($mapping->is_exactgrade22()) {
                 $scale = \local_gugrades\grades::get_scale(0);
             } else {
                 $scale = \local_gugrades\grades::get_scale($gradeitem->scaleid);
@@ -937,7 +940,7 @@ class api {
             'itemname' => $gradeitem->itemname,
             'fullname' => fullname($user),
             'idnumber' => $user->idnumber,
-            'usescale' => $conversion->is_scale() || $converted,
+            'usescale' => $mapping->is_scale() || $converted,
             'iscategory' => false,
             'grademax' => $grademax,
             'scalemenu' => $scalemenu,
@@ -1004,7 +1007,7 @@ class api {
         global $DB;
 
         // Conversion class.
-        $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitemid);
+        $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
 
         // Get the stuff we used to build the form for validation.
         $form = self::get_add_grade_form($courseid, $gradeitemid, $userid);
@@ -1051,7 +1054,7 @@ class api {
             $convertedgrade = 0.0;
             $displaygrade = $admingrade;
         } else if ($usescale) {
-            $displaygrade = $conversion->get_band($scale);
+            $displaygrade = $mapping->get_band($scale);
             $rawgrade = $scale;
             $convertedgrade = $scale;
         } else {
@@ -1093,13 +1096,13 @@ class api {
             iscurrent:      true,
             iserror:        false,
             auditcomment:   $notes,
-            ispoints:       !$conversion->is_scale(),
+            ispoints:       !$mapping->is_scale(),
             overwrite:      false,
             catoverride:    $catoverride,
         );
 
         // Re-aggregate this user
-        \local_gugrades\aggregation::aggregate_user_helper($courseid, $conversion->get_gradecategoryid(), $userid);
+        \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
     }
 
     /**
@@ -1119,8 +1122,8 @@ class api {
         if ($converted) {
             $points = false;
         } else {
-            $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitemid);
-            $points = !$conversion->is_scale();
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
+            $points = !$mapping->is_scale();
         }
         $column = \local_gugrades\grades::get_column($courseid, $gradeitemid, $reason, $other, $points);
 

@@ -78,9 +78,9 @@ class import_grades_users extends external_api {
             throw new \moodle_exception('Import is not permitted after conversion applied.');
         }
 
-        // Get conversion object for whatever grade type this is.
+        // Get mapping object for whatever grade type this is.
         // Used to convert from Moodle grade to MyGrades format.
-        $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitemid);
+        $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
 
         $userids = $userlist;
@@ -94,7 +94,7 @@ class import_grades_users extends external_api {
             if (\local_gugrades\api::import_grade(
                 $courseid,
                 $gradeitemid,
-                $conversion,
+                $mapping,
                 $activity,
                 intval($userid),
                 $additional,

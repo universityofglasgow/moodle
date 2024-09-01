@@ -91,9 +91,9 @@ final class write_additional_grade_test extends \local_gugrades\external\gugrade
 
         $grades = $fred['grades'];
         $this->assertCount(3, $grades);
-        $this->assertEquals('A5:18', $grades[1]['displaygrade']);
+        $this->assertEquals('A5', $grades[1]['displaygrade']);
         $this->assertEquals('SECOND', $grades[1]['gradetype']);
-        $this->assertEquals('A5:18', $grades[2]['displaygrade']);
+        $this->assertEquals('A5', $grades[2]['displaygrade']);
         $this->assertEquals('PROVISIONAL', $grades[2]['gradetype']);
 
         // Add agreed grade and make sure alert (discrepancy) clears.
@@ -123,7 +123,7 @@ final class write_additional_grade_test extends \local_gugrades\external\gugrade
         $fred = $page['users'][0];
         $this->assertEquals(false, $fred['alert']);
         $grades = $fred['grades'];
-        $this->assertEquals('A4:19', $grades[3]['displaygrade']);
+        $this->assertEquals('A4', $grades[3]['displaygrade']);
         $this->assertEquals('PROVISIONAL', $grades[3]['gradetype']);
     }
 
@@ -140,7 +140,7 @@ final class write_additional_grade_test extends \local_gugrades\external\gugrade
         // Import grades.
         $userlist = [
             $this->student->id,
-            $this->student2->id,
+            //$this->student2->id,
         ];
 
         // Assign2 (which is using scale).

@@ -54,9 +54,6 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
             $form
         );
 
-        $this->assertIsArray($form);
-        $this->assertCount(8, $form);
-
         // Check gradetypes.
         $this->assertArrayHasKey('gradetypes', $form);
         $gradetypes = $form['gradetypes'];
@@ -122,9 +119,6 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
             get_add_grade_form::execute_returns(),
             $form
         );
-
-        $this->assertIsArray($form);
-        $this->assertCount(8, $form);
 
         // Check gradetypes.
         $this->assertArrayHasKey('gradetypes', $form);

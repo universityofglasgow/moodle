@@ -142,7 +142,7 @@ final class get_grade_item_test extends \local_gugrades\external\gugrades_advanc
 
         $this->assertEquals('Second Level', $item['itemname']);
         $this->assertEquals('Grade category', $item['itemtype']);
-        $this->assertFalse($item['isscale']);
+        $this->assertTrue($item['isscale']);
         $this->assertEquals(22, $item['grademax']);
         $this->assertTrue($item['categoryerror']);
     }

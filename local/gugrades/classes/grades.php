@@ -721,14 +721,14 @@ class grades {
         }
 
         // There has to be a first column.
-        $conversion = self::conversion_factory($courseid, $gradeitemid);
+        $mapping = self::mapping_factory($courseid, $gradeitemid);
         if (!in_array('FIRST', array_column($columns, 'gradetype'))) {
             $firstcolumn = (object)[
                 'id' => 0,
                 'gradetype' => 'FIRST',
                 'description' => gradetype::get_description('FIRST'),
                 'other' => '',
-                'points' => !$conversion->is_scale(),
+                'points' => !$mapping->is_scale(),
             ];
             array_unshift($columns, $firstcolumn);
         }
@@ -752,15 +752,14 @@ class grades {
     }
 
     /**
-     * Factory for conversion class
-     * This means conversion on import, rather than conversion conversion (sorry for confusion)
+     * Factory for mapping class
      * TODO: May need some improvement in detecting correct/supported grade (type)
      * The name of the class is in the scaletype table.
      * @param int $courseid
      * @param int $gradeitemid
      * @return object
      */
-    public static function conversion_factory(int $courseid, int $gradeitemid) {
+    public static function mapping_factory(int $courseid, int $gradeitemid) {
         global $DB;
 
         $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
@@ -781,7 +780,7 @@ class grades {
                 $type = 'points';
             }
 
-            $classname = 'local_gugrades\\conversion\\' . $type;
+            $classname = 'local_gugrades\\mapping\\' . $type;
             return new $classname($courseid, $gradeitemid);
         }
 
@@ -794,7 +793,7 @@ class grades {
             $mapitem = $DB->get_record('local_gugrades_map_item', ['gradeitemid' => $gradeitemid], '*', MUST_EXIST);
             $map = $DB->get_record('local_gugrades_map', ['id' => $mapitem->mapid], '*', MUST_EXIST);
 
-            $classname = 'local_gugrades\\conversion\\' . $map->scale;
+            $classname = 'local_gugrades\\mapping\\' . $map->scale;
             if (!class_exists($classname, true)) {
                 throw new \moodle_exception('Unknown conversion class - "' . $map->scale . '"');
             }
@@ -805,11 +804,11 @@ class grades {
 
             // See if scale is in our scaletype table.
             if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $gradeitem->scaleid])) {
-                throw new \moodle_exception('Unsupported scale in conversion_factory. ID = ' . $gradeitem->scaleid);
+                throw new \moodle_exception('Unsupported scale in mapping_factory. ID = ' . $gradeitem->scaleid);
             }
 
             // Get the name of the class and see if it exists.
-            $classname = 'local_gugrades\\conversion\\' . $scaletype->type;
+            $classname = 'local_gugrades\\mapping\\' . $scaletype->type;
             if (!class_exists($classname, true)) {
                 throw new \moodle_exception('Unknown conversion class - "' . $scaletype->scale . '"');
             }
@@ -820,11 +819,11 @@ class grades {
             // It's points. BUT... *special case*
             // Grading out of 0 to 22 is a proxy for Schedule A.
             if (($gradeitem->grademin == 0) && ($gradeitem->grademax == 22)) {
-                return new \local_gugrades\conversion\schedulea($courseid, $gradeitemid, false, true);
+                return new \local_gugrades\mapping\schedulea($courseid, $gradeitemid, false, true);
             }
 
             // We're assuming it's a points scale (already checked for weird, unsupported types).
-            return new \local_gugrades\conversion\points($courseid, $gradeitemid);
+            return new \local_gugrades\mapping\points($courseid, $gradeitemid);
         }
     }
 

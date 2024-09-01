@@ -204,7 +204,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         ];
 
         // Install test data for student.
-        $this->load_data('data1b', $this->student->id);
+        $this->load_data('data1c', $this->student->id);
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
