@@ -192,20 +192,6 @@
             reason.value = 'CATEGORY';
         }
 
-        window.console.log('HERE');
-
-        window.console.log({
-                courseid: courseid,
-                gradeitemid: props.itemid,
-                userid: props.userid,
-                admingrade: admingrade.value == 'GRADE' ? '' : admingrade.value,
-                reason: reason.value,
-                other: other.value,
-                scale: scale.value ? scale.value : 0, // WS expecting int
-                grade: grade.value,
-                notes: notes.value,
-            });
-
         fetchMany([{
             methodname: 'local_gugrades_write_additional_grade',
             args: {

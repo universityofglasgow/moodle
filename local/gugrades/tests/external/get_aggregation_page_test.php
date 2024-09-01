@@ -630,4 +630,90 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('72.5', $users[0]['displaygrade']);
         $this->assertEquals(72.5, $users[0]['rawgrade']);
     }
+
+    /**
+     * Test get_add_grade_form for aggregated categories, scheduleb
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     */
+    public function test_override_category_scheduleb(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1a', $this->student->id);
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Get categoryid for 'Summer exam' which should be Points
+        $bexamid = $this->get_grade_category('Schedule B exam');
+
+        // Get aggregation page for above.
+        $page = get_aggregation_page::execute($this->course->id, $bexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Get corresponding itemid for summerexam
+        $bexamitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $bexamid], '*', MUST_EXIST);
+
+        // Get the corresponding form for this category
+        $form = get_add_grade_form::execute($this->course->id, $bexamitem->id, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        // This should reflect Schedule A.
+        $this->assertTrue($form['usescale']);
+        $this->assertTrue($form['iscategory']);
+        $this->assertEquals('Schedule B exam', $form['itemname']);
+        $this->assertCount(8, $form['scalemenu']);
+        $this->assertCount(9, $form['gradetypes']);
+        $this->assertCount(5, $form['adminmenu']);
+
+        // Write a new grade for this category.
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $bexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          17,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page for above.
+        $page = get_aggregation_page::execute($this->course->id, $bexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertEquals('B', $page['atype']);
+        $users = $page['users'];
+        $this->assertEquals('B0', $users[0]['displaygrade']);
+        $this->assertEquals(17, $users[0]['rawgrade']);
+    }
 }

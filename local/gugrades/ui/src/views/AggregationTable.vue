@@ -62,7 +62,7 @@
             <!-- additional information in header cells -->
             <template #header="header">
                 <div v-if="header.value == 'back'">
-                    <a class="text-white" href="#" @click="expand_clicked(backid)" data-toggle="tooltip" data-placement="bottom" :title="mstrings.goback">
+                    <a class="text-white" href="#" @click="expand_clicked(backid)">
                         <i class="fa fa-arrow-circle-left fa-xl" aria-hidden="true"></i>
                     </a>
                 </div>
