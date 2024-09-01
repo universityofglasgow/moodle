@@ -26,7 +26,6 @@
     import HistoryButton from '@/components/Capture/HistoryButton.vue';
     import AddGradeButton from '@/components/Capture/AddGradeButton.vue';
     import HideShowButton from '@/components/Capture/HideShowButton.vue';
-    import OverrideCategoryButton from '@/components/Aggregation/OverrideCategoryButton.vue'
 
     const props = defineProps({
         userid: Number,

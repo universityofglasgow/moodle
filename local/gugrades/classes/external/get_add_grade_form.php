@@ -89,6 +89,7 @@ class get_add_grade_form extends external_api {
             'itemname' => new external_value(PARAM_TEXT, 'Grade item name'),
             'fullname' => new external_value(PARAM_TEXT, 'User full name'),
             'idnumber' => new external_value(PARAM_TEXT, 'User ID number'),
+            'iscategory' => new external_value(PARAM_BOOL, 'Is this a category (being overriden)?'),
             'usescale' => new external_value(PARAM_BOOL, 'Is it a scale (true) or value/points (false)'),
             'grademax' => new external_value(PARAM_FLOAT, 'Maximum grade value - or 0 if not value'),
             'scalemenu' => new external_multiple_structure(

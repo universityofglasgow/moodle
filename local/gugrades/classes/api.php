@@ -849,6 +849,7 @@ class api {
             'fullname' => fullname($user),
             'idnumber' => $user->idnumber,
             'usescale' => $isscale,
+            'iscategory' => true,
             'grademax' => $category->grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -937,6 +938,7 @@ class api {
             'fullname' => fullname($user),
             'idnumber' => $user->idnumber,
             'usescale' => $conversion->is_scale() || $converted,
+            'iscategory' => false,
             'grademax' => $grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -1008,8 +1010,9 @@ class api {
         $form = self::get_add_grade_form($courseid, $gradeitemid, $userid);
 
         // Check 'reason' is valid.
+        // Pseudo-reason of CATEGORY is permitted.
         $gradetypes = $form['rawgradetypes'];
-        if (!array_key_exists($reason, $gradetypes)) {
+        if (!array_key_exists($reason, $gradetypes) && ($reason != 'CATEGORY')) {
             throw new \moodle_exception('Attempting to write invalid reason - "' . $reason . '"');
         }
 
@@ -1047,18 +1050,33 @@ class api {
             $rawgrade = 0;
             $convertedgrade = 0.0;
             $displaygrade = $admingrade;
+        } else if ($usescale) {
+            $displaygrade = $conversion->get_band($scale);
+            $rawgrade = $scale;
+            $convertedgrade = $scale;
+        } else {
+            $displaygrade = $grade;
+            $rawgrade = $grade;
+            $convertedgrade = $grade;
+        }
+
+        /*
         } else if ($conversion->is_conversion()) {
-            list($convertedgrade, $displaygrade) = $conversion->import($scale);
+            [$convertedgrade, $displaygrade] = $conversion->import($scale);
             $rawgrade = $scale;
         } else if ($usescale) {
 
             // TODO: Check! +1 because internal values are 1 - based, our form is 0 - based.
-            list($convertedgrade, $displaygrade) = $conversion->import($scale + 1);
+            [$convertedgrade, $displaygrade] = $conversion->import($scale + 1);
             $rawgrade = $scale + 1;
         } else {
-            list($convertedgrade, $displaygrade) = $conversion->import($grade);
+            [$convertedgrade, $displaygrade] = $conversion->import($grade);
             $rawgrade = $grade;
         }
+        */
+
+        // If we're overriding a category then set the override bit
+        $catoverride = $reason == 'CATEGORY';
 
         // Happy as we're going to get, so write the new data.
         \local_gugrades\grades::write_grade(
@@ -1076,6 +1094,8 @@ class api {
             iserror:        false,
             auditcomment:   $notes,
             ispoints:       !$conversion->is_scale(),
+            overwrite:      false,
+            catoverride:    $catoverride,
         );
 
         // Re-aggregate this user
@@ -1434,6 +1454,12 @@ class api {
         }
         $DB->delete_records('local_gugrades_map_item', ['courseid' => $courseid]);
         $DB->delete_records('local_gugrades_map', ['courseid' => $courseid]);
+
+        // Delete resit required.
+        $DB->delete_records('local_gugrades_resitrequired', ['courseid' => $courseid]);
+
+        // Delete hidden.
+        $DB->delete_records('local_gugrades_hidden', ['courseid' => $courseid]);
 
         // Clear cache items for this course.
         \local_gugrades\aggregation::invalidate_cache($courseid);

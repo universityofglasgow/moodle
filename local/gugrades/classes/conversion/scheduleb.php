@@ -49,14 +49,18 @@ class scheduleb extends base {
         // If converted, use the built-in grade.
         if (!$converted) {
 
-            // Get scale.
-            $scale = $DB->get_record('scale', ['id' => $this->gradeitem->scaleid], '*', MUST_EXIST);
-            $this->scaleitems = array_map('trim', explode(',', $scale->scale));
+            // Get scale. Use internal map if not found.
+            if (!$scale = $DB->get_record('scale', ['id' => $this->gradeitem->scaleid])) {
+                $map = $this->get_map();
+                $this->items = array_flip($map);
+            } else {
+                $this->scaleitems = array_map('trim', explode(',', $scale->scale));
 
-            // Get scale conversion.
-            $items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $this->gradeitem->scaleid]);
-            foreach ($items as $item) {
-                $this->items[$item->item] = $item->value;
+                // Get scale conversion.
+                $items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $this->gradeitem->scaleid]);
+                foreach ($items as $item) {
+                    $this->items[$item->item] = $item->value;
+                }
             }
         }
     }

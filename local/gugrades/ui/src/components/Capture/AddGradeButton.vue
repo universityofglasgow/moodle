@@ -13,6 +13,7 @@
         </ul>
         <FormKit class="border rounded" type="form"  @submit="submit_form">
             <FormKit
+                v-if="!iscategory"
                 type="select"
                 outer-class="mb-3"
                 :label="mstrings.reasonforadditionalgrade"
@@ -102,6 +103,7 @@
     const notes = ref('');
     const other = ref('');
     const usescale = ref(false);
+    const iscategory = ref(false);
     const grademax = ref(0);
     const scalemenu = ref([]);
     const adminmenu = ref([]);
@@ -149,12 +151,13 @@
             }
         }])[0]
         .then((result) => {
-            gradetypes.value = result['gradetypes'];
-            idnumber.value = result['idnumber'];
-            usescale.value = result['usescale'];
-            grademax.value = result['grademax'];
-            scalemenu.value = result['scalemenu'];
-            adminmenu.value = result['adminmenu'];
+            gradetypes.value = result.gradetypes;
+            idnumber.value = result.idnumber;
+            usescale.value = result.usescale;
+            iscategory.value = result.iscategory;
+            grademax.value = result.grademax;
+            scalemenu.value = result.scalemenu;
+            adminmenu.value = result.adminmenu;
 
             // Add 'use grade' option onto front of adminmenu
             adminmenu.value.unshift({
@@ -183,6 +186,25 @@
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
+
+        // We don't ask for the reason if a category. So...
+        if (iscategory.value) {
+            reason.value = 'CATEGORY';
+        }
+
+        window.console.log('HERE');
+
+        window.console.log({
+                courseid: courseid,
+                gradeitemid: props.itemid,
+                userid: props.userid,
+                admingrade: admingrade.value == 'GRADE' ? '' : admingrade.value,
+                reason: reason.value,
+                other: other.value,
+                scale: scale.value ? scale.value : 0, // WS expecting int
+                grade: grade.value,
+                notes: notes.value,
+            });
 
         fetchMany([{
             methodname: 'local_gugrades_write_additional_grade',

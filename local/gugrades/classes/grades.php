@@ -341,6 +341,7 @@ class grades {
      * @param string $auditcomment
      * @param bool $ispoints
      * @param bool $overwrite
+     * @param bool $catoverride
      */
     public static function write_grade(
         int $courseid,
@@ -357,14 +358,29 @@ class grades {
         bool $iserror,
         string $auditcomment,
         bool $ispoints,
-        bool $overwrite = false
+        bool $overwrite = false,
+        bool $catoverride = false
     ) {
         global $DB, $USER;
+
+        // Sanity
+        if ($catoverride && ($gradetype != 'CATEGORY')) {
+            throw new \moodle_exception('catoverride true when gradetype sis not CATEGORY');
+        }
 
         // Get/create the column entry.
         $column = self::get_column($courseid, $gradeitemid, $gradetype, $other, $ispoints);
 
-        // Does this already exist.
+        // If this is CATEGORY and there's a corresponding 'catoverride' record then we don't
+        // attempt to write anything new.
+        if ($gradetype == 'CATEGORY') {
+            if ($DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'columnid' => $column->id, 'catoverride' => 1])) {
+                return;
+            }
+        }
+
+        // Does this already exist?
+        // The plan is not to touch catoverride that already exists.
         $gradetypecompare = $DB->sql_compare_text('gradetype');
         $sql = 'SELECT * FROM {local_gugrades_grade}
             WHERE courseid = :courseid
@@ -372,6 +388,7 @@ class grades {
             AND userid = :userid
             AND iscurrent = :iscurrent
             AND columnid = :columnid
+            AND catoverride = 0
             AND ' . $gradetypecompare . ' = :gradetype';
         if ($oldgrades = $DB->get_records_sql($sql, [
             'courseid' => $courseid,
@@ -407,6 +424,7 @@ class grades {
                 $gugrade->audittimecreated = time();
                 $gugrade->auditcomment = $auditcomment;
                 $gugrade->points = $ispoints;
+                $gugrade->catoverride = $catoverride;
 
                 $DB->update_record('local_gugrades_grade', $gugrade);
 
@@ -432,6 +450,7 @@ class grades {
         $gugrade->audittimecreated = time();
         $gugrade->auditcomment = $auditcomment;
         $gugrade->points = $ispoints;
+        $gugrade->catoverride = $catoverride;
         $DB->insert_record('local_gugrades_grade', $gugrade);
     }
 
@@ -746,6 +765,25 @@ class grades {
 
         $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
         $gradetype = $gradeitem->gradetype;
+
+        // Is it a category?
+        if ($gradeitem->itemtype == 'category') {
+
+            // Get the aggregated category
+            $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradeitem->iteminstance);
+
+            // Use the category 'atype' to determine correct class
+            if ($category->atype == 'A') {
+                $type = 'schedulea';
+            } else if ($category->atype == 'B') {
+                $type = 'scheduleb';
+            } else {
+                $type = 'points';
+            }
+
+            $classname = 'local_gugrades\\conversion\\' . $type;
+            return new $classname($courseid, $gradeitemid);
+        }
 
         // Has it been converted?
         $converted = \local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid);

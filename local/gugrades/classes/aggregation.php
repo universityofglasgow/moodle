@@ -819,6 +819,7 @@ class aggregation {
             $rawgrade = $category->rawgrade;
         }
 
+        // NOTE: If category grade has been overridden then we cannot update it. It's 'sticky'.
         \local_gugrades\grades::write_grade(
             courseid:       $courseid,
             gradeitemid:    $category->itemid,

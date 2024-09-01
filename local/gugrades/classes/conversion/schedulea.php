@@ -63,14 +63,18 @@ class schedulea extends base {
 
             // If converted, use the built-in grade.
 
-            // Get scale.
-            $scale = $DB->get_record('scale', ['id' => $this->gradeitem->scaleid], '*', MUST_EXIST);
-            $this->scaleitems = array_map('trim', explode(',', $scale->scale));
+            // Get scale. If it doesn't exist, use the internal map
+            if (!$scale = $DB->get_record('scale', ['id' => $this->gradeitem->scaleid])) {
+                $map = $this->get_map();
+                $this->items = array_flip($map);
+            } else {
+                $this->scaleitems = array_map('trim', explode(',', $scale->scale));
 
-            // Get scale conversion.
-            $items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $this->gradeitem->scaleid]);
-            foreach ($items as $item) {
-                $this->items[$item->item] = $item->value;
+                // Get scale conversion.
+                $items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $this->gradeitem->scaleid]);
+                foreach ($items as $item) {
+                    $this->items[$item->item] = $item->value;
+                }
             }
         }
     }
@@ -159,7 +163,7 @@ class schedulea extends base {
         $grade = round($floatgrade);
 
         // If converted OR maxgrade=22.
-        if ($this->converted || $this->exactgrade22) {
+        if ($this->converted || $this->exactgrade22 || !$this->scaleitems) {
             $map = $this->get_map();
             if (!array_key_exists($grade, $map)) {
                 throw new \moodle_exception('Grade ' . $grade . 'is not in Schedule A');

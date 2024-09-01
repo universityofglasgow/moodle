@@ -91,7 +91,13 @@ abstract class base {
      * @return int
      */
     public function get_gradecategoryid() {
-        return $this->gradeitem->categoryid;
+        if (!empty($this->gradeitem->categoryid)) {
+            return $this->gradeitem->categoryid;
+        } else if ($this->gradeitem->itemtype == 'category') {
+            return $this->gradeitem->iteminstance;
+        } else {
+            throw new \moodle_exception('Cannot locate gradecategoryid');
+        }
     }
 
     /**
@@ -164,6 +170,21 @@ abstract class base {
      */
     public function validate(float $grade) {
         return ($grade >= $this->gradeitem->grademin) && ($grade <= $this->gradeitem->grademax);
+    }
+
+    /**
+     * Get the band (A1, A2...) from its value
+     * @param int $grade
+     * @return $string
+     */
+    public function get_band(int $grade) {
+        $map = $this->get_map();
+
+        if (!array_key_exists($grade, $map)) {
+            throw new \moodle_exception('Invalid grade - for scale');
+        }
+
+        return $map[$grade];
     }
 
     /**
