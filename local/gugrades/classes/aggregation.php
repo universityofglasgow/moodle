@@ -859,6 +859,29 @@ class aggregation {
     }
 
     /**
+     * Get overidden category (or not)
+     * @param int $itemid
+     * @param int $userid
+     * @return object | false
+     */
+    protected static function get_overridden_category(int $itemid, int $userid) {
+        global $DB;
+
+        if ($grade = $DB->get_record('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid, 'catoverride' => 1])) {
+            return [
+                $grade->rawgrade,
+                $grade->rawgrade,
+                $grade->admingrade,
+                $grade->displaygrade,
+                0,
+                '',
+            ];
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Aggregate user data recursively
      * (starting with current category)
      * Returning array of category totals for that user
@@ -892,9 +915,15 @@ class aggregation {
             // If this is itself a grade category then we need to recurse to get the aggregated total
             // of this category (and any error). Call with the 'child' segment of the category tree.
             if ($child->iscategory) {
-                [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = self::aggregate_user(
-                    $courseid, $child, $userid, $level + 1
-                );
+
+                // Is the category overridden? Nothing more to do if it is.
+                if ($overriddencategory = self::get_overridden_category($child->itemid, $userid)) {
+                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = $overriddencategory;
+                } else {
+                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = self::aggregate_user(
+                        $courseid, $child, $userid, $level + 1
+                    );
+                }
                 $item = (object)[
                     'itemid' => $child->itemid,
                     'categoryid' => $child->categoryid,

@@ -716,4 +716,103 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('B0', $users[0]['displaygrade']);
         $this->assertEquals(17, $users[0]['rawgrade']);
     }
+
+    /**
+     * Test that overriding lower category aggregates properly in
+     * current category
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     */
+    public function test_override_category_aggregation(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1d', $this->student->id);
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Get categoryid and item idfor 'Scale exam' which should be Schedule A
+        $scaleexamid = $this->get_grade_category('Scale exam');
+        $scaleexamitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $scaleexamid], '*', MUST_EXIST);
+
+        // Get aggregation page for above.
+        $page = get_aggregation_page::execute($this->course->id, $scaleexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Confirm that Schedule B exam is grades missing
+        $this->assertFalse($page['toplevel']);
+        $users = $page['users'];
+        $this->assertEquals('Grades missing', $users[0]['displaygrade']);
+        $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
+        $this->assertEquals('Grades missing', $users[0]['fields'][0]['display']);
+
+        // Override (missing) grade in Schedule B exam
+        $bexamid = $this->get_grade_category('Schedule B exam');
+        $bexamitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $bexamid], '*', MUST_EXIST);
+
+        // Get the corresponding form for this category
+        $form = get_add_grade_form::execute($this->course->id, $bexamitem->id, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        // This should reflect Schedule A.
+        $this->assertTrue($form['usescale']);
+        $this->assertTrue($form['iscategory']);
+        $this->assertEquals('Schedule B exam', $form['itemname']);
+        $this->assertCount(8, $form['scalemenu']);
+        $this->assertCount(9, $form['gradetypes']);
+        $this->assertCount(5, $form['adminmenu']);
+
+        // Write a new grade for this category.
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $bexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          17, // B0.
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page for the original scale exam category.
+        // Make sure above grade has added and scale exam has aggregated.
+        $page = get_aggregation_page::execute($this->course->id, $scaleexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertEquals('A', $page['atype']);
+        $users = $page['users'];
+        $this->assertEquals('C1', $users[0]['displaygrade']);
+        $this->assertEquals(14.35897, $users[0]['rawgrade']);
+        $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
+        $this->assertEquals('B0', $users[0]['fields'][0]['display']);
+    }
 }
