@@ -115,6 +115,7 @@ class get_aggregation_page extends external_api {
                     'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
                     'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
                     'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
+                    'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
                     'error' => new external_value(PARAM_TEXT, 'Error condition'),
                     'fields' => new external_multiple_structure(
                         new external_single_structure([
@@ -124,6 +125,7 @@ class get_aggregation_page extends external_api {
                             'dropped' => new external_value(PARAM_BOOL, 'Has this grade been dropped?'),
                             'isadmin' => new external_value(PARAM_BOOL, 'Is this an admin grade (for styling purposes)?'),
                             'hidden' => new external_value(PARAM_BOOL, 'Is grade hidden?'),
+                            'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
                         ])
                     ),
                 ])

@@ -296,6 +296,7 @@ class aggregation {
                 'dropped' => false,
                 'isadmin' => false,
                 'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
+                'overridden' => false,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
@@ -307,6 +308,7 @@ class aggregation {
                 $data['admingrade'] = $provisional->admingrade;
                 $data['dropped'] = $provisional->dropped;
                 $data['isadmin'] = !empty($provisional->admingrade);
+                $data['overridden'] = $provisional->catoverride;
             } else {
                 $data['display'] = get_string('nodata', 'local_gugrades');
             }
@@ -333,6 +335,7 @@ class aggregation {
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
         $user->error = $item->auditcomment;
+        $user->overridden = $item->catoverride;
 
         return $user;
     }

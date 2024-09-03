@@ -102,7 +102,7 @@
                 <!-- strikethrough if data is dropped -->
                 <!-- bold if admin -->
                 <!-- there HAS to be an easier way -->
-                <span :class="hiddenclasses(item[header.value].hidden)">
+                <span :class="itemclasses(item[header.value])">
                     <s v-if="item[header.value].dropped">
                         <b v-if="item[header.value].isadmin">{{ item[header.value].data }}</b>
                         <span v-else>{{ item[header.value].data }}</span>
@@ -203,17 +203,18 @@
     let lastname = '';
 
     /**
-     * Hidden border
+     * Work out border classes for item
      */
-    function hiddenclasses(hidden) {
-        if (hidden) {
-            return [
-                'border', 'border-warning', 'rounded', 'p-1'
-            ];
-        } else {
-            return [];
+    function itemclasses(item) {
+        if (item.overridden) {
+            window.console.log('HERE');
+            return ['border', 'border-danger', 'rounded', 'p-1']
         }
-    };
+        if (item.hidden) {
+            return ['border', 'border-warning', 'rounded', 'p-1']
+        }
+        return [];
+    }
 
     /**
      * Capture change to top level category dropdown
@@ -285,7 +286,8 @@
                     data: field.display,
                     dropped: field.dropped,
                     isadmin: field.isadmin,
-                    hidden: field.hidden
+                    hidden: field.hidden,
+                    overridden: field.overridden,
                 };
             })
         });
@@ -302,7 +304,8 @@
                     data: field.display,
                     dropped: field.dropped,
                     isadmin: field.isadmin,
-                    hidden: field.hidden
+                    hidden: field.hidden,
+                    overridden: field.overridden,
                 };
         });
 

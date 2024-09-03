@@ -814,5 +814,16 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals(14.35897, $users[0]['rawgrade']);
         $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
         $this->assertEquals('B0', $users[0]['fields'][0]['display']);
+        $this->assertTrue($users[0]['fields'][0]['overridden']);
+
+        // Get additional grade form for Schedule B exam
+        // Check it is marked as overridden.
+        $form = get_add_grade_form::execute($this->course->id, $bexamitem->id, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        $this->assertTrue($form['overridden']);
     }
 }

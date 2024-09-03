@@ -10,6 +10,7 @@
             <li><b>{{ mstrings.username }}:</b> {{ name }}</li>
             <li><b>{{ mstrings.idnumber }}:</b> {{ idnumber }}</li>
             <li>{{ reason }}</li>
+            <li v-if="overridden">Overridden</li>
         </ul>
         <FormKit class="border rounded" type="form"  @submit="submit_form">
             <FormKit
@@ -104,6 +105,7 @@
     const other = ref('');
     const usescale = ref(false);
     const iscategory = ref(false);
+    const overridden = ref(false);
     const grademax = ref(0);
     const scalemenu = ref([]);
     const adminmenu = ref([]);
@@ -155,6 +157,7 @@
             idnumber.value = result.idnumber;
             usescale.value = result.usescale;
             iscategory.value = result.iscategory;
+            overridden.value = result.overridden;
             grademax.value = result.grademax;
             scalemenu.value = result.scalemenu;
             adminmenu.value = result.adminmenu;

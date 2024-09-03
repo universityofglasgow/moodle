@@ -845,6 +845,10 @@ class api {
         $admingrades = \local_gugrades\admin_grades::get_menu();
         $adminmenu = self::formkit_menu($admingrades, true);
 
+        // Is this already overridden in grade table
+        $overridden = $DB->record_exists('local_gugrades_grade',
+            ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'iscurrent' => 1, 'catoverride' => 1]);
+
         return [
             'gradetypes' => $wsgradetypes,
             'rawgradetypes' => $gradetypes,
@@ -853,6 +857,7 @@ class api {
             'idnumber' => $user->idnumber,
             'usescale' => $isscale,
             'iscategory' => true,
+            'overridden' => $overridden,
             'grademax' => $category->grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -942,6 +947,7 @@ class api {
             'idnumber' => $user->idnumber,
             'usescale' => $mapping->is_scale() || $converted,
             'iscategory' => false,
+            'overridden' => false,
             'grademax' => $grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,

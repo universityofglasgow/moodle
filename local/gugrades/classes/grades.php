@@ -893,7 +893,7 @@ class grades {
 
         $DB->delete_records('local_gugrades_grade', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_audit', ['gradeitemid' => $gradeitemid]);
-        $DB->delete_records('local_gugrades__column', ['gradeitemid' => $gradeitemid]);
+        $DB->delete_records('local_gugrades_column', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_hidden', ['gradeitemid' => $gradeitemid]);
     }
 
