@@ -107,8 +107,14 @@ class gradetype {
      * @return string
      */
     public static function get_description(string $gradetype) {
-        $gradetypes = self::define();
-        return $gradetypes[$gradetype] ?? '[[' . $gradetype . ']]';
+
+        // Just handle CATEGORY on its own for simplicity.
+        if ($gradetype == 'CATEGORY') {
+            return get_string('gradetypecategory', 'local_gugrades');
+        } else {
+            $gradetypes = self::define();
+            return $gradetypes[$gradetype] ?? '[[' . $gradetype . ']]';
+        }
     }
 
     /**

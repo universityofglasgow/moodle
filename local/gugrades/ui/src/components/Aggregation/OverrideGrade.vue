@@ -16,7 +16,8 @@
                 :name="props.name"
                 :itemname="props.itemname"
                 @gradeadded = "grade_added()">
-        </AddGradeButton>
+            </AddGradeButton>
+            <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
         </div>
     </span>
 </template>

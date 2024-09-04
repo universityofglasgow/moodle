@@ -133,6 +133,7 @@ $string['gradesunreleased'] = 'Grades successfully un-released';
 $string['gradetype'] = 'Grade type';
 $string['gradetypeagreed'] = 'Agreed grade';
 $string['gradetypecapped'] = 'Capped grade';
+$string['gradetypecategory'] = 'Category';
 $string['gradetypeconduct'] = 'Conduct penalty';
 $string['gradetypefirst'] = '1st grade';
 $string['gradetypegoodcause'] = 'Good cause claim';
