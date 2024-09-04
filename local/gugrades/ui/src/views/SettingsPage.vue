@@ -53,7 +53,6 @@
         .then((result) => {
             gradesreleased.value = result.gradesreleased;
             const enabled = result.enabled;
-            window.console.log(gradesreleased.value);
 
             // Bodge to get jQuery needed for Bootstrap JS.
             const $ = window.jQuery;

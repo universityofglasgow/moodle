@@ -10,9 +10,11 @@
             <li><b>{{ mstrings.username }}:</b> {{ name }}</li>
             <li><b>{{ mstrings.idnumber }}:</b> {{ idnumber }}</li>
             <li>{{ reason }}</li>
+            <li v-if="overridden"><b>{{ mstrings.categoryoverridden }}</b></li>
         </ul>
-        <FormKit class="border rounded" type="form"  @submit="submit_form">
+        <FormKit v-if="!overridden" class="border rounded" type="form"  @submit="submit_form">
             <FormKit
+                v-if="!iscategory"
                 type="select"
                 outer-class="mb-3"
                 :label="mstrings.reasonforadditionalgrade"
@@ -77,6 +79,13 @@
             />
         </FormKit>
 
+        <div v-if="overridden" class="border rounded mt-3 p-4">
+            <div class="alert alert-primary">
+                {{ mstrings.categoryremoveoverride }}
+            </div>
+            <a href="#" class="btn btn-primary" @click="removeoverride">{{ mstrings.remove }}</a>
+        </div>
+
         <div class="row mt-2">
             <div class="col-sm-12">
                 <div class="float-right">
@@ -102,6 +111,8 @@
     const notes = ref('');
     const other = ref('');
     const usescale = ref(false);
+    const iscategory = ref(false);
+    const overridden = ref(false);
     const grademax = ref(0);
     const scalemenu = ref([]);
     const adminmenu = ref([]);
@@ -149,12 +160,14 @@
             }
         }])[0]
         .then((result) => {
-            gradetypes.value = result['gradetypes'];
-            idnumber.value = result['idnumber'];
-            usescale.value = result['usescale'];
-            grademax.value = result['grademax'];
-            scalemenu.value = result['scalemenu'];
-            adminmenu.value = result['adminmenu'];
+            gradetypes.value = result.gradetypes;
+            idnumber.value = result.idnumber;
+            usescale.value = result.usescale;
+            iscategory.value = result.iscategory;
+            overridden.value = result.overridden;
+            grademax.value = result.grademax;
+            scalemenu.value = result.scalemenu;
+            adminmenu.value = result.adminmenu;
 
             // Add 'use grade' option onto front of adminmenu
             adminmenu.value.unshift({
@@ -184,6 +197,11 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        // We don't ask for the reason if a category. So...
+        if (iscategory.value) {
+            reason.value = 'CATEGORY';
+        }
+
         fetchMany([{
             methodname: 'local_gugrades_write_additional_grade',
             args: {
@@ -196,6 +214,43 @@
                 scale: scale.value ? scale.value : 0, // WS expecting int
                 grade: grade.value,
                 notes: notes.value,
+            }
+        }])[0]
+        .then(() => {
+            emit('gradeadded');
+            toast.success(mstrings.gradeadded);
+        })
+        .catch((error) => {
+            window.console.error(error);
+            toast.error('Error communicating with server (see console)');
+        });
+
+        // close the modal
+        showaddgrademodal.value = false;
+    }
+
+    /**
+     * Remove override button has been clicked
+     *
+     */
+    function removeoverride() {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        // Scale and grade are both 0 = remove override
+        fetchMany([{
+            methodname: 'local_gugrades_write_additional_grade',
+            args: {
+                courseid: courseid,
+                gradeitemid: props.itemid,
+                userid: props.userid,
+                admingrade: '',
+                reason: 'CATEGORY',
+                other: other.value,
+                scale: 0,
+                grade: 0,
+                notes: '',
             }
         }])[0]
         .then(() => {

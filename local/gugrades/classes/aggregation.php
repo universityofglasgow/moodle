@@ -165,17 +165,17 @@ class aggregation {
             ];
         }
         foreach ($gradeitems as $gradeitem) {
-            $conversion = \local_gugrades\grades::conversion_factory($courseid, $gradeitem->gradeitemid);
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitem->gradeitemid);
             $columns[] = (object)[
                 'fieldname' => 'AGG_' . $gradeitem->gradeitemid,
                 'gradeitemid' => $gradeitem->gradeitemid,
                 'categoryid' => 0,
                 'shortname' => $gradeitem->shortname,
                 'fullname' => $gradeitem->itemname,
-                'gradetype' => $conversion->name(),
-                'grademax' => $conversion->get_maximum_grade(),
-                'isscale' => $conversion->is_scale(),
-                'schedule' => $conversion->get_schedule(),
+                'gradetype' => $mapping->name(),
+                'grademax' => $mapping->get_maximum_grade(),
+                'isscale' => $mapping->is_scale(),
+                'schedule' => $mapping->get_schedule(),
                 'strategy' => '',
                 'strategyid' => 0,
 
@@ -296,6 +296,7 @@ class aggregation {
                 'dropped' => false,
                 'isadmin' => false,
                 'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
+                'overridden' => false,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
@@ -307,6 +308,7 @@ class aggregation {
                 $data['admingrade'] = $provisional->admingrade;
                 $data['dropped'] = $provisional->dropped;
                 $data['isadmin'] = !empty($provisional->admingrade);
+                $data['overridden'] = $provisional->catoverride;
             } else {
                 $data['display'] = get_string('nodata', 'local_gugrades');
             }
@@ -330,9 +332,11 @@ class aggregation {
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;
         $user->displaygrade = $item->displaygrade;
+        $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
         $user->error = $item->auditcomment;
+        $user->overridden = $item->catoverride;
 
         return $user;
     }
@@ -602,15 +606,15 @@ class aggregation {
 
             // Get the conversion object, so we can tell what sort of grade we're dealing with.
             if (!($node = $cache->get($item->id)) || $force) {
-                $conversion = \local_gugrades\grades::conversion_factory($courseid, $item->id);
+                $mapping = \local_gugrades\grades::mapping_factory($courseid, $item->id);
                 $node = (object)[
                     'itemid' => $item->id,
                     'name' => $item->itemname,
                     'iscategory' => false,
-                    'isscale' => $conversion->is_scale(),
-                    'schedule' => $conversion->get_schedule(),
+                    'isscale' => $mapping->is_scale(),
+                    'schedule' => $mapping->get_schedule(),
                     'weight' => $item->aggregationcoef,
-                    'grademax' => $conversion->get_grademax(),
+                    'grademax' => $mapping->get_grademax(),
                 ];
             }
 
@@ -819,6 +823,8 @@ class aggregation {
             $rawgrade = $category->rawgrade;
         }
 
+        // NOTE: If category grade has been overridden then we cannot update it. It's 'sticky'.
+        // We set overwrite=true to indicate this to write_grade().
         \local_gugrades\grades::write_grade(
             courseid:       $courseid,
             gradeitemid:    $category->itemid,
@@ -858,6 +864,29 @@ class aggregation {
     }
 
     /**
+     * Get overidden category (or not)
+     * @param int $itemid
+     * @param int $userid
+     * @return object | false
+     */
+    protected static function get_overridden_category(int $itemid, int $userid) {
+        global $DB;
+
+        if ($grade = $DB->get_record('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid, 'catoverride' => 1])) {
+            return [
+                $grade->rawgrade,
+                $grade->rawgrade,
+                $grade->admingrade,
+                $grade->displaygrade,
+                0,
+                '',
+            ];
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Aggregate user data recursively
      * (starting with current category)
      * Returning array of category totals for that user
@@ -891,9 +920,15 @@ class aggregation {
             // If this is itself a grade category then we need to recurse to get the aggregated total
             // of this category (and any error). Call with the 'child' segment of the category tree.
             if ($child->iscategory) {
-                [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = self::aggregate_user(
-                    $courseid, $child, $userid, $level + 1
-                );
+
+                // Is the category overridden? Nothing more to do if it is.
+                if ($overriddencategory = self::get_overridden_category($child->itemid, $userid)) {
+                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = $overriddencategory;
+                } else {
+                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = self::aggregate_user(
+                        $courseid, $child, $userid, $level + 1
+                    );
+                }
                 $item = (object)[
                     'itemid' => $child->itemid,
                     'categoryid' => $child->categoryid,

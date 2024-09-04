@@ -341,6 +341,7 @@ class grades {
      * @param string $auditcomment
      * @param bool $ispoints
      * @param bool $overwrite
+     * @param bool $catoverride
      */
     public static function write_grade(
         int $courseid,
@@ -357,35 +358,54 @@ class grades {
         bool $iserror,
         string $auditcomment,
         bool $ispoints,
-        bool $overwrite = false
+        bool $overwrite = false,
+        bool $catoverride = false
     ) {
         global $DB, $USER;
+
+        // Sanity
+        if ($catoverride && ($gradetype != 'CATEGORY')) {
+            throw new \moodle_exception('catoverride true when gradetype sis not CATEGORY');
+        }
 
         // Get/create the column entry.
         $column = self::get_column($courseid, $gradeitemid, $gradetype, $other, $ispoints);
 
-        // Does this already exist.
-        $gradetypecompare = $DB->sql_compare_text('gradetype');
-        $sql = 'SELECT * FROM {local_gugrades_grade}
-            WHERE courseid = :courseid
-            AND gradeitemid = :gradeitemid
-            AND userid = :userid
-            AND iscurrent = :iscurrent
-            AND columnid = :columnid
-            AND ' . $gradetypecompare . ' = :gradetype';
-        if ($oldgrades = $DB->get_records_sql($sql, [
-            'courseid' => $courseid,
-            'gradeitemid' => $gradeitemid,
-            'userid' => $userid,
-            'iscurrent' => true,
-            'columnid' => $column->id,
-            'gradetype' => $gradetype,
-        ])) {
-            foreach ($oldgrades as $oldgrade) {
+        // If this is CATEGORY and there's a corresponding 'catoverride' record then we don't
+        // attempt to write anything new.
+        if ($gradetype == 'CATEGORY') {
+            if ($DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'columnid' => $column->id, 'catoverride' => 1])) {
+                return;
+            }
+        }
 
-                // It's not current any more.
-                $oldgrade->iscurrent = false;
-                $DB->update_record('local_gugrades_grade', $oldgrade);
+        // Does this already exist?
+        // The plan is not to touch catoverride that already exists.
+        // Don't touch CATEGORY grades as these are made not current elsewhere.
+        if (!$overwrite) {
+            $gradetypecompare = $DB->sql_compare_text('gradetype');
+            $sql = 'SELECT * FROM {local_gugrades_grade}
+                WHERE courseid = :courseid
+                AND gradeitemid = :gradeitemid
+                AND userid = :userid
+                AND iscurrent = :iscurrent
+                AND columnid = :columnid
+                AND catoverride = 0
+                AND ' . $gradetypecompare . ' = :gradetype';
+            if ($oldgrades = $DB->get_records_sql($sql, [
+                'courseid' => $courseid,
+                'gradeitemid' => $gradeitemid,
+                'userid' => $userid,
+                'iscurrent' => true,
+                'columnid' => $column->id,
+                'gradetype' => $gradetype,
+            ])) {
+                foreach ($oldgrades as $oldgrade) {
+
+                    // It's not current any more.
+                    $oldgrade->iscurrent = false;
+                    $DB->update_record('local_gugrades_grade', $oldgrade);
+                }
             }
         }
 
@@ -393,7 +413,8 @@ class grades {
         if ($overwrite) {
 
             // Find the existing entry - if not, create a new one anyway
-            if ($gugrade = $DB->get_record('local_gugrades_grade', ['courseid' => $courseid, 'gradeitemid' => $gradeitemid, 'userid' => $userid, 'columnid' => $column->id])) {
+            if ($gugrade = $DB->get_record('local_gugrades_grade',
+                ['courseid' => $courseid, 'gradeitemid' => $gradeitemid, 'userid' => $userid, 'columnid' => $column->id, 'iscurrent' => 1])) {
                 $gugrade->rawgrade = $rawgrade;
                 $gugrade->admingrade = $admingrade;
                 $gugrade->convertedgrade = $convertedgrade;
@@ -407,6 +428,7 @@ class grades {
                 $gugrade->audittimecreated = time();
                 $gugrade->auditcomment = $auditcomment;
                 $gugrade->points = $ispoints;
+                $gugrade->catoverride = $catoverride;
 
                 $DB->update_record('local_gugrades_grade', $gugrade);
 
@@ -432,6 +454,7 @@ class grades {
         $gugrade->audittimecreated = time();
         $gugrade->auditcomment = $auditcomment;
         $gugrade->points = $ispoints;
+        $gugrade->catoverride = $catoverride;
         $DB->insert_record('local_gugrades_grade', $gugrade);
     }
 
@@ -702,14 +725,14 @@ class grades {
         }
 
         // There has to be a first column.
-        $conversion = self::conversion_factory($courseid, $gradeitemid);
+        $mapping = self::mapping_factory($courseid, $gradeitemid);
         if (!in_array('FIRST', array_column($columns, 'gradetype'))) {
             $firstcolumn = (object)[
                 'id' => 0,
                 'gradetype' => 'FIRST',
                 'description' => gradetype::get_description('FIRST'),
                 'other' => '',
-                'points' => !$conversion->is_scale(),
+                'points' => !$mapping->is_scale(),
             ];
             array_unshift($columns, $firstcolumn);
         }
@@ -733,19 +756,37 @@ class grades {
     }
 
     /**
-     * Factory for conversion class
-     * This means conversion on import, rather than conversion conversion (sorry for confusion)
+     * Factory for mapping class
      * TODO: May need some improvement in detecting correct/supported grade (type)
      * The name of the class is in the scaletype table.
      * @param int $courseid
      * @param int $gradeitemid
      * @return object
      */
-    public static function conversion_factory(int $courseid, int $gradeitemid) {
+    public static function mapping_factory(int $courseid, int $gradeitemid) {
         global $DB;
 
         $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
         $gradetype = $gradeitem->gradetype;
+
+        // Is it a category?
+        if ($gradeitem->itemtype == 'category') {
+
+            // Get the aggregated category
+            $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradeitem->iteminstance);
+
+            // Use the category 'atype' to determine correct class
+            if ($category->atype == 'A') {
+                $type = 'schedulea';
+            } else if ($category->atype == 'B') {
+                $type = 'scheduleb';
+            } else {
+                $type = 'points';
+            }
+
+            $classname = 'local_gugrades\\mapping\\' . $type;
+            return new $classname($courseid, $gradeitemid);
+        }
 
         // Has it been converted?
         $converted = \local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid);
@@ -756,7 +797,7 @@ class grades {
             $mapitem = $DB->get_record('local_gugrades_map_item', ['gradeitemid' => $gradeitemid], '*', MUST_EXIST);
             $map = $DB->get_record('local_gugrades_map', ['id' => $mapitem->mapid], '*', MUST_EXIST);
 
-            $classname = 'local_gugrades\\conversion\\' . $map->scale;
+            $classname = 'local_gugrades\\mapping\\' . $map->scale;
             if (!class_exists($classname, true)) {
                 throw new \moodle_exception('Unknown conversion class - "' . $map->scale . '"');
             }
@@ -767,11 +808,11 @@ class grades {
 
             // See if scale is in our scaletype table.
             if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $gradeitem->scaleid])) {
-                throw new \moodle_exception('Unsupported scale in conversion_factory. ID = ' . $gradeitem->scaleid);
+                throw new \moodle_exception('Unsupported scale in mapping_factory. ID = ' . $gradeitem->scaleid);
             }
 
             // Get the name of the class and see if it exists.
-            $classname = 'local_gugrades\\conversion\\' . $scaletype->type;
+            $classname = 'local_gugrades\\mapping\\' . $scaletype->type;
             if (!class_exists($classname, true)) {
                 throw new \moodle_exception('Unknown conversion class - "' . $scaletype->scale . '"');
             }
@@ -782,61 +823,12 @@ class grades {
             // It's points. BUT... *special case*
             // Grading out of 0 to 22 is a proxy for Schedule A.
             if (($gradeitem->grademin == 0) && ($gradeitem->grademax == 22)) {
-                return new \local_gugrades\conversion\schedulea($courseid, $gradeitemid, false, true);
+                return new \local_gugrades\mapping\schedulea($courseid, $gradeitemid, false, true);
             }
 
             // We're assuming it's a points scale (already checked for weird, unsupported types).
-            return new \local_gugrades\conversion\points($courseid, $gradeitemid);
+            return new \local_gugrades\mapping\points($courseid, $gradeitemid);
         }
-    }
-
-    /**
-     * Define ScheduleA "default" mapping
-     * @return array
-     */
-    private static function get_schedulea_map() {
-        return [
-            0 => 'H',
-            1 => 'G2',
-            2 => 'G1',
-            3 => 'F3',
-            4 => 'F2',
-            5 => 'F1',
-            6 => 'E3',
-            7 => 'E2',
-            8 => 'E1',
-            9 => 'D3',
-            10 => 'D2',
-            11 => 'D1',
-            12 => 'C3',
-            13 => 'C2',
-            14 => 'C1',
-            15 => 'B3',
-            16 => 'B2',
-            17 => 'B1',
-            18 => 'A5',
-            19 => 'A4',
-            20 => 'A3',
-            21 => 'A2',
-            22 => 'A1',
-        ];
-    }
-
-    /**
-     * Define ScheduleB "default" mapping
-     * @return array
-     */
-    private static function get_scheduleb_map() {
-        return [
-            0 => 'H',
-            2 => 'G0',
-            5 => 'F0',
-            8 => 'E0',
-            11 => 'D0',
-            14 => 'C0',
-            17 => 'B0',
-            22 => 'A0',
-        ];
     }
 
     /**
@@ -855,9 +847,9 @@ class grades {
         // Scaleid=0 used for grademax=22.
         if (!$scaleid) {
             if ($schedule == 'scheduleb') {
-                return self::get_scheduleb_map();
+                return \local_gugrades\mapping\scheduleb::get_map();
             } else {
-                return self::get_schedulea_map();
+                return \local_gugrades\mapping\schedulea::get_map();
             }
         }
 
@@ -905,7 +897,7 @@ class grades {
 
         $DB->delete_records('local_gugrades_grade', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_audit', ['gradeitemid' => $gradeitemid]);
-        $DB->delete_records('local_gugrades__column', ['gradeitemid' => $gradeitemid]);
+        $DB->delete_records('local_gugrades_column', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_hidden', ['gradeitemid' => $gradeitemid]);
     }
 
@@ -1015,6 +1007,29 @@ class grades {
             // Queue an adhoc-task
             $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
             \core\task\manager::queue_adhoc_task($task);
+        }
+    }
+
+    /**
+     * Remove category override
+     * @param int $gradeitemid
+     * @param int $userid
+     */
+    public static function remove_catoverride(int $gradeitemid, int $userid) {
+        global $DB;
+
+        /*
+        $grades = $DB->get_records('local_gugrades_grade',
+        ['gradeitemid' => $gradeitemid, 'gradetype' => 'CATEGORY', 'userid' => $userid, 'iscurrent' => 1]);
+    if (count($grades)>1) {
+    var_dump($grades); die;}
+    */
+
+        if ($grade = $DB->get_record('local_gugrades_grade',
+            ['gradeitemid' => $gradeitemid, 'gradetype' => 'CATEGORY', 'userid' => $userid, 'iscurrent' => 1])) {
+            $grade->catoverride = false;
+            $grade->iscurrent = false;
+            $DB->update_record('local_gugrades_grade', $grade);
         }
     }
 }
