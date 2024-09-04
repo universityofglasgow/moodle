@@ -332,6 +332,7 @@ class aggregation {
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;
         $user->displaygrade = $item->displaygrade;
+        $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
         $user->error = $item->auditcomment;
@@ -823,6 +824,7 @@ class aggregation {
         }
 
         // NOTE: If category grade has been overridden then we cannot update it. It's 'sticky'.
+        // We set overwrite=true to indicate this to write_grade().
         \local_gugrades\grades::write_grade(
             courseid:       $courseid,
             gradeitemid:    $category->itemid,

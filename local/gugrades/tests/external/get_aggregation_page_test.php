@@ -825,5 +825,67 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $this->assertTrue($form['overridden']);
+
+        // Remove the overridden grade for Schedule B (0 for grade and scale).
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $bexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          0,
+            grade:          0,
+            notes:          ''
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Check that the original data has re-aggregated.
+        $page = get_aggregation_page::execute($this->course->id, $scaleexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Confirm that Schedule B exam is grades missing
+        // How is was before the additional grade
+        $this->assertFalse($page['toplevel']);
+        $users = $page['users'];
+        $this->assertEquals('Grades missing', $users[0]['displaygrade']);
+        $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
+        $this->assertEquals('Grades missing', $users[0]['fields'][0]['display']);
+
+        // Write a ADMIN new grade for this category.
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $bexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     'MV',
+            scale:          0, // B0.
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page for the original scale exam category.
+        // Make sure above grade has added and scale exam has aggregated.
+        $page = get_aggregation_page::execute($this->course->id, $scaleexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $users = $page['users'];
+        $this->assertEquals('MV', $users[0]['displaygrade']);
+        $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
+        $this->assertEquals('MV', $users[0]['fields'][0]['display']);
     }
 }

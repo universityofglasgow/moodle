@@ -381,28 +381,31 @@ class grades {
 
         // Does this already exist?
         // The plan is not to touch catoverride that already exists.
-        $gradetypecompare = $DB->sql_compare_text('gradetype');
-        $sql = 'SELECT * FROM {local_gugrades_grade}
-            WHERE courseid = :courseid
-            AND gradeitemid = :gradeitemid
-            AND userid = :userid
-            AND iscurrent = :iscurrent
-            AND columnid = :columnid
-            AND catoverride = 0
-            AND ' . $gradetypecompare . ' = :gradetype';
-        if ($oldgrades = $DB->get_records_sql($sql, [
-            'courseid' => $courseid,
-            'gradeitemid' => $gradeitemid,
-            'userid' => $userid,
-            'iscurrent' => true,
-            'columnid' => $column->id,
-            'gradetype' => $gradetype,
-        ])) {
-            foreach ($oldgrades as $oldgrade) {
+        // Don't touch CATEGORY grades as these are made not current elsewhere.
+        if (!$overwrite) {
+            $gradetypecompare = $DB->sql_compare_text('gradetype');
+            $sql = 'SELECT * FROM {local_gugrades_grade}
+                WHERE courseid = :courseid
+                AND gradeitemid = :gradeitemid
+                AND userid = :userid
+                AND iscurrent = :iscurrent
+                AND columnid = :columnid
+                AND catoverride = 0
+                AND ' . $gradetypecompare . ' = :gradetype';
+            if ($oldgrades = $DB->get_records_sql($sql, [
+                'courseid' => $courseid,
+                'gradeitemid' => $gradeitemid,
+                'userid' => $userid,
+                'iscurrent' => true,
+                'columnid' => $column->id,
+                'gradetype' => $gradetype,
+            ])) {
+                foreach ($oldgrades as $oldgrade) {
 
-                // It's not current any more.
-                $oldgrade->iscurrent = false;
-                $DB->update_record('local_gugrades_grade', $oldgrade);
+                    // It's not current any more.
+                    $oldgrade->iscurrent = false;
+                    $DB->update_record('local_gugrades_grade', $oldgrade);
+                }
             }
         }
 
@@ -410,7 +413,8 @@ class grades {
         if ($overwrite) {
 
             // Find the existing entry - if not, create a new one anyway
-            if ($gugrade = $DB->get_record('local_gugrades_grade', ['courseid' => $courseid, 'gradeitemid' => $gradeitemid, 'userid' => $userid, 'columnid' => $column->id])) {
+            if ($gugrade = $DB->get_record('local_gugrades_grade',
+                ['courseid' => $courseid, 'gradeitemid' => $gradeitemid, 'userid' => $userid, 'columnid' => $column->id, 'iscurrent' => 1])) {
                 $gugrade->rawgrade = $rawgrade;
                 $gugrade->admingrade = $admingrade;
                 $gugrade->convertedgrade = $convertedgrade;
@@ -1003,6 +1007,29 @@ class grades {
             // Queue an adhoc-task
             $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
             \core\task\manager::queue_adhoc_task($task);
+        }
+    }
+
+    /**
+     * Remove category override
+     * @param int $gradeitemid
+     * @param int $userid
+     */
+    public static function remove_catoverride(int $gradeitemid, int $userid) {
+        global $DB;
+
+        /*
+        $grades = $DB->get_records('local_gugrades_grade',
+        ['gradeitemid' => $gradeitemid, 'gradetype' => 'CATEGORY', 'userid' => $userid, 'iscurrent' => 1]);
+    if (count($grades)>1) {
+    var_dump($grades); die;}
+    */
+
+        if ($grade = $DB->get_record('local_gugrades_grade',
+            ['gradeitemid' => $gradeitemid, 'gradetype' => 'CATEGORY', 'userid' => $userid, 'iscurrent' => 1])) {
+            $grade->catoverride = false;
+            $grade->iscurrent = false;
+            $DB->update_record('local_gugrades_grade', $grade);
         }
     }
 }

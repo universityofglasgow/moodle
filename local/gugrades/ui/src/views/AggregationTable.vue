@@ -207,7 +207,6 @@
      */
     function itemclasses(item) {
         if (item.overridden) {
-            window.console.log('HERE');
             return ['border', 'border-danger', 'rounded', 'p-1']
         }
         if (item.hidden) {

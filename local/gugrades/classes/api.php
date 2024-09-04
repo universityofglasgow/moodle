@@ -1087,25 +1087,33 @@ class api {
         // If we're overriding a category then set the override bit
         $catoverride = $reason == 'CATEGORY';
 
-        // Happy as we're going to get, so write the new data.
-        \local_gugrades\grades::write_grade(
-            courseid:       $courseid,
-            gradeitemid:    $gradeitemid,
-            userid:         $userid,
-            admingrade:     $admingrade,
-            rawgrade:       $rawgrade,
-            convertedgrade: $convertedgrade,
-            displaygrade:   $displaygrade,
-            weightedgrade:  0,
-            gradetype:      $reason,
-            other:          $other,
-            iscurrent:      true,
-            iserror:        false,
-            auditcomment:   $notes,
-            ispoints:       !$mapping->is_scale(),
-            overwrite:      false,
-            catoverride:    $catoverride,
-        );
+        // If cateoverride and both scale and grade are zero then
+        // we are removing the cat override and aggregating a new grade.
+        if ($catoverride && !$scale && !$grade && !$admingrade) {
+            \local_gugrades\grades::remove_catoverride($gradeitemid, $userid);
+        } else {
+
+            // Happy as we're going to get, so write the new data.
+            // overwrite is set to false to indicate that this is a 'new' grade
+            \local_gugrades\grades::write_grade(
+                courseid:       $courseid,
+                gradeitemid:    $gradeitemid,
+                userid:         $userid,
+                admingrade:     $admingrade,
+                rawgrade:       $rawgrade,
+                convertedgrade: $convertedgrade,
+                displaygrade:   $displaygrade,
+                weightedgrade:  0,
+                gradetype:      $reason,
+                other:          $other,
+                iscurrent:      true,
+                iserror:        false,
+                auditcomment:   $notes,
+                ispoints:       !$mapping->is_scale(),
+                overwrite:      false,
+                catoverride:    $catoverride,
+            );
+        }
 
         // Re-aggregate this user
         \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
