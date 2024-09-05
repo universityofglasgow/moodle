@@ -148,7 +148,7 @@
             <!-- Total -->
             <template #item-total="item">
                 <span v-if="item.error">{{ item.error }}</span>
-                <span v-else>{{ item.displaygrade }}</span>
+                <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
             </template>
 
         </EasyDataTable>
