@@ -392,8 +392,7 @@ class activity {
                                     foreach ($usergrades as $usergrade) {
                                         // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
                                         $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
-                                        $dateobj = \DateTime::createFromFormat('U', $activityduedate);
-                                        $duedate = $dateobj->format('jS F Y');
+                                        $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
                                         $rawduedate = $activityduedate;
                                         $statusclass = get_string('status_class_graded', 'block_newgu_spdetails');
                                         $statustext = get_string('status_text_graded', 'block_newgu_spdetails');

@@ -147,12 +147,12 @@ class game_activity extends base {
     }
 
     /**
-     * Return an empty string as this activity doesn't have any kind of due date.
+     * Return N/A as this activity doesn't have any kind of due date.
      *
      * @return string
      */
     public function get_formattedduedate(): string {
-        return '';
+        return 'N/A';
     }
 
     /**
@@ -171,8 +171,8 @@ class game_activity extends base {
         $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
         $statusobj->status_link = '';
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-        $statusobj->due_date = '';
-        $statusobj->raw_due_date = '';
+        $statusobj->due_date = 'N/A';
+        $statusobj->raw_due_date = 0;
         $statusobj->grade_date = '';
         $statusobj->grade_class = false;
 

@@ -240,8 +240,7 @@ class quiz_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }

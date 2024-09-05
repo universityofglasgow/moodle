@@ -152,8 +152,7 @@ class lesson_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -238,8 +237,8 @@ class lesson_activity extends base {
             $statusobj->due_date = $this->get_formattedduedate($statusobj->due_date);
             $statusobj->raw_due_date = $this->get_rawduedate();
         } else {
-            $statusobj->due_date = '';
-            $statusobj->raw_due_date = '';
+            $statusobj->due_date = 'N/A';
+            $statusobj->raw_due_date = 0;
         }
 
         return $statusobj;

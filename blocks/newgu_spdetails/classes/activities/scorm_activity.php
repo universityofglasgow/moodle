@@ -178,8 +178,7 @@ class scorm_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -206,7 +205,7 @@ class scorm_activity extends base {
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         $statusobj->grade_class = false;
         $statusobj->due_date = 'N/A';
-        $statusobj->raw_due_date = '';
+        $statusobj->raw_due_date = 0;
         $statusobj->grade_date = '';
 
         if ($allowsubmissionsfromdate > time()) {
@@ -252,7 +251,8 @@ class scorm_activity extends base {
             $statusobj->due_date = $this->get_formattedduedate($statusobj->due_date);
             $statusobj->raw_due_date = $statusobj->due_date;
         } else {
-            $statusobj->due_date = '';
+            $statusobj->due_date = 'N/A';
+            $statusobj->raw_due_date = 0;
         }
 
         return $statusobj;

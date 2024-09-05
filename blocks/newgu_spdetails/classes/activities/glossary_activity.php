@@ -135,8 +135,7 @@ class glossary_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -156,7 +155,8 @@ class glossary_activity extends base {
         $statusobj = new \stdClass();
         $statusobj->assessment_url = $this->get_assessmenturl();
         $statusobj->grade_date = '';
-        $statusobj->raw_due_date = '';
+        $statusobj->due_date = 'N/A';
+        $statusobj->raw_due_date = 0;
         $statusobj->grade_class = false;
 
         return $statusobj;
