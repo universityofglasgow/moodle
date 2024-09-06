@@ -173,15 +173,15 @@ class glossary_activity extends base {
 
         // Cache this query as it's going to get called for each assessment in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'glossaryduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
         $glossarydata = [];
 
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
             $select = 'userid = :userid AND ((timecreated BETWEEN :lastmonth AND :now) OR (timemodified BETWEEN :tlastmonth AND
             :tnow))';
             $params = [
@@ -194,7 +194,7 @@ class glossary_activity extends base {
             $glossarysubmissions = $DB->get_fieldset_select('glossary_entries', 'glossaryid', $select, $params);
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'glossarysubmissions' => $glossarysubmissions,
             ];
 

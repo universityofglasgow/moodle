@@ -227,8 +227,9 @@ class workshop_activity extends base {
         $statusobj->grade_status = '';
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
 
+        $now = usertime(time());
         // The Open date could be in the future, or the Phase may not have been progressed yet.
-        if ($allowsubmissionsfromdate > time() || $workshopinstance->phase == $workshopphase) {
+        if ($allowsubmissionsfromdate > $now || $workshopinstance->phase == $workshopphase) {
             $statusobj->grade_status = get_string('status_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
         }
@@ -277,7 +278,7 @@ class workshop_activity extends base {
                 $statusobj->status_class = get_string('status_class_submit', 'block_newgu_spdetails');
                 $statusobj->status_link = $statusobj->assessment_url;
 
-                if ($statusobj->due_date != 0 && time() > $statusobj->due_date) {
+                if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                     $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
@@ -317,8 +318,8 @@ class workshop_activity extends base {
 
         // Cache this query as it's going to get called for each assessment in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'workshopduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id . '_' . $this->gradeitem->itemnumber;
         $cachedata = $cache->get_many([$cachekey]);
@@ -329,7 +330,7 @@ class workshop_activity extends base {
         // We're treating itemnumber 0 as the submission and 1 as the assessment.
         
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
             if ($workshopactivityphase == 0) {
                 $sql = 'authorid = :userid AND ((timecreated BETWEEN :lastmonth AND :now) OR (timemodified BETWEEN :tlastmonth AND
                 :tnow))';
@@ -343,7 +344,7 @@ class workshop_activity extends base {
                 $workshopsubmissions = $DB->get_fieldset_select('workshop_submissions', 'workshopid', $sql, $params);
 
                 $submissionsdata = [
-                    'updated' => time(),
+                    'updated' => $currenttime,
                     'workshopsubmissions' => $workshopsubmissions,
                 ];
 
@@ -371,7 +372,7 @@ class workshop_activity extends base {
                 }
 
                 $submissionsdata = [
-                    'updated' => time(),
+                    'updated' => $currenttime,
                     'workshopsubmissions' => $workshopsubmissions,
                 ];
             }

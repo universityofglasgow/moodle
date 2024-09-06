@@ -223,18 +223,18 @@ class forum_activity extends base {
         $statusobj->status_class = get_string('status_class_submit', 'block_newgu_spdetails');
         $statusobj->status_link = $statusobj->assessment_url;
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-
+        $now = usertime(time());
         // Cut-off date is the more 'finite' state - exceed this and you're not allowed to submit at all.
         if ($statusobj->cutoff_date > 0) {
             // The student can still post to the forum if they have exceeded the due date at this point.
-            if ($statusobj->due_date != 0 && time() > $statusobj->due_date) {
+            if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                 $statusobj->grade_status = get_string('status_overdue', 'block_newgu_spdetails');
                 $statusobj->status_text = get_string('status_text_overdue', 'block_newgu_spdetails');
                 $statusobj->status_class = get_string('status_class_overdue', 'block_newgu_spdetails');
                 $statusobj->status_link = $statusobj->assessment_url;
             }
             // If the student has exceeded the cut-off date then we can no longer post anything.
-            if (time() > $statusobj->cutoff_date) {
+            if ($now > $statusobj->cutoff_date) {
                 $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
                 $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
                 $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
@@ -242,7 +242,7 @@ class forum_activity extends base {
             }
         } else {
             // The student can still post to the forum if they have exceeded only the due date at this point.
-            if ($statusobj->due_date != 0 && time() > $statusobj->due_date) {
+            if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                 $statusobj->grade_status = get_string('status_overdue', 'block_newgu_spdetails');
                 $statusobj->status_text = get_string('status_text_overdue', 'block_newgu_spdetails');
                 $statusobj->status_class = get_string('status_class_overdue', 'block_newgu_spdetails');
@@ -264,15 +264,15 @@ class forum_activity extends base {
 
         // Cache this query as it's going to get called for each activity in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'forumduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
         $forumdata = [];
 
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
 
             $params = [
                 'lastmonth' => $lastmonth,
@@ -288,7 +288,7 @@ class forum_activity extends base {
                 $params);
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'forumsubmissions' => $forumsubmissions,
             ];
 

@@ -180,7 +180,30 @@ class lesson_activity extends base {
         $statusobj->grade_date = '';
         $statusobj->grade_class = false;
 
-        // Check if any overrides have been set up first of all...
+        // We first check if any group overrides have been created for this lesson.
+        $groupselect = 'lessonid = :lessonid AND groupid IS NOT NULL AND userid IS NULL';
+        $groupparams = ['lessonid' => $this->lesson->id];
+        $groupoverrides = $DB->get_records_select('lesson_overrides', $groupselect, $groupparams, '',
+        'groupid, available, deadline');
+        if (!empty($groupoverrides)) {
+            foreach ($groupoverrides as $groupoverride) {
+                // An override for this lesson exists - is our user a member of the group?
+                if ($groupmembers = $DB->record_exists('groups_members', ['groupid' => $groupoverride->groupid,
+                    'userid' => $userid])) {
+                    // If any of these fields are NULL, the override is using the default activity settings.
+                    if ($groupoverride->available != null) {
+                        $allowsubmissionsfromdate = $groupoverride->available;
+                    }
+                    if ($groupoverride->deadline != null) {
+                        $statusobj->due_date = $groupoverride->deadline;
+                        $statusobj->raw_due_date = $groupoverride->deadline;
+                    }
+                    // I don't think timelimit, review, maxattempts and retake are useful to us for the rest of these 'checks'.
+                }
+            }
+        }
+
+        // Individual overrides however, take precedence - based on how Moodle does things.
         $overrides = $DB->get_record('lesson_overrides', ['lessonid' => $this->lesson->id, 'userid' => $userid]);
         if (!empty($overrides)) {
             $allowsubmissionsfromdate = $overrides->available;
@@ -188,12 +211,15 @@ class lesson_activity extends base {
             $statusobj->raw_due_date = $overrides->deadline;
         }
 
-        if ($allowsubmissionsfromdate > time()) {
+        $now = usertime(time());
+        // Easy one first. The "Allow submissions from..." date has been set and is in the future.
+        if ($allowsubmissionsfromdate != 0 && ($allowsubmissionsfromdate > $now)) {
             $statusobj->grade_status = get_string('status_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         }
 
+        // If our grade_status hasn't changed at this point, continue on.
         if ($statusobj->grade_status == '') {
             $lessonattempts = $DB->count_records('lesson_attempts', ['lessonid' => $this->lesson->id, 'userid' => $userid]);
             if ($lessonattempts > 0) {
@@ -215,19 +241,12 @@ class lesson_activity extends base {
                 $statusobj->status_class = get_string('status_class_submit', 'block_newgu_spdetails');
                 $statusobj->status_link = $statusobj->assessment_url;
 
-                if (time() > $statusobj->due_date && $statusobj->due_date != 0) {
+                // There is no Overdue state with a lesson activity.
+                if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                     $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_link = '';
-                }
-
-                // Not even sure if this is correct - this came from the Assignment activity code.
-                if (time() > $statusobj->due_date + (86400 * 30) && $statusobj->due_date != 0) {
-                    $statusobj->grade_status = get_string('status_overdue', 'block_newgu_spdetails');
-                    $statusobj->status_class = get_string('status_class_overdue', 'block_newgu_spdetails');
-                    $statusobj->status_text = get_string('status_text_overdue', 'block_newgu_spdetails');
-                    $statusobj->status_link = $statusobj->assessment_url;
                 }
             }
         }
@@ -256,15 +275,15 @@ class lesson_activity extends base {
 
         // Cache this query as it's going to get called for each lesson in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'lessonsduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
         $lessondata = [];
 
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
             $select = 'userid = :userid AND ((lessontime BETWEEN :lastmonth AND :now) OR (lessontime BETWEEN :tlastmonth AND
             :tnow))';
             $params = [
@@ -280,7 +299,7 @@ class lesson_activity extends base {
             completed');
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'timedlessonsubmissions' => $timedlessonsubmissions,
             ];
 
