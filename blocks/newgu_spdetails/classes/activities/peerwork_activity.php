@@ -150,8 +150,7 @@ class peerwork_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -182,7 +181,8 @@ class peerwork_activity extends base {
         $statusobj->grade_date = '';
         $statusobj->grade_class = false;
 
-        if ($allowsubmissionsfromdate > time()) {
+        $now = usertime(time());
+        if ($allowsubmissionsfromdate > $now) {
             $statusobj->grade_status = get_string('status_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
@@ -211,7 +211,7 @@ class peerwork_activity extends base {
                 $statusobj->status_class = get_string('status_class_submit', 'block_newgu_spdetails');
                 $statusobj->status_link = $statusobj->assessment_url;
 
-                if ($statusobj->due_date != 0 && time() > $statusobj->due_date) {
+                if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                     $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
@@ -234,7 +234,7 @@ class peerwork_activity extends base {
             $statusobj->raw_due_date = $this->get_rawduedate();
         } else {
             $statusobj->due_date = 'N/A';
-            $statusobj->raw_due_date = '';
+            $statusobj->raw_due_date = 0;
         }
 
         return $statusobj;
@@ -250,15 +250,15 @@ class peerwork_activity extends base {
 
         // Cache this query as it's going to get called for each assessment in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'peerworkduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
         $peerworkdata = [];
 
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
             $select = 'userid = :userid AND ((timecreated BETWEEN :lastmonth AND :now) OR (timemodified BETWEEN :tlastmonth AND
             :tnow))';
             $params = [
@@ -271,7 +271,7 @@ class peerwork_activity extends base {
             $peerworksubmissions = $DB->get_fieldset_select('peerwork_submission', 'peerworkid', $select, $params);
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'peerworksubmissions' => $peerworksubmissions,
             ];
 

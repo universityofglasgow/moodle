@@ -178,8 +178,7 @@ class scorm_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -206,16 +205,17 @@ class scorm_activity extends base {
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         $statusobj->grade_class = false;
         $statusobj->due_date = 'N/A';
-        $statusobj->raw_due_date = '';
+        $statusobj->raw_due_date = 0;
         $statusobj->grade_date = '';
 
-        if ($allowsubmissionsfromdate > time()) {
+        $now = usertime(time());
+        if ($allowsubmissionsfromdate > $now) {
             $statusobj->grade_status = get_string('status_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         }
 
-        if (time() > $this->scorm->timeclose) {
+        if ($now > $this->scorm->timeclose) {
             $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
             $statusobj->status_link = '';
@@ -252,7 +252,8 @@ class scorm_activity extends base {
             $statusobj->due_date = $this->get_formattedduedate($statusobj->due_date);
             $statusobj->raw_due_date = $statusobj->due_date;
         } else {
-            $statusobj->due_date = '';
+            $statusobj->due_date = 'N/A';
+            $statusobj->raw_due_date = 0;
         }
 
         return $statusobj;
@@ -268,8 +269,8 @@ class scorm_activity extends base {
 
         // Cache this query as it's going to get called for each assessment in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'scormduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
@@ -277,7 +278,7 @@ class scorm_activity extends base {
 
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
 
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
 
             $params = [
                 'userid' => $USER->id, 
@@ -290,7 +291,7 @@ class scorm_activity extends base {
                 $params);
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'scormsubmissions' => $scormsubmissions,
             ];
 

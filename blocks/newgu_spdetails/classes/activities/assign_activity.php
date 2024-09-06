@@ -165,8 +165,7 @@ class assign_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+             $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -205,7 +204,32 @@ class assign_activity extends base {
         $statusobj->markingworkflow = $assigninstance->markingworkflow;
         $statusobj->grade_date = '';
 
-        // Check if any individual overrides have been set up first of all.
+        // We first check if any group overrides have been created for this assignment.
+        $groupselect = 'assignid = :assignid AND groupid IS NOT NULL AND userid IS NULL';
+        $groupparams = ['assignid' => $assigninstance->id];
+        $groupoverrides = $DB->get_records_select('assign_overrides', $groupselect, $groupparams, '',
+        'groupid, allowsubmissionsfromdate, duedate, cutoffdate');
+        if (!empty($groupoverrides)) {
+            foreach ($groupoverrides as $groupoverride) {
+                // An override for this assignment exists - is our user a member of the group?
+                if ($groupmembers = $DB->record_exists('groups_members', ['groupid' => $groupoverride->groupid,
+                    'userid' => $userid])) {
+                    // If any of these fields are NULL, the override is using the default activity settings.
+                    if ($groupoverride->allowsubmissionsfromdate != null) {
+                        $allowsubmissionsfromdate = $groupoverride->allowsubmissionsfromdate;
+                    }
+                    if ($groupoverride->duedate != null) {
+                        $statusobj->due_date = $groupoverride->duedate;
+                        $statusobj->raw_due_date = $groupoverride->duedate;
+                    }
+                    if ($groupoverride->cutoffdate != null) {
+                        $statusobj->cutoff_date = $groupoverride->cutoffdate;
+                    }
+                }
+            }
+        }
+
+        // Individual overrides however, take precedence - based on how Moodle does things.
         $overrides = $DB->get_record('assign_overrides', ['assignid' => $assigninstance->id, 'userid' => $userid]);
         if (!empty($overrides)) {
             // If any of these fields are NULL, the override is using the default activity settings.
@@ -223,8 +247,9 @@ class assign_activity extends base {
             }
         }
 
+        $now = usertime(time());
         // Easy one first. The "Allow submissions from..." date has been set and is in the future.
-        if ($allowsubmissionsfromdate != 0 && ($allowsubmissionsfromdate > time())) {
+        if ($allowsubmissionsfromdate != 0 && ($allowsubmissionsfromdate > $now)) {
             $statusobj->grade_status = get_string('status_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
             $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
@@ -323,8 +348,8 @@ class assign_activity extends base {
             $statusobj->due_date = $this->get_formattedduedate($statusobj->due_date);
             $statusobj->raw_due_date = $this->get_rawduedate();
         } else {
-            $statusobj->due_date = '';
-            $statusobj->raw_due_date = '';
+            $statusobj->due_date = 'N/A';
+            $statusobj->raw_due_date = 0;
         }
 
         return $statusobj;
@@ -344,18 +369,18 @@ class assign_activity extends base {
         $statusobj->status_class = get_string('status_class_submit', 'block_newgu_spdetails');
         $statusobj->status_link = $statusobj->assessment_url;
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-
+        $now = usertime(time());
         // Cut-off date is the more 'finite' state - exceed this and you're not allowed to submit at all.
         if ($statusobj->cutoff_date > 0) {
             // The student can still submit if they have exceeded the due date at this point.
-            if ($statusobj->due_date != 0 && time() > $statusobj->due_date) {
+            if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                 $statusobj->grade_status = get_string('status_overdue', 'block_newgu_spdetails');
                 $statusobj->status_text = get_string('status_text_overdue', 'block_newgu_spdetails');
                 $statusobj->status_class = get_string('status_class_overdue', 'block_newgu_spdetails');
                 $statusobj->status_link = $statusobj->assessment_url;
             }
             // If the student has exceeded the cut-off date then we can no longer submit anything.
-            if (time() > $statusobj->cutoff_date) {
+            if ($now > $statusobj->cutoff_date) {
                 $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
                 $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
                 $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
@@ -363,7 +388,7 @@ class assign_activity extends base {
             }
         } else {
             // The student can still submit if they have exceeded only the due date at this point.
-            if ($statusobj->due_date != 0 && time() > $statusobj->due_date) {
+            if ($statusobj->due_date != 0 && $now > $statusobj->due_date) {
                 $statusobj->grade_status = get_string('status_overdue', 'block_newgu_spdetails');
                 $statusobj->status_text = get_string('status_text_overdue', 'block_newgu_spdetails');
                 $statusobj->status_class = get_string('status_class_overdue', 'block_newgu_spdetails');
@@ -384,15 +409,15 @@ class assign_activity extends base {
 
         // Cache this query as it's going to get called for each assessment in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'assignmentsduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
         $assignmentdata = [];
 
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
-            $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+            $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
             $select = 'userid = :userid AND ((timecreated BETWEEN :lastmonth AND :now) OR (timemodified BETWEEN :tlastmonth AND
             :tnow))';
             $params = [
@@ -405,7 +430,7 @@ class assign_activity extends base {
             $assignmentsubmissions = $DB->get_records_select('assign_submission', $select, $params, '', 'assignment, status');
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'assignmentsubmissions' => $assignmentsubmissions,
             ];
 
