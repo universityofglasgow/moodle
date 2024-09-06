@@ -513,7 +513,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Scale exam', $form['itemname']);
         $this->assertCount(23, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertCount(4, $form['adminmenu']);
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -599,7 +599,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Summer exam', $form['itemname']);
         $this->assertCount(0, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertCount(4, $form['adminmenu']);
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -685,7 +685,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Schedule B exam', $form['itemname']);
         $this->assertCount(8, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertCount(4, $form['adminmenu']);
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -781,7 +781,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Schedule B exam', $form['itemname']);
         $this->assertCount(8, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertCount(4, $form['adminmenu']);
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
