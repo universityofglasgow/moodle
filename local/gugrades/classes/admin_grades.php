@@ -41,7 +41,7 @@ class admin_grades {
         $admingrades = [
             'MV' => get_string('adminmv', 'local_gugrades'),
             'NS' => get_string('adminns', 'local_gugrades'),
-            'CW' => get_string('admincw', 'local_gugrades'),
+            //'CW' => get_string('admincw', 'local_gugrades'),
             'IS' => get_string('adminis', 'local_gugrades'),
             '07' => get_string('admin07', 'local_gugrades'),
         ];

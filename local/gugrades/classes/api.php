@@ -1069,21 +1069,6 @@ class api {
             $convertedgrade = $grade;
         }
 
-        /*
-        } else if ($conversion->is_conversion()) {
-            [$convertedgrade, $displaygrade] = $conversion->import($scale);
-            $rawgrade = $scale;
-        } else if ($usescale) {
-
-            // TODO: Check! +1 because internal values are 1 - based, our form is 0 - based.
-            [$convertedgrade, $displaygrade] = $conversion->import($scale + 1);
-            $rawgrade = $scale + 1;
-        } else {
-            [$convertedgrade, $displaygrade] = $conversion->import($grade);
-            $rawgrade = $grade;
-        }
-        */
-
         // If we're overriding a category then set the override bit
         $catoverride = $reason == 'CATEGORY';
 
