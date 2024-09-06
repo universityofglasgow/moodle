@@ -1692,9 +1692,6 @@ class api {
         [$users, $addaggdebug] = \local_gugrades\aggregation::add_aggregation_fields_to_users($courseid, $gradecategoryid, $users, $columns);
         $timeaddfields = microtime(true);
 
-        // Add pictures to user fields.
-        //$users = \local_gugrades\users::add_pictures_and_profiles_to_user_records($users);
-
         // Get breadcrumb trail.
         $breadcrumb = \local_gugrades\aggregation::get_breadcrumb($gradecategoryid);
 
@@ -1709,8 +1706,10 @@ class api {
         }
 
         // Can we show the conversion controls for this category?
+        // Only available for level 2 categories - MGU-997
+        $level = \local_gugrades\grades::get_category_level($gradecategoryid);
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
-        $allowconversion = !$istoplevel && (!empty($mapname) || ($atype == 'P'));
+        $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == 'P'));
 
         return [
             'toplevel' => $istoplevel,
