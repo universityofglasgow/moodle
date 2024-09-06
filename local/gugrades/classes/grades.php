@@ -122,6 +122,20 @@ class grades {
     }
 
     /**
+     * Get level for grade category
+     * @param int $gradecategoryid
+     * @return int
+     */
+    public static function get_category_level(int $gradecategoryid) {
+        global $DB;
+
+        $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+
+        // OUR level is one less than the level in the grade_categories table.
+        return $gradecategory->depth - 1;
+    }
+
+    /**
      * Get the category/item tree beneath the selected depth==2 category.
      * @param int $courseid
      * @param int $categoryid
