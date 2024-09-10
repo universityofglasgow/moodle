@@ -1,0 +1,14 @@
+name: Sync master branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: zofrex/mirror-branch@v1
+        with:
+          target-branch: master
