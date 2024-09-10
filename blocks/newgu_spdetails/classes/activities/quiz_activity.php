@@ -293,7 +293,7 @@ class quiz_activity extends base {
                         $allowsubmissionsfromdate = $groupoverride->timeopen;
                     }
                     if ($groupoverride->timeclose != null) {
-                        $statusobj->due_date = $groupoverride->timeclose;
+                        $statusobj->due_date = $this->get_formattedduedate($groupoverride->timeclose);
                         $statusobj->raw_due_date = $groupoverride->timeclose;
                         $quizcloses = $groupoverride->timeclose;
                     }
