@@ -136,6 +136,19 @@ class grades {
     }
 
     /**
+     * Get the gradeitemid given the gradecategoryid
+     * @param int $gradecategoryid
+     * @return int
+     */
+    public static function get_gradeitemid_from_gradecategoryid(int $gradecategoryid) {
+        global $DB;
+
+        $gradeitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $gradecategoryid], '*', MUST_EXIST);
+
+        return $gradeitem->id;
+    }
+
+    /**
      * Get the category/item tree beneath the selected depth==2 category.
      * @param int $courseid
      * @param int $categoryid

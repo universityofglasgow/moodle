@@ -324,7 +324,7 @@ class aggregation {
         [$atype, $warnings] = self::get_aggregation_type($items, $gradecategoryid);
         $aggregation = self::aggregation_factory($courseid, $atype);
 
-        // Read "top level" category for user info
+        // Get original data for "aggregated category" as we may not have got it elsewhere.
         // This is needed if no aggregation is performed.
         $item = $DB->get_record('local_gugrades_grade',
             ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1],

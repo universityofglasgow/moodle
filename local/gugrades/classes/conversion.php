@@ -327,10 +327,12 @@ class conversion {
         global $DB, $USER;
 
         // Appropriate params for item or category.
+        $category = false;
         if ($gradeitemid) {
             $params = ['gradeitemid' => $gradeitemid];
         } else if ($gradecategoryid) {
             $params = ['gradecategoryid' => $gradecategoryid];
+            $category = true;
         } else {
             throw new \moodle_exception('One of gradeitemid or gradecategoryid must be specified');
         }
@@ -341,6 +343,15 @@ class conversion {
         if ($mapid == 0) {
             $DB->delete_records('local_gugrades_map_item', $params);
 
+            // If category, remove any overridden grades
+            if ($gradecategoryid) {
+                $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+                $sql = "DELETE FROM {local_gugrades_grade}
+                    WHERE gradeitemid = :gradeitemid
+                    AND catoverride = 1";
+                $DB->execute($sql, ['gradeitemid' => $gradeitemid]);
+            }
+
             // Un-current all grades if a gradeitem (i.e. capture page)
             if ($gradeitemid) {
                 $sql = 'UPDATE {local_gugrades_grade}
@@ -349,9 +360,10 @@ class conversion {
                     AND gradeitemid = :gradeitemid';
                 $DB->execute($sql, ['gradeitemid' => $gradeitemid]);
                 \local_gugrades\grades::cleanup_empty_columns($gradeitemid);
-            } else {
+            }
 
-                // Recalculate everything :(
+            // If we deleted a category override, we need to recalculate
+            if ($category) {
                 \local_gugrades\api::recalculate($courseid, $gradecategoryid);
             }
 

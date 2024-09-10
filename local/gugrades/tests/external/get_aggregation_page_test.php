@@ -593,6 +593,31 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $form
         );
 
+        // This should not be possible as overriding level 2 points
+        // is not permitted. Must first be converted
+        $this->assertFalse($form['available']);
+
+        // Attempting to write anyway should lead to an exception.
+        $this->expectException('moodle_exception');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $summerexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          0,
+            grade:          72.5,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // TODO - really needs a third level points test.
+
+        /*
         // This should reflect Schedule A.
         $this->assertFalse($form['usescale']);
         $this->assertTrue($form['iscategory']);
@@ -629,6 +654,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertEquals('72.5', $users[0]['displaygrade']);
         $this->assertEquals(72.5, $users[0]['rawgrade']);
+        */
     }
 
     /**
@@ -778,6 +804,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         // This should reflect Schedule A.
         $this->assertTrue($form['usescale']);
         $this->assertTrue($form['iscategory']);
+        $this->assertTrue($form['available']);
         $this->assertEquals('Schedule B exam', $form['itemname']);
         $this->assertCount(8, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);

@@ -12,7 +12,13 @@
             <li>{{ reason }}</li>
             <li v-if="overridden"><b>{{ mstrings.categoryoverridden }}</b></li>
         </ul>
-        <FormKit v-if="!overridden" class="border rounded" type="form"  @submit="submit_form">
+
+        <!-- message if not available -->
+         <div v-if="!available" class="alert alert-danger">
+            {{ mstrings.notavailable }}
+         </div>
+
+        <FormKit v-if="!overridden && available" class="border rounded" type="form"  @submit="submit_form">
             <FormKit
                 v-if="!iscategory"
                 type="select"
@@ -113,6 +119,7 @@
     const usescale = ref(false);
     const iscategory = ref(false);
     const overridden = ref(false);
+    const available = ref(true);
     const grademax = ref(0);
     const scalemenu = ref([]);
     const adminmenu = ref([]);
@@ -165,6 +172,7 @@
             usescale.value = result.usescale;
             iscategory.value = result.iscategory;
             overridden.value = result.overridden;
+            available.value = result.available;
             grademax.value = result.grademax;
             scalemenu.value = result.scalemenu;
             adminmenu.value = result.adminmenu;

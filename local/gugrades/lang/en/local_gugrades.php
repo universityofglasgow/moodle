@@ -207,6 +207,7 @@ $string['nohistory'] = 'No history';
 $string['noimportafterconversion'] = 'WARNING: You can no longer import or add points grades after conversion is applied. Complete all grading in points first.';
 $string['nomaps'] = 'No conversion maps have been defined for this course. Click the \'Conversion\' tab to create one.';
 $string['notallscales'] = 'Cannot aggregate. All grades must first be (converted to) Schedule A or B.';
+$string['notavailable'] = 'Override is not available here. Convert to Schedule A/B first';
 $string['notes'] = 'Notes';
 $string['nothingtodisplay'] = 'Nothing to display';
 $string['nothingtoimport'] = 'Nothing to import';

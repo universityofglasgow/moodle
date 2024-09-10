@@ -196,20 +196,64 @@ final class aggregation_schema4_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(17.8, $users[0]['rawgrade']);
         $this->assertEquals(18, $users[0]['total']);
 
-        // Try with 07 admin grade in summer
-        $q3itemid = $this->get_gradeitemid('Question 3');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $q3itemid, $this->student->id, '07');
+        // Get corresponding itemid for summerexam
+        $summerexamitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $gradecatsummer->id], '*', MUST_EXIST);
 
-        // Get aggregation page for sub-category with 07 admin.
+        // Override category grade for gradecatsummer
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $summerexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          11, //D0.
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page now with override.
         $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
 
-        // TODO - some checks here
+        $fred = $page['users'][0];
+        $this->assertTrue($fred['overridden']);
+        $this->assertEquals('D0', $fred['displaygrade']);
+        $this->assertEquals(11, $fred['rawgrade']);
 
+        $grades = $DB->get_records('local_gugrades_grade', ['gradeitemid' => $summerexamitem->id, 'userid' => $this->student->id]);
+        //var_dump($grades); die;
 
+        // Remove the grade mapping.
+        // Removing the mapping should also remove any overridden grades.
+        $nothing = select_conversion::execute($this->course->id, 0, $gradecatsummer->id, 0);
+        $nothing = external_api::clean_returnvalue(
+            select_conversion::execute_returns(),
+            $nothing
+        );
+
+        $grades = $DB->get_records('local_gugrades_grade', ['gradeitemid' => $summerexamitem->id, 'userid' => $this->student->id]);
+
+        // Get aggregation page with mapping removed.
+        // Override should also be cancelled.
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertEquals('P', $page['atype']);
+        $this->assertEquals('', $page['conversion']);
+        $fred = $page['users'][0];
+        $this->assertEquals(85.25926, $fred['rawgrade']);
+        $this->assertEquals('85.25926', $fred['displaygrade']);
     }
 
 }

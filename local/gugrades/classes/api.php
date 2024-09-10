@@ -849,6 +849,12 @@ class api {
         $overridden = $DB->record_exists('local_gugrades_grade',
             ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'iscurrent' => 1, 'catoverride' => 1]);
 
+        // Conditions for overriding categories.
+        // See MGU-997.  If this is Level 1 (i.e. we are trying to override a level 2 category)
+        // then the grade MUST be a scale (including converted). We cannot override points.
+        $level = \local_gugrades\grades::get_gradecategory_level($category->categoryid);
+        $available = !(($level == 2) && ($category->atype == 'P'));
+
         return [
             'gradetypes' => $wsgradetypes,
             'rawgradetypes' => $gradetypes,
@@ -858,6 +864,7 @@ class api {
             'usescale' => $isscale,
             'iscategory' => true,
             'overridden' => $overridden,
+            'available' => $available,
             'grademax' => $category->grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -948,6 +955,7 @@ class api {
             'usescale' => $mapping->is_scale() || $converted,
             'iscategory' => false,
             'overridden' => false,
+            'available' => true,
             'grademax' => $grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -1017,6 +1025,11 @@ class api {
 
         // Get the stuff we used to build the form for validation.
         $form = self::get_add_grade_form($courseid, $gradeitemid, $userid);
+
+        // If form says that add/convert is not available then it's an exception.
+        if (!$form['available']) {
+            throw new \moodle_exception('Cannot override grade at this level');
+        }
 
         // Check 'reason' is valid.
         // Pseudo-reason of CATEGORY is permitted.
