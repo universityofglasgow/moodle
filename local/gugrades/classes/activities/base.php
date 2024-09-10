@@ -141,6 +141,16 @@ abstract class base {
     }
 
     /**
+     * Get user IDs
+     * @return array
+     */
+    public function get_user_ids() {
+        $users = $this->get_users();
+
+        return array_column($users, 'id');
+    }
+
+    /**
      * Get (and check) single user
      * @param int $user
      * @return object

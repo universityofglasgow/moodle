@@ -52,6 +52,31 @@ class base {
     }
 
     /**
+     * Check availability
+     * TODO: Need to cache (or something) getting the lists of users. Can't do that for every user :(
+     * @param array $items
+     * @param int $userid
+     * @return array
+     */
+    public function availability(array $items, int $userid) {
+        $this->availableuserids = [];
+
+        foreach ($items as $id => $item) {
+            $activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
+            $userids = $activity->get_user_ids();
+            if (empty($userids)) {
+                continue;
+            }
+
+            if (!in_array($userid, $userids)) {
+                unset($item[$id]);
+            }
+        }
+
+        return $items;
+    }
+
+    /**
      * Pre-process grades for aggregation.
      * Allows grades to be 'normalised' prior to aggregation.
      * @param array $items

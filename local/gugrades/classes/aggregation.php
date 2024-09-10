@@ -159,6 +159,7 @@ class aggregation {
                 'schedule' => $gradecategory->schedule,
                 'strategy' => self::get_formatted_strategy($gradecategory->categoryid),
                 'strategyid' => $gradecategory->aggregation,
+                'userids' => [],
 
                 // TODO - may not be so simple.
                 'weight' => round($gradecategory->weight * 100),
@@ -166,6 +167,11 @@ class aggregation {
         }
         foreach ($gradeitems as $gradeitem) {
             $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitem->gradeitemid);
+
+            // Get list of available user ids to check later.
+            $activity = \local_gugrades\users::activity_factory($gradeitem->gradeitemid, $courseid, 0);
+            $userids = $activity->get_user_ids();
+
             $columns[] = (object)[
                 'fieldname' => 'AGG_' . $gradeitem->gradeitemid,
                 'gradeitemid' => $gradeitem->gradeitemid,
@@ -178,6 +184,7 @@ class aggregation {
                 'schedule' => $mapping->get_schedule(),
                 'strategy' => '',
                 'strategyid' => 0,
+                'userids' => $userids,
 
                 // TODO - may not be so simple.
                 'weight' => round($gradeitem->weight * 100),
@@ -312,6 +319,16 @@ class aggregation {
                 $data['overridden'] = $provisional->catoverride;
             } else {
                 $data['display'] = get_string('nodata', 'local_gugrades');
+            }
+
+            // If a module, check for visibility/availability.
+            if ($column->userids) {
+                $available = in_array($user->id, $column->userids);
+                $data['available'] = $available;
+                if (!$available) {
+                    $data['display'] = '--';
+                    $data['rawgrade'] = 0;
+                }
             }
 
             $fields[] = $data;
@@ -742,6 +759,10 @@ class aggregation {
                 return [null, null, '', null, $completion, get_string('gradesmissing', 'local_gugrades')];
             }
         }
+
+        // Populate lists of available users.
+        // Used to drop unavailable
+        $items = $aggregation->availability($items, $userid);
 
         // Pre-process.
         $items = $aggregation->pre_process_items($items);

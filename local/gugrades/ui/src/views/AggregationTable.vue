@@ -115,6 +115,7 @@
 
                 <!-- add/override grade -->
                 <OverrideGrade
+                    v-if="item[header.value].available"
                     :itemid = "header.gradeitemid"
                     :categoryid = "header.categoryid"
                     :userid = "item.id"
@@ -287,6 +288,7 @@
                     isadmin: field.isadmin,
                     hidden: field.hidden,
                     overridden: field.overridden,
+                    available: field.available,
                 };
             })
         });
