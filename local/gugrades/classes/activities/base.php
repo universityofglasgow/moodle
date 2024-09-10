@@ -48,6 +48,11 @@ abstract class base {
     protected int $gradeitemid;
 
     /**
+     * @var object $cm
+     */
+    protected $cm;
+
+    /**
      * @var object $gradeitem
      */
     protected object $gradeitem;
@@ -94,6 +99,9 @@ abstract class base {
         $this->itemtype = $this->gradeitem->itemtype;
 
         $this->viewfullnames = false;
+
+        // Get the course module (or false it it isn't one)
+        $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
     }
 
     /**
@@ -110,11 +118,21 @@ abstract class base {
      * Implement get_users()
      */
     public function get_users() {
-        $context = \context_course::instance($this->courseid);
-        $users = \local_gugrades\users::get_gradeable_users($context, $this->firstnamefilter,
-            $this->lastnamefilter, $this->groupid);
+
+        $context = \core\context\course::instance($this->courseid);
+
+        // If cm is defined then we'll get the available users for
+        // whatever module it is. Failing that, just get everybody in the course.
+        if ($this->cm) {
+            $users = \local_gugrades\users::get_available_users_from_cm(
+                $this->cm, $context, $this->firstnamefilter, $this->lastnamefilter, $this->groupid);
+        } else {
+            $users = \local_gugrades\users::get_gradeable_users($context, $this->firstnamefilter,
+                $this->lastnamefilter, $this->groupid);
+        }
 
         // Displayname.
+        // This may get updated.
         foreach ($users as $user) {
             $user->displayname = fullname($user);
         }

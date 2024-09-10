@@ -126,6 +126,7 @@ class get_aggregation_page extends external_api {
                             'isadmin' => new external_value(PARAM_BOOL, 'Is this an admin grade (for styling purposes)?'),
                             'hidden' => new external_value(PARAM_BOOL, 'Is grade hidden?'),
                             'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
+                            'available' => new external_value(PARAM_BOOL, 'Is grade item available to this user?'),
                         ])
                     ),
                 ])

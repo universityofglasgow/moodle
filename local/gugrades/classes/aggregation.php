@@ -297,6 +297,7 @@ class aggregation {
                 'isadmin' => false,
                 'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
                 'overridden' => false,
+                'available' => true,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).

@@ -41,6 +41,11 @@ class users {
 
         $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);
 
+        // This only works when itemtype is mod (not surprisingly)
+        if ($item->itemtype != 'mod') {
+            return false;
+        }
+
         // Get course module.
         $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $courseid, false, MUST_EXIST);
         $modinfo = get_fast_modinfo($courseid);

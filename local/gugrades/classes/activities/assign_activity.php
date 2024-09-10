@@ -34,11 +34,6 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 class assign_activity extends base {
 
     /**
-     * @var object $cm
-     */
-    private $cm;
-
-    /**
      * @var object $assign
      */
     private $assign;
@@ -53,7 +48,9 @@ class assign_activity extends base {
         parent::__construct($gradeitemid, $courseid, $groupid);
 
         // Get the assignment object.
-        $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
+        if (!$this->cm) {
+            throw new \moodle_exception('Course module object not defined');
+        }
         $this->assign = $this->get_assign($this->cm);
     }
 
@@ -99,9 +96,8 @@ class assign_activity extends base {
      * Implement get_users()
      */
     public function get_users() {
-        $context = \context_course::instance($this->courseid);
-        $users = \local_gugrades\users::get_available_users_from_cm(
-            $this->cm, $context, $this->firstnamefilter, $this->lastnamefilter, $this->groupid);
+
+        $users = parent::get_users();
 
         $assigninstance = $this->assign->get_instance();
 
