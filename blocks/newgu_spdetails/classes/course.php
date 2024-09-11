@@ -40,7 +40,8 @@ class course {
      * @param bool $active - indicate if this is a current or past course
      * @return array
      */
-    public static function get_course_structure(array $courses, bool $active): array {
+    public static function get_course_structure(array $courses, bool $active, string
+    $coursefilter): array {
         global $USER;
         $coursedata = [];
         $data = [
@@ -49,6 +50,19 @@ class course {
 
         if (!$courses) {
             return $data;
+        }
+
+        $filtercourseby = '';
+        switch($coursefilter) {
+            case "creditcourses":
+                $filtercourseby = 'summative';
+            break;
+            case "noncreditcourses":
+                $filtercourseby = 'formative';
+            break;
+            case "allcourses":
+                $filtercourseby = '';
+            break;
         }
 
         foreach ($courses as $course) {
@@ -81,15 +95,17 @@ class course {
                         'hidden' => 0]);
                         $subcategories = \grade_category::fetch_all(['parent' => $subcatid, 'hidden' => 0]);
                         if ($items || $subcategories) {
-                            $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
-                            $subcatweight = self::return_weight($item->aggregationcoef);
-                            $subcatdata[] = [
-                                'id' => $subcatid,
-                                'name' => $subcatname,
-                                'assessmenttype' => $assessmenttype,
-                                'subcatweight' => $subcatweight . '%',
-                                'raw_category_weight' => $subcatweight,
-                            ];
+                            if (empty($filtercourseby) || stripos($subcatname, $filtercourseby) !== false) {
+                                $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
+                                $subcatweight = self::return_weight($item->aggregationcoef);
+                                $subcatdata[] = [
+                                    'id' => $subcatid,
+                                    'name' => $subcatname,
+                                    'assessmenttype' => $assessmenttype,
+                                    'subcatweight' => $subcatweight . '%',
+                                    'raw_category_weight' => $subcatweight,
+                                ];
+                            }
                         }
                     }
                 } else {
@@ -393,15 +409,33 @@ class course {
     /**
      * Return the assessments that are due in the next 24 hours, week and month.
      *
+     * @param string $activetab - current or past courses
+     * @param string $coursefilter - @see MGU-971 - now add a course filter in.
      * @return array
      */
-    public static function get_assessmentsduesoon() {
-        global $USER, $PAGE;
+    public static function get_assessmentsduesoon($activetab, $coursefilter) {
+        global $DB, $USER, $PAGE;
 
         $PAGE->set_context(\context_system::instance());
 
+        switch ($activetab) {
+            case 'current':
+                $currentcourses = true;
+                $pastcourses = false;
+            break;
+
+            case 'past':
+                $currentcourses = false;
+                $pastcourses = true;
+            break;
+
+            default:
+                $currentcourses = false;
+                $pastcourses = false;
+            break;
+        }
         $sortstring = 'shortname asc';
-        $courses = \local_gugrades\api::dashboard_get_courses($USER->id, true, false, $sortstring);
+        $courses = \local_gugrades\api::dashboard_get_courses($USER->id, $currentcourses, $pastcourses, $sortstring);
 
         $stats = [
             '24hours' => 0,
@@ -411,6 +445,19 @@ class course {
 
         if (!$courses) {
             return $stats;
+        }
+
+        $filtercourseby = '';
+        switch($coursefilter) {
+            case "creditcourses":
+                $filtercourseby = 'summative';
+            break;
+            case "noncreditcourses":
+                $filtercourseby = 'formative';
+            break;
+            case "allcourses":
+                $filtercourseby = '';
+            break;
         }
 
         $assignmentdata = [];
@@ -430,19 +477,72 @@ class course {
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
                                 if ($cm->uservisible) {
-                                    // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                    // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
-                                    if ($activityitem->itemmodule == 'lti') {
-                                        if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
-                                            continue;
-                                        }
-                                    }
+                                    // MGU-971 - Now filter items by course type.
+                                    $includeactivityitem = false;
+                                    if ($filtercourseby == 'summative') {
+                                        // Either the activity item's 'weighting' needs to be greater than 0.
+                                        if ($activityitem->aggregationcoef > 0) {
+                                            $includeactivityitem = true;
+                                        } else {
+                                            // Or we now look to the parent category to see if its weighting is greater than 0.
+                                            $parent = $DB->get_record('grade_items', [
+                                                'courseid' => $activityitem->courseid,
+                                                'itemtype' => 'category',
+                                                'iteminstance' => $activityitem->categoryid,
+                                            ]);
+                                            if ($parent) {
+                                                if ($parent->aggregationcoef > 0) {
+                                                    $includeactivityitem = true;
+                                                }
+                                                // If that fails, does the name 'summative' appear in the category name.
+                                                $gradecategory = $DB->get_record('grade_categories', [
+                                                    'id' => $activityitem->categoryid,
+                                                ]);
 
-                                    // Get the activity based on its type...
-                                    $activity = \block_newgu_spdetails\activity::activity_factory($activityitem->id,
-                                    $activityitem->courseid, 0);
-                                    if ($records = $activity->get_assessmentsdue()) {
-                                        $assignmentdata[] = $records[0];
+                                                if (stripos($gradecategory->fullname, $filtercourseby) !== false) {
+                                                    $includeactivityitem = true;
+                                                }
+                                            }
+                                        }
+                                    } elseif ($filtercourseby == 'formative') {
+                                        if ($activityitem->aggregationcoef == 0) {
+                                            // Just because the aggregationcoef of the item = 0, we
+                                            // still need to check which grade category it belongs to.
+                                            $parent = $DB->get_record('grade_items', [
+                                                'courseid' => $activityitem->courseid,
+                                                'itemtype' => 'category',
+                                                'iteminstance' => $activityitem->categoryid,
+                                            ]);
+                                            if ($parent) {
+                                                $gradecategory = $DB->get_record('grade_categories', [
+                                                    'id' => $activityitem->categoryid,
+                                                ]);
+                                                // Is the weighting of the grade category 0 or does the name contain 'formative'.
+                                                if ($parent->aggregationcoef == 0 || stripos($gradecategory->fullname,
+                                                $filtercourseby) !== false) {
+                                                    $includeactivityitem = true;
+                                                }
+                                            }
+                                        }
+                                    } elseif ($filtercourseby == '') {
+                                        $includeactivityitem = true;
+                                    }
+                                    
+                                    if ($includeactivityitem) {
+                                        // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
+                                        // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
+                                        if ($activityitem->itemmodule == 'lti') {
+                                            if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
+                                                continue;
+                                            }
+                                        }
+
+                                        // Get the activity based on its type...
+                                        $activity = \block_newgu_spdetails\activity::activity_factory($activityitem->id,
+                                        $activityitem->courseid, 0);
+                                        if ($records = $activity->get_assessmentsdue()) {
+                                            $assignmentdata[] = $records[0];
+                                        }
                                     }
                                 }
                             }
@@ -621,20 +721,38 @@ class course {
      * Return the summary of assessments that have been marked, submitted, are
      * outstanding or are overdue.
      *
+     * @param string $activetab - current or past courses
+     * @param string $coursefilter - @see MGU-971 - now add a course filter in.
      * @return array
      */
-    public static function get_assessmentsummary(): array {
+    public static function get_assessmentsummary($activetab, $coursefilter): array {
 
         global $DB, $USER, $PAGE;
 
         $PAGE->set_context(\context_system::instance());
 
+        switch ($activetab) {
+            case 'current':
+                $currentcourses = true;
+                $pastcourses = false;
+            break;
+
+            case 'past':
+                $currentcourses = false;
+                $pastcourses = true;
+            break;
+
+            default:
+                $currentcourses = false;
+                $pastcourses = false;
+            break;
+        }
         $marked = 0;
         $totaloverdue = 0;
         $totalsubmissions = 0;
         $totaltosubmit = 0;
         $sortstring = 'shortname asc';
-        $currentcourses = \local_gugrades\api::dashboard_get_courses($USER->id, true, false, $sortstring);
+        $currentcourses = \local_gugrades\api::dashboard_get_courses($USER->id, $currentcourses, $pastcourses, $sortstring);
 
         $stats = [
             'total_tosubmit' => 0,
@@ -645,6 +763,19 @@ class course {
 
         if (!$currentcourses) {
             return $stats;
+        }
+
+        $filtercourseby = '';
+        switch($coursefilter) {
+            case "creditcourses":
+                $filtercourseby = 'summative';
+            break;
+            case "noncreditcourses":
+                $filtercourseby = 'formative';
+            break;
+            case "allcourses":
+                $filtercourseby = '';
+            break;
         }
 
         $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
@@ -662,37 +793,125 @@ class course {
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
                                 if ($cm->uservisible) {
-                                    // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                    // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
-                                    if ($activityitem->itemmodule == 'lti') {
-                                        if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
-                                            continue;
-                                        }
-                                    }
-
-                                    // We had overlooked that we needed to check the course type when collating these numbers.
-                                    // If the course that this activity belongs to is a MyGrades course, first check if we have
-                                    // any 'Released' grades, for the Graded section - and then increment the total accordingly.
-                                    if ($course->gugradesenabled) {
-                                        $params = [
-                                            'courseid' => $activityitem->courseid,
-                                            'gradeitemid' => $activityitem->id,
-                                            'userid' => $USER->id,
-                                            'gradetype' => 'RELEASED',
-                                            'iscurrent' => 1,
-                                        ];
-                                        if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
-                                            // Swap all of this for the relevant mygrades API calls - if/when one exists.
-                                            foreach ($usergrades as $usergrade) {
-                                                // MGU-631 - Honour hidden grades and hidden activities.
-                                                $isgradehidden = \local_gugrades\api::is_grade_hidden($activityitem->id, $USER->id);
-                                                if (!$isgradehidden) {
-                                                    $marked++;
-                                                }
-                                                break;
-                                            }
+                                    // MGU-971 - Now filter items by course type.
+                                    $includeactivityitem = false;
+                                    if ($filtercourseby == 'summative') {
+                                        // Either the activity item's 'weighting' needs to be greater than 0.
+                                        if ($activityitem->aggregationcoef > 0) {
+                                            $includeactivityitem = true;
                                         } else {
-                                            $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                            // Or we now look to the parent category to see if its weighting is greater than 0.
+                                            $parent = $DB->get_record('grade_items', [
+                                                'courseid' => $activityitem->courseid,
+                                                'itemtype' => 'category',
+                                                'iteminstance' => $activityitem->categoryid,
+                                            ]);
+                                            if ($parent) {
+                                                if ($parent->aggregationcoef > 0) {
+                                                    $includeactivityitem = true;
+                                                }
+                                                // If that fails, does the name 'summative' appear in the category name.
+                                                $gradecategory = $DB->get_record('grade_categories', [
+                                                    'id' => $activityitem->categoryid,
+                                                ]);
+
+                                                if (stripos($gradecategory->fullname, $filtercourseby) !== false) {
+                                                    $includeactivityitem = true;
+                                                }
+                                            }
+                                        }
+                                    } elseif ($filtercourseby == 'formative') {
+                                        if ($activityitem->aggregationcoef == 0) {
+                                            // Just because the aggregationcoef of the item = 0, we
+                                            // still need to check which grade category it belongs to.
+                                            $parent = $DB->get_record('grade_items', [
+                                                'courseid' => $activityitem->courseid,
+                                                'itemtype' => 'category',
+                                                'iteminstance' => $activityitem->categoryid,
+                                            ]);
+                                            if ($parent) {
+                                                $gradecategory = $DB->get_record('grade_categories', [
+                                                    'id' => $activityitem->categoryid,
+                                                ]);
+                                                // Is the weighting of the grade category 0 or does the name contain 'formative'.
+                                                if ($parent->aggregationcoef == 0 || stripos($gradecategory->fullname,
+                                                $filtercourseby) !== false) {
+                                                    $includeactivityitem = true;
+                                                }
+                                            }
+                                        }
+                                    } elseif ($filtercourseby == '') {
+                                        $includeactivityitem = true;
+                                    }
+                                    
+                                    if ($includeactivityitem) {
+                                        // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
+                                        // Note that LTI activities only become a "gradable" activity when they have
+                                        // been set to accept grades!
+                                        if ($activityitem->itemmodule == 'lti') {
+                                            if (is_array($ltiactivities) && !in_array($activityitem->iteminstance,
+                                                $ltiactivities)) {
+                                                continue;
+                                            }
+                                        }
+
+                                        // We had overlooked that we needed to check the course type when collating these numbers.
+                                        // If the course that this activity belongs to is a MyGrades course, first check if we have
+                                        // any 'Released' grades, for the Graded section, and then increment the total accordingly.
+                                        if ($course->gugradesenabled) {
+                                            $params = [
+                                                'courseid' => $activityitem->courseid,
+                                                'gradeitemid' => $activityitem->id,
+                                                'userid' => $USER->id,
+                                                'gradetype' => 'RELEASED',
+                                                'iscurrent' => 1,
+                                            ];
+                                            if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
+                                                // Swap all of this for the relevant mygrades API calls - if/when one exists.
+                                                foreach ($usergrades as $usergrade) {
+                                                    // MGU-631 - Honour hidden grades and hidden activities.
+                                                    $isgradehidden = \local_gugrades\api::is_grade_hidden($activityitem->id,
+                                                    $USER->id);
+                                                    if (!$isgradehidden) {
+                                                        $marked++;
+                                                    }
+                                                    break;
+                                                }
+                                            } else {
+                                                $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback(
+                                                    $activityitem->courseid,
+                                                    $activityitem->id,
+                                                    $USER->id,
+                                                    $activityitem->gradetype,
+                                                    $activityitem->scaleid,
+                                                    $activityitem->grademax,
+                                                    ''
+                                                );
+                                                $status = $gradestatus->grade_status;
+                                                if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
+                                                    $totalsubmissions++;
+                                                }
+
+                                                if ($status == get_string('status_submit', 'block_newgu_spdetails')) {
+                                                    $totaltosubmit++;
+                                                }
+
+                                                if ($status == get_string('status_overdue', 'block_newgu_spdetails')) {
+                                                    $totaloverdue++;
+                                                }
+
+                                                if ($status == get_string('status_graded', 'block_newgu_spdetails')) {
+                                                    if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display !=
+                                                    get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                                        $marked++;
+                                                    }
+                                                }
+                                            }
+
+                                        } else {
+
+                                            $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback(
+                                                $activityitem->courseid,
                                                 $activityitem->id,
                                                 $USER->id,
                                                 $activityitem->gradetype,
@@ -718,36 +937,6 @@ class course {
                                                 get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
                                                     $marked++;
                                                 }
-                                            }
-                                        }
-
-                                    } else {
-
-                                        $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
-                                            $activityitem->id,
-                                            $USER->id,
-                                            $activityitem->gradetype,
-                                            $activityitem->scaleid,
-                                            $activityitem->grademax,
-                                            ''
-                                        );
-                                        $status = $gradestatus->grade_status;
-                                        if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
-                                            $totalsubmissions++;
-                                        }
-
-                                        if ($status == get_string('status_submit', 'block_newgu_spdetails')) {
-                                            $totaltosubmit++;
-                                        }
-
-                                        if ($status == get_string('status_overdue', 'block_newgu_spdetails')) {
-                                            $totaloverdue++;
-                                        }
-
-                                        if ($status == get_string('status_graded', 'block_newgu_spdetails')) {
-                                            if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display !=
-                                            get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
-                                                $marked++;
                                             }
                                         }
                                     }
@@ -777,15 +966,33 @@ class course {
      * Marked/Graded
      *
      * @param int $charttype
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array
      */
-    public static function get_assessmentsummarybytype(int $charttype): array {
+    public static function get_assessmentsummarybytype(int $charttype, $activetab, string $coursefilter = 'creditcourses'): array {
         global $DB, $CFG, $USER, $PAGE;
 
         $PAGE->set_context(\context_system::instance());
 
+        switch ($activetab) {
+            case 'current':
+                $currentcourses = true;
+                $pastcourses = false;
+            break;
+
+            case 'past':
+                $currentcourses = false;
+                $pastcourses = true;
+            break;
+
+            default:
+                $currentcourses = false;
+                $pastcourses = false;
+            break;
+        }
         $sortstring = 'shortname asc';
-        $courses = \local_gugrades\api::dashboard_get_courses($USER->id, true, false, $sortstring);
+        $courses = \local_gugrades\api::dashboard_get_courses($USER->id, $currentcourses, $pastcourses, $sortstring);
 
         $assessmentsdue = [];
 
@@ -821,6 +1028,19 @@ class course {
 
         $assessmentsummaryheader = get_string('header_assessmentsummary', 'block_newgu_spdetails', $option);
 
+        $filtercourseby = '';
+        switch($coursefilter) {
+            case "creditcourses":
+                $filtercourseby = 'summative';
+            break;
+            case "noncreditcourses":
+                $filtercourseby = 'formative';
+            break;
+            case "allcourses":
+                $filtercourseby = '';
+            break;
+        }
+
         $assessmentdata = [];
         $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         foreach ($courses as $course) {
@@ -838,42 +1058,109 @@ class course {
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
                                 if ($cm->uservisible) {
-                                    // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                    // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
-                                    if ($activityitem->itemmodule == 'lti') {
-                                        if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
-                                            continue;
-                                        }
-                                    }
-
-                                    // We had overlooked that we needed to check the course type when collating these numbers.
-                                    // If the course that this activity belongs to is a MyGrades course, first check if we have
-                                    // any 'Released' grades, for the Graded section - and then increment the total accordingly. 
-                                    if ($charttype == 3) {
-                                        if ($course->gugradesenabled) {
-                                            $params = [
+                                    $includeactivityitem = false;
+                                    if ($filtercourseby == 'summative') {
+                                        // Either the activity item's 'weighting' needs to be greater than 0.
+                                        if ($activityitem->aggregationcoef > 0) {
+                                            $includeactivityitem = true;
+                                        } else {
+                                            // Or we now look to the parent to see if its weighting is greater than 0
+                                            $parent = $DB->get_record('grade_items', [
                                                 'courseid' => $activityitem->courseid,
-                                                'gradeitemid' => $activityitem->id,
-                                                'userid' => $USER->id,
-                                                'gradetype' => 'RELEASED',
-                                                'iscurrent' => 1,
-                                            ];
-                                            if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
-                                                // Swap all of this for the relevant mygrades API calls - if/when one exists.
-                                                $gradestatus = new stdClass();
-                                                foreach ($usergrades as $usergrade) {
-                                                    // MGU-631 - Honour hidden grades and hidden activities.
-                                                    $isgradehidden = \local_gugrades\api::is_grade_hidden($activityitem->id, $USER->id);
-                                                    if (!$isgradehidden) {
-                                                        $gradestatus->grade_date = $usergrade->audittimecreated;
-                                                        $gradestatus->assessment_url = $CFG->wwwroot . '/' . $activityitem->itemtype . '/'
-                                                        . $activityitem->itemmodule . '/view.php?id=' . $cm->id;
-                                                        $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
-                                                        $gradestatus->status_link = '';
-                                                        $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
-                                                        $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
+                                                'itemtype' => 'category',
+                                                'iteminstance' => $activityitem->categoryid,
+                                            ]);
+                                            if ($parent) {
+                                                if ($parent->aggregationcoef > 0) {
+                                                    $includeactivityitem = true;
+                                                }
+                                                // If that fails, does the name 'summative' appear in the category name
+                                                $gradecategory = $DB->get_record('grade_categories', [
+                                                    'id' => $activityitem->categoryid,
+                                                ]);
+
+                                                if (stripos($gradecategory->fullname, $filtercourseby) !== false) {
+                                                    $includeactivityitem = true;
+                                                }
+                                            }
+                                        }
+                                    } elseif ($filtercourseby == 'formative') {
+                                        if ($activityitem->aggregationcoef == 0) {
+                                            // Just because the aggregationcoef of the item = 0, we
+                                            // still need to check which grade category it belongs to.
+                                            $parent = $DB->get_record('grade_items', [
+                                                'courseid' => $activityitem->courseid,
+                                                'itemtype' => 'category',
+                                                'iteminstance' => $activityitem->categoryid,
+                                            ]);
+                                            if ($parent) {
+                                                $gradecategory = $DB->get_record('grade_categories', [
+                                                    'id' => $activityitem->categoryid,
+                                                ]);
+                                                if ($parent->aggregationcoef == 0 || stripos($gradecategory->fullname,
+                                                    $filtercourseby) !== false) {
+                                                    $includeactivityitem = true;
+                                                }
+                                            }
+                                        }
+                                    } elseif ($filtercourseby == '') {
+                                        $includeactivityitem = true;
+                                    }
+                                    
+                                    if ($includeactivityitem) {
+                                        // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
+                                        // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
+                                        if ($activityitem->itemmodule == 'lti') {
+                                            if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
+                                                continue;
+                                            }
+                                        }
+
+                                        // We had overlooked that we needed to check the course type when collating these numbers.
+                                        // If the course that this activity belongs to is a MyGrades course, first check if we have
+                                        // any 'Released' grades, for the Graded section - and then increment the total accordingly. 
+                                        if ($charttype == 3) {
+                                            if ($course->gugradesenabled) {
+                                                $params = [
+                                                    'courseid' => $activityitem->courseid,
+                                                    'gradeitemid' => $activityitem->id,
+                                                    'userid' => $USER->id,
+                                                    'gradetype' => 'RELEASED',
+                                                    'iscurrent' => 1,
+                                                ];
+                                                if ($usergrades = $DB->get_records('local_gugrades_grade', $params)) {
+                                                    // Swap all of this for the relevant mygrades API calls - if/when one exists.
+                                                    $gradestatus = new stdClass();
+                                                    foreach ($usergrades as $usergrade) {
+                                                        // MGU-631 - Honour hidden grades and hidden activities.
+                                                        $isgradehidden = \local_gugrades\api::is_grade_hidden($activityitem->id, $USER->id);
+                                                        if (!$isgradehidden) {
+                                                            $gradestatus->grade_date = $usergrade->audittimecreated;
+                                                            $gradestatus->assessment_url = $CFG->wwwroot . '/' . $activityitem->itemtype . '/'
+                                                            . $activityitem->itemmodule . '/view.php?id=' . $cm->id;
+                                                            $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
+                                                            $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
+                                                            $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
+                                                            $gradestatus->status_link = '';
+                                                            $gradestatus->grade_to_display = get_string('status_text_graded', 'block_newgu_spdetails');
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
+                                                } else {
+                                                    // Get the activity based on its type...
+                                                    $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
+                                                        $activityitem->id,
+                                                        $USER->id,
+                                                        $activityitem->gradetype,
+                                                        $activityitem->scaleid,
+                                                        $activityitem->grademax,
+                                                        '',
+                                                    );
+
+                                                    if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display ==
+                                                        get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                                            continue;
+                                                    }
                                                 }
                                             } else {
                                                 // Get the activity based on its type...
@@ -885,8 +1172,14 @@ class course {
                                                     $activityitem->grademax,
                                                     '',
                                                 );
+
+                                                if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display ==
+                                                    get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                                        continue;
+                                                }
                                             }
                                         } else {
+
                                             // Get the activity based on its type...
                                             $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
                                                 $activityitem->id,
@@ -897,72 +1190,61 @@ class course {
                                                 '',
                                             );
                                         }
-                                    } else {
 
-                                        // Get the activity based on its type...
-                                        $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($activityitem->courseid,
-                                            $activityitem->id,
-                                            $USER->id,
-                                            $activityitem->gradetype,
-                                            $activityitem->scaleid,
-                                            $activityitem->grademax,
-                                            '',
-                                        );
-                                    }
+                                        $status = $gradestatus->grade_status;
+                                        $date = '';
+                                        $rawduedate = '';
 
-                                    $status = $gradestatus->grade_status;
-                                    $date = '';
-                                    $rawduedate = '';
+                                        if ($status == $whichstatus) {
+                                            $itemicon = '';
+                                            $iconalt = '';
+                                            if ($iconurl = $cm->get_icon_url()->out(false)) {
+                                                $itemicon = $iconurl;
+                                                $a = new \stdClass();
+                                                $a->modulename = get_string('modulename', $activityitem->itemmodule);
+                                                $a->activityname = $cm->name;
+                                                $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+                                            }
 
-                                    if ($status == $whichstatus) {
-                                        $itemicon = '';
-                                        $iconalt = '';
-                                        if ($iconurl = $cm->get_icon_url()->out(false)) {
-                                            $itemicon = $iconurl;
-                                            $a = new \stdClass();
-                                            $a->modulename = get_string('modulename', $activityitem->itemmodule);
-                                            $a->activityname = $cm->name;
-                                            $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+                                            switch($charttype) {
+                                                case 3:
+                                                    if (property_exists($gradestatus, 'grade_date') && $gradestatus->grade_date != '') {
+                                                        $dateobj = \DateTime::createFromFormat('U', $gradestatus->grade_date);
+                                                        $date = $dateobj->format('jS F Y');
+                                                        $rawduedate = $gradestatus->grade_date;
+                                                    }
+                                                    break;
+                                                default:
+                                                    $date = $gradestatus->due_date;
+                                                    $rawduedate = $gradestatus->raw_due_date;
+                                                    break;
+                                            }
+
+                                            $assessmenttype = self::return_assessmenttype($course->fullname,
+                                            $activityitem->aggregationcoef);
+                                            $assessmentweight = self::return_weight($activityitem->aggregationcoef);
+                                            $tmp = [
+                                                'id' => $activityitem->id,
+                                                'courseurl' => $courseurl->out(),
+                                                'coursename' => $course->shortname,
+                                                'assessment_url' => $gradestatus->assessment_url,
+                                                'item_icon' => $itemicon,
+                                                'icon_alt' => $iconalt,
+                                                'item_name' => $activityitem->itemname,
+                                                'assessment_type' => $assessmenttype,
+                                                'assessment_weight' => $assessmentweight . '%',
+                                                'raw_assessment_weight' => $assessmentweight,
+                                                'due_date' => $date,
+                                                'raw_due_date' => $rawduedate,
+                                                'grade_status' => $gradestatus->grade_status,
+                                                'status_link' => $gradestatus->status_link,
+                                                'status_class' => $gradestatus->status_class,
+                                                'status_text' => $gradestatus->status_text,
+                                                'gradebookenabled' => '',
+                                            ];
+
+                                            $assessmentdata[] = $tmp;
                                         }
-
-                                        switch($charttype) {
-                                            case 3:
-                                                if (property_exists($gradestatus, 'grade_date') && $gradestatus->grade_date != '') {
-                                                    $dateobj = \DateTime::createFromFormat('U', $gradestatus->grade_date);
-                                                    $date = $dateobj->format('jS F Y');
-                                                    $rawduedate = $gradestatus->grade_date;
-                                                }
-                                                break;
-                                            default:
-                                                $date = $gradestatus->due_date;
-                                                $rawduedate = $gradestatus->raw_due_date;
-                                                break;
-                                        }
-
-                                        $assessmenttype = self::return_assessmenttype($course->fullname,
-                                        $activityitem->aggregationcoef);
-                                        $assessmentweight = self::return_weight($activityitem->aggregationcoef);
-                                        $tmp = [
-                                            'id' => $activityitem->id,
-                                            'courseurl' => $courseurl->out(),
-                                            'coursename' => $course->shortname,
-                                            'assessment_url' => $gradestatus->assessment_url,
-                                            'item_icon' => $itemicon,
-                                            'icon_alt' => $iconalt,
-                                            'item_name' => $activityitem->itemname,
-                                            'assessment_type' => $assessmenttype,
-                                            'assessment_weight' => $assessmentweight . '%',
-                                            'raw_assessment_weight' => $assessmentweight,
-                                            'due_date' => $date,
-                                            'raw_due_date' => $rawduedate,
-                                            'grade_status' => $gradestatus->grade_status,
-                                            'status_link' => $gradestatus->status_link,
-                                            'status_class' => $gradestatus->status_class,
-                                            'status_text' => $gradestatus->status_text,
-                                            'gradebookenabled' => '',
-                                        ];
-
-                                        $assessmentdata[] = $tmp;
                                     }
                                 }
                             }

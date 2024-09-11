@@ -47,7 +47,7 @@ class api extends external_api {
      * @return array $data
      */
     public static function retrieve_assessments(string $activetab, int $page, string $sortby, string $sortorder,
-    int $subcategory = null): array {
+    int $subcategory = null, string $coursefilter): array {
         global $USER, $OUTPUT, $PAGE;
         $PAGE->set_context(context_system::instance());
 
@@ -60,12 +60,14 @@ class api extends external_api {
             'sortby' => $sortby,
             'sortorder' => $sortorder,
             'subcategory' => $subcategory,
+            'coursefilter' => $coursefilter
         ];
         $url = new \moodle_url('/index.php', $params);
         $totalassessments = 0;
         $data = [];
 
-        $items = self::retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder, $subcategory);
+        $items = self::retrieve_gradable_activities($activetab, $userid, $sortby, $sortorder,
+        $subcategory, $coursefilter);
 
         if ($items) {
             $totalassessments = count($items);
@@ -95,7 +97,7 @@ class api extends external_api {
      * @throws dml_exception
      */
     public static function retrieve_gradable_activities(string $activetab, int $userid, string $sortby = null, string $sortorder,
-    int $subcategory = null): array {
+    int $subcategory = null, string $coursefilter): array {
         $gradableactivities = [];
 
         // Start with getting the top level categories for all courses.
@@ -119,7 +121,8 @@ class api extends external_api {
 
             $courses = \local_gugrades\api::dashboard_get_courses($userid, $currentcourses, $pastcourses, $sortby . " " .
             $sortorder);
-            return \block_newgu_spdetails\course::get_course_structure($courses, $currentcourses);
+            return \block_newgu_spdetails\course::get_course_structure($courses,
+            $currentcourses, $coursefilter);
         } else {
             $gradableactivities = \block_newgu_spdetails\activity::get_activityitems($subcategory, $userid, $activetab, $sortby,
             $sortorder);
@@ -131,11 +134,13 @@ class api extends external_api {
     /**
      * Return the assessments that are due in the next 24 hours, week and month.
      *
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array
      */
-    public static function get_assessmentsduesoon(): array {
+    public static function get_assessmentsduesoon(string $activetab, string $coursefilter): array {
 
-        $stats = \block_newgu_spdetails\course::get_assessmentsduesoon();
+        $stats = \block_newgu_spdetails\course::get_assessmentsduesoon($activetab, $coursefilter);
 
         return $stats;
     }
@@ -155,11 +160,13 @@ class api extends external_api {
     /**
      * Return a summary of current assessments for the student
      *
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array
      */
-    public static function get_assessmentsummary(): array {
+    public static function get_assessmentsummary(string $activetab, string $coursefilter): array {
 
-        $summary = \block_newgu_spdetails\course::get_assessmentsummary();
+        $summary = \block_newgu_spdetails\course::get_assessmentsummary($activetab, $coursefilter);
 
         return $summary;
     }
@@ -168,10 +175,12 @@ class api extends external_api {
      * Return the assessment summary - filtered by type: submitted, overdue etc.
      *
      * @param int $charttype
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array
      */
-    public static function get_assessmentsummarybytype(int $charttype): array {
-        $assessmentsummary = \block_newgu_spdetails\course::get_assessmentsummarybytype($charttype);
+    public static function get_assessmentsummarybytype(int $charttype, string $activetab, string $coursefilter): array {
+        $assessmentsummary = \block_newgu_spdetails\course::get_assessmentsummarybytype($charttype, $activetab, $coursefilter);
 
         return $assessmentsummary;
     }

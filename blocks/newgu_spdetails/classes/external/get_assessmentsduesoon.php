@@ -42,7 +42,8 @@ class get_assessmentsduesoon extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            // No params needed at this time.
+            'activetab' => new external_value(PARAM_ALPHA, 'The active tab', VALUE_DEFAULT),
+            'coursefilter' => new external_value(PARAM_ALPHA, 'The course filter', VALUE_DEFAULT),
         ]);
     }
 
@@ -53,12 +54,19 @@ class get_assessmentsduesoon extends external_api {
      * given that the service gets called each time the user visits the
      * dashboard.
      *
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array of assessments, grouped by return time.
      * @throws \invalid_parameter_exception
      */
-    public static function execute(): array {
+    public static function execute(string $activetab, string $coursefilter): array {
 
-        $assessmentsduesoon = \block_newgu_spdetails\api::get_assessmentsduesoon();
+        $params = self::validate_parameters(self::execute_parameters(),
+            [
+                'activetab' => $activetab,
+                'coursefilter' => $coursefilter,
+            ]);
+        $assessmentsduesoon = \block_newgu_spdetails\api::get_assessmentsduesoon($params['activetab'], $params['coursefilter']);
         $twentyfourhours = $assessmentsduesoon['24hours'];
         $week = $assessmentsduesoon['week'];
         $month = $assessmentsduesoon['month'];

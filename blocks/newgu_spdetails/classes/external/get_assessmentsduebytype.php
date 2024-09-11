@@ -43,6 +43,8 @@ class get_assessmentsduebytype extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'charttype' => new external_value(PARAM_INT, 'The selected type', VALUE_DEFAULT),
+            'activetab' => new external_value(PARAM_ALPHA, 'The active tab', VALUE_DEFAULT),
+            'coursefilter' => new external_value(PARAM_ALPHA, 'The course filter', VALUE_DEFAULT),
         ]);
     }
 
@@ -50,17 +52,22 @@ class get_assessmentsduebytype extends external_api {
      * Return the assessments.
      *
      * @param int $charttype
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array of assessments.
      * @throws \invalid_parameter_exception
      */
-    public static function execute(int $charttype): array {
+    public static function execute(int $charttype, string $activetab, string $coursefilter): array {
         $params = self::validate_parameters(self::execute_parameters(),
             [
                 'charttype' => $charttype,
+                'activetab' => $activetab,
+                'coursefilter' => $coursefilter,
             ]
         );
         return [
-            'result' => json_encode(\block_newgu_spdetails\api::get_assessmentsduebytype($params['charttype'])),
+            'result' => json_encode(\block_newgu_spdetails\api::get_assessmentsduebytype($params['charttype'],
+            $params['activetab'], $params['coursefilter'])),
         ];
     }
 

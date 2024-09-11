@@ -44,18 +44,26 @@ class get_assessmentsummary extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            // No params needed at this time.
+            'activetab' => new external_value(PARAM_ALPHA, 'The active tab', VALUE_DEFAULT),
+            'coursefilter' => new external_value(PARAM_ALPHA, 'The course filter', VALUE_DEFAULT),
         ]);
     }
 
     /**
      * Return the assessment summary statistics
      *
+     * @param string $activetab
+     * @param string $coursefilter
      * @return array of assessment summary statistics
      */
-    public static function execute(): array {
+    public static function execute(string $activetab, string $coursefilter): array {
 
-        $assessmentsummary = \block_newgu_spdetails\api::get_assessmentsummary();
+        $params = self::validate_parameters(self::execute_parameters(),
+            [
+                'activetab' => $activetab,
+                'coursefilter' => $coursefilter,
+            ]);
+        $assessmentsummary = \block_newgu_spdetails\api::get_assessmentsummary($params['activetab'], $params['coursefilter']);
         $totalsubmissions = $assessmentsummary['total_submissions'];
         $totaltosubmit = $assessmentsummary['total_tosubmit'];
         $totaloverdue = $assessmentsummary['total_overdue'];

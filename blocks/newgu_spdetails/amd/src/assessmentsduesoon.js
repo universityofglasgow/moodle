@@ -41,6 +41,10 @@ const Selectors = {
 
 const viewAssessmentsDueByChartType = function(chartItem, legendItem) {
     const chartType = ((legendItem) ? legendItem.datasetIndex : chartItem);
+    const crsFilter = document.querySelector('#course_contents_container [data-region="filter"] ul li [aria-current="true"]');
+    const filterValue = crsFilter.getAttribute('data-value');
+    let activeTab = sessionStorage.getItem('activeTab') !== null ?
+    sessionStorage.getItem('activeTab') : 'current';
 
     let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
     if (containerBlock.checkVisibility()) {
@@ -62,7 +66,9 @@ const viewAssessmentsDueByChartType = function(chartItem, legendItem) {
     ajax.call([{
         methodname: 'block_newgu_spdetails_get_assessmentsduebytype',
         args: {
-            charttype: chartType
+            charttype: chartType,
+            coursefilter: filterValue,
+            activetab: activeTab
         },
     }])[0].done(function(response) {
         document.querySelector('.loader').remove();
@@ -143,17 +149,27 @@ const returnToAssessmentsHandler = () => {
 
 /**
  * @method fetchAssessmentsDueSoon
+ * @param {string} activeTab
+ * @param {string} courseFilter
  */
-const fetchAssessmentsDueSoon = () => {
+const fetchAssessmentsDueSoon = (activeTab, courseFilter) => {
+    window.console.log('fetchAssessmentsDueSoon called with filter:', courseFilter, ' activeTab:', activeTab);
     Chart.register(BarController);
     let tempPanel = document.querySelector(Selectors.DUESOON_BLOCK);
+    // This will only exist after the initial page load.
+    if (tempPanel.firstChild) {
+        tempPanel.firstChild.remove();
+    }
 
     tempPanel.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
         "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
 
     ajax.call([{
         methodname: 'block_newgu_spdetails_get_assessmentsduesoon',
-        args: {},
+        args: {
+            activetab: activeTab,
+            coursefilter: courseFilter
+        },
     }])[0].done(function(response) {
         document.querySelector('.loader').remove();
         tempPanel.insertAdjacentHTML("afterbegin", "<canvas id='assessmentsDueSoonChart'\n" +
@@ -400,7 +416,9 @@ const fetchAssessmentsDueSoon = () => {
 
 /**
  * @constructor
+ * @param {string} activeTab
+ * @param {string} courseFilter
  */
-export const init = () => {
-    fetchAssessmentsDueSoon();
+export const init = (activeTab, courseFilter) => {
+    fetchAssessmentsDueSoon(activeTab, courseFilter);
 };

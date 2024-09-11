@@ -26,9 +26,11 @@
 
 import * as Log from 'core/log';
 import * as Ajax from "../../../../lib/amd/src/ajax";
-import {exception as displayException} from 'core/notification';
+import { exception as displayException } from 'core/notification';
 import Templates from 'core/templates';
 import sortTable from 'block_newgu_spdetails/sorting';
+import * as fetchAssessmentSummary from 'block_newgu_spdetails/assessmentsummary';
+import * as fetchAssessmentsDueSoon from 'block_newgu_spdetails/assessmentsduesoon';
 
 const initCourseTabs = () => {
 
@@ -39,6 +41,9 @@ const initCourseTabs = () => {
     let subcatId = null;
     let activeTab = sessionStorage.getItem('activeTab');
     let activeCategoryId = sessionStorage.getItem('activeCategoryId');
+    // MGU-971 - last minute CR - throw in a course filter!
+    let coursefilter = sessionStorage.getItem('coursefilter') !== null ?
+    sessionStorage.getItem('coursefilter') : 'creditcourses';
 
     // Account for returning to the page, or reloading.
     if (activeTab) {
@@ -65,7 +70,7 @@ const initCourseTabs = () => {
     }
 
     // Load the assessments for the "current" tab to begin with...
-    loadAssessments(activetab, page, sortby, sortorder, subcatId);
+    loadAssessments(activetab, page, sortby, sortorder, subcatId, coursefilter);
 
     const triggerTabList = document.querySelectorAll('#courses-Tab button');
 
@@ -82,7 +87,17 @@ const initCourseTabs = () => {
     });
 };
 
-const loadAssessments = function(activetab, page, sortby, sortorder, subcategory = null) {
+/**
+ *
+ * @param {*} activetab
+ * @param {*} page
+ * @param {*} sortby
+ * @param {*} sortorder
+ * @param {*} subcategory
+ * @param {string} coursefilter which course types do we want to see.
+ */
+const loadAssessments = function(activetab, page, sortby, sortorder, subcategory = null,
+    coursefilter = 'creditcourses') {
     let containerBlock = document.querySelector('#course_contents_container');
 
     let whichTemplate = subcategory === null ? 'coursecategory' : 'coursesubcategory';
@@ -101,12 +116,15 @@ const loadAssessments = function(activetab, page, sortby, sortorder, subcategory
             page: page,
             sortby: sortby,
             sortorder: sortorder,
-            subcategory: subcategory
+            subcategory: subcategory,
+            coursefilter: coursefilter
         }
     }]);
     promise[0].done(function(response) {
         document.querySelector('.loader').remove();
         let coursedata = JSON.parse(response.result);
+        // MGU-971 - jam in the selected course filter option
+        coursedata[`${coursefilter}`] = true;
         Templates.renderForPromise('block_newgu_spdetails/' + whichTemplate, {data: coursedata})
         .then(({html, js}) => {
             Templates.appendNodeContents(containerBlock, html, js);
@@ -117,6 +135,7 @@ const loadAssessments = function(activetab, page, sortby, sortorder, subcategory
             subCategoryEventHandler(subCategories);
             subCategoryReturnHandler(coursedata.parent);
             sortingEventHandler(sortColumns);
+            courseFilterEventHandler(activetab, page, sortby, sortorder, subcategory);
 
             // So we can allow returning to the last item correctly...
             sessionStorage.setItem('activeTab', activetab);
@@ -203,8 +222,11 @@ const showSubcategoryDetails = (object) => {
         } else {
             activetab = 'past';
         }
+        // MGU-971 - last minute CR - throw in a course filter!
+        let coursefilter = sessionStorage.getItem('coursefilter') !== null ?
+            sessionStorage.getItem('coursefilter') : 'creditcourses';
         // Ordering by DueDate by default....
-        loadAssessments(activetab, 0, 'duedate', 'asc', id);
+        loadAssessments(activetab, 0, 'duedate', 'asc', id, coursefilter);
     }
 };
 
@@ -225,7 +247,10 @@ const subCategoryReturnHandler = (id) => {
             } else {
                 activetab = 'past';
             }
-            loadAssessments(activetab, 0, 'shortname', 'asc', id);
+            // MGU-971 - last minute CR - throw in a course filter!
+            let coursefilter = sessionStorage.getItem('coursefilter') !== null ?
+                sessionStorage.getItem('coursefilter') : 'creditcourses';
+            loadAssessments(activetab, 0, 'shortname', 'asc', id, coursefilter);
         });
 
         document.querySelector('#subcategory-return-assessment').addEventListener('keyup', function(event) {
@@ -252,13 +277,55 @@ const sortingEventHandler = (rows) => {
 };
 
 /**
+ * Function to now allow filtering courses on the category name, i.e. summative/formative.
+ * @see https://uofglasgow.atlassian.net/browse/MGU-971 for further insight.
+ * @param {*} activetab
+ * @param {*} page
+ * @param {*} sortby
+ * @param {*} sortorder
+ * @param {*} subcatId
+ */
+const courseFilterEventHandler = (activetab, page, sortby, sortorder, subcatId) => {
+    let selector = document.querySelectorAll('#course_contents_container [data-region="filter"] ul li');
+    selector.forEach((element) => {
+        element.addEventListener('click', (e) => {
+            const option = e.target;
+
+            if (option.classList.contains('active')) {
+                // If it's already active then we don't need to do anything.
+                return;
+            }
+            // Remove the previous value.
+            sessionStorage.removeItem('coursefilter');
+            const coursefilter = option.getAttribute('data-value');
+            sessionStorage.setItem('coursefilter', coursefilter);
+
+            loadAssessments(activetab, page, sortby, sortorder, subcatId, coursefilter, true);
+            fetchAssessmentSummary.init(activetab, coursefilter);
+            fetchAssessmentsDueSoon.init(activetab, coursefilter);
+
+            // This stops the page from jumping back to the top.
+            e.preventDefault();
+        });
+    });
+
+    selector.forEach((element) => {
+        element.addEventListener('keyup', function(event) {
+            let element = document.activeElement;
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                element.click();
+            }
+        });
+    });
+};
+
+/**
  * Function to bind events to tabs.
  *
  * @param {object} event
  */
 const handleTabChange = function(event) {
-    event.preventDefault();
-
     let currentTab = document.querySelector('#current_tab');
     let pastTab = document.querySelector('#past_tab');
     let activetab = '';
@@ -280,8 +347,13 @@ const handleTabChange = function(event) {
         default:
             break;
     }
-
-    loadAssessments(activetab, page, sortby, sortorder);
+    // MGU-971 - last minute CR - throw in a course filter!
+    let coursefilter = sessionStorage.getItem('coursefilter') !== null ?
+    sessionStorage.getItem('coursefilter') : 'creditcourses';
+    loadAssessments(activetab, page, sortby, sortorder, null, coursefilter);
+    fetchAssessmentSummary.init(activetab, coursefilter);
+    fetchAssessmentsDueSoon.init(activetab, coursefilter);
+    event.preventDefault();
 };
 
 

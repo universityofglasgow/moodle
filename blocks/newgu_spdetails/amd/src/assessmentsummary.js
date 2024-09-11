@@ -26,8 +26,8 @@
 
 import * as Log from 'core/log';
 import * as ajax from 'core/ajax';
-import {Chart, DoughnutController} from 'core/chartjs';
-import {exception as displayException} from 'core/notification';
+import { Chart, DoughnutController } from 'core/chartjs';
+import { exception as displayException } from 'core/notification';
 import Templates from 'core/templates';
 import sortTable from 'block_newgu_spdetails/sorting';
 
@@ -39,76 +39,78 @@ const Selectors = {
 };
 
 const viewAssessmentSummaryByChartType = function(event, legendItem, legend) {
-    Log.debug('viewAssessmentSummaryByChartType called');
-    // We don't want this firing from the main Dashboard page.
-    if (!document.querySelector('#student_dashboard')) {
-        const chartType = ((legendItem) ? legendItem.index : legend);
+    const chartType = ((legendItem) ? legendItem.index : legend);
+    const crsFilter = document.querySelector('#course_contents_container [data-region="filter"] ul li [aria-current="true"]');
+    const filterValue = crsFilter.getAttribute('data-value');
+    let activeTab = sessionStorage.getItem('activeTab') !== null ?
+    sessionStorage.getItem('activeTab') : 'current';
 
-        let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
-        if (containerBlock) {
-            if (containerBlock.checkVisibility()) {
-                containerBlock.classList.add('hidden-container');
-            }
+    let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
+    if (containerBlock) {
+        if (containerBlock.checkVisibility()) {
+            containerBlock.classList.add('hidden-container');
         }
-
-        let assessmentsDueBlock = document.querySelector(Selectors.ASSESSMENTSDUE_BLOCK);
-        let assessmentsDueContents = document.querySelector(Selectors.ASSESSMENTSDUE_CONTENTS);
-
-        if (assessmentsDueBlock.children.length > 0) {
-            assessmentsDueContents.innerHTML = '';
-        }
-
-        assessmentsDueBlock.classList.remove('hidden-container');
-
-        assessmentsDueContents.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
-            "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
-
-        ajax.call([{
-            methodname: 'block_newgu_spdetails_get_assessmentsummarybytype',
-            args: {
-                charttype: chartType
-            },
-        }])[0].done(function(response) {
-            document.querySelector('.loader').remove();
-            let assessmentdata = JSON.parse(response.result);
-            Templates.renderForPromise('block_newgu_spdetails/assessmentsdue', {data: assessmentdata})
-            .then(({html, js}) => {
-                Templates.appendNodeContents(assessmentsDueContents, html, js);
-                returnToAssessmentsHandler();
-                let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
-                sortingEventHandler(sortColumns);
-                return true;
-            }).catch((error) => displayException(error));
-        }).fail(function(response) {
-            if (response) {
-                document.querySelector('.loader').remove();
-                let errorContainer = document.createElement('div');
-                errorContainer.classList.add('alert', 'alert-danger');
-
-                if (response.hasOwnProperty('message')) {
-                    let errorMsg = document.createElement('p');
-
-                    errorMsg.innerHTML = response.message;
-                    errorContainer.appendChild(errorMsg);
-                    errorMsg.classList.add('errormessage');
-                }
-
-                if (response.hasOwnProperty('moreinfourl')) {
-                    let errorLinkContainer = document.createElement('p');
-                    let errorLink = document.createElement('a');
-
-                    errorLink.setAttribute('href', response.moreinfourl);
-                    errorLink.setAttribute('target', '_blank');
-                    errorLink.innerHTML = 'More information about this error';
-                    errorContainer.appendChild(errorLinkContainer);
-                    errorLinkContainer.appendChild(errorLink);
-                    errorLinkContainer.classList.add('errorcode');
-                }
-
-                assessmentsDueContents.prepend(errorContainer);
-            }
-        });
     }
+
+    let assessmentsDueBlock = document.querySelector(Selectors.ASSESSMENTSDUE_BLOCK);
+    let assessmentsDueContents = document.querySelector(Selectors.ASSESSMENTSDUE_CONTENTS);
+
+    if (assessmentsDueBlock.children.length > 0) {
+        assessmentsDueContents.innerHTML = '';
+    }
+
+    assessmentsDueBlock.classList.remove('hidden-container');
+
+    assessmentsDueContents.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
+        "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
+
+    ajax.call([{
+        methodname: 'block_newgu_spdetails_get_assessmentsummarybytype',
+        args: {
+            charttype: chartType,
+            activetab: activeTab,
+            coursefilter: filterValue
+        },
+    }])[0].done(function(response) {
+        document.querySelector('.loader').remove();
+        let assessmentdata = JSON.parse(response.result);
+        Templates.renderForPromise('block_newgu_spdetails/assessmentsdue', {data: assessmentdata})
+        .then(({ html, js }) => {
+            Templates.appendNodeContents(assessmentsDueContents, html, js);
+            returnToAssessmentsHandler();
+            let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
+            sortingEventHandler(sortColumns);
+            return true;
+        }).catch((error) => displayException(error));
+    }).fail(function(response) {
+        if (response) {
+            document.querySelector('.loader').remove();
+            let errorContainer = document.createElement('div');
+            errorContainer.classList.add('alert', 'alert-danger');
+
+            if (response.hasOwnProperty('message')) {
+                let errorMsg = document.createElement('p');
+
+                errorMsg.innerHTML = response.message;
+                errorContainer.appendChild(errorMsg);
+                errorMsg.classList.add('errormessage');
+            }
+
+            if (response.hasOwnProperty('moreinfourl')) {
+                let errorLinkContainer = document.createElement('p');
+                let errorLink = document.createElement('a');
+
+                errorLink.setAttribute('href', response.moreinfourl);
+                errorLink.setAttribute('target', '_blank');
+                errorLink.innerHTML = 'More information about this error';
+                errorContainer.appendChild(errorLinkContainer);
+                errorLinkContainer.appendChild(errorLink);
+                errorLinkContainer.classList.add('errorcode');
+            }
+
+            assessmentsDueContents.prepend(errorContainer);
+        }
+    });
 };
 
 /**
@@ -148,17 +150,26 @@ const returnToAssessmentsHandler = () => {
 
 /**
  * @method fetchAssessmentSummary
+ * @param {string} activeTab
+ * @param {string} courseFilter
  */
-const fetchAssessmentSummary = () => {
+const fetchAssessmentSummary = (activeTab, courseFilter) => {
     Chart.register(DoughnutController);
     let tempPanel = document.querySelector(Selectors.SUMMARY_BLOCK);
+    // This will only exist after the initial page load.
+    if (tempPanel.firstChild) {
+        tempPanel.firstChild.remove();
+    }
 
     tempPanel.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
         "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
 
     ajax.call([{
         methodname: 'block_newgu_spdetails_get_assessmentsummary',
-        args: {},
+        args: {
+            activetab: activeTab,
+            coursefilter: courseFilter
+        },
     }])[0].done(function(response) {
         document.querySelector('.loader').remove();
         // With the 'block' now being a link in the top nav, users can still add this,
@@ -176,31 +187,31 @@ const fetchAssessmentSummary = () => {
         // Check for the contrast setting
         if (document.querySelector('.hillhead40-night')) {
             tmpFontColour = '#95B7E6';
-            document.querySelector('.alert.alert-info a').style.color='#95B7E6';
+            document.querySelector('.alert.alert-info a').style.color = '#95B7E6';
         }
         if (document.querySelector('.hillhead40-contrast-wb')) {
             tmpFontColour = '#eee';
-            document.querySelector('.alert.alert-info a').style.color='#eee';
+            document.querySelector('.alert.alert-info a').style.color = '#eee';
         }
         if (document.querySelector('.hillhead40-contrast-yb')) {
             tmpFontColour = '#ee6';
-            document.querySelector('.alert.alert-info a').style.color='#ee6';
+            document.querySelector('.alert.alert-info a').style.color = '#ee6';
         }
         if (document.querySelector('.hillhead40-contrast-by')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         if (document.querySelector('.hillhead40-contrast-wg')) {
             tmpFontColour = '#eee';
-            document.querySelector('.alert.alert-info a').style.color='#eee';
+            document.querySelector('.alert.alert-info a').style.color = '#eee';
         }
         if (document.querySelector('.hillhead40-contrast-br')) {
             document.querySelector('.alert.alert-info a').style.color='#000';
         }
         if (document.querySelector('.hillhead40-contrast-bb')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         if (document.querySelector('.hillhead40-contrast-bw')) {
-            document.querySelector('.alert.alert-info a').style.color='#000';
+            document.querySelector('.alert.alert-info a').style.color = '#000';
         }
         // Check for the font setting
         let tmpFontFamily = "'Hillhead', 'Ubuntu', 'Trebuchet MS', 'Arial', sans-serif";
@@ -280,23 +291,17 @@ const fetchAssessmentSummary = () => {
                 options: {
                     responsive: true,
                     onHover: (event, chartElement) => {
-                        if (!document.querySelector('#student_dashboard')) {
-                            event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
-                        }
+                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                     },
                     plugins: {
                         legend: {
                             display: true,
                             position: legendPosition,
                             onClick: (event, legendItem, legend) => {
-                                if (!document.querySelector('#student_dashboard')) {
-                                    viewAssessmentSummaryByChartType(event, legendItem, legend);
-                                }
+                                viewAssessmentSummaryByChartType(event, legendItem, legend);
                             },
                             onHover: (event) => {
-                                if (!document.querySelector('#student_dashboard')) {
-                                    event.native.target.style.cursor = 'pointer';
-                                }
+                                event.native.target.style.cursor = 'pointer';
                             },
                             onLeave: (event) => {
                                 event.native.target.style.cursor = 'default';
@@ -353,7 +358,7 @@ const fetchAssessmentSummary = () => {
 
         const canvas = document.getElementById('assessmentSummaryChart');
         canvas.onclick = (evt) => {
-            const points = chart.getElementsAtEventForMode(evt, 'nearest', {intersect: true}, true);
+            const points = chart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
 
             if (points.length) {
                 const firstPoint = points[0];
@@ -371,7 +376,9 @@ const fetchAssessmentSummary = () => {
 
 /**
  * @constructor
+ * @param {string} activeTab
+ * @param {string} courseFilter
  */
-export const init = () => {
-    fetchAssessmentSummary();
+export const init = (activeTab, courseFilter) => {
+    fetchAssessmentSummary(activeTab, courseFilter);
 };

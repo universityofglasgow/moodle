@@ -31,12 +31,18 @@ import * as CourseTabs from 'block_newgu_spdetails/coursetabs';
  * Initialise the Student Dashboard.
  */
 export const init = () => {
+    // MGU-971 - last minute CR - throw in a course filter!
+    let courseFilter = sessionStorage.getItem('coursefilter') !== null ?
+    sessionStorage.getItem('coursefilter') : 'creditcourses';
+    let activeTab = sessionStorage.getItem('activeTab') !== null ?
+    sessionStorage.getItem('activeTab') : 'current';
+
     // Insert the Beta notification as we can't do this via the rendering mechanism.
     BetaNotification.init();
     // Initialise the assessment summary section.
-    AssessmentSummary.init();
+    AssessmentSummary.init(activeTab, courseFilter);
     // Initialise the assessments due soon section
-    AssessmentsDueSoon.init();
+    AssessmentsDueSoon.init(activeTab, courseFilter);
     // Initialise the assessment tabs section.
     CourseTabs.init();
 };
