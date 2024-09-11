@@ -142,12 +142,21 @@ abstract class base {
 
     /**
      * Get user IDs
+     * This data is cached
      * @return array
      */
     public function get_user_ids() {
-        $users = $this->get_users();
+        $cache = \cache::make('local_gugrades', 'availableusers');
 
-        return array_column($users, 'id');
+        // Unique cache tag for course and gradeitem
+        $cachetag = 'AVAILABLE_' . $this->courseid . '_' . $this->gradeitemid;
+        if (!$userids = $cache->get($cachetag)) {
+            $users = $this->get_users();
+            $userids = array_column($users, 'id');
+            $cache->set($cachetag, $userids);
+        }
+
+        return $userids;
     }
 
     /**

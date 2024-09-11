@@ -307,6 +307,7 @@
                     isadmin: field.isadmin,
                     hidden: field.hidden,
                     overridden: field.overridden,
+                    available: field.available,
                 };
         });
 

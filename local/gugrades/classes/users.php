@@ -268,4 +268,17 @@ class users {
 
         return false;
     }
+
+    /**
+     * Clear availability cache.
+     * @param int $courseid
+     */
+    public static function clear_availability_cache(int $courseid) {
+        global $DB;
+
+        $items = $DB->get_records('grade_items', ['courseid' => $courseid]);
+        foreach ($items as $item) {
+            $cachetag = 'AVAILABLE_' . $courseid . '_' . $item->id;
+        }
+    }
 }
