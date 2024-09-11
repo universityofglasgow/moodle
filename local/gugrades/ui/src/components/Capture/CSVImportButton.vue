@@ -1,5 +1,5 @@
 <template>
-    <button type="button" class="btn btn-outline-primary  mr-1" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
+    <button type="button" class="btn btn-outline-primary  mr-1" :disabled="!props.show" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
 
     <VueModal v-model="showcsvmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
 
@@ -111,6 +111,7 @@
         itemid: Number,
         groupid: Number,
         itemname: String,
+        show: Boolean,
     });
 
     const emits = defineEmits(['uploaded']);

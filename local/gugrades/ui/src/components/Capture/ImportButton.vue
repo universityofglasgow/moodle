@@ -1,5 +1,5 @@
 <template>
-    <button type="button" class="btn btn-outline-primary  mr-1" :disabled="!props.show" @click="import_button_click()">
+    <button type="button" class="btn btn-outline-primary  mr-1" @click="import_button_click()">
         <span v-if="groupimport">{{ mstrings.importgradesgroup }}</span>
         <span v-else>{{ mstrings.importgrades }}</span>
     </button>
