@@ -16,6 +16,7 @@
                         :gradesupported="gradesupported"
                         :gradehidden="gradehidden"
                         :gradelocked="gradelocked"
+                        :noids="!showcsvimport"
                         >
                     </CaptureAlerts>
 
