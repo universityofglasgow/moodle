@@ -869,9 +869,10 @@ class course {
                                                         $gradestatus->assessment_url = $CFG->wwwroot . '/' . $activityitem->itemtype . '/'
                                                         . $activityitem->itemmodule . '/view.php?id=' . $cm->id;
                                                         $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
-                                                        $gradestatus->status_link = '';
-                                                        $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
                                                         $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
+                                                        $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
+                                                        $gradestatus->status_link = '';
+                                                        $gradestatus->grade_to_display = get_string('status_text_graded', 'block_newgu_spdetails');
                                                     }
                                                     break;
                                                 }
@@ -885,6 +886,11 @@ class course {
                                                     $activityitem->grademax,
                                                     '',
                                                 );
+
+                                                if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display ==
+                                                    get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                                        continue;
+                                                }
                                             }
                                         } else {
                                             // Get the activity based on its type...
@@ -896,6 +902,11 @@ class course {
                                                 $activityitem->grademax,
                                                 '',
                                             );
+
+                                            if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display ==
+                                                get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
+                                                    continue;
+                                            }
                                         }
                                     } else {
 
