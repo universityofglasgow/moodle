@@ -214,6 +214,7 @@ $string['nothingtodisplay'] = 'Nothing to display';
 $string['nothingtoimport'] = 'Nothing to import';
 $string['notoplevel'] = 'Course has not been properly set up (no top-level Grade categories)';
 $string['overridecategory'] = 'Override category';
+$string['overrideerror'] = 'Cannot override until all aggregation requirements are met.';
 $string['participant'] = 'Participant';
 $string['participantnumber'] = 'Participant {$a}';
 $string['percentage'] = 'Percentage';

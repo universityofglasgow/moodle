@@ -92,6 +92,7 @@ class get_add_grade_form extends external_api {
             'iscategory' => new external_value(PARAM_BOOL, 'Is this a category (being overriden)?'),
             'overridden' => new external_value(PARAM_BOOL, 'Is this an overridden category?'),
             'available' => new external_value(PARAM_BOOL, 'Is add/override available at all in this context?'),
+            'error' => new external_value(PARAM_BOOL, 'Is the aggregation in error (cannot determine type)?'),
             'usescale' => new external_value(PARAM_BOOL, 'Is it a scale (true) or value/points (false)'),
             'grademax' => new external_value(PARAM_FLOAT, 'Maximum grade value - or 0 if not value'),
             'scalemenu' => new external_multiple_structure(

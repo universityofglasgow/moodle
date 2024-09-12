@@ -830,6 +830,9 @@ class api {
         $wsgradetypes = self::formkit_menu($gradetypes);
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
+        // If atype=E then we have an error condition
+        $error = $category->atype == 'E';
+
         // Get scalemenu
         if ($category->atype == 'A') {
             $scale = \local_gugrades\grades::get_scale(0, 'schedulea');
@@ -865,6 +868,7 @@ class api {
             'iscategory' => true,
             'overridden' => $overridden,
             'available' => $available,
+            'error' => $error,
             'grademax' => $category->grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -956,6 +960,7 @@ class api {
             'iscategory' => false,
             'overridden' => false,
             'available' => true,
+            'error' => false,
             'grademax' => $grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -1724,9 +1729,13 @@ class api {
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
         $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == 'P'));
 
+        // Corresponding gradeitemid for category.
+        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+
         return [
             'toplevel' => $istoplevel,
             'atype' => $atype,
+            'gradeitemid' => $gradeitemid,
             'strategy' => \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid),
             'conversion' => $mapname,
             'allowconversion' => $allowconversion,

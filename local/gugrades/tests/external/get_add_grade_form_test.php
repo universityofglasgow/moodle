@@ -209,4 +209,6 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         $this->assertEquals('OTHER_' . $id2, $gradetypes[10]['value']);
         $this->assertEquals('Other Variation Two', $gradetypes[10]['label']);
     }
+
+
 }

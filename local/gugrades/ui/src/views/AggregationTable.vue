@@ -148,8 +148,25 @@
 
             <!-- Total -->
             <template #item-total="item">
-                <span v-if="item.error">{{ item.error }}</span>
-                <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
+                <div class="d-flex justify-content-center align-items-center">
+                    <div>
+                        <span v-if="item.error">{{ item.error }}</span>
+                        <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
+                    </div>
+                    <div>
+                        <!-- add/override for total grade -->
+                        <OverrideGrade
+                            v-if="toplevel"
+                            :itemid = "gradeitemid"
+                            :categoryid = "categoryid"
+                            :userid = "item.id"
+                            :gradehidden = "false"
+                            :itemname = "mstrings.total"
+                            :name = "mstrings.total"
+                            @gradeadded = "grade_changed(item.id)"
+                        ></OverrideGrade>
+                    </div>
+                </div>
             </template>
 
         </EasyDataTable>
@@ -183,6 +200,7 @@
     const level1category = ref(0);
     const loading = ref(true);
     const categoryid = ref(0);
+    const gradeitemid = ref(0);
     const groupid = ref(0);
     const items = ref([]);
     const users = ref([]);
@@ -283,6 +301,7 @@
         users.forEach(user => {
             user.fields.forEach(field => {
                 user[field.fieldname] = {
+                    userid: user.id,
                     data: field.display,
                     dropped: field.dropped,
                     isadmin: field.isadmin,
@@ -302,6 +321,7 @@
     function process_user(user) {
         user.fields.forEach(field => {
                 user[field.fieldname] = {
+                    userid: user.id,
                     data: field.display,
                     dropped: field.dropped,
                     isadmin: field.isadmin,
@@ -499,6 +519,7 @@
             breadcrumb.value = result.breadcrumb;
             toplevel.value = result.toplevel;
             atype.value = result.atype;
+            gradeitemid.value = result.gradeitemid;
             strategy.value = result.strategy;
             debug.value = result.debug;
             conversion.value = result.conversion;

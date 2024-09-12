@@ -14,11 +14,16 @@
         </ul>
 
         <!-- message if not available -->
-         <div v-if="!available" class="alert alert-danger">
-            {{ mstrings.notavailable }}
+        <div v-if="!available" class="alert alert-danger">
+        {{ mstrings.notavailable }}
+        </div>
+
+         <!-- message if error -->
+         <div v-if="error" class="alert alert-danger">
+            {{ mstrings.overrideerror}}
          </div>
 
-        <FormKit v-if="!overridden && available" class="border rounded" type="form"  @submit="submit_form">
+        <FormKit v-if="!overridden && available && !error" class="border rounded" type="form"  @submit="submit_form">
             <FormKit
                 v-if="!iscategory"
                 type="select"
@@ -120,6 +125,7 @@
     const iscategory = ref(false);
     const overridden = ref(false);
     const available = ref(true);
+    const error = ref(false);
     const grademax = ref(0);
     const scalemenu = ref([]);
     const adminmenu = ref([]);
@@ -173,9 +179,12 @@
             iscategory.value = result.iscategory;
             overridden.value = result.overridden;
             available.value = result.available;
+            error.value = result.error;
             grademax.value = result.grademax;
             scalemenu.value = result.scalemenu;
             adminmenu.value = result.adminmenu;
+
+            window.console.log(result);
 
             // Add 'use grade' option onto front of adminmenu
             adminmenu.value.unshift({

@@ -90,6 +90,7 @@ class get_aggregation_page extends external_api {
         return new external_single_structure([
             'toplevel' => new external_value(PARAM_BOOL, 'Is this the topmost level?'),
             'atype' => new external_value(PARAM_TEXT, 'Aggregated grade type (A, B, P, E - if mixed'),
+            'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID of aggregated category'),
             'strategy' => new external_value(PARAM_TEXT, 'Aggregation strategy formatted for display'),
             'conversion' => new external_value(PARAM_TEXT, 'Name of conversion map, or empty'),
             'allowconversion' => new external_value(PARAM_BOOL, 'Should conversion controls be shown?'),

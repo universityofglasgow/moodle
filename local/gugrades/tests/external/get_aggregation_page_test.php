@@ -915,4 +915,45 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
         $this->assertEquals('MV', $users[0]['fields'][0]['display']);
     }
+
+    /**
+     * Test getting the form for top-level total
+     */
+    public function test_total_override(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1d', $this->student->id);
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Get the gradeitemid for summative/
+        $summativeid = $this->get_grade_category('Summative');
+        $summativeitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $summativeid], '*', MUST_EXIST);
+
+        // Check for summative category
+        $form = get_add_grade_form::execute($this->course->id, $summativeitem->id, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        // This cannot aggregate (as schema is mostly points), so should be an error condition
+        $this->assertTrue($form['error']);
+    }
 }
