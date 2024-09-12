@@ -85,7 +85,7 @@ body.hillhead40-spacing * {
     color: $foreground !important;
   }
 
-  body.hillhead40-#{$class} #user-menu-toggle {
+  body.hillhead40-#{$class} #user-menu-toggle, body.hillhead40-#{$class} #page-footer .hillheadFooterLinks li a {
     color: $foreground !important;
   }
 

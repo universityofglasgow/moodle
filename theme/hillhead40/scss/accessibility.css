@@ -79,7 +79,7 @@ body.hillhead40-contrast-yb .primary-navigation > nav > ul > li > a.nav-link,
   color: #ee6 !important;
 }
 
-body.hillhead40-contrast-yb #user-menu-toggle {
+body.hillhead40-contrast-yb #user-menu-toggle, body.hillhead40-contrast-yb #page-footer .hillheadFooterLinks li a {
   color: #ee6 !important;
 }
 
@@ -150,7 +150,7 @@ body.hillhead40-contrast-by .primary-navigation > nav > ul > li > a.nav-link,
   color: #111 !important;
 }
 
-body.hillhead40-contrast-by #user-menu-toggle {
+body.hillhead40-contrast-by #user-menu-toggle, body.hillhead40-contrast-by #page-footer .hillheadFooterLinks li a {
   color: #111 !important;
 }
 
@@ -216,7 +216,7 @@ body.hillhead40-contrast-wg .primary-navigation > nav > ul > li > a.nav-link,
   color: #eee !important;
 }
 
-body.hillhead40-contrast-wg #user-menu-toggle {
+body.hillhead40-contrast-wg #user-menu-toggle, body.hillhead40-contrast-wg #page-footer .hillheadFooterLinks li a {
   color: #eee !important;
 }
 
@@ -282,7 +282,7 @@ body.hillhead40-contrast-bb .primary-navigation > nav > ul > li > a.nav-link,
   color: #111 !important;
 }
 
-body.hillhead40-contrast-bb #user-menu-toggle {
+body.hillhead40-contrast-bb #user-menu-toggle, body.hillhead40-contrast-bb #page-footer .hillheadFooterLinks li a {
   color: #111 !important;
 }
 
@@ -348,7 +348,7 @@ body.hillhead40-contrast-br .primary-navigation > nav > ul > li > a.nav-link,
   color: #111 !important;
 }
 
-body.hillhead40-contrast-br #user-menu-toggle {
+body.hillhead40-contrast-br #user-menu-toggle, body.hillhead40-contrast-br #page-footer .hillheadFooterLinks li a {
   color: #111 !important;
 }
 
@@ -414,7 +414,7 @@ body.hillhead40-contrast-bw .primary-navigation > nav > ul > li > a.nav-link,
   color: #111 !important;
 }
 
-body.hillhead40-contrast-bw #user-menu-toggle {
+body.hillhead40-contrast-bw #user-menu-toggle, body.hillhead40-contrast-bw #page-footer .hillheadFooterLinks li a {
   color: #111 !important;
 }
 
@@ -480,7 +480,7 @@ body.hillhead40-contrast-wb .primary-navigation > nav > ul > li > a.nav-link,
   color: #f6f6f6 !important;
 }
 
-body.hillhead40-contrast-wb #user-menu-toggle {
+body.hillhead40-contrast-wb #user-menu-toggle, body.hillhead40-contrast-wb #page-footer .hillheadFooterLinks li a {
   color: #f6f6f6 !important;
 }
 
