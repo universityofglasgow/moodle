@@ -50,6 +50,7 @@ class write_additional_grade extends external_api {
             'scale' => new external_value(PARAM_INT, 'Scale value'),
             'grade' => new external_value(PARAM_FLOAT, 'Points grade'),
             'notes' => new external_value(PARAM_TEXT, 'Optional notes'),
+            'delete' => new external_value(PARAM_BOOL, 'Delete overridden category', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -64,9 +65,10 @@ class write_additional_grade extends external_api {
      * @param int $scale
      * @param float $grade
      * @param string $notes
+     * @parm bool $delete
      * @return array
      */
-    public static function execute($courseid, $gradeitemid, $userid, $reason, $other, $admingrade, $scale, $grade, $notes) {
+    public static function execute($courseid, $gradeitemid, $userid, $reason, $other, $admingrade, $scale, $grade, $notes, $delete = false) {
         global $DB;
 
         // Security.
@@ -80,6 +82,7 @@ class write_additional_grade extends external_api {
             'scale' => $scale,
             'grade' => $grade,
             'notes' => $notes,
+            'delete' => $delete,
         ]);
 
         // Get item (if it exists).
@@ -98,7 +101,8 @@ class write_additional_grade extends external_api {
             $admingrade,
             $scale,
             $grade,
-            $notes
+            $notes,
+            $delete
         );
 
         // Log.

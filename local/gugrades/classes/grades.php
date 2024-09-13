@@ -946,7 +946,7 @@ class grades {
             $DB->delete_records('local_gugrades_map_value', ['mapid' => $map->id]);
         }
         $DB->delete_records('local_gugrades_map', ['courseid' => $courseid]);
-        $DB->delete_records('local_gugrades_resit_required', ['courseid' => $courseid]);
+        $DB->delete_records('local_gugrades_resitrequired', ['courseid' => $courseid]);
     }
 
     /**

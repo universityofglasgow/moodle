@@ -1010,6 +1010,7 @@ class api {
      * @param int $scale
      * @param float $grade
      * @param string $notes
+     * @param bool $delete
      */
     public static function write_additional_grade(
         int $courseid,
@@ -1020,7 +1021,8 @@ class api {
         string $admingrade,
         int $scale,
         float $grade,
-        string $notes
+        string $notes,
+        bool $delete = false
         ) {
 
         global $DB;
@@ -1090,9 +1092,9 @@ class api {
         // If we're overriding a category then set the override bit
         $catoverride = $reason == 'CATEGORY';
 
-        // If cateoverride and both scale and grade are zero then
+        // If cateoverride and delete is true then
         // we are removing the cat override and aggregating a new grade.
-        if ($catoverride && !$scale && !$grade && !$admingrade) {
+        if ($catoverride && $delete) {
             \local_gugrades\grades::remove_catoverride($gradeitemid, $userid);
         } else {
 

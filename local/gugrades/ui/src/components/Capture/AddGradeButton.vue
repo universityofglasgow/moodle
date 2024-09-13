@@ -268,6 +268,7 @@
                 scale: 0,
                 grade: 0,
                 notes: '',
+                delete: true,
             }
         }])[0]
         .then(() => {
