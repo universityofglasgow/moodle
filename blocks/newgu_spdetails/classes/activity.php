@@ -262,8 +262,8 @@ class activity {
                                         'assessment_type' => $assessmenttype,
                                         'assessment_weight' => $assessmentweight . '%',
                                         'raw_assessment_weight' => $assessmentweight,
-                                        'due_date' => '',
-                                        'raw_due_date' => '',
+                                        'due_date' => 'N/A',
+                                        'raw_due_date' => '0',
                                         'grade_status' => $gradestatus,
                                         'status_link' => $statuslink,
                                         'status_class' => $statusclass,
@@ -392,7 +392,12 @@ class activity {
                                     foreach ($usergrades as $usergrade) {
                                         // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
                                         $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
-                                        $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
+                                        // @see MGU-1025.
+                                        if ($activityduedate > 0) {
+                                            $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
+                                        } else {
+                                            $duedate = 'N/A';
+                                        }
                                         $rawduedate = $activityduedate;
                                         $statusclass = get_string('status_class_graded', 'block_newgu_spdetails');
                                         $statustext = get_string('status_text_graded', 'block_newgu_spdetails');
@@ -530,8 +535,8 @@ class activity {
                             // The manual item can be hidden both via Gradebook Setup and from within the Grader report.
                             if ($gradestatobj->hidden == 0) {
                                 $assessmenturl = $gradestatobj->assessment_url;
-                                $duedate = '';
-                                $rawduedate = '';
+                                $duedate = 'N/A';
+                                $rawduedate = '0';
                                 $gradestatus = $gradestatobj->grade_status;
                                 $statuslink = $gradestatobj->status_link;
                                 $statusclass = $gradestatobj->status_class;
