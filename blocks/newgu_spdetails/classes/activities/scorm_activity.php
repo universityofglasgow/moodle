@@ -250,7 +250,7 @@ class scorm_activity extends base {
         // Formatting this here as the integer format for the date is no longer needed for testing against.
         if ($statusobj->due_date != 0) {
             $statusobj->due_date = $this->get_formattedduedate($statusobj->due_date);
-            $statusobj->raw_due_date = $statusobj->due_date;
+            $statusobj->raw_due_date = $this->get_rawduedate();
         } else {
             $statusobj->due_date = 'N/A';
             $statusobj->raw_due_date = 0;

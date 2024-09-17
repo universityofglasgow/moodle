@@ -326,7 +326,7 @@ class api extends external_api {
     }
 
     /**
-     * Method to return the value the notional 'due' date column of the activity.
+     * Method to return the value of the notional 'due' date column of the activity.
      *
      * The customdata property is an array of keys that we need to search and match.
      * Gak - I thought there might have been an easier way to match and return said

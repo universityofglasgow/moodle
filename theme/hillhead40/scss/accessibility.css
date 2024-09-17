@@ -941,11 +941,11 @@ body.hillhead40-night .alert.alert-danger h3 {
 body.hillhead40-night .alert.alert-warning, body.hillhead40-night .adminwarning {
   background-color: #956A31 !important;
   border-color: #735326 !important;
-  color: #F6BD70 !important;
+  color: white !important;
 }
 
 body.hillhead40-night .alert.alert-warning a, body.hillhead40-night .adminwarning a {
-  color: #F6BD70;
+  color: white;
   text-decoration: underline;
 }
 

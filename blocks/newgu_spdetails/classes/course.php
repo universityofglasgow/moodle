@@ -456,10 +456,10 @@ class course {
             return $stats;
         }
 
-        $now = mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y"));
-        $next24hours = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y"));
-        $next7days = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y"));
-        $nextmonth = mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y"));
+        $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
+        $next24hours = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y")));
+        $next7days = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y")));
+        $nextmonth = usertime(mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y")));
 
         $duein24hours = 0;
         $duein7days = 0;
@@ -470,11 +470,11 @@ class course {
                 $duein24hours++;
             }
 
-            if (($assignment->duedate > $now) && ($assignment->duedate < $next7days)) {
+            if (($assignment->duedate > $now) && (($assignment->duedate > $next24hours) && ($assignment->duedate < $next7days))) {
                 $duein7days++;
             }
 
-            if (($assignment->duedate > $now) && ($assignment->duedate < $nextmonth)) {
+            if (($assignment->duedate > $now) && (($assignment->duedate > $next7days) && ($assignment->duedate < $nextmonth))) {
                 $dueinnextmonth++;
             }
         }
@@ -508,18 +508,19 @@ class course {
             return $assessmentsdue;
         }
 
+        $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
+        $next24hours = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y")));
+        $next7days = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y")));
+        $nextmonth = usertime(mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y")));
         $option = '';
         switch($charttype) {
             case 0:
-                $when = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y"));
                 $option = get_string('chart_24hrs', 'block_newgu_spdetails');
                 break;
             case 1:
-                $when = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y"));
                 $option = get_string('chart_7days', 'block_newgu_spdetails');
                 break;
             case 2:
-                $when = mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y"));
                 $option = get_string('chart_1mth', 'block_newgu_spdetails');
                 break;
         }
@@ -555,47 +556,60 @@ class course {
                                     $item->courseid, 0);
                                     if ($assessments = $activityitem->get_assessmentsdue()) {
                                         $assessment = $assessments[0];
-                                        if (($assessment->duedate != 0) && $assessment->duedate < $when) {
-                                            $itemicon = '';
-                                            $iconalt = '';
-                                            if ($iconurl = $cm->get_icon_url()->out(false)) {
-                                                $itemicon = $iconurl;
-                                                $a = new \stdClass();
-                                                $a->modulename = get_string('modulename', $item->itemmodule);
-                                                $a->activityname = $cm->name;
-                                                $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+                                        if ($assessment->duedate > $now) {
+                                            $includeitem = false;
+                                            switch($charttype) {
+                                                case 0:
+                                                    $when = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y")));
+                                                    $includeitem = ($assessment->duedate < $when);
+                                                    break;
+                                                case 1:
+                                                    $when = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y")));
+                                                    $includeitem = (($assessment->duedate > $next24hours) && ($assessment->duedate < $next7days));
+                                                    break;
+                                                case 2:
+                                                    $when = usertime(mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y")));
+                                                    $includeitem = (($assessment->duedate > $next7days) && ($assessment->duedate < $nextmonth));
+                                                    break;
                                             }
-                                            $assessmentweight = self::return_weight($item->aggregationcoef);
-                                            $assessmenttype = self::return_assessmenttype($course->fullname,
-                                            $item->aggregationcoef);
-                                            $status = $activityitem->get_status($USER->id);
-                                            $duedate = '';
-                                            $rawduedate = '';
-                                            if ($assessment->duedate != 0) {
+                                            if ($includeitem) {
+                                                $itemicon = '';
+                                                $iconalt = '';
+                                                if ($iconurl = $cm->get_icon_url()->out(false)) {
+                                                    $itemicon = $iconurl;
+                                                    $a = new \stdClass();
+                                                    $a->modulename = get_string('modulename', $item->itemmodule);
+                                                    $a->activityname = $cm->name;
+                                                    $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+                                                }
+                                                $assessmentweight = self::return_weight($item->aggregationcoef);
+                                                $assessmenttype = self::return_assessmenttype($course->fullname,
+                                                $item->aggregationcoef);
+                                                $status = $activityitem->get_status($USER->id);
                                                 $duedate = $activityitem->get_formattedduedate($assessment->duedate);
                                                 $rawduedate = $activityitem->get_rawduedate();
-                                            }
-                                            $tmp = [
-                                                'id' => $assessment->id,
-                                                'courseurl' => $courseurl->out(),
-                                                'coursename' => $course->shortname,
-                                                'assessment_url' => $activityitem->get_assessmenturl(),
-                                                'item_icon' => $itemicon,
-                                                'icon_alt' => $iconalt,
-                                                'item_name' => $assessment->name,
-                                                'assessment_type' => $assessmenttype,
-                                                'assessment_weight' => $assessmentweight . '%',
-                                                'raw_assessment_weight' => $assessmentweight,
-                                                'due_date' => $duedate,
-                                                'raw_due_date' => $rawduedate,
-                                                'grade_status' => $status->grade_status,
-                                                'status_link' => $status->status_link,
-                                                'status_class' => $status->status_class,
-                                                'status_text' => $status->status_text,
-                                                'gradebookenabled' => '',
-                                            ];
+                                                $tmp = [
+                                                    'id' => $assessment->id,
+                                                    'courseurl' => $courseurl->out(),
+                                                    'coursename' => $course->shortname,
+                                                    'assessment_url' => $activityitem->get_assessmenturl(),
+                                                    'item_icon' => $itemicon,
+                                                    'icon_alt' => $iconalt,
+                                                    'item_name' => $assessment->name,
+                                                    'assessment_type' => $assessmenttype,
+                                                    'assessment_weight' => $assessmentweight . '%',
+                                                    'raw_assessment_weight' => $assessmentweight,
+                                                    'due_date' => $duedate,
+                                                    'raw_due_date' => $rawduedate,
+                                                    'grade_status' => $status->grade_status,
+                                                    'status_link' => $status->status_link,
+                                                    'status_class' => $status->status_class,
+                                                    'status_text' => $status->status_text,
+                                                    'gradebookenabled' => '',
+                                                ];
 
-                                            $assessmentdata[] = $tmp;
+                                                $assessmentdata[] = $tmp;
+                                            }
                                         }
                                     }
                                 }
