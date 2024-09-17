@@ -785,7 +785,7 @@ class api {
         }
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu();
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Is it a scale?
@@ -825,6 +825,12 @@ class api {
         // Is this scale or points?
         $isscale = !($category->atype == 'P');
 
+        // Conditions for overriding categories.
+        // See MGU-997.  If this is Level 1 (i.e. we are trying to override a level 2 category)
+        // then the grade MUST be a scale (including converted). We cannot override points.
+        $level = \local_gugrades\grades::get_gradecategory_level($category->categoryid);
+        $available = !(($level == 2) && ($category->atype == 'P'));
+
         // Get various menu items.
         $gradetypes = \local_gugrades\gradetype::get_menu($gradeitemid, LOCAL_GUGRADES_FORMENU);
         $wsgradetypes = self::formkit_menu($gradetypes);
@@ -845,18 +851,17 @@ class api {
         }
 
         // Admin grades menu
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        // Different for level == 1
+        if ($level == 1) {
+            $admingrades = \local_gugrades\admingrades::get_menu_level_one();
+        } else {
+            $admingrades = \local_gugrades\admingrades::get_menu();
+        }
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Is this already overridden in grade table
         $overridden = $DB->record_exists('local_gugrades_grade',
             ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'iscurrent' => 1, 'catoverride' => 1]);
-
-        // Conditions for overriding categories.
-        // See MGU-997.  If this is Level 1 (i.e. we are trying to override a level 2 category)
-        // then the grade MUST be a scale (including converted). We cannot override points.
-        $level = \local_gugrades\grades::get_gradecategory_level($category->categoryid);
-        $available = !(($level == 2) && ($category->atype == 'P'));
 
         return [
             'gradetypes' => $wsgradetypes,
@@ -925,7 +930,7 @@ class api {
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu();
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Gradeitem.
@@ -993,7 +998,7 @@ class api {
         $wsgradetypes = self::formkit_menu($gradetypes);
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu();
         $adminmenu = self::formkit_menu($admingrades, true);
 
         return [$wsgradetypes, $adminmenu];

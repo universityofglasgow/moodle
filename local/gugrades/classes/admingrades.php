@@ -32,10 +32,11 @@ require_once($CFG->dirroot . '/grade/lib.php');
 /**
  * Handles admin grades in one place
  */
-class admin_grades {
+class admingrades {
 
     /**
      * Define the different types of grade
+     * for non-level 1
      */
     private static function define() {
         $admingrades = [
@@ -44,6 +45,33 @@ class admin_grades {
             //'CW' => get_string('admincw', 'local_gugrades'),
             'IS' => get_string('adminis', 'local_gugrades'),
             '07' => get_string('admin07', 'local_gugrades'),
+        ];
+
+        foreach ($admingrades as $code => $admingrade) {
+            $admingrades[$code] = "$code - $admingrade";
+        }
+
+        return $admingrades;
+    }
+
+    /**
+     * Define level 1 total grades
+     */
+    private static function define_level_one() {
+        $admingrades = [
+            '07' => get_string('admin07', 'local_gugrades'),
+            'MV' => get_string('adminmv', 'local_gugrades'),
+            'IS' => get_string('adminis', 'local_gugrades'),
+            'CW' => get_string('admincw', 'local_gugrades'),
+            'UNS' => get_string('adminuns', 'local_gugrades'),
+            'SAT' => get_string('adminsat', 'local_gugrades'),
+            'NP' => get_string('adminnp', 'local_gugrades'),
+            'P' => get_string('adminp', 'local_gugrades'),
+            'NC' => get_string('adminnc', 'local_gugrades'),
+            'CP' => get_string('admincp', 'local_gugrades'),
+            'CR' => get_string('admincr', 'local_gugrades'),
+            'CA' => get_string('adminca', 'local_gugrades'),
+            'AU' => get_string('adminau', 'local_gugrades'),
         ];
 
         foreach ($admingrades as $code => $admingrade) {
@@ -64,11 +92,21 @@ class admin_grades {
     }
 
     /**
-     * Get admincodes for menu
+     * Get admincodes for non level 1 total menu
      * @return array
      */
     public static function get_menu() {
         $gradetypes = self::define();
+
+        return $gradetypes;
+    }
+
+    /**
+     * Get admincodes for level 1 total menu
+     * @return array
+     */
+    public static function get_menu_level_one() {
+        $gradetypes = self::define_level_one();
 
         return $gradetypes;
     }

@@ -89,6 +89,7 @@ class get_aggregation_user extends external_api {
             'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
             'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
             'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
+            'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
             'error' => new external_value(PARAM_TEXT, 'Error condition'),
             'fields' => new external_multiple_structure(
                 new external_single_structure([

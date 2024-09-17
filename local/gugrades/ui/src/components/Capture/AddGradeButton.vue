@@ -184,8 +184,6 @@
             scalemenu.value = result.scalemenu;
             adminmenu.value = result.adminmenu;
 
-            window.console.log(result);
-
             // Add 'use grade' option onto front of adminmenu
             adminmenu.value.unshift({
                 value: 'GRADE',
