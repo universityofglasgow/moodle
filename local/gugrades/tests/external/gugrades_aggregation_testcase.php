@@ -290,16 +290,17 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
 
     /**
      * Apply admingrade - grade needs to be imported / exist first
-     * @param int $courseid
-     * @param int $gradecategoryid
-     * @param int $gradeitemid
+     * @param string $gradeitemname
      * @param int $userid
      * @param string $admingrade
      */
-    public function apply_admingrade(int $courseid, int $gradecategoryid, int $gradeitemid, int $userid, string $admingrade): void {
+    public function apply_admingrade(string $itemname, int $userid, string $admingrade): void {
+        global $DB;
+
+        $gradeitem = $item = $DB->get_record('grade_items', ['itemname' => $itemname], '*', MUST_EXIST);
         $nothing = write_additional_grade::execute(
-            courseid:       $courseid,
-            gradeitemid:    $gradeitemid,
+            courseid:       $gradeitem->courseid,
+            gradeitemid:    $gradeitem->id,
             userid:         $userid,
             reason:         'AGREED',
             other:          '',

@@ -539,13 +539,13 @@ class aggregation {
      * @return string
      */
     public static function translate_atype(string $atype) {
-        if ($atype == 'A') {
+        if ($atype == \local_gugrades\GRADETYPE_SCHEDULEA) {
             return 'Schedule A';
-        } else if ($atype == 'B') {
+        } else if ($atype == \local_gugrades\GRADETYPE_SCHEDULEB) {
             return 'Schedule B';
-        } else if ($atype == 'P') {
+        } else if ($atype == \local_gugrades\GRADETYPE_POINTS) {
             return get_string('points', 'local_gugrades');
-        } else if ($atype == 'E') {
+        } else if ($atype == \local_gugrades\GRADETYPE_ERROR) {
             return get_string('error', 'local_gugrades');
         } else {
             throw new \moodle_exception('Unrecognised $atype - ' . $atype);
@@ -647,9 +647,9 @@ class aggregation {
         [$atype, $warnings] = self::get_aggregation_type($categorynode->children, $gradecategoryid);
         $categorynode->atype = $atype;
         $categorynode->schedule = $atype;
-        $categorynode->isscale = ($atype == 'A') || ($atype == 'B');
+        $categorynode->isscale = ($atype == \local_gugrades\GRADETYPE_SCHEDULEA) || ($atype == \local_gugrades\GRADETYPE_SCHEDULEB);
         $categorynode->warnings = $warnings;
-        $categorynode->grademax = ($atype == 'A') || ($atype == 'B') ? 22.0 : 100;
+        $categorynode->grademax = ($atype == \local_gugrades\GRADETYPE_SCHEDULEA) || ($atype == \local_gugrades\GRADETYPE_SCHEDULEB) ? 22.0 : 100;
 
         // Human name of whatever grade type this contains.
         $categorynode->gradetype = self::translate_atype($atype);
@@ -756,16 +756,16 @@ class aggregation {
         // Get the correct aggregation function.
         $aggfunction = $aggregation->strategy_factory($aggmethod);
 
+        // Populate lists of available users.
+        // Used to drop unavailable
+        $items = $aggregation->availability($items, $userid);
+
         // Quick check - all items must have a grade.
         foreach ($items as $item) {
             if ($item->grademissing) {
                 return [null, null, '', null, $completion, get_string('gradesmissing', 'local_gugrades')];
             }
         }
-
-        // Populate lists of available users.
-        // Used to drop unavailable
-        $items = $aggregation->availability($items, $userid);
 
         // Pre-process.
         $items = $aggregation->pre_process_items($items);

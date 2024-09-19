@@ -823,13 +823,13 @@ class api {
         $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradeitem->iteminstance);
 
         // Is this scale or points?
-        $isscale = !($category->atype == 'P');
+        $isscale = !($category->atype == \local_gugrades\GRADETYPE_POINTS);
 
         // Conditions for overriding categories.
         // See MGU-997.  If this is Level 1 (i.e. we are trying to override a level 2 category)
         // then the grade MUST be a scale (including converted). We cannot override points.
         $level = \local_gugrades\grades::get_gradecategory_level($category->categoryid);
-        $available = !(($level == 2) && ($category->atype == 'P'));
+        $available = !(($level == 2) && ($category->atype == \local_gugrades\GRADETYPE_POINTS));
 
         // Get various menu items.
         $gradetypes = \local_gugrades\gradetype::get_menu($gradeitemid, LOCAL_GUGRADES_FORMENU);
@@ -837,13 +837,13 @@ class api {
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         // If atype=E then we have an error condition
-        $error = $category->atype == 'E';
+        $error = $category->atype == \local_gugrades\GRADETYPE_ERROR;
 
         // Get scalemenu
-        if ($category->atype == 'A') {
+        if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEA) {
             $scale = \local_gugrades\grades::get_scale(0, 'schedulea');
             $scalemenu = self::formkit_menu($scale, true);
-        } else if ($category->atype == 'B') {
+        } else if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEB) {
             $scale = \local_gugrades\grades::get_scale(0, 'scheduleb');
             $scalemenu = self::formkit_menu($scale, true);
         } else {
@@ -1734,7 +1734,7 @@ class api {
         // Only available for level 2 categories - MGU-997
         $level = \local_gugrades\grades::get_category_level($gradecategoryid);
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
-        $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == 'P'));
+        $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
 
         // Corresponding gradeitemid for category.
         $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);

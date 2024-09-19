@@ -159,10 +159,8 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
         $this->set_strategy($this->gradecatsummative->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
         // Add admin grades to 'Item 2' and 'Item 4'.
-        $item2id = $this->get_gradeitemid('Item 2');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $item2id, $this->student->id, 'MV');
-        $item4id = $this->get_gradeitemid('Item 4');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $item4id, $this->student->id, 'MV');
+        $this->apply_admingrade('Item 2', $this->student->id, 'MV');
+        $this->apply_admingrade('Item 4', $this->student->id, 'MV');
 
         $grades = $DB->get_records('local_gugrades_grade', ['userid' => $this->student->id]);
 
@@ -209,8 +207,7 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
         }
 
         // Add admin grades to 'Item 4'.
-        $item4id = $this->get_gradeitemid('Item 4');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $item4id, $this->student->id, 'MV');
+        $this->apply_admingrade('Item 4', $this->student->id, 'MV');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);

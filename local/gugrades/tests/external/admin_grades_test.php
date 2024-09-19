@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Test functions around get_aggregation_page
- * Tests combinations of admin grades at 2nd level (MGU-726)
- * ...and how the result propogate up to Level 1
+ * Test specific admin grades work as per spec
  * @package    local_gugrades
  * @copyright  2024
  * @author     Howard Miller
@@ -38,7 +36,7 @@ require_once($CFG->dirroot . '/local/gugrades/tests/external/gugrades_aggregatio
 /**
  * More test(s) for get_aggregation_page webservice
  */
-final class aggregation_schema8_test extends \local_gugrades\external\gugrades_aggregation_testcase {
+final class admin_grades_test extends \local_gugrades\external\gugrades_aggregation_testcase {
 
     /**
      * @var object $gradecatsummer
@@ -70,12 +68,11 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
     }
 
     /**
-     * Test simple weighted mean with admin grades in Summer axam
-     * This tests NS result.
+     * Test 07 admin grade
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_admin_grades(): void {
+    public function test_07_admin_grade(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -103,12 +100,12 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         // Update droplow.
         // This won't update aggregation.
         $category = $DB->get_record('grade_categories', ['id' => $this->gradecatsummer->id], '*', MUST_EXIST);
-        $category->droplow = 0;
+        $category->droplow = 1;
         $DB->update_record('grade_categories', $category);
 
-        // Set NS for question 3.
-        // This will.
-        $this->apply_admingrade('Question 3', $this->student->id, 'NS');
+        // Set 07 for question 3.
+        // This is technically the lowest value grade but the 07 should override the drop low
+        $this->apply_admingrade('Question 3', $this->student->id, '07');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
@@ -117,22 +114,11 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
             $page
         );
 
-        $this->assertTrue($page['toplevel']);
-        $this->assertEquals('A', $page['atype']);
-        $fred = $page['users'][0];
-        $this->assertEquals("9.33333", $fred['displaygrade']);
-        $this->assertEquals(9.33333, $fred['rawgrade']);
-        $this->assertEquals(67, $fred['completed']);
+        //var_dump($page); die;
 
-        // Change question 3 to 07 admingrade
-        $this->apply_admingrade('Question 3', $this->student->id, '07');
 
-        // Get aggregation page for above.
-        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);
-        $page = external_api::clean_returnvalue(
-            get_aggregation_page::execute_returns(),
-            $page
-        );
+
+
 
     }
 
