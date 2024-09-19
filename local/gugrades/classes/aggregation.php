@@ -348,7 +348,7 @@ class aggregation {
         // Get original data for "aggregated category" as we may not have got it elsewhere.
         // This is needed if no aggregation is performed.
         $item = $DB->get_record('local_gugrades_grade',
-            ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1],
+            ['courseid' => $courseid, 'gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1],
             '*', MUST_EXIST);
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;

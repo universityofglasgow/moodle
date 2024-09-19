@@ -204,7 +204,6 @@ class base {
      */
     public function admin_grades_level1(array $items) {
 
-        // Condition 1: Any 07 - result is 07
         $countnscw = 0;
         $countmv = 0;
         $countis = 0;
@@ -217,15 +216,14 @@ class base {
                 $countmv++;
             } else if ($grade == 'IS') {
                 $countis++;
-            } else if (strcmp($grade, '07') == 0) {
-                $count07++;
             }
         }
 
-        // Any 07 means result is 07
-        if ($count07) {
-            return '07';
+        // All MV and no IS means MV.
+        if ($countmv) {
+            return 'MV';
         }
+
 
         // No admin grade.
         return '';
