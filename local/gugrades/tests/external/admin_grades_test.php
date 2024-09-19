@@ -84,7 +84,8 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
         ];
 
         // Install test data for student.
-        $this->load_data('data8a', $this->student->id);
+        // Question 2 is missing
+        $this->load_data('data8b', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
             $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
@@ -107,18 +108,30 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
         // This is technically the lowest value grade but the 07 should override the drop low
         $this->apply_admingrade('Question 3', $this->student->id, '07');
 
-        // Get aggregation page for above.
+        // Get aggregation page for sub-category.
+        // 07 should override grades missing.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('07', $fred['displaygrade']);
+        $this->assertEquals(0, $fred['rawgrade']);
+
+        // Get aggregation page for total.
+        // 07 should override grades missing.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
 
-        //var_dump($page); die;
-
-
-
-
+        // 07 should 'bubble up' to top.
+        $fred = $page['users'][0];
+        $this->assertEquals('07', $fred['displaygrade']);
+        $this->assertEquals(0, $fred['rawgrade']);
 
     }
 

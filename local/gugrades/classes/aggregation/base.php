@@ -119,13 +119,32 @@ class base {
     }
 
     /**
+     * Admingrade check done BEFORE we check that all grades are
+     * available
+     * @param int $level
+     * @param array $items
+     * @return string
+     */
+    public function admin_grade_precheck(int $level, array $items) {
+
+        // Any '07' admin grades means aggregation is 07
+        foreach ($items as $item) {
+            if ($item->admingrade == '07') {
+                return '07';
+            }
+        }
+
+        // No admin grade found
+        return '';
+    }
+
+    /**
      * Logic for admingrades in >= level2, see MGU-726
      * Works out if aggregated grade is some admin grade
      * Returns this or empty string if not.
      *
      * NOTE:  MV/IS - both treated as MV
      *        NS/CW - both treated as NS
-     *        07 - any return 07
      * @param array $items
      * @return string
      */
@@ -138,7 +157,6 @@ class base {
         $countnscw = 0;
         $countmv = 0;
         $countis = 0;
-        $count07 = 0;
         foreach ($items as $item) {
             $grade = $item->admingrade;
             if (($grade == 'NS') || ($grade == 'CW')) {
@@ -147,14 +165,7 @@ class base {
                 $countmv++;
             } else if ($grade == 'IS') {
                 $countis++;
-            } else if (strcmp($grade, '07') == 0) {
-                $count07++;
             }
-        }
-
-        // Any 07 means result is 07
-        if ($count07) {
-            return '07';
         }
 
         // Check about conditions.

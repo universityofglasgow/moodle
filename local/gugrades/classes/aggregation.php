@@ -753,12 +753,23 @@ class aggregation {
             $completion = $aggregation->completion($items, $weighted);
         }
 
+        // Need to have a valid aggregation type to actually do the aggregation.
+        if ($category->atype == \local_gugrades\GRADETYPE_ERROR) {
+            return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades')];
+        }
+
         // Get the correct aggregation function.
         $aggfunction = $aggregation->strategy_factory($aggmethod);
 
         // Populate lists of available users.
         // Used to drop unavailable
         $items = $aggregation->availability($items, $userid);
+
+        // Admingrade check for anything that happens before drop lowest and
+        // checks for all items graded etc.
+        if ($admingrade = $aggregation->admin_grade_precheck($level, $items)) {
+            return [0, 0, $admingrade, $admingrade, $completion, ''];
+        }
 
         // Quick check - all items must have a grade.
         foreach ($items as $item) {
@@ -777,48 +788,45 @@ class aggregation {
             self::flag_dropped_items($droppeditems, $userid);
         }
 
-        // Need to have a valid aggregation type to actually do the aggregation.
-        // OR, we've ended up with no items left after droplow.
-        if (($category->atype == \local_gugrades\GRADETYPE_ERROR) || (count($items) == 0)) {
+        // If we've got here and there are no grades to aggregate (possibly due to drop lowest)
+        // then it's an error.
+        if (count($items) == 0) {
             return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades')];
-        } else {
-
-            // If >=level2 then check for admin grades (see MGU-726).
-            if ($level >= 2) {
-                if ($admingrade = $aggregation->admin_grades_level2($items)) {
-                    return [0, 0, $admingrade, $admingrade, $completion, ''];
-                }
-            }
-
-            // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
-            if ($level == 1) {
-                if ($admingrade = $aggregation->admin_grades_level1($items)) {
-                    return [0, 0, $admingrade, $admingrade, $completion, ''];
-                }
-            }
-
-            // Now call the appropriate aggregation function to do the sums.
-            $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
-
-            // If this is a scale convert the numeric grade to the appropriate.
-            if (($atype == \local_gugrades\GRADETYPE_SCHEDULEA) || ($atype == \local_gugrades\GRADETYPE_SCHEDULEB)) {
-                [$convertedgrade, $convertedgradevalue] = $aggregation->convert($aggregatedgrade, $atype);
-
-                // Should we pass back convertedgradevalue or aggregatedgrade (see MGU-821).
-                $parentgrade = $aggregation->get_grade_for_parent($aggregatedgrade, $convertedgradevalue);
-
-                // How do we want to display this?
-                $displaygrade = $aggregation->format_displaygrade(
-                    $convertedgrade, $aggregatedgrade, $convertedgradevalue, $completion, $level);
-
-                return [$parentgrade, $aggregatedgrade, '', $displaygrade, $completion, ''];
-            }
-
-            // Return points grades.
-            return [$aggregatedgrade, $aggregatedgrade, '', $aggregatedgrade, $completion, ''];
         }
 
-        throw new \moodle_exception('Should never be here');
+        // If >=level2 then check for admin grades (see MGU-726).
+        if ($level >= 2) {
+            if ($admingrade = $aggregation->admin_grades_level2($items)) {
+                return [0, 0, $admingrade, $admingrade, $completion, ''];
+            }
+        }
+
+        // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
+        if ($level == 1) {
+            if ($admingrade = $aggregation->admin_grades_level1($items)) {
+                return [0, 0, $admingrade, $admingrade, $completion, ''];
+            }
+        }
+
+        // Now call the appropriate aggregation function to do the sums.
+        $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
+
+        // If this is a scale convert the numeric grade to the appropriate.
+        if (($atype == \local_gugrades\GRADETYPE_SCHEDULEA) || ($atype == \local_gugrades\GRADETYPE_SCHEDULEB)) {
+            [$convertedgrade, $convertedgradevalue] = $aggregation->convert($aggregatedgrade, $atype);
+
+            // Should we pass back convertedgradevalue or aggregatedgrade (see MGU-821).
+            $parentgrade = $aggregation->get_grade_for_parent($aggregatedgrade, $convertedgradevalue);
+
+            // How do we want to display this?
+            $displaygrade = $aggregation->format_displaygrade(
+                $convertedgrade, $aggregatedgrade, $convertedgradevalue, $completion, $level);
+
+            return [$parentgrade, $aggregatedgrade, '', $displaygrade, $completion, ''];
+        }
+
+        // Return points grades.
+        return [$aggregatedgrade, $aggregatedgrade, '', $aggregatedgrade, $completion, ''];
     }
 
     /**
@@ -992,6 +1000,7 @@ class aggregation {
                         'iscategory' => false,
                         'grademissing' => true,
                         'weight' => $child->weight,
+                        'admingrade' => '',
                     ];
                 }
             }

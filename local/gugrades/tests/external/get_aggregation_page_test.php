@@ -224,7 +224,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         $fred = $page['users'][0];
         $this->assertEquals("0", $fred['completed']);
-        $this->assertEquals("Grades missing", $fred['error']);
+        $this->assertEquals("Cannot aggregate", $fred['error']);
 
         // Convert
         // Apply the test conversion map to all items.
