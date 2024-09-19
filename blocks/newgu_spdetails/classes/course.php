@@ -810,6 +810,7 @@ class course {
         $dateheader = '';
         $option = '';
         $whichstatus = '';
+        $show_grade_column = false;
         switch ($charttype) {
             case 0:
                 $option = get_string('status_text_tobesubmitted', 'block_newgu_spdetails');
@@ -830,6 +831,7 @@ class course {
                 $option = get_string('status_text_graded', 'block_newgu_spdetails');
                 $dateheader = get_string('header_dategraded', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_graded', 'block_newgu_spdetails');
+                $show_grade_column = true;
                 break;
         }
 
@@ -862,7 +864,12 @@ class course {
 
                                     // We had overlooked that we needed to check the course type when collating these numbers.
                                     // If the course that this activity belongs to is a MyGrades course, first check if we have
-                                    // any 'Released' grades, for the Graded section - and then increment the total accordingly. 
+                                    // any 'Released' grades, for the Graded section.
+                                    $grade = '';
+                                    $gradeclass = '';
+                                    $gradeprovisional = '';
+                                    $gradefeedback = '';
+                                    $gradefeedbacklink = '';
                                     if ($charttype == 3) {
                                         if ($course->gugradesenabled) {
                                             $params = [
@@ -887,6 +894,14 @@ class course {
                                                         $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
                                                         $gradestatus->status_link = '';
                                                         $gradestatus->grade_to_display = get_string('status_text_graded', 'block_newgu_spdetails');
+
+                                                        $grade =  $usergrade->displaygrade;
+                                                        $gradeclass = true;
+                                                        $gradeprovisional = false;
+                                                        $gradefeedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
+                                                        // Because we don't have an activity instance, we can't call get_assessmenturl().
+                                                        $gradefeedbacklink = $CFG->wwwroot . '/' . $activityitem->itemtype . '/'
+                                                        . $activityitem->itemmodule . '/view.php?id=' . $cm->id . '#page-footer';;
                                                     }
                                                     break;
                                                 }
@@ -900,6 +915,12 @@ class course {
                                                     $activityitem->grademax,
                                                     '',
                                                 );
+
+                                                $grade = $gradestatus->grade_to_display;
+                                                $gradeclass = $gradestatus->grade_class;
+                                                $gradeprovisional = $gradestatus->grade_provisional;
+                                                $gradefeedback = $gradestatus->grade_feedback;
+                                                $gradefeedbacklink = $gradestatus->grade_feedback_link;
 
                                                 if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display ==
                                                     get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
@@ -916,6 +937,12 @@ class course {
                                                 $activityitem->grademax,
                                                 '',
                                             );
+
+                                            $grade = $gradestatus->grade_to_display;
+                                            $gradeclass = $gradestatus->grade_class;
+                                            $gradeprovisional = $gradestatus->grade_provisional;
+                                            $gradefeedback = $gradestatus->grade_feedback;
+                                            $gradefeedbacklink = $gradestatus->grade_feedback_link;
 
                                             if (($gradestatus->grade_to_display != null) && ($gradestatus->grade_to_display ==
                                                 get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'))) {
@@ -953,8 +980,7 @@ class course {
                                         switch($charttype) {
                                             case 3:
                                                 if (property_exists($gradestatus, 'grade_date') && $gradestatus->grade_date != '') {
-                                                    $dateobj = \DateTime::createFromFormat('U', $gradestatus->grade_date);
-                                                    $date = $dateobj->format('jS F Y');
+                                                    $date = userdate($gradestatus->grade_date);
                                                     $rawduedate = $gradestatus->grade_date;
                                                 }
                                                 break;
@@ -984,6 +1010,11 @@ class course {
                                             'status_link' => $gradestatus->status_link,
                                             'status_class' => $gradestatus->status_class,
                                             'status_text' => $gradestatus->status_text,
+                                            'grade' => $grade,
+                                            'grade_class' => $gradeclass,
+                                            'grade_provisional' => $gradeprovisional,
+                                            'grade_feedback' => $gradefeedback,
+                                            'grade_feedback_link' => $gradefeedbacklink,
                                             'gradebookenabled' => '',
                                         ];
 
@@ -1004,6 +1035,7 @@ class course {
         }
 
         $assessmentsdue['date_header'] = $dateheader;
+        $assessmentsdue['show_grade_column'] = $show_grade_column;
         $assessmentsdue['assessmentitems'] = $assessmentdata;
 
         return $assessmentsdue;

@@ -84,6 +84,10 @@
                     {{/data.date_header}}
                 </th>
                 <th id="sortby_status2" data-sortby="status2" class="td15 th-sortable">{{#str}} header_status, block_newgu_spdetails {{/str}}</th>
+                {{#data.show_grade_column}}
+                <th id="sortby_grade2" data-sortby="grade2" class="td10 th-sortable">{{#str}} header_grade, block_newgu_spdetails {{/str}}</th>
+                <th class="td10">{{#str}} header_feedback, block_newgu_spdetails {{/str}}</th>
+                {{/data.show_grade_column}}
             </tr>
         </thead>
         <tbody>
@@ -106,6 +110,19 @@
                     {{/status_link}}
                 </td>
                 {{/grade_status}}
+                {{#data.show_grade_column}}
+                <td class="td10">{{#grade_class}}<span class="{{#str}} status_graded, block_newgu_spdetails {{/str}}">{{/grade_class}}{{grade}}{{#grade_class}}</span>{{/grade_class}}{{#grade_provisional}} ({{#str}} status_text_provisional, block_newgu_spdetails {{/str}}){{/grade_provisional}}
+                </td>
+                <td class="td10">
+                {{#grade_feedback_link}}
+                    <a href="{{grade_feedback_link}}">
+                {{/grade_feedback_link}}
+                {{grade_feedback}}
+                {{#grade_feedback_link}}
+                    </a>
+                {{/grade_feedback_link}}
+                </td>
+                {{/data.show_grade_column}}
             </tr>
             {{/data.assessmentitems}}
         {{/data.assessmentitems.length}}
