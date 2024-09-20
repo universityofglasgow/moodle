@@ -208,7 +208,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals("NS", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
 
-        // Set MV for question 4. Should still be NS.
+        // Set MV for question 4. Total should be MV
         $this->apply_admingrade('Question 4', $this->student->id, 'MV');
 
         // Get aggregation page for above.
@@ -221,7 +221,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("NS", $fred['displaygrade']);
+        $this->assertEquals("MV", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
     }
 
@@ -277,10 +277,10 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("B3", $fred['displaygrade']);
-        $this->assertEquals(15.4, $fred['rawgrade']);
+        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals(0.0, $fred['rawgrade']);
 
-        // Set IS for question 7. Should still be MV.
+        // Set IS for question 7. Should now be IS.
         $this->apply_admingrade('Question 7', $this->student->id, 'IS');
 
         // Get aggregation page for above.
@@ -293,7 +293,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals("IS", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
     }
 

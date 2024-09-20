@@ -97,7 +97,7 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         $adminmenu = $form['adminmenu'];
         $this->assertCount(4, $adminmenu);
         $this->assertEquals('07', $adminmenu[0]['value']);
-        $this->assertEquals('07 - On Hold', $adminmenu[0]['label']);
+        $this->assertEquals('07 - Deferred', $adminmenu[0]['label']);
         $this->assertEquals('IS', $adminmenu[1]['value']);
         $this->assertEquals('IS - Interruption of Studies', $adminmenu[1]['label']);
         $this->assertEquals('MV', $adminmenu[3]['value']);
