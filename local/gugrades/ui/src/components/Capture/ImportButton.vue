@@ -5,77 +5,83 @@
     </button>
 
     <VueModal v-model="showimportmodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.importgrades">
-        <div v-if="is_importgrades" class="alert alert-warning">
-            {{ mstrings.gradesimported }}
-            <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
-        </div>
-        <div v-else class="alert alert-info">
-            {{ mstrings.importinfo }}
-            <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
+        <div v-if="loading">
+            <PleaseWait></PleaseWait>
         </div>
 
-        <div v-if="is_importgrades" class="alert alert-info">
-            <FormKit
-                type="checkbox"
-                :label="mstrings.importadditional"
-                :help="mstrings.importadditionalhelp"
-                name="importadditional"
-                v-model="importadditional"
-                >
-                <template #help>
-                    <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.importadditionalhelp }}</p>
-                </template>
-            </FormKit>
-        </div>
-
-        <div v-if="recursiveavailable" class="alert alert-secondary">
-            <div v-if="!allgradesvalid" class="alert alert-danger">
-                {{ mstrings.invalidgradetype }}
+        <div v-else>
+            <div v-if="is_importgrades" class="alert alert-warning">
+                {{ mstrings.gradesimported }}
+                <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
             </div>
-            <div v-else>
+            <div v-else class="alert alert-info">
+                {{ mstrings.importinfo }}
+                <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
+            </div>
+
+            <div v-if="is_importgrades" class="alert alert-info">
                 <FormKit
                     type="checkbox"
-                    :label="mstrings.recursiveimport"
-                    :help="mstrings.recursiveimporthelp"
-                    name="recursiveimport"
-                    v-model="recursiveselect"
+                    :label="mstrings.importadditional"
+                    :help="mstrings.importadditionalhelp"
+                    name="importadditional"
+                    v-model="importadditional"
                     >
                     <template #help>
-                        <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.recursiveimporthelp }}</p>
+                        <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.importadditionalhelp }}</p>
                     </template>
                 </FormKit>
             </div>
-        </div>
 
-        <div class="alert alert-success">
-            <FormKit
-                type="checkbox"
-                :label="mstrings.importfillns"
-                :help="mstrings.importfillnshelp"
-                name="importfillns"
-                v-model="importfillns"
-                >
-                <template #help>
-                    <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.importfillnshelp }}</p>
-                </template>
-            </FormKit>
-        </div>
+            <div v-if="recursiveavailable" class="alert alert-secondary">
+                <div v-if="!allgradesvalid" class="alert alert-danger">
+                    {{ mstrings.invalidgradetype }}
+                </div>
+                <div v-else>
+                    <FormKit
+                        type="checkbox"
+                        :label="mstrings.recursiveimport"
+                        :help="mstrings.recursiveimporthelp"
+                        name="recursiveimport"
+                        v-model="recursiveselect"
+                        >
+                        <template #help>
+                            <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.recursiveimporthelp }}</p>
+                        </template>
+                    </FormKit>
+                </div>
+            </div>
 
-        <div v-if="recursiveavailable && recursiveselect && !recursivematch" class="alert alert-warning">
-            {{ mstrings.importnomatch }}
-        </div>
+            <div class="alert alert-success">
+                <FormKit
+                    type="checkbox"
+                    :label="mstrings.importfillns"
+                    :help="mstrings.importfillnshelp"
+                    name="importfillns"
+                    v-model="importfillns"
+                    >
+                    <template #help>
+                        <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.importfillnshelp }}</p>
+                    </template>
+                </FormKit>
+            </div>
 
-        <div class="mt-2 pt-2 border-top">
-            <button
-                    class="btn btn-primary mr-1"
-                    @click="importgrades()"
-                    >{{ mstrings.yesimport }}
-            </button>
-            <button
-                class="btn btn-warning"
-                @click="showimportmodal = false"
-                >{{ mstrings.cancel }}
-            </button>
+            <div v-if="recursiveavailable && recursiveselect && !recursivematch" class="alert alert-warning">
+                {{ mstrings.importnomatch }}
+            </div>
+
+            <div class="mt-2 pt-2 border-top">
+                <button
+                        class="btn btn-primary mr-1"
+                        @click="importgrades()"
+                        >{{ mstrings.yesimport }}
+                </button>
+                <button
+                    class="btn btn-warning"
+                    @click="showimportmodal = false"
+                    >{{ mstrings.cancel }}
+                </button>
+            </div>
         </div>
     </VueModal>
 </template>
@@ -83,6 +89,7 @@
 <script setup>
     import {ref, defineProps, defineEmits, inject, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const props = defineProps({
         userids: Array,
@@ -106,19 +113,21 @@
     const importadditional = ref(false);
     const importfillns = ref(false);
     const allgradesvalid = ref(false);
+    const loading = ref(false);
     const mstrings = inject('mstrings');
 
     /**
      * Import confirmed. Select appropriate importfunction
      */
     function importgrades() {
+
+        loading.value = true;
+
         if (recursiveselect.value) {
             importrecursive();
         } else {
             importsingle();
         }
-
-        showimportmodal.value = false;
     }
 
     /**
@@ -147,6 +156,8 @@
             } else {
                 toast.warning(mstrings.nogradestoimport);
             }
+
+            showimportmodal.value = false;
         })
         .catch((error) => {
             window.console.error(error);
@@ -181,6 +192,8 @@
             } else {
                 toast.warning(mstrings.nogradestoimport);
             }
+
+            showimportmodal.value = false;
         })
         .catch((error) => {
             window.console.error(error);

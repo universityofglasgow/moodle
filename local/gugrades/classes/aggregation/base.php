@@ -121,6 +121,7 @@ class base {
     /**
      * Admingrade check done BEFORE we check that all grades are
      * available
+     * NOTE: Order is critical (see spec)
      * @param int $level
      * @param array $items
      * @return string
@@ -131,6 +132,20 @@ class base {
         foreach ($items as $item) {
             if ($item->admingrade == '07') {
                 return '07';
+            }
+        }
+
+        // Any 'IS' admin grades means aggregation is IS
+        foreach ($items as $item) {
+            if ($item->admingrade == 'IS') {
+                return 'IS';
+            }
+        }
+
+        // Any 'MV' admin grades means aggregation is MV
+        foreach ($items as $item) {
+            if ($item->admingrade == 'MV') {
+                return 'MV';
             }
         }
 
