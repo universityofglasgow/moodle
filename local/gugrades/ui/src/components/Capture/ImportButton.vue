@@ -210,6 +210,7 @@
         importadditional.value = false;
         recursiveselect.value = false;
         importfillns.value = false;
+        loading.value = false;
 
         const GU = window.GU;
         const courseid = GU.courseid;
