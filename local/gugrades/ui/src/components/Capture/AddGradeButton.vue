@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <a class="dropdown-item" href="#" @click="add_grade()">
         {{ buttontitle }}
     </a>
@@ -110,6 +112,7 @@
 <script setup>
     import {ref, defineProps, defineEmits, inject, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const showaddgrademodal = ref(false);
     const mstrings = inject('mstrings');
@@ -198,7 +201,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
+            showaddgrademodal.value = false;
         });
 
         showaddgrademodal.value = true;
@@ -237,7 +241,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
+            showaddgrademodal.value = false;
         });
 
         // close the modal
@@ -275,7 +280,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
+            showaddgrademodal.value = false;
         });
 
         // close the modal

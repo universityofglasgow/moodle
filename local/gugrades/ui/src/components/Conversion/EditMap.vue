@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div class="alert alert-info mb-2">
         {{  mstrings.examplevalues }}
     </div>
@@ -95,6 +97,7 @@
     import {ref, inject, defineProps, defineEmits, onMounted, watch, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import { watchDebounced } from '@vueuse/core';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const loaded = ref(false);
@@ -112,6 +115,7 @@
         {value: 'percentage', label: 'Percentage'},
         {value: 'points', label: 'Points'},
     ];
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -275,7 +279,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -314,7 +318,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 

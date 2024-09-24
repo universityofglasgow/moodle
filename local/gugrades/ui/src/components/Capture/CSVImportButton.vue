@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" :disabled="!props.show" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
 
     <VueModal v-model="showcsvmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
@@ -87,6 +89,7 @@
 <script setup>
     import {ref, defineProps, defineEmits, inject, onMounted, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
     import { saveAs } from 'file-saver';
 
     const showcsvmodal = ref(false);

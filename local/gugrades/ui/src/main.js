@@ -43,7 +43,6 @@ ensureGUIsSet(timeout)
     const app = createApp(App);
     const mstrings = reactive([]);
     app.provide('mstrings', mstrings);
-    //app.use(router);
     app.use(Toast, toastoptions);
     app.use(plugin, defaultConfig({
         config: customConfig.config

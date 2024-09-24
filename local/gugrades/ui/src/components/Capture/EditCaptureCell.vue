@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div class="row">
         <FormKit
             type="select"
@@ -38,6 +40,7 @@
 <script setup>
     import {ref, defineProps, onMounted, onBeforeUnmount, defineEmits, inject, watch, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     // (item.id is current userid)
     // (item.reason is the reason/gradetype)
@@ -175,7 +178,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
 
         emits('gradewritten');

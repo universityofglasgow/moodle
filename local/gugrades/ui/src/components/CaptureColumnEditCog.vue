@@ -1,9 +1,12 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <a href="#" class="ml-1" aria-label="Bulk edit"><i class="fa fa-cogs fa-lg text-warning" aria-hidden="true" @click="cog_clicked"  title="Bulk edit"></i></a>
 </template>
 
 <script setup>
     import {defineProps, defineEmits, inject} from '@vue/runtime-core';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
     import { useToast } from "vue-toastification";
 
     const props = defineProps({
@@ -14,6 +17,7 @@
 
     const mstrings = inject('mstrings');
     const toast = useToast();
+    const debug = ref({});
 
     const emits = defineEmits(['editcolumn']);
 
@@ -59,7 +63,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 </script>

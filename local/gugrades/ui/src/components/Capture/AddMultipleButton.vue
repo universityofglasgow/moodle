@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="add_multiple_button_click()">
         {{ mstrings.addmultiple }}
     </button>
@@ -44,6 +46,7 @@
 <script setup>
     import {ref, defineProps, defineEmits, inject} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const showaddmultiplemodal = ref(false);
     const mstrings = inject('mstrings');
@@ -51,6 +54,7 @@
     const reason = ref('');
     const notes = ref('');
     const other = ref('');
+    const debug = ref({});
 
     const emits = defineEmits([
         'editcolumn'
@@ -86,7 +90,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showaddmultiplemodal.value = false;
+            debug.value = error;
         });
 
         showaddmultiplemodal.value = true;
@@ -135,7 +140,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showaddmultiplemodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -174,7 +180,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showaddmultiplemodal.value = false;
+            debug.value = error;
         });
 
         // close the modal

@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="open_modal()">{{ mstrings.exportcapture }}</button>
 
     <VueModal v-model="showexportmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.exportcapture">
@@ -44,6 +46,7 @@
     import PleaseWait from '@/components/PleaseWait.vue';
     import { useToast } from "vue-toastification";
     import { saveAs } from 'file-saver';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const showexportmodal = ref(false);
     const allnone = ref(false);
@@ -82,7 +85,8 @@
             options.value = result;
         })
         .catch((error) => {
-            window.console.error(error);
+            showexportmodal.value = false;
+            debug.value = error;
         });
 
         showexportmodal.value = true;
@@ -145,7 +149,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showexportmodal.value = false;
+            debug.value = error;
         });
     }
 

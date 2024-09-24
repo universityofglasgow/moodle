@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="import_button_click()">
         <span v-if="groupimport">{{ mstrings.importgradesgroup }}</span>
         <span v-else>{{ mstrings.importgrades }}</span>
@@ -90,6 +92,7 @@
     import {ref, defineProps, defineEmits, inject, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import PleaseWait from '@/components/PleaseWait.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const props = defineProps({
         userids: Array,
@@ -114,6 +117,7 @@
     const importfillns = ref(false);
     const allgradesvalid = ref(false);
     const loading = ref(false);
+    const debug = ref({});
     const mstrings = inject('mstrings');
 
     /**
@@ -160,8 +164,9 @@
             showimportmodal.value = false;
         })
         .catch((error) => {
+            showimportmodal.value = false;
+            debug.value = error;
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
         });
     }
 
@@ -196,6 +201,8 @@
             showimportmodal.value = false;
         })
         .catch((error) => {
+            showimportmodal.value = false;
+            debug.value = error;
             window.console.error(error);
             toast.error('Error communicating with server (see console)');
         });

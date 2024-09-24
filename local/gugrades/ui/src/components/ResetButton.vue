@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button v-if="hascapability" type="button" class="btn btn-danger  mr-1" @click="showconfirm = true">
         {{ mstrings.resetcourse }}
     </button>
@@ -9,10 +11,12 @@
 <script setup>
     import {ref, onMounted, inject} from '@vue/runtime-core';
     import ConfirmModal from '@/components/ConfirmModal.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
     import { useToast } from "vue-toastification";
 
     const hascapability = ref(false);
     const showconfirm = ref(false);
+    const debug = ref({});
     const mstrings = inject('mstrings');
 
     const toast = useToast();
@@ -37,7 +41,7 @@
             })
             .catch((error) => {
                 window.console.error(error);
-                toast.error('Error communicating with server (see console)');
+                debug.value = error;
             });
         }
 
@@ -64,7 +68,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
 
     });

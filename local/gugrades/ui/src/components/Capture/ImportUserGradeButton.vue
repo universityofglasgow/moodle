@@ -1,13 +1,17 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <a class="dropdown-item" href="#" @click="import_grade()">{{ mstrings.importusergrade }}</a>
 </template>
 
 <script setup>
     import {inject, defineEmits, defineProps} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const toast = useToast();
+    const debug = ref({});
 
     const props = defineProps({
         itemid: Number,
@@ -43,7 +47,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 </script>

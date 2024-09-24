@@ -1,12 +1,15 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
     <a v-if="props.gradehidden" class="dropdown-item" href="#" @click="showhide('show')">{{ mstrings.show }}</a>
     <a v-if="!props.gradehidden" class="dropdown-item" href="#" @click="showhide('hide')">{{ mstrings.hide }}</a>
 </template>
 
 <script setup>
     import {defineProps, defineEmits, inject} from '@vue/runtime-core';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
+    const debug = ref({});
 
     const props = defineProps({
         courseid: Number,
@@ -39,7 +42,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 </script>

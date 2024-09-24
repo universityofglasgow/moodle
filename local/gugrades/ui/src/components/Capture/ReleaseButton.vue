@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary mr-1" @click="showreleasemodal=true">
         <span v-if="props.released">
             <span v-if="grouprelease">{{ mstrings.unreleasegradesgroup }}</span>
@@ -58,9 +60,11 @@
 <script setup>
     import {ref, inject, defineProps, defineEmits, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const showreleasemodal = ref(false);
     const mstrings = inject('mstrings');
+    const debug = ref({});
 
     const emit = defineEmits(['released']);
 
@@ -104,7 +108,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showreleasemodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -133,7 +138,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showreleasemodal.value = false;
+            debug.value = error;
         });
 
         showreleasemodal.value = true;
@@ -163,8 +169,8 @@
             toast.success(mstrings.gradesunreleased);
         })
         .catch((error) => {
-            window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showreleasemodal.value = false;
+            debug.value = error;
         });
 
         showreleasemodal.value = true;

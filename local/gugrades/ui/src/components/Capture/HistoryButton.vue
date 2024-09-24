@@ -1,4 +1,5 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
     <a class="dropdown-item" href="#" @click="read_history()">{{ mstrings.history }}</a>
 
     <VueModal v-model="showhistorymodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.gradehistory">
@@ -26,11 +27,13 @@
 <script setup>
     import {ref, defineProps, onMounted, inject} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const showhistorymodal = ref(false);
     const grades = ref([]);
     const mstrings = inject('mstrings');
     const headers = ref([]);
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -62,7 +65,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showhistorymodal.value = false;
+            debug.value = error;
         });
 
         showhistorymodal.value = true;

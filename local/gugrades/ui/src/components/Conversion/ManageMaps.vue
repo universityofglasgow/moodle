@@ -1,4 +1,6 @@
 <template>
+     <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div id="managemaps">
         <h2>{{ mstrings.conversionmaps }}</h2>
 
@@ -65,6 +67,7 @@
     import ConfirmModal from '@/components/ConfirmModal.vue';
     import { saveAs } from 'file-saver';
     import { useFileDialog } from '@vueuse/core';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const maps = ref([]);
     const editmap = ref(false);
@@ -74,6 +77,7 @@
     const deletemapid = ref(0);
     const showimportmodal = ref(false);
     const mstrings = inject('mstrings');
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -105,7 +109,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -148,7 +152,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -207,7 +211,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -272,7 +276,7 @@
             })
             .catch((error) => {
                 window.console.error(error);
-                toast.error('Error communicating with server (see console)');
+                debug.value = error;
             });
         }
 

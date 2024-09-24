@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <!-- info button -->
     <a href="#" class="ml-2"  @click="info_clicked" data-toggle="tooltip" data-placement="middle" :title="mstrings.gradeiteminfo">
         <span v-if="props.text" class="text-light"><u>{{ props.text }}</u></span>
@@ -53,6 +55,7 @@
 <script setup>
     import {ref, inject, defineProps, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const showinfomodal = ref(false);
     const itemname = ref('');
@@ -63,6 +66,7 @@
     const grademax = ref(0);
     const weight = ref(0);
     const categoryerror = ref(false);
+    const debug = ref({});
     const mstrings = inject('mstrings');
 
     const props = defineProps({
@@ -118,7 +122,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
 
         showinfomodal.value = true;

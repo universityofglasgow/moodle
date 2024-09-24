@@ -3,6 +3,8 @@
  */
 
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div>
         <div v-if="notsetup" class="alert alert-warning">
             {{ mstrings.notoplevel }}
@@ -16,10 +18,12 @@
 
 <script setup>
     import {ref, onMounted, defineEmits, inject} from '@vue/runtime-core';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const level1categories = ref([]);
     const selected = ref(0);
     const notsetup = ref(false);
+    const debug = ref({});
     const mstrings = inject('mstrings');
 
     const emit = defineEmits(['levelchange']);
@@ -44,6 +48,7 @@
         })
         .catch((error) => {
             window.console.error(error);
+            debug.value = error;
         })
     }
 

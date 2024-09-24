@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="conversion_clicked()">
         {{ mstrings.convertgrades }}
     </button>
@@ -57,6 +59,7 @@
 <script setup>
     import {ref, inject, defineProps, defineEmits} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const maps = ref([]);
@@ -67,6 +70,7 @@
     const showselectmodal = ref(false);
     const anygrades = ref(false);
     const mapname = ref('');
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -103,7 +107,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -132,7 +137,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -168,7 +174,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
 
         showselectmodal.value = false;
@@ -198,7 +205,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
 
         showselectmodal.value = false;
