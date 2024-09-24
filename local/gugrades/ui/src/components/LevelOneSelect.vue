@@ -55,12 +55,12 @@
     // Handle change of selection in dropdown.
     function levelOneChange(event) {
         const categoryid = event.target.value;
-        localStorage.setItem('level1category', categoryid);
+        //localStorage.setItem('level1category', categoryid);
         emit('levelchange', categoryid);
     }
 
     onMounted(() => {
-        selected.value = localStorage.getItem('level1category');
+        //selected.value = localStorage.getItem('level1category');
         getLevelOne();
         if (selected.value != 0) {
             emit('levelchange', selected.value);
