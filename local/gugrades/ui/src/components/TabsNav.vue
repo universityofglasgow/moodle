@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded mb-2">
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -44,9 +46,11 @@
 <script setup>
     import {ref, defineEmits, defineProps, inject, onMounted} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const activetab = ref('capture');
     const settingscapability = ref(false);
+    const debug = ref({});
     const mstrings = inject('mstrings');
 
     const props = defineProps({
@@ -86,7 +90,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
 
     });

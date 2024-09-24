@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="serverdebug"></DebugDisplay>
+
     <div class="border rounded p-2 mt-2">
         <div class="col-12 col-lg-6">
             <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
@@ -192,6 +194,7 @@
     import PleaseWait from '@/components/PleaseWait.vue';
     import AggregationButtons from '@/components/Aggregation/AggregationButtons.vue';
     import OverrideGrade from '@/components/Aggregation/OverrideGrade.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const toast = useToast();
 
@@ -217,6 +220,7 @@
     const debug = ref([]);
     const conversion = ref('');
     const allowconversion = ref(false);
+    const serverdebug = ref({});
 
     let firstname = '';
     let lastname = '';
@@ -283,7 +287,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            serverdebug.value = error;
         });
     }
 
@@ -480,7 +484,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            serverdebug.value = error;
         });
     }
 
@@ -534,7 +538,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            serverdebug.value = error;
         });
     }
 

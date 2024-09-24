@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div v-if="!available" class="alert alert-danger">
         MyGrades cannot be used in this course as it has too many enrolled participants.
     </div>
@@ -36,6 +38,7 @@
     import SettingsPage from '@/views/SettingsPage.vue';
     import AuditPage from '@/views/AuditPage.vue';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const currenttab = ref('capture');
     const level1category = ref(0);
@@ -44,6 +47,7 @@
     const enabledashboard = ref(false);
     const viewaggregation = ref(true);
     const available = ref(true);
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -86,7 +90,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -112,6 +116,7 @@
         })
         .catch((error) => {
             window.console.log(error);
+            debug.value = error;
         });
 
         // Check capability to use the aggregation tab.
@@ -127,6 +132,7 @@
         })
         .catch((error) => {
             window.console.log(error);
+            debug.value = error;
         });
     })
 </script>

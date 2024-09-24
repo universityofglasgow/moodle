@@ -265,13 +265,7 @@
                     mapid: deletemapid.value,
                 }
             }])[0]
-            .then((result) => {
-                const success = result.success;
-                if (success) {
-                    toast.success('Deleted');
-                } else {
-                    toast.error('Map could not be deleted');
-                }
+            .then(() => {
                 get_maps();
             })
             .catch((error) => {

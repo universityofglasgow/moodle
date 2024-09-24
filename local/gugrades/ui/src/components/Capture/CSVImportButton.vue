@@ -103,6 +103,7 @@
     const gradetypes = ref([]);
     const reason = ref('');
     const other = ref('');
+    const debug = ref({});
     const lines10 = computed(() =>{
         return lines.value.slice(0, 10);
     });
@@ -144,7 +145,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showcsvmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -183,7 +185,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showcsvmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -207,7 +210,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showcsvmodal.value = false;
+            debug.value = error;
         });
     }
 

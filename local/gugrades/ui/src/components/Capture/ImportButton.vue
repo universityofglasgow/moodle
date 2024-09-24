@@ -204,7 +204,6 @@
             showimportmodal.value = false;
             debug.value = error;
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
         });
     }
 
@@ -239,7 +238,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showimportmodal.value = false;
+            debug.value = error;
         });
     }
 </script>

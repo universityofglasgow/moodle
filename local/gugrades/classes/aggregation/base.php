@@ -219,6 +219,8 @@ class base {
      */
     public function admin_grades_level1(array $items) {
 
+        return '';
+
         $countnscw = 0;
         $countmv = 0;
         $countis = 0;
@@ -571,6 +573,7 @@ class base {
     /**
      * Format displaygrade for Schedule A / B
      * Depends on completion (<75% or not)
+     * MGU-1000: return 'CW' if <75%
      * @param string $convertedgrade
      * @param float $rawgrade
      * @param float $gradepoint

@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div>
         <div class="border rounded p-2 mt-2">
             <div class="col-12 mb-2">
@@ -169,6 +171,7 @@
     import EditCaptureCell from '@/components/Capture/EditCaptureCell.vue';
     import { useWindowScroll, watchDebounced } from '@vueuse/core';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const users = ref([]);
     const userids = ref([]);
@@ -208,6 +211,7 @@
     const provisionalslot = ref('');
     const provisionalid = ref('');
     const showcsvimport = ref(true);
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -543,7 +547,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -607,7 +611,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 

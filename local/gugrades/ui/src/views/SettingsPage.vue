@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div>
         <h1>{{ mstrings.settings }}</h1>
 
@@ -29,6 +31,7 @@
     import {ref, inject, onMounted} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import ResetButton from '@/components/ResetButton.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const disabledashboard = ref(false);
@@ -65,7 +68,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -96,7 +99,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -128,7 +131,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     })
 
