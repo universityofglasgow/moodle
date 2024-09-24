@@ -388,7 +388,8 @@ class conversion {
             $DB->insert_record('local_gugrades_map_item', $mapitem);
         } else {
             if ($courseid != $mapitem->courseid) {
-                throw new \moodle_exception('courseid does not match ' . $courseid . '(courseid in record is ' . $mapitem->courseid . ')');
+                throw new \moodle_exception('courseid does not match ' . $courseid . '(courseid in record is ' . $mapitem->courseid .
+                    ', mapitem id is' . $mapitem->id . ')');
             }
             $mapitem->mapid = $mapid;
             $mapitem->userid = $USER->id;
