@@ -727,7 +727,11 @@ class aggregation {
         foreach ($items as $item) {
             $itemid = $item->itemid;
 
-            $normalisedweight = 100 * $item->weight / $totalweight;
+            if ($totalweight == 0) {
+                $normalisedweight = null;
+            } else {
+                $normalisedweight = 100 * $item->weight / $totalweight;
+            }
 
             // There can be multiple reasons (which we don't know here), so we'll just mark them
             // all to make our lives easier.

@@ -208,7 +208,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals("NS", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
 
-        // Set MV for question 4. Total should be MV
+        // Set MV for question 4. Total should be GCW.
         $this->apply_admingrade('Question 4', $this->student->id, 'MV');
 
         // Get aggregation page for above.
@@ -221,7 +221,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals("GCW", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
     }
 
