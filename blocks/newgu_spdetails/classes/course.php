@@ -82,13 +82,10 @@ class course {
                         $subcategories = \grade_category::fetch_all(['parent' => $subcatid, 'hidden' => 0]);
                         if ($items || $subcategories) {
                             $assessmenttype = self::return_assessmenttype($subcatname, $item->aggregationcoef);
-                            $subcatweight = self::return_weight($item->aggregationcoef);
                             $subcatdata[] = [
                                 'id' => $subcatid,
                                 'name' => $subcatname,
                                 'assessmenttype' => $assessmenttype,
-                                'subcatweight' => $subcatweight . '%',
-                                'raw_category_weight' => $subcatweight,
                             ];
                         }
                     }
@@ -106,15 +103,12 @@ class course {
                         
                             $item = \grade_item::fetch(['courseid' => $course->id, 'itemtype' => 'course']);
                             $assessmenttype = self::return_assessmenttype($course->fullname, $item->aggregationcoef);
-                            $subcatweight = self::return_weight($item->aggregationcoef);
                             if (count($gradecat) > 0) {
                                 foreach ($gradecat as $gradecategory) {
                                     $subcatdata[] = [
                                         'id' => $gradecategory->id,
                                         'name' => $course->fullname,
                                         'assessmenttype' => $assessmenttype,
-                                        'subcatweight' => $subcatweight . '%',
-                                        'raw_category_weight' => $subcatweight,
                                     ];
                                 }
                             }
