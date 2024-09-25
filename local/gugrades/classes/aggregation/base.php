@@ -122,6 +122,7 @@ class base {
      * Admingrade check done BEFORE we check that all grades are
      * available
      * NOTE: Order is critical (see spec)
+     * (Please excuse inefficient coding)
      * @param int $level
      * @param array $items
      * @return string
@@ -132,6 +133,25 @@ class base {
         foreach ($items as $item) {
             if ($item->admingrade == '07') {
                 return '07';
+            }
+        }
+
+        // If there is a mix of MV and NS then aggregation is GCW (Good Cause Withheld)
+        // See MGU-1009
+        // Level 1 only
+        if ($level = 1) {
+            $nsfound = false;
+            $mvfound = false;
+            foreach ($items as $item) {
+                if ($item->admingrade == 'MV') {
+                    $mvfound = true;
+                }
+                if ($item->admingrade == 'NS') {
+                    $nsfound = true;
+                }
+            }
+            if ($nsfound && $mvfound) {
+                return 'GCW';
             }
         }
 
