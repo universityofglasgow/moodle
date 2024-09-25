@@ -158,51 +158,17 @@ class base {
      * Works out if aggregated grade is some admin grade
      * Returns this or empty string if not.
      *
-     * NOTE:  MV/IS - both treated as MV
-     *        NS/CW - both treated as NS
      * @param array $items
      * @return string
      */
     public function admin_grades_level2(array $items) {
 
-        // Condition 1: are there 1 or more NS/CW? If so, result is NS.
-        // Condition 2: all admin grades are MV, result is MV.
-        // Condition 3: all admin grades are IS, result is IS.
-        // Condition 4: mix of IS/MV. Don't know. Going to say MV (TODO).
-        $countnscw = 0;
-        $countmv = 0;
-        $countis = 0;
+        // Condition 1: are there 1 or more NS? If so, result is NS.
         foreach ($items as $item) {
             $grade = $item->admingrade;
-            if (($grade == 'NS') || ($grade == 'CW')) {
-                $countnscw++;
-            } else if ($grade == 'MV') {
-                $countmv++;
-            } else if ($grade == 'IS') {
-                $countis++;
+            if ($grade == 'NS') {
+                return 'NS';
             }
-        }
-
-        // Check about conditions.
-        // And NS/CW at all means an NS result.
-        if ($countnscw) {
-            return 'NS';
-        }
-
-        // All MV and no IS means MV.
-        if ($countmv && !$countis) {
-            return 'MV';
-        }
-
-        // All IS and no MV means IS.
-        if ($countis && !$countmv) {
-            return 'IS';
-        }
-
-        // TODO: mix of MV and IS - not sure about this
-        // currently returning MV.
-        if ($countis && $countmv) {
-            return 'MV';
         }
 
         // No admin grade.
@@ -215,34 +181,16 @@ class base {
      * Returns this or empty string if not.
      *
      * @param array $items
+     * @param int $completion
      * @return string
      */
-    public function admin_grades_level1(array $items) {
+    public function admin_grades_level1(array $items, int $completion) {
 
-        return '';
-
-        $countnscw = 0;
-        $countmv = 0;
-        $countis = 0;
-        $count07 = 0;
-        foreach ($items as $item) {
-            $grade = $item->admingrade;
-            if (($grade == 'NS') || ($grade == 'CW')) {
-                $countnscw++;
-            } else if ($grade == 'MV') {
-                $countmv++;
-            } else if ($grade == 'IS') {
-                $countis++;
-            }
+        // If completion is <75% then admingrade is CW
+        if ($completion < 75) {
+            return 'CW';
         }
 
-        // All MV and no IS means MV.
-        if ($countmv) {
-            return 'MV';
-        }
-
-
-        // No admin grade.
         return '';
     }
 

@@ -528,7 +528,7 @@ class conversion {
         $mapvalues = $DB->get_records('local_gugrades_map_value', ['mapid' => $mapinfo->id], 'percentage ASC');
 
         // Get the grade item.
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = $DB->get_record('grade_items', ['courseid' => $courseid, 'id' => $gradeitemid], '*', MUST_EXIST);
 
         // Iterate over users converting grades.
         foreach ($users as $user) {

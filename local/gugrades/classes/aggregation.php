@@ -803,7 +803,7 @@ class aggregation {
 
         // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
         if ($level == 1) {
-            if ($admingrade = $aggregation->admin_grades_level1($items)) {
+            if ($admingrade = $aggregation->admin_grades_level1($items, $completion)) {
                 return [0, 0, $admingrade, $admingrade, $completion, ''];
             }
         }

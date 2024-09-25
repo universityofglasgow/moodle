@@ -120,8 +120,8 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $this->assertTrue($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("9.33333", $fred['displaygrade']);
-        $this->assertEquals(9.33333, $fred['rawgrade']);
+        $this->assertEquals("CW", $fred['displaygrade']);
+        $this->assertEquals(0.0, $fred['rawgrade']);
         $this->assertEquals(67, $fred['completed']);
 
         // Change question 3 to 07 admingrade
