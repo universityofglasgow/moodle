@@ -33,7 +33,6 @@ op<template>
 
     const showdebugmodal = computed(() => {
         const simpledebug = {...props.debug};
-        window.console.log(simpledebug);
         return !_.isEmpty(simpledebug);
     });
 </script>

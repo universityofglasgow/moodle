@@ -68,8 +68,10 @@ class base {
                 continue;
             }
 
+            // If selected user is not in the list of available users,
+            // remove the item from the list of items.
             if (!in_array($userid, $userids)) {
-                unset($item[$id]);
+                unset($items[$id]);
             }
         }
 

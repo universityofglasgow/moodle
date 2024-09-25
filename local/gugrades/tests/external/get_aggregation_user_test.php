@@ -110,7 +110,7 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function test_basic_aggregation_page(): void {
+    public function test_basic_aggregation_user(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -132,6 +132,52 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
                 $status
             );
         }
+
+        // Get data for this user.
+        $user = get_aggregation_user::execute($this->course->id, $this->gradecatsummative->id, $this->student->id);
+        $user = external_api::clean_returnvalue(
+            get_aggregation_user::execute_returns(),
+            $user
+        );
+
+        $this->assertEquals('Fred Bloggs', $user['displayname']);
+        $this->assertEquals(29, $user['completed']);
+        $fields = $user['fields'];
+        $this->assertEquals('47.23333', $fields[0]['display']);
+    }
+
+    /**
+     * Checking direct call to API, used by Student MyGrades
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     * @return void
+     */
+    public function test_direct_aggregation_user(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1a', $this->student->id);
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        $user = \local_gugrades\api::get_aggregation_user($this->course->id, $this->gradecatsummative->id, $this->student->id);
+
+        var_dump($user); die;
 
         // Get data for this user.
         $user = get_aggregation_user::execute($this->course->id, $this->gradecatsummative->id, $this->student->id);
