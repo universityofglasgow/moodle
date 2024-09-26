@@ -296,6 +296,7 @@ class aggregation {
             // Basic fields.
             $fieldname = 'AGG_' . $column->gradeitemid;
             $data = [
+                'itemid' => $gradecatitem->id,
                 'fieldname' => $fieldname, // Required by WS.
                 'itemname' => $column->shortname, // Required by WS.
                 'display' => '', // Required by WS.

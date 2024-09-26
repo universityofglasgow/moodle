@@ -1759,7 +1759,7 @@ class api {
      * @param int $courseid
      * @param int $gradecategoryid
      * @param int $userid
-     * @return array
+     * @return object
      */
     public static function get_aggregation_user(int $courseid, int $gradecategoryid, int $userid) {
         global $DB;
@@ -1797,12 +1797,20 @@ class api {
         // Get basic user field data
         $user = self::get_aggregation_user($courseid, $gradecategoryid, $userid);
 
+        // Run over the fields and add released status.
+        foreach ($user->fields as $id => $field) {
+            $released = \local_gugrades\grades::is_grades_released($courseid, $field['itemid']);
+            $user->fields[$id]['released'] = $released;
+        }
+
         // Get the category
         $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradecategoryid);
         $gradeitemid = $category->itemid;
 
         // Get provisional grade for the actual category
         $provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid);
+        $provisional->itemid = $gradeitemid;
+        $provisional->released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
 
         // add the 'parent' grade item to the record
         $user->parent = $provisional;
