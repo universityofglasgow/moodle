@@ -185,6 +185,8 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
 
         $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $schedulebexam->id, $this->student->id);
 
+        var_dump($user); die;
+
         $this->assertEquals(12.82051, $user->parent->normalisedweight);
         $this->assertEquals(44.11765, $user->fields[0]['normalisedweight']);
     }
