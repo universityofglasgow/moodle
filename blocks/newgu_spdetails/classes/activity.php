@@ -189,7 +189,7 @@ class activity {
 
             if (!$mygradesenabled) {
                 $activitydata = self::process_default_items($activityitems->items, $activetab, $ltiactivities,
-                $assessmenttype, $sortby, $sortorder);
+                $assessmenttype);
             }
 
             $data['assessmentitems'] = $activitydata;
@@ -303,12 +303,9 @@ class activity {
                             $itemicon = '';
                             $iconalt = '';
                             $iconrestricted = false;
-                            if ($iconurl = $cm->get_icon_url()->out(false)) {
-                                $itemicon = $iconurl;
-                                $a = new \stdClass();
-                                $a->modulename = get_string('modulename', $mygradesitem->itemmodule);
-                                $a->activityname = $cm->name;
-                                $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+                            if ($activityicon = self::get_activity_icon($cm, $mygradesitem->itemmodule)) {
+                                $itemicon = $activityicon->iconurl;
+                                $iconalt = $activityicon->iconalt;
                             }
                             $assessmentweight = course::return_weight($mygradesitem->aggregationcoef);
                             $duedate = '';
@@ -447,12 +444,10 @@ class activity {
      * @param string $activetab
      * @param array $ltiactivities
      * @param string $assessmenttype
-     * @param string $sortby
-     * @param string $sortorder
      * @return array
      */
     public static function process_default_items(array $defaultitems, string $activetab, array $ltiactivities,
-    string $assessmenttype, string $sortby, string $sortorder): array {
+    string $assessmenttype): array {
 
         global $USER;
         $defaultdata = [];
@@ -482,12 +477,9 @@ class activity {
                             $cm = $modinfo->get_cm($cm->id);
                             $itemicon = '';
                             $iconalt = '';
-                            if ($iconurl = $cm->get_icon_url()->out(false)) {
-                                $itemicon = $iconurl;
-                                $a = new \stdClass();
-                                $a->modulename = get_string('modulename', $defaultitem->itemmodule);
-                                $a->activityname = $cm->name;
-                                $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+                            if ($activityicon = self::get_activity_icon($cm, $defaultitem->itemmodule)) {
+                                $itemicon = $activityicon->iconurl;
+                                $iconalt = $activityicon->iconalt;
                             }
 
                             $assessmenturl = '';
@@ -663,6 +655,28 @@ class activity {
         }
 
         return $processedmanualgradeitem;
+    }
+
+    /**
+     * Generate an icon image path.
+     *
+     * @param object $cm
+     * @param string $itemmodule
+     * @return object|boolean
+     */
+    public static function get_activity_icon($cm, $itemmodule): mixed {
+        if ($iconurl = $cm->get_icon_url()->out(false)) {
+            $a = new \stdClass();
+            $a->modulename = get_string('modulename', $itemmodule);
+            $a->activityname = $cm->name;
+            $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
+            $a->iconurl = $iconurl;
+            $a->iconalt = $iconalt;
+
+            return $a;
+        }
+
+        return false;
     }
 
     /**
