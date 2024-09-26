@@ -308,6 +308,7 @@ class aggregation {
                 'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
                 'overridden' => false,
                 'available' => true,
+                'normalisedweight' => null,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
@@ -320,6 +321,7 @@ class aggregation {
                 $data['dropped'] = $provisional->dropped;
                 $data['isadmin'] = !empty($provisional->admingrade);
                 $data['overridden'] = $provisional->catoverride;
+                $data['normalisedweight'] = $provisional->normalisedweight;
             } else {
                 $data['display'] = get_string('nodata', 'local_gugrades');
             }
@@ -691,6 +693,7 @@ class aggregation {
 
     /**
      * Record dropped items in grade table
+     * Also sets normalised weight to null (as unused)
      * @param int $userid
      * @param array $items
      */
@@ -705,6 +708,36 @@ class aggregation {
             $grades = $DB->get_records('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid, 'iscurrent' => 1]);
             foreach ($grades as $grade) {
                 $grade->dropped = 1;
+                $grade->normalisedweight = null;
+                $DB->update_record('local_gugrades_grade', $grade);
+            }
+        }
+    }
+
+    /**
+     * Record the normalised weights of the items
+     * @param array $items
+     * @param int $userid
+     */
+    private static function record_weights(array $items, int $userid) {
+        global $DB;
+
+        $totalweight = array_sum(array_column($items, 'weight'));
+
+        foreach ($items as $item) {
+            $itemid = $item->itemid;
+
+            if ($totalweight == 0) {
+                $normalisedweight = null;
+            } else {
+                $normalisedweight = 100 * $item->weight / $totalweight;
+            }
+
+            // There can be multiple reasons (which we don't know here), so we'll just mark them
+            // all to make our lives easier.
+            $grades = $DB->get_records('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid, 'iscurrent' => 1]);
+            foreach ($grades as $grade) {
+                $grade->normalisedweight = $normalisedweight;
                 $DB->update_record('local_gugrades_grade', $grade);
             }
         }
@@ -808,6 +841,9 @@ class aggregation {
             }
         }
 
+        // Record normalised weights
+        self::record_weights($items, $userid);
+
         // Now call the appropriate aggregation function to do the sums.
         $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
 
@@ -895,6 +931,8 @@ class aggregation {
             'gradeitemid' => $gradeitemid,
         ]);
     }
+
+
 
     /**
      * Get overidden category (or not)

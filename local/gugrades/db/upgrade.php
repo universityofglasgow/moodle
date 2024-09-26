@@ -140,5 +140,20 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024082800, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024092400) {
+
+        // Define field normalisedweight to be added to local_gugrades_grade.
+        $table = new xmldb_table('local_gugrades_grade');
+        $field = new xmldb_field('normalisedweight', XMLDB_TYPE_NUMBER, '10, 5', null, null, null, null, 'catoverride');
+
+        // Conditionally launch add field normalisedweight.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024092400, 'local', 'gugrades');
+    }
+
     return true;
 }

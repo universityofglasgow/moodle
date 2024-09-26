@@ -166,6 +166,8 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
         // Install test data for student.
         $this->load_data('data1a', $this->student->id);
 
+
+
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
             $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
@@ -175,21 +177,16 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
             );
         }
 
-        $user = \local_gugrades\api::get_aggregation_user($this->course->id, $this->gradecatsummative->id, $this->student->id);
+        // Find 'Schedule B exam'.
+        $schedulebexam = $DB->get_record('grade_categories', ['fullname' => 'Schedule B exam'], '*', MUST_EXIST);
 
-        var_dump($user); die;
+        // Set aggregation strategy.
+        $this->set_strategy($schedulebexam->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
-        // Get data for this user.
-        $user = get_aggregation_user::execute($this->course->id, $this->gradecatsummative->id, $this->student->id);
-        $user = external_api::clean_returnvalue(
-            get_aggregation_user::execute_returns(),
-            $user
-        );
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $schedulebexam->id, $this->student->id);
 
-        $this->assertEquals('Fred Bloggs', $user['displayname']);
-        $this->assertEquals(29, $user['completed']);
-        $fields = $user['fields'];
-        $this->assertEquals('47.23333', $fields[0]['display']);
+        $this->assertEquals(12.82051, $user->parent->normalisedweight);
+        $this->assertEquals(44.11765, $user->fields[0]['normalisedweight']);
     }
 
 }

@@ -1730,7 +1730,7 @@ class api {
             $debug = array_merge($debug, $addaggdebug);
         }
 
-        // Can we show the conversion controls for this category?
+        // Can we show the conversion controls for this category?d
         // Only available for level 2 categories - MGU-997
         $level = \local_gugrades\grades::get_category_level($gradecategoryid);
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
@@ -1780,6 +1780,32 @@ class api {
         $context = \context_course::instance($courseid);
         $user = \local_gugrades\aggregation::get_user($courseid, $userid);
         $user = \local_gugrades\aggregation::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
+
+        return $user;
+    }
+
+    /**
+     * Get user data for dashboard
+     * It's basically get_aggregation_user with some extras added
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_aggregation_dashboard_user(int $courseid, int $gradecategoryid, int $userid) {
+
+        // Get basic user field data
+        $user = self::get_aggregation_user($courseid, $gradecategoryid, $userid);
+
+        // Get the category
+        $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradecategoryid);
+        $gradeitemid = $category->itemid;
+
+        // Get provisional grade for the actual category
+        $provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid);
+
+        // add the 'parent' grade item to the record
+        $user->parent = $provisional;
 
         return $user;
     }
