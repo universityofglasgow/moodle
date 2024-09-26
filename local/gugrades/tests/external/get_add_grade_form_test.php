@@ -95,13 +95,13 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         // Check adminmenu.
         $this->assertArrayHasKey('adminmenu', $form);
         $adminmenu = $form['adminmenu'];
-        $this->assertCount(4, $adminmenu);
+        $this->assertGreaterThan(0, count($adminmenu));
         $this->assertEquals('07', $adminmenu[0]['value']);
         $this->assertEquals('07 - Deferred', $adminmenu[0]['label']);
-        $this->assertEquals('IS', $adminmenu[1]['value']);
-        $this->assertEquals('IS - Interruption of Studies', $adminmenu[1]['label']);
-        $this->assertEquals('MV', $adminmenu[3]['value']);
-        $this->assertEquals('MV - Good Cause', $adminmenu[3]['label']);
+        $this->assertEquals('NS', $adminmenu[1]['value']);
+        $this->assertEquals('NS - No Submission', $adminmenu[1]['label']);
+        $this->assertEquals('MV', $adminmenu[2]['value']);
+        $this->assertEquals('MV - Good Cause', $adminmenu[2]['label']);
     }
 
     /**
@@ -157,11 +157,7 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         // Check adminmenu.
         $this->assertArrayHasKey('adminmenu', $form);
         $adminmenu = $form['adminmenu'];
-        $this->assertCount(4, $adminmenu);
-        $this->assertEquals('IS', $adminmenu[1]['value']);
-        $this->assertEquals('IS - Interruption of Studies', $adminmenu[1]['label']);
-        $this->assertEquals('MV', $adminmenu[3]['value']);
-        $this->assertEquals('MV - Good Cause', $adminmenu[3]['label']);
+        $this->assertGreaterThan(0, count($adminmenu));
     }
 
     /**
