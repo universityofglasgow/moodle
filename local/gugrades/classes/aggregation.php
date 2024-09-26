@@ -165,7 +165,7 @@ class aggregation {
                 'userids' => [],
 
                 // TODO - may not be so simple.
-                'weight' => round($gradecategory->weight * 100),
+                'weight' => round($gradecategory->weight * 100, 1),
             ];
         }
         foreach ($gradeitems as $gradeitem) {
@@ -190,7 +190,7 @@ class aggregation {
                 'userids' => $userids,
 
                 // TODO - may not be so simple.
-                'weight' => round($gradeitem->weight * 100),
+                'weight' => round($gradeitem->weight * 100, 1),
             ];
         }
 
