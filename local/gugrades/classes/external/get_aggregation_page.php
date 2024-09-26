@@ -139,7 +139,7 @@ class get_aggregation_page extends external_api {
                     'categoryid' => new external_value(PARAM_INT, 'Category ID, or 0'),
                     'shortname' => new external_value(PARAM_TEXT, 'Short name'),
                     'fullname' => new external_value(PARAM_TEXT, 'Full name'),
-                    'weight' => new external_value(PARAM_INT, 'Weighting as percentage'),
+                    'weight' => new external_value(PARAM_FLOAT, 'Weighting as percentage'),
                     'gradetype' => new external_value(PARAM_TEXT, 'Name of scale or points'),
                     'grademax' => new external_value(PARAM_INT, 'Maximum grade'),
                     'isscale' => new external_value(PARAM_BOOL, 'True if a scale, otherwise points'),

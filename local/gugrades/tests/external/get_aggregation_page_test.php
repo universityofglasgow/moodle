@@ -808,6 +808,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Schedule B exam', $form['itemname']);
         $this->assertCount(8, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
+
         $this->assertGreaterThan(0, count($form['adminmenu']));
 
         // Write a new grade for this category.
