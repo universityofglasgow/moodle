@@ -183,6 +183,7 @@ class activity {
             // We've lost all knowledge at this point of the course type - fetch it again.
             $mygradesenabled = course::is_type_mygrades($courseid);
             if ($mygradesenabled) {
+                $gradedata = api::get_aggregation_dashboard_user($courseid, $subcategory, $userid);
                 $activitydata = self::process_mygrades_items($activityitems->items, $activetab, $ltiactivities,
                 $assessmenttype);
             }
@@ -254,7 +255,7 @@ class activity {
                                         'id' => $mygradesitem->id,
                                         'assessment_url' => '',
                                         'item_icon' => '',
-                                        'icon_alt' => '',
+                                        'icon_alt' => get_string('manualitem', 'grades'),
                                         'item_name' => $mygradesitem->itemname,
                                         'assessment_type' => $assessmenttype,
                                         'assessment_weight' => $assessmentweight . '%',
@@ -385,6 +386,7 @@ class activity {
                                         $gradefeedbacklink = $gradestatobj->grade_feedback_link;
                                     }
                                 } elseif ($cm->availableinfo) {
+                                    $iconalt = substr($activityicon->iconalt, 8);
                                     $assessmenturl = '';
                                     $duedate = $gradestatobj->due_date;
                                     $rawduedate = $gradestatobj->raw_due_date;
@@ -541,6 +543,7 @@ class activity {
                                     'gradebookenabled' => 'true',
                                 ];
                             } elseif ($cm->availableinfo) {
+                                $iconalt = substr($activityicon->iconalt, 8);
                                 $tmp = [
                                     'id' => $defaultitem->id,
                                     'assessment_url' => '',
@@ -634,7 +637,7 @@ class activity {
                     'id' => $manualgradeitem->id,
                     'assessment_url' => $assessmenturl,
                     'item_icon' => '',
-                    'icon_alt' => '',
+                    'icon_alt' => get_string('manualitem', 'grades'),
                     'item_name' => $manualgradeitem->itemname,
                     'assessment_type' => $assessmenttype,
                     'assessment_weight' => $assessmentweight . '%',
