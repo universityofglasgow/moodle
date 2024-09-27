@@ -385,6 +385,7 @@ class activity {
                                         $gradefeedbacklink = $gradestatobj->grade_feedback_link;
                                     }
                                 } elseif ($cm->availableinfo) {
+                                    $assessmenturl = '';
                                     $duedate = $gradestatobj->due_date;
                                     $rawduedate = $gradestatobj->raw_due_date;
                                     $statustext = get_string('status_text_restricted', 'block_newgu_spdetails');
@@ -542,7 +543,7 @@ class activity {
                             } elseif ($cm->availableinfo) {
                                 $tmp = [
                                     'id' => $defaultitem->id,
-                                    'assessment_url' => $assessmenturl,
+                                    'assessment_url' => '',
                                     'item_icon' => $itemicon,
                                     'icon_alt' => $iconalt,
                                     'icon_restricted' => true,
