@@ -121,6 +121,7 @@ $string['chart_24hrs'] = '24 hours';
 $string['chart_7days'] = '7 days';
 $string['chart_1mth'] = 'month';
 
+$string['status_restricted'] = 'restricted';
 $string['status_new'] = 'new';
 $string['status_tobeconfirmed'] = 'To be confirmed';
 $string['status_notopen'] = 'notopen';
@@ -134,6 +135,7 @@ $string['status_unavailable'] = 'unavailable';
 $string['status_provisional'] = 'provisional';
 $string['status_graded'] = 'graded';
 
+$string['status_class_restricted'] = 'status-restricted';
 $string['status_class_draft'] = 'status-draft';
 $string['status_class_submit'] = 'status-submit';
 $string['status_class_submitted'] = 'status-submitted';
@@ -143,6 +145,7 @@ $string['status_class_provisional'] = 'status-provisional';
 $string['status_class_graded'] = 'status-graded';
 
 $string['status_text_hidden'] = 'Hidden';
+$string['status_text_restricted'] = 'Restricted';
 $string['status_text_submissionnotopen'] = 'Submission not open';
 $string['status_text_submissionunavailable'] = 'Submission unavailable';
 $string['status_text_tosubmit'] = 'To submit';
