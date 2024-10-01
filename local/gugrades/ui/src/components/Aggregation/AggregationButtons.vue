@@ -2,6 +2,7 @@
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
         <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
+        <ReleaseCategoryButton></ReleaseCategoryButton>
     </div>
 </template>
 
@@ -9,6 +10,7 @@
     import {defineProps, defineEmits} from '@vue/runtime-core';
     import RecalculateButton from '@/components/Aggregation/RecalculateButton.vue';
     import ConversionButton from '@/components/Aggregation/ConversionButton.vue';
+    import ReleaseCategoryButton from '@/components/Aggregation/ReleaseCategoryButton.vue';
 
     const props = defineProps({
         categoryid: Number,
