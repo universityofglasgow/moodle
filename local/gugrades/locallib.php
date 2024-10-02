@@ -104,6 +104,14 @@ function custom_course_field() {
         $categoryid = $category->id;
     }
 
+    // Check if the customfield exists in some other category
+    $allfields = $DB->get_records('customfield_field', ['shortname' => 'studentmygrades']);
+    foreach ($allfields as $allfield) {
+        if ($allfield->categoryid != $categoryid) {
+            $DB->delete_records('customfield_field', ['id' => $allfield->id]);
+        }
+    }
+
     // Check if the customfield exists
     if (!$field = $DB->get_record('customfield_field', ['shortname' => 'studentmygrades', 'categoryid' => $categoryid])) {
         $field = new stdClass;
