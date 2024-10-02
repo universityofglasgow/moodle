@@ -154,6 +154,7 @@ final class override_top_level_test extends \local_gugrades\external\gugrades_ag
             $history
         );
 
+        //var_dump($history); die;
         $this->assertCount(2, $history);
         $this->assertEquals('Grades missing', $history[0]['displaygrade']);
         $this->assertEquals('C2', $history[1]['displaygrade']);
