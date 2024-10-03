@@ -376,7 +376,7 @@ class conversion {
         }
 
         // Set link to this map.
-        if (!$mapitem = $DB->get_record('local_gugrades_map_item', ['gradeitemid' => $gradeitemid])) {
+        if (!$mapitem = $DB->get_record('local_gugrades_map_item', $params)) {
             $mapitem = new \stdClass();
             $mapitem->courseid = $courseid;
             $mapitem->mapid = $mapid;
