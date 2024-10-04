@@ -310,6 +310,7 @@ class aggregation {
                 'overridden' => false,
                 'available' => true,
                 'normalisedweight' => null,
+                'iscategory' => $column->categoryid != 0,
             ];
 
             // Field identifier based on gradeitemid (which is unique even for categories).
