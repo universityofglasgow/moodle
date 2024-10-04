@@ -300,6 +300,7 @@ $string['showcategories'] = 'Show grade categories';
 $string['specifyadmingrade'] = 'Specify admin grade';
 $string['specifygrade'] = 'Specify grade';
 $string['specifyscale'] = 'Specify scale value';
+$string['staffmygrades'] = 'Staff MyGrades';
 $string['startdateafter'] = 'Start date after';
 $string['startdateafter_help'] = 'Course start date must be after this to appear on Past tab in Student MyGrades';
 $string['status'] = 'Status';

@@ -44,6 +44,11 @@ require_login($course);
 $context = context_course::instance($courseid);
 require_capability('local/gugrades:view', $context);
 
+// Navigation
+$coursenode = $PAGE->navigation->find($courseid, navigation_node::TYPE_COURSE);
+$mygradesnode = $coursenode->add(get_string('staffmygrades', 'local_gugrades'));
+$mygradesnode->make_active();
+
 // Log.
 $event = \local_gugrades\event\view_gugrades::create([
     'objectid' => $courseid,
