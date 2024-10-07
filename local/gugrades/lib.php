@@ -34,7 +34,7 @@ function local_gugrades_extend_navigation_course($parentnode, $course, $context)
         return;
     }
     $url = new moodle_url('/local/gugrades/ui/dist/index.php', ['id' => $course->id]);
-    $name = get_string('pluginname', 'local_gugrades');
+    $name = get_string('mygradesbeta', 'local_gugrades');
     $icon = new pix_icon('t/grades', '');
     $parentnode->add($name, $url, navigation_node::NODETYPE_LEAF, 'gugrades', null, $icon);
     $parentnode->make_active();

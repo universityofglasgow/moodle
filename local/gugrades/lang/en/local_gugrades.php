@@ -205,6 +205,7 @@ $string['mixture'] = 'A mixture of points and scales is not supported. Aggregati
 $string['mod'] = 'Activity';
 $string['module'] = 'Activity';
 $string['moodlegrade'] = 'Moodle grade';
+$string['mygradesbeta'] = 'MyGrades (Beta)';
 $string['name'] = 'Name';
 $string['no'] = 'No';
 $string['noaudit'] = 'No audit logs for this course';
