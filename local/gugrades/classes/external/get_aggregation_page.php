@@ -94,6 +94,8 @@ class get_aggregation_page extends external_api {
             'strategy' => new external_value(PARAM_TEXT, 'Aggregation strategy formatted for display'),
             'conversion' => new external_value(PARAM_TEXT, 'Name of conversion map, or empty'),
             'allowconversion' => new external_value(PARAM_BOOL, 'Should conversion controls be shown?'),
+            'allowrelease' => new external_value(PARAM_BOOL, 'Can the aggregated grades been released?'),
+            'released' => new external_value(PARAM_BOOL, 'Has the aggregated category been released?'),
             'debug' => new external_multiple_structure(
                 new external_single_structure([
                     'line' => new external_value(PARAM_RAW, 'Line of debug info, available when DEBUG_DEVELOPER is enabled'),
@@ -114,6 +116,7 @@ class get_aggregation_page extends external_api {
                     'resitrequired' => new external_value(PARAM_BOOL, 'Is resit required?'),
                     'completed' => new external_value(PARAM_INT, '%age of course completed'),
                     'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
+                    'releasegrade' => new external_value(PARAM_TEXT, 'Grade to show in the released column (if any)'),
                     'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
                     'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
                     'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),

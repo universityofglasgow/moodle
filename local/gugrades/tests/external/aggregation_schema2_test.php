@@ -70,34 +70,6 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
     }
 
     /**
-     * Create default conversion map
-     * @return int
-     */
-    protected function make_conversion_map() {
-
-        // Read map with id 0 (new map) for Schedule A.
-        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
-        $mapstuff = external_api::clean_returnvalue(
-            get_conversion_map::execute_returns(),
-            $mapstuff
-        );
-
-        // Write map back.
-        $name = 'Test conversion map';
-        $schedule = 'schedulea';
-        $maxgrade = 100.0;
-        $map = $mapstuff['map'];
-        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
-        $mapida = external_api::clean_returnvalue(
-            write_conversion_map::execute_returns(),
-            $mapida
-        );
-        $mapida = $mapida['mapid'];
-
-        return $mapida;
-    }
-
-    /**
      * Test top-level aggregation, Schedule A/B mix.
      * Test no data
      *

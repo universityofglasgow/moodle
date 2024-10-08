@@ -77,40 +77,12 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
     }
 
     /**
-     * Create default conversion map
-     * @return int
-     */
-    protected function make_conversion_map() {
-
-        // Read map with id 0 (new map) for Schedule A.
-        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
-        $mapstuff = external_api::clean_returnvalue(
-            get_conversion_map::execute_returns(),
-            $mapstuff
-        );
-
-        // Write map back.
-        $name = 'Test conversion map';
-        $schedule = 'schedulea';
-        $maxgrade = 100.0;
-        $map = $mapstuff['map'];
-        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
-        $mapida = external_api::clean_returnvalue(
-            write_conversion_map::execute_returns(),
-            $mapida
-        );
-        $mapida = $mapida['mapid'];
-
-        return $mapida;
-    }
-
-    /**
      * Checking basic (good) get page
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function xtest_basic_aggregation_page(): void {
+    public function test_basic_aggregation_page(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -140,10 +112,11 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $page
         );
 
+        $this->assertFalse($page['allowrelease']);
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Grades missing', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['error']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -158,7 +131,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Grades missing', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['error']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -177,11 +150,12 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $page
         );
 
-        // Nothing should have changed
+        // Nothing should have changed.
+        $this->assertFalse($page['allowrelease']);
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Grades missing', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['error']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -358,6 +332,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $page
         );
 
+        $this->assertTrue($page['allowrelease']);
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('B', $page['atype']);
         $fred = $page['users'][0];

@@ -597,11 +597,12 @@ class api {
     public static function get_history(int $gradeitemid, int $userid) {
         global $DB;
 
+        // Order by ID rather than time. As a second is quite a long time.
         $sql = "SELECT gg.*, gc.other FROM {local_gugrades_grade} gg
             JOIN {local_gugrades_column} gc ON gc.id = gg.columnid
             WHERE gg.userid = :userid
             AND gg.gradeitemid = :gradeitemid
-            ORDER BY audittimecreated DESC";
+            ORDER BY gg.id DESC";
         if (!$grades = $DB->get_records_sql($sql, ['userid' => $userid, 'gradeitemid' => $gradeitemid])) {
             return [];
         }
@@ -1436,7 +1437,8 @@ class api {
                 $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
                 $released = $usercapture->get_released();
 
-                if ($released) {
+                // Don't bother if grade is in error.
+                if ($released && !$released->iserror) {
                     \local_gugrades\grades::write_grade(
                         courseid: $courseid,
                         gradeitemid: $gradeitemid,
@@ -1739,6 +1741,12 @@ class api {
         // Corresponding gradeitemid for category.
         $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
 
+        // Allow release. At the moment, this is just going to be "Not points" and "not error".
+        $allowrelease = ($atype != \local_gugrades\GRADETYPE_POINTS) && ($atype != \local_gugrades\GRADETYPE_ERROR);
+
+        // Has the aggregated grade been released?
+        $released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
+
         return [
             'toplevel' => $istoplevel,
             'atype' => $atype,
@@ -1746,6 +1754,8 @@ class api {
             'strategy' => \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid),
             'conversion' => $mapname,
             'allowconversion' => $allowconversion,
+            'allowrelease' => $allowrelease,
+            'released' => $released,
             'warnings' => $warnings,
             'columns' => $columns,
             'users' => $users,

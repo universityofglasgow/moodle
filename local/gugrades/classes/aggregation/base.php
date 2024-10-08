@@ -99,7 +99,7 @@ class base {
 
         // If we're not going to return anything, anyway...
         if ($n >= count($items)) {
-            return [[], []];
+            return [[], $items];
         }
 
         // Sort items by grade (ascending).
@@ -316,8 +316,6 @@ class base {
         } else {
             throw new \moodle_exception('Unknown or unsupported aggregation strategy');
         }
-
-        // TODO - force everything to me mean for testing, for now.
 
         return "strategy_" .$agf;
     }

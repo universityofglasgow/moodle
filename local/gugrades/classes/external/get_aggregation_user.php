@@ -87,6 +87,7 @@ class get_aggregation_user extends external_api {
             'resitrequired' => new external_value(PARAM_BOOL, 'Is resit required?'),
             'completed' => new external_value(PARAM_INT, '%age of course completed'),
             'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
+            'releasegrade' => new external_value(PARAM_TEXT, 'Grade to show in the released column (if any)'),
             'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
             'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
             'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),

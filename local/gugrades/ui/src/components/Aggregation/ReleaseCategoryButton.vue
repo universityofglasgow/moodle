@@ -1,7 +1,7 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <button type="button" class="btn btn-outline-primary mr-1" @click="showreleasemodal=true">
+    <button type="button" class="btn btn-outline-primary mr-1" :disabled="props.disabled" @click="showreleasemodal=true">
         <span>
             <span v-if="grouprelease">{{ mstrings.releaseaggregatedgroup }}</span>
             <span v-else>{{ mstrings.releaseaggregatedgrade }}</span>
@@ -70,6 +70,7 @@
         gradeitemid: Number,
         groupid: Number,
         released: Boolean,
+        disabled: Boolean,
     });
 
     const grouprelease = computed(() => {

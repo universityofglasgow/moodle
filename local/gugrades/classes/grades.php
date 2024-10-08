@@ -987,6 +987,23 @@ class grades {
     }
 
     /**
+     * Get released grade for user
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return object | false
+     */
+    public static function get_released_grade(int $courseid, int $gradeitemid, int $userid) {
+        global $DB;
+
+        if ($grade = $DB->get_record('local_gugrades_grade', ['courseid' => $courseid, 'gradeitemid' => $gradeitemid, 'userid' => $userid, 'gradetype' => 'RELEASED', 'iscurrent' => 1])) {
+            return $grade;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get gradeitem level
      * Our level 1 is 'depth' in the table minus 1 (in core, depth 1 is the course)
      * @param int $gradecategoryid

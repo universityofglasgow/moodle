@@ -26,6 +26,7 @@
             :toplevel="toplevel"
             :atype="atype"
             :allowconversion="allowconversion"
+            :allowrelease="allowrelease"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>
@@ -221,6 +222,7 @@
     const conversion = ref('');
     const allowconversion = ref(false);
     const serverdebug = ref({});
+    const allowrelease = ref(false);
 
     let firstname = '';
     let lastname = '';
@@ -528,6 +530,9 @@
             debug.value = result.debug;
             conversion.value = result.conversion;
             allowconversion.value = result.allowconversion;
+            allowrelease.value = result.allowrelease;
+
+            window.console.log(allowrelease.value);
 
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;

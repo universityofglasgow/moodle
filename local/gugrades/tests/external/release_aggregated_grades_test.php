@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Test functions around get_aggregation_user
+ * Test functions around releasing aggregated grades
  * @package    local_gugrades
  * @copyright  2024
  * @author     Howard Miller
@@ -34,9 +34,9 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->dirroot . '/local/gugrades/tests/external/gugrades_aggregation_testcase.php');
 
 /**
- * Test(s) for get_aggregation_user webservice
+ * Test(s) around releaseing aggregated grades.
  */
-final class get_aggregation_user_test extends \local_gugrades\external\gugrades_aggregation_testcase {
+final class release_aggregated_grades_test extends \local_gugrades\external\gugrades_aggregation_testcase {
 
     /**
      * @var int $gradeitemsecondx
@@ -67,7 +67,7 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
         parent::setUp();
 
         // Install test schema.
-        $this->gradeitemids = $this->load_schema('schema1');
+        $this->gradeitemids = $this->load_schema('schema4');
 
         // Get the grade category 'summative'.
         $this->gradecatsummative = $DB->get_record('grade_categories', ['fullname' => 'Summative'], '*', MUST_EXIST);
@@ -82,7 +82,7 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function test_basic_aggregation_user(): void {
+    public function test_release_aggregated_grades(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -94,7 +94,7 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
         ];
 
         // Install test data for student.
-        $this->load_data('data1a', $this->student->id);
+        $this->load_data('data4a', $this->student->id);
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
@@ -105,62 +105,53 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
             );
         }
 
-        // Get data for this user.
-        $user = get_aggregation_user::execute($this->course->id, $this->gradecatsummative->id, $this->student->id);
-        $user = external_api::clean_returnvalue(
-            get_aggregation_user::execute_returns(),
-            $user
+        // Get grade categoryid for summer exam
+        $summercategoryid = $this->get_grade_category('Summer exam');
+
+        // Convert summer exam.
+        $nothing = select_conversion::execute($this->course->id, 0, $summercategoryid, $this->mapid);
+        $nothing = external_api::clean_returnvalue(
+            select_conversion::execute_returns(),
+            $nothing
         );
 
-        $this->assertEquals('Fred Bloggs', $user['displayname']);
-        $this->assertEquals(29, $user['completed']);
-        $fields = $user['fields'];
-        $this->assertEquals('47.23333', $fields[0]['display']);
+        // Get the page.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertTrue($page['allowrelease']);
+
+        // Get gradeitemid for summer exam.
+        $summeritemid = $this->get_gradeitemid_from_grade_category('Summer exam');
+
+        $status = release_grades::execute($this->course->id, $summeritemid, 0, false);
+        $status = external_api::clean_returnvalue(
+            release_grades::execute_returns(),
+            $status
+        );
+
+        // Get resulting grades.
+        $grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id, 'gradeitemid' => $summeritemid]);
+
+        // Released grades should be there (where there are grades to release).
+        $grades = array_values($grades);
+        $this->assertCount(3, $grades);
+        $this->assertEquals('RELEASED', $grades[1]->gradetype);
+        $this->assertEquals('A2', $grades[1]->displaygrade);
+
+        // Get the page for the Summer exam. Should now have a released column.
+        $page = get_aggregation_page::execute($this->course->id, $summercategoryid, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertTrue($page['released']);
+        $fred = $page['users'][0];
+        $this->assertEquals('A2', $fred['releasegrade']);
+
     }
-
-    /**
-     * Checking direct call to API, used by Student MyGrades
-     *
-     * @covers \local_gugrades\external\get_aggregation_page::execute
-     * @return void
-     */
-    public function test_direct_aggregation_user(): void {
-        global $DB;
-
-        // Make sure that we're a teacher.
-        $this->setUser($this->teacher);
-
-        // Import grades only for one student (so far).
-        $userlist = [
-            $this->student->id,
-        ];
-
-        // Install test data for student.
-        $this->load_data('data1a', $this->student->id);
-
-
-
-        // Import ALL gradeitems.
-        foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
-        }
-
-        // Find 'Schedule B exam'.
-        $schedulebexam = $DB->get_record('grade_categories', ['fullname' => 'Schedule B exam'], '*', MUST_EXIST);
-
-        // Set aggregation strategy.
-        $this->set_strategy($schedulebexam->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
-
-        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $schedulebexam->id, $this->student->id);
-
-        $this->assertEquals(12.82051, $user->parent->normalisedweight);
-        $this->assertEquals(44.11765, $user->fields[0]['normalisedweight']);
-    }
-
 }
-
-

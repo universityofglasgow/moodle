@@ -2,7 +2,7 @@
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
         <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
-        <ReleaseCategoryButton></ReleaseCategoryButton>
+        <ReleaseCategoryButton :disabled="!props.allowrelease"></ReleaseCategoryButton>
     </div>
 </template>
 
@@ -17,6 +17,7 @@
         toplevel: Boolean,
         atype: String,
         allowconversion: Boolean,
+        allowrelease: Boolean,
     });
 
     const emits = defineEmits([

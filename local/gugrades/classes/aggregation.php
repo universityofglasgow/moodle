@@ -344,6 +344,10 @@ class aggregation {
 
         $user->fields = $fields;
 
+        // Get released grade (if there is one)
+        $released = \local_gugrades\grades::get_released_grade($courseid, $gradecatitem->id, $user->id);
+        $releasegrade = $released ? $released->displaygrade : '';
+
         // Get atype and aggregation rules.
         // This is why we needed items - array of array vs. array of objects.
         [$atype, $warnings] = self::get_aggregation_type($items, $gradecategoryid);
@@ -357,6 +361,7 @@ class aggregation {
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;
         $user->displaygrade = $item->displaygrade;
+        $user->releasegrade = $releasegrade;
         $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
@@ -686,6 +691,7 @@ class aggregation {
 
         // Is the category in the cache. If not (re)build
         // (anc cache) that part of the category tree.
+        return self::recurse_tree($courseid, $gradecategoryid, false);
         if ($gradecategory = $cache->get($cachetag . $gradeitem->id)) {
             return $gradecategory;
         } else {
