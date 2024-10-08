@@ -36,10 +36,11 @@ class observers {
      * @param \core\event\grade_item_deleted $event
      */
     public static function grade_item_deleted(\core\event\grade_item_deleted $event) {
+        $courseid = $event->courseid;
         $data = $event->get_data();
         $gradeitemid = $data['objectid'];
 
-        \local_gugrades\grades::delete_grade_item($gradeitemid);
+        \local_gugrades\grades::delete_grade_item($courseid, $gradeitemid);
     }
 
     /**

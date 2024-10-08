@@ -917,15 +917,18 @@ class grades {
     /**
      * Delete all data for gradeitemid
      * TODO: Don't forget to add anything new that we add in db.
+     * @param int $courseid
      * @param int $gradeitemid
      */
-    public static function delete_grade_item(int $gradeitemid) {
+    public static function delete_grade_item(int $courseid, int $gradeitemid) {
         global $DB;
 
         $DB->delete_records('local_gugrades_grade', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_audit', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_column', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_hidden', ['gradeitemid' => $gradeitemid]);
+
+        \local_gugrades\aggregation::invalidate_cache($courseid);
     }
 
     /**
