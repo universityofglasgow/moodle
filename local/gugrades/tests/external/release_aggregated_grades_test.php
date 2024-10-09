@@ -135,6 +135,7 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
 
         // Get resulting grades.
         $grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id, 'gradeitemid' => $summeritemid]);
+        //var_dump($grades); die;
 
         // Released grades should be there (where there are grades to release).
         $grades = array_values($grades);
@@ -152,6 +153,81 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertTrue($page['released']);
         $fred = $page['users'][0];
         $this->assertEquals('A2', $fred['releasegrade']);
+
+        // Change one of the grades so the aggregated grade changes.
+        $q2id = $this->get_gradeitemid('Question 2');
+        $nothing = write_additional_grade::execute(
+            courseid:           $this->course->id,
+            gradeitemid:        $q2id,
+            userid:             $this->student->id,
+            reason:             'SECOND',
+            other:              '',
+            admingrade:         'NS',
+            scale:              0,
+            grade:              0,
+            notes:              'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get the page, should be difference.
+        $page = get_aggregation_page::execute($this->course->id, $summercategoryid, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertTrue($page['released']);
+        $fred = $page['users'][0];
+        $this->assertEquals('A2', $fred['releasegrade']);
+        $this->assertEquals('NS', $fred['displaygrade']);
+        $this->assertTrue($fred['mismatch']);
+
+        // Release grades for a second time.
+        $status = release_grades::execute($this->course->id, $summeritemid, 0, false);
+        $status = external_api::clean_returnvalue(
+            release_grades::execute_returns(),
+            $status
+        );
+
+        // Get resulting grades.
+        $grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id, 'gradeitemid' => $summeritemid]);
+
+        // Get the page. Released and displaygrades should match once again.
+        $page = get_aggregation_page::execute($this->course->id, $summercategoryid, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertTrue($page['released']);
+        $fred = $page['users'][0];
+        $this->assertEquals('NS', $fred['releasegrade']);
+        $this->assertEquals('NS', $fred['displaygrade']);
+
+        // Revert release.
+        $status = release_grades::execute($this->course->id, $summeritemid, 0, true);
+        $status = external_api::clean_returnvalue(
+            release_grades::execute_returns(),
+            $status
+        );
+
+        // Get the page. Again.
+        $page = get_aggregation_page::execute($this->course->id, $summercategoryid, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        //$grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id, 'gradeitemid' => $summeritemid]);
+        //var_dump($grades);
+
+        $this->assertFalse($page['released']);
+        $fred = $page['users'][0];
+        $this->assertEquals('', $fred['releasegrade']);
+        $this->assertEquals('NS', $fred['displaygrade']);
 
     }
 }

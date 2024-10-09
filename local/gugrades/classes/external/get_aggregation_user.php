@@ -88,6 +88,7 @@ class get_aggregation_user extends external_api {
             'completed' => new external_value(PARAM_INT, '%age of course completed'),
             'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
             'releasegrade' => new external_value(PARAM_TEXT, 'Grade to show in the released column (if any)'),
+            'mismatch' => new external_value(PARAM_BOOL, 'Released and display grades do not match'),
             'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
             'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
             'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),

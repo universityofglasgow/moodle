@@ -1434,8 +1434,14 @@ class api {
                 // Activity action.
                 $activity->unrelease_grades($user->id);
             } else {
-                $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
-                $released = $usercapture->get_released();
+
+                // Is it an aggregated category
+                if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $user->id)) {
+
+                    // Nope. So get 'normal' grade.
+                    $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+                    $released = $usercapture->get_released();
+                }
 
                 // Don't bother if grade is in error.
                 if ($released && !$released->iserror) {
@@ -1448,7 +1454,7 @@ class api {
                         convertedgrade: $released->convertedgrade,
                         displaygrade: $released->displaygrade,
                         weightedgrade: $released->weightedgrade,
-                        gradetype: $released->gradetype,
+                        gradetype: 'RELEASED',
                         other: '',
                         iscurrent: true,
                         iserror: false,

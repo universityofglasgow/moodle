@@ -1079,4 +1079,27 @@ class grades {
             $DB->update_record('local_gugrades_grade', $grade);
         }
     }
+
+    /**
+     * Get aggregated grade from gradeitemid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return object | false
+     */
+    public static function get_aggregated_from_gradeitemid(int $gradeitemid, int $userid) {
+        global $DB;
+
+        // Is this definitely a category
+        $item = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        if ($item->itemtype != 'category') {
+            return false;
+        }
+
+        // Get current corresponding gugrades_grade
+        if ($grade = $DB->get_record('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'gradetype' => 'CATEGORY', 'iscurrent' => 1])) {
+            return $grade;
+        } else {
+            return false;
+        }
+    }
 }

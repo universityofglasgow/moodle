@@ -376,6 +376,7 @@ class aggregation {
         $user->total = $item->convertedgrade;
         $user->displaygrade = $item->displaygrade;
         $user->releasegrade = $releasegrade;
+        $user->mismatch = $item->displaygrade != $releasegrade; // TODO - might not get away with this
         $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);

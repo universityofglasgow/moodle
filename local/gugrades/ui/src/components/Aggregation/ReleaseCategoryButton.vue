@@ -8,16 +8,16 @@
         </span>
     </button>
 
-    <VueModal v-model="showreleasemodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releasegrades">
+    <VueModal v-model="showreleasemodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releaseaggregatedgrade">
 
         <div class="p-2 border rounded">
-            <h4>{{ mstrings.releasegrades }}</h4>
+            <h4>{{ mstrings.releaseaggregatedgrade }}</h4>
             <div v-if="!props.released" class="alert alert-warning">
-                {{ mstrings.releaseconfirm }}
+                {{ mstrings.releaseaggregatedconfirm }}
                 <p v-if="grouprelease" class="mt-1"><b>{{ mstrings.releaseconfirmgroup }}</b></p>
             </div>
             <div v-if="props.released" class="alert alert-danger">
-                {{ mstrings.releaseconfirmstern }}
+                {{ mstrings.releaseaggregatedconfirmstern }}
                 <p v-if="grouprelease" class="mt-1"><b>{{ mstrings.releaseconfirmgroup }}</b></p>
             </div>
             <button
