@@ -2,7 +2,7 @@
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
         <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
-        <ReleaseCategoryButton :disabled="!props.allowrelease" :gradeitemid="props.gradeitemid" :groupid="props.groupid" @released="refreshtable"></ReleaseCategoryButton>
+        <ReleaseCategoryButton :disabled="!props.allowrelease" :gradeitemid="props.gradeitemid" :groupid="props.groupid" :released="props.released" @released="refreshtable"></ReleaseCategoryButton>
     </div>
 </template>
 
@@ -20,6 +20,7 @@
         atype: String,
         allowconversion: Boolean,
         allowrelease: Boolean,
+        released: Boolean,
     });
 
     const emits = defineEmits([

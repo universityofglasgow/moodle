@@ -1747,6 +1747,9 @@ class api {
         // Has the aggregated grade been released?
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
 
+        // Do we show the weights?
+        $showweights = \local_gugrades\aggregation::show_weights($gradecategoryid);
+
         return [
             'toplevel' => $istoplevel,
             'atype' => $atype,
@@ -1756,6 +1759,7 @@ class api {
             'allowconversion' => $allowconversion,
             'allowrelease' => $allowrelease,
             'released' => $released,
+            'showweights' => $showweights,
             'warnings' => $warnings,
             'columns' => $columns,
             'users' => $users,

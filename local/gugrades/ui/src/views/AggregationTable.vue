@@ -29,6 +29,7 @@
             :atype="atype"
             :allowconversion="allowconversion"
             :allowrelease="allowrelease"
+            :released="released"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>
@@ -79,7 +80,7 @@
                             <InfoButton v-if="header.gradeitemid" :itemid="header.gradeitemid" :text="header.text" size="lg" color="text-warning"></InfoButton>
                             <span v-else>{{ header.text }}</span>
                         </div>
-                        <div v-if="!header.infocol">{{ header.weight }}%</div>
+                        <div v-if="!header.infocol && showweights">{{ header.weight }}%</div>
                         <div v-if="header.gradetype">{{ header.gradetype }} <span v-if="!header.isscale">({{ header.grademax }})</span></div>
                     </div>
                     <div class="py-1" v-if="header.strategy">
@@ -226,6 +227,7 @@
     const serverdebug = ref({});
     const allowrelease = ref(false);
     const released = ref(false);
+    const showweights = ref(false);
 
     let firstname = '';
     let lastname = '';
@@ -545,6 +547,7 @@
             allowconversion.value = result.allowconversion;
             allowrelease.value = result.allowrelease;
             released.value = result.released;
+            showweights.value = result.showweights;
 
             window.console.log(allowrelease.value);
 

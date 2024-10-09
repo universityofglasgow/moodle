@@ -99,6 +99,20 @@ class aggregation {
     }
 
     /**
+     * Should weights be shown for given category
+     * @param int $gradecategoryid
+     * @return bool
+     */
+    public static function show_weights(int $gradecategoryid) {
+        global $DB;
+
+        $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+        $aggregation = $gcat->aggregation;
+
+        return $aggregation == \GRADE_AGGREGATE_WEIGHTED_MEAN;
+    }
+
+    /**
      * Get aggregation table columns for supplied gradecategoryid
      * @param int $courseid
      * @param int $gradecategoryid

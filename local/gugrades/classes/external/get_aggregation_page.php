@@ -96,6 +96,7 @@ class get_aggregation_page extends external_api {
             'allowconversion' => new external_value(PARAM_BOOL, 'Should conversion controls be shown?'),
             'allowrelease' => new external_value(PARAM_BOOL, 'Can the aggregated grades been released?'),
             'released' => new external_value(PARAM_BOOL, 'Has the aggregated category been released?'),
+            'showweights' => new external_value(PARAM_BOOL, 'Should weights be shown in headers?'),
             'debug' => new external_multiple_structure(
                 new external_single_structure([
                     'line' => new external_value(PARAM_RAW, 'Line of debug info, available when DEBUG_DEVELOPER is enabled'),
