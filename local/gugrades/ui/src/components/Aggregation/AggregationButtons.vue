@@ -2,7 +2,7 @@
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
         <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
-        <ReleaseCategoryButton :disabled="!props.allowrelease"></ReleaseCategoryButton>
+        <ReleaseCategoryButton :disabled="!props.allowrelease" :gradeitemid="props.gradeitemid" :groupid="props.groupid" @released="refreshtable"></ReleaseCategoryButton>
     </div>
 </template>
 
@@ -14,6 +14,8 @@
 
     const props = defineProps({
         categoryid: Number,
+        gradeitemid: Number,
+        groupid: Number,
         toplevel: Boolean,
         atype: String,
         allowconversion: Boolean,

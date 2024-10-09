@@ -94,7 +94,14 @@ class audit {
                 }
             }
             if ($gradeitem) {
-                $item->gradeitem = $gradeitem->itemname;
+
+                // If gradeitem is a category, then more work to do.
+                if ($gradeitem->itemtype == 'category') {
+                    $category = $DB->get_record('grade_categories', ['id' => $gradeitem->iteminstance], '*', MUST_EXIST);
+                    $item->gradeitem = $category->fullname;
+                } else {
+                    $item->gradeitem = $gradeitem->itemname;
+                }
             } else {
                 $item->gradeitem = '';
             }

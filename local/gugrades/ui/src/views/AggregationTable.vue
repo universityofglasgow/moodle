@@ -23,6 +23,8 @@
         <AggregationButtons
             v-if="level1category"
             :categoryid="categoryid"
+            :gradeitemid="gradeitemid"
+            :groupid="groupid"
             :toplevel="toplevel"
             :atype="atype"
             :allowconversion="allowconversion"
@@ -223,6 +225,7 @@
     const allowconversion = ref(false);
     const serverdebug = ref({});
     const allowrelease = ref(false);
+    const released = ref(false);
 
     let firstname = '';
     let lastname = '';
@@ -437,6 +440,16 @@
                 strategy: headerstrategy,
             });
         }
+
+        // Released grade
+        if (released.value) {
+            heads.push({
+                text: mstrings.released,
+                value: 'releasegrade',
+                infocol: true,
+            });
+        }
+
         return heads;
     });
 
@@ -531,6 +544,7 @@
             conversion.value = result.conversion;
             allowconversion.value = result.allowconversion;
             allowrelease.value = result.allowrelease;
+            released.value = result.released;
 
             window.console.log(allowrelease.value);
 
