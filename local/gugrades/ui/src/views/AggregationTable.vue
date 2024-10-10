@@ -84,7 +84,7 @@
                         <div v-if="header.gradetype">{{ header.gradetype }} <span v-if="!header.isscale">({{ header.grademax }})</span></div>
                     </div>
                     <div class="py-1" v-if="header.strategy">
-                        <i>{{ header.strategy }}</i>
+                        <i>{{ header.strategy }}</i> <i v-if="excludeempty" class="ml-1 fa fa-check-square" aria-hidden="true" title="Exclude empty grades checked"></i>
                     </div>
                     <div v-if="header.categoryid">
                         <a href="#" @click="expand_clicked(header.categoryid)">
@@ -228,6 +228,7 @@
     const allowrelease = ref(false);
     const released = ref(false);
     const showweights = ref(false);
+    const excludeempty = ref(false);
 
     let firstname = '';
     let lastname = '';
@@ -424,6 +425,7 @@
                 value: "total",
                 infocol: true,
                 strategy: strategy.value,
+                excludeempty: excludeempty.value,
             });
         } else {
 
@@ -548,6 +550,7 @@
             allowrelease.value = result.allowrelease;
             released.value = result.released;
             showweights.value = result.showweights;
+            excludeempty.value = result.excludeempty;
 
             window.console.log(allowrelease.value);
 

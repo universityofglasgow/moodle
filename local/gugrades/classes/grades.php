@@ -1102,4 +1102,17 @@ class grades {
             return false;
         }
     }
+
+    /**
+     * Determine if 'exclude empty grades' is checked.
+     * @param int $gradecategoryid
+     * @return bool
+     */
+    public static function is_exclude_empty_grades(int $gradecategoryid) {
+        global $DB;
+
+        $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+
+        return $gradecategory->aggregateonlygraded;
+    }
 }

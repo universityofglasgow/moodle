@@ -1756,6 +1756,9 @@ class api {
         // Do we show the weights?
         $showweights = \local_gugrades\aggregation::show_weights($gradecategoryid);
 
+        // Is 'exclude empty grades' ticked?
+        $excludeempty = \local_gugrades\grades::is_exclude_empty_grades($gradecategoryid);
+
         return [
             'toplevel' => $istoplevel,
             'atype' => $atype,
@@ -1770,6 +1773,7 @@ class api {
             'columns' => $columns,
             'users' => $users,
             'breadcrumb' => $breadcrumb,
+            'excludeempty' => $excludeempty,
             'debug' => $debug,
         ];
     }
