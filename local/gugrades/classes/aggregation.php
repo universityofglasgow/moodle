@@ -384,7 +384,8 @@ class aggregation {
         $user->overridden = $item->catoverride;
 
         // Mismatch (can possibly do better).
-        if ($user->mismatch) {
+        $released = \local_gugrades\grades::is_grades_released($courseid, $gradecatitem->id);
+        if ($user->mismatch && $released) {
             $user->releasegrade .= ' (mismatch)';
         }
 
