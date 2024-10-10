@@ -383,6 +383,11 @@ class aggregation {
         $user->error = $item->auditcomment;
         $user->overridden = $item->catoverride;
 
+        // Mismatch (can possibly do better).
+        if ($user->mismatch) {
+            $user->releasegrade .= ' (mismatch)';
+        }
+
         return $user;
     }
 

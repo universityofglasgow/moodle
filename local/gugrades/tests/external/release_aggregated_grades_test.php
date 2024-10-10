@@ -181,7 +181,7 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
 
         $this->assertTrue($page['released']);
         $fred = $page['users'][0];
-        $this->assertEquals('A2', $fred['releasegrade']);
+        $this->assertEquals('A2 (mismatch)', $fred['releasegrade']);
         $this->assertEquals('NS', $fred['displaygrade']);
         $this->assertTrue($fred['mismatch']);
 
