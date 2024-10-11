@@ -2094,4 +2094,15 @@ class api {
         // Run over users running aggregation
         \local_gugrades\aggregation::aggregate($courseid, $level1id, $users);
     }
+
+    /**
+     * Get the form for altering weights
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_alter_weight_form(int $courseid, int $gradecategoryid, int $userid) {
+
+    }
 }

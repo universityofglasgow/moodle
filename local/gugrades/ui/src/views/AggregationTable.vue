@@ -552,8 +552,6 @@
             showweights.value = result.showweights;
             excludeempty.value = result.excludeempty;
 
-            window.console.log(allowrelease.value);
-
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;
 

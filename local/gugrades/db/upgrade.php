@@ -155,5 +155,33 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024092400, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024101000) {
+
+        // Define table local_gugrades_altered_weight to be created.
+        $table = new xmldb_table('local_gugrades_altered_weight');
+
+        // Adding fields to table local_gugrades_altered_weight.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('gradeitemid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('weight', XMLDB_TYPE_NUMBER, '11, 5', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timealtered', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_gugrades_altered_weight.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table local_gugrades_altered_weight.
+        $table->add_index('gradeitemid-userid', XMLDB_INDEX_UNIQUE, ['gradeitemid', 'userid']);
+
+        // Conditionally launch create table for local_gugrades_altered_weight.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024101000, 'local', 'gugrades');
+    }
+
+
     return true;
 }

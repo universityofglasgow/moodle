@@ -18,6 +18,7 @@
                 @gradeadded = "grade_added()">
             </AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
+            <AlterButton :userid="props.userid" :itemid="props.itemid"></AlterButton>
         </div>
     </span>
 </template>
@@ -27,6 +28,7 @@
     import HistoryButton from '@/components/Capture/HistoryButton.vue';
     import AddGradeButton from '@/components/Capture/AddGradeButton.vue';
     import HideShowButton from '@/components/Capture/HideShowButton.vue';
+    import AlterButton from '@/components/Aggregation/AlterButton.vue';
 
     const props = defineProps({
         userid: Number,

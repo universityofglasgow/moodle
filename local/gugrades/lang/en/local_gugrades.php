@@ -46,6 +46,7 @@ $string['adminuns'] = 'Unsatisfactory';
 $string['all'] = 'All';
 $string['allnone'] = 'All/none';
 $string['allparticipants'] = 'All participants';
+$string['altertitle'] = 'Alter weights';
 $string['areyousure'] = 'Are you sure you want to do this?';
 $string['assessmentgradecapture'] = 'Assessment grade capture';
 $string['auditlog'] = 'Audit log';
