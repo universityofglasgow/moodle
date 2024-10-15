@@ -98,7 +98,7 @@ class save_altered_weights extends external_api {
         if ($revert) {
             \local_gugrades\audit::write($courseid, $userid, $gradeitemid, 'Altered weights reverted');
         } else {
-            \local_gugrades\audit::write($courseid, $userid, $gradeitemid, 'Weights altered for user');
+            \local_gugrades\audit::write($courseid, $userid, $gradeitemid, 'Weights altered for user - "' . $reason . '"');
         }
 
         return [];
