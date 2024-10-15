@@ -1124,7 +1124,7 @@ class grades {
      * @param int $userid
      * @return array [float, float, boolean]
      */
-    public static function get_altered_weight(int $gradeitemid) {
+    public static function get_altered_weight(int $gradeitemid, int $userid) {
         global $DB;
 
         // Get original weight
@@ -1140,5 +1140,47 @@ class grades {
         }
 
         return [$originalweight, $alteredweight, $isaltered];
+    }
+
+    /**
+     * Update / insert altered weight
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @param float $weight
+     */
+    public static function update_altered_weight(int $courseid, int $gradeitemid, int $userid, float $weight) {
+        global $DB;
+
+        if ($altered = $DB->get_record('local_gugrades_altered_weight', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            $altered->weight = $weight;
+            $altered->timealtered = time();
+            $DB->update_record('local_gugrades_altered_weight', $altered);
+        } else {
+            $altered = new \stdClass;
+            $altered->courseid = $courseid;
+            $altered->gradeitemid = $gradeitemid;
+            $altered->userid = $userid;
+            $altered->weight = $weight;
+            $altered->timealtered = time();
+            $DB->insert_record('local_gugrades_altered_weight', $altered);
+        }
+    }
+
+    /**
+     * Revert altered weights
+     * @param int $courseid
+     * @param int $categoryid
+     * @param int $userid
+     */
+    public static function revert_altered_weights(int $courseid, int $categoryid, int $userid) {
+        global $DB;
+
+        // Get the grade items in that category.
+        $items = $DB->get_records('grade_items', ['courseid' => $courseid, 'categoryid' => $categoryid]);
+
+        foreach ($items as $item) {
+            $DB->delete_records('local_gugrades_altered_weight', ['gradeitemid' => $item->id, 'userid' => $userid]);
+        }
     }
 }

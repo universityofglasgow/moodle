@@ -74,6 +74,7 @@ $services = [
             'local_gugrades_recalculate',
             'local_gugrades_get_aggregation_user',
             'local_gugrades_get_alter_weight_form',
+            'local_gugrades_save_altered_weights',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -354,14 +355,20 @@ $functions = [
     ],
     'local_gugrades_get_aggregation_user' => [
         'classname' => 'local_gugrades\external\get_aggregation_user',
-        'description' => 'get the aggregation page data for a single user.',
+        'description' => 'Get the aggregation page data for a single user.',
         'type' => 'read',
         'ajax' => true,
     ],
     'local_gugrades_get_alter_weight_form' => [
         'classname' => 'local_gugrades\external\get_alter_weight_form',
-        'description' => 'get the data to construct alter weight form.',
+        'description' => 'Get the data to construct alter weight form.',
         'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_save_altered_weights' => [
+        'classname' => 'local_gugrades\external\save_altered_weights',
+        'description' => 'Save the modified weights for a single aggregated user.',
+        'type' => 'write',
         'ajax' => true,
     ],
 ];

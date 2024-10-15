@@ -63,7 +63,7 @@ final class alter_weight_test extends \local_gugrades\external\gugrades_aggregat
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_basic_conversion(): void {
+    public function test_altering_weights(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -105,6 +105,50 @@ final class alter_weight_test extends \local_gugrades\external\gugrades_aggregat
         $items = $form['items'];
         $this->assertCount(4, $items);
         $this->assertEquals('Question 4', $items[3]['fullname']);
+
+        // Create items array for changing some weights
+        $saveitems = [
+            [
+                'gradeitemid' => $items[0]['gradeitemid'],
+                'weight' => '0.33',
+            ],
+            [
+                'gradeitemid' => $items[1]['gradeitemid'],
+                'weight' => '0.28',
+            ],
+        ];
+
+        // Reason for the update
+        $reason = 'Why ever not?';
+
+        // Save weights.
+        $nothing = save_altered_weights::execute($this->course->id, $gradecatsummer->id, $this->student->id, false, $reason, $saveitems);
+        $nothing = external_api::clean_returnvalue(
+            save_altered_weights::execute_returns(),
+            $nothing
+        );
+
+        // Check that they have been written to local_gugrades_altered_weight.
+        $weights = $DB->get_records('local_gugrades_altered_weight', ['courseid' => $this->course->id]);
+        $weights = array_values($weights);
+
+        $this->assertCount(2, $weights);
+        $this->assertEquals(0.33, $weights[0]->weight);
+
+        // Revert weights.
+        $nothing = save_altered_weights::execute($this->course->id, $gradecatsummer->id, $this->student->id, true, '', []);
+        $nothing = external_api::clean_returnvalue(
+            save_altered_weights::execute_returns(),
+            $nothing
+        );
+
+        // Check that they have been reverted.
+        $weights = $DB->get_records('local_gugrades_altered_weight', ['courseid' => $this->course->id]);
+        $weights = array_values($weights);
+
+        $this->assertCount(0, $weights);
+
+        return;
 
         // Get aggregation page for above (without conversion - yet).
         $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);

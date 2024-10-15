@@ -182,6 +182,21 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024101000, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024101501) {
+
+        // Define field courseid to be added to local_gugrades_altered_weight.
+        $table = new xmldb_table('local_gugrades_altered_weight');
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'id');
+
+        // Conditionally launch add field courseid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024101501, 'local', 'gugrades');
+    }
+
 
     return true;
 }

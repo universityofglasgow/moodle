@@ -2114,11 +2114,9 @@ class api {
 
         // Get the columns for this grade category
         $columns = \local_gugrades\aggregation::get_columns($courseid, $categoryid);
-        //var_dump($columns); die;
 
         // Ensure aggregation data for this user is current.
         $user = self::get_aggregation_user($courseid, $categoryid, $userid);
-        //var_dump($user); die;
 
         // Combine required user fields and column data.
         $items = [];
@@ -2137,13 +2135,36 @@ class api {
             $items[$id] = $item;
         }
 
-        //var_dump($items); die;
-
         return [
             'categoryname' => $category->fullname,
             'userfullname' => fullname($user),
             'idnumber' => $user->idnumber,
             'items' => $items,
         ];
+    }
+
+    /**
+     * Save altered weights
+     * @param int $courseid
+     * @param int $categoryid
+     * @param int $userid
+     * @param bool $revert
+     * @param string $reason
+     * @param array $settings
+     * @return array
+     */
+    public static function save_altered_weights(int $courseid, int $categoryid, int $userid, bool $revert, string $reason, array $items) {
+
+        // If revert == true then delete the altered grades
+        if ($revert) {
+            \local_gugrades\grades::revert_altered_weights($courseid, $categoryid, $userid);
+        } else {
+            foreach ($items as $item) {
+                \local_gugrades\grades::update_altered_weight($courseid, $item['gradeitemid'], $userid, $item['weight']);
+            }
+        }
+
+        // Re-aggregate this user
+        \local_gugrades\aggregation::aggregate_user_helper($courseid, $categoryid, $userid);
     }
 }

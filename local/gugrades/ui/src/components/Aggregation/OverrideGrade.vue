@@ -18,7 +18,7 @@
                 @gradeadded = "grade_added()">
             </AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
-            <AlterButton :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid"></AlterButton>
+            <AlterButton :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightaltered="grade_added()"></AlterButton>
         </div>
     </span>
 </template>

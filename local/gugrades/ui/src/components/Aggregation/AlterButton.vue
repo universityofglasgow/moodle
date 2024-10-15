@@ -15,7 +15,7 @@
         </ul>
 
         <!-- grade items therein -->
-        <div class="border mt-3 p-2">
+        <div class="border rounded mt-3 p-2">
             <div class="row mt-1 mb-2 font-weight-bolder">
                 <div class="col">{{ mstrings.gradeitem }}</div>
                 <div class="col">{{ mstrings.gradetype }}</div>
@@ -54,9 +54,22 @@
             <div v-if="!closeenough" class="mt-2 text-danger">{{ mstrings.donotaddto1 }}</div>
         </div>
 
+        <!-- reason -->
+         <div class="border rounded mt-2 px-3">
+            <FormKit
+                type="textarea"
+                outer-class="mb-3"
+                :label="mstrings.reasonforammendment"
+                validation="required"
+                validation-visibility="live"
+                name="reason"
+                v-model="reason"
+            />
+         </div>
+
         <div class="mt-2">
-            <button class="btn btn-primary mr-1" type="button" @click="save_altered">{{  mstrings.save }}</button>
-            <button class="btn btn-info mr-1" type="button" @click="revert_altered">{{  mstrings.revert }}</button>
+            <button class="btn btn-primary mr-1" type="button" @click="save_altered_weights">{{  mstrings.save }}</button>
+            <button class="btn btn-info mr-1" type="button" @click="revert_altered_weights">{{  mstrings.revert }}</button>
             <button class="btn btn-warning" type="button" @click="showaltermodal = false">{{  mstrings.cancel }}</button>
         </div>
     </VueModal>
@@ -75,12 +88,17 @@
     const userfullname = ref('');
     const idnumber = ref('');
     const items = ref([]);
+    const reason = ref('');
 
     const props = defineProps({
         userid: Number,
         itemid: Number,
         categoryid: Number,
     });
+
+    const emit = defineEmits([
+        'weightsaltered'
+    ]);
 
     /**
      * Calculate altered weight total
@@ -142,8 +160,76 @@
             userfullname.value = result.userfullname;
             idnumber.value = result.idnumber;
             items.value = result.items;
+        })
+        .catch((error) => {
+            window.console.error(error);
+            debug.value = error;
+        });
+    }
 
-            window.console.log(result);
+    /**
+     * Save altered weights
+     */
+    function save_altered_weights() {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        const saveitems = [];
+        items.value.forEach((item) => {
+            saveitems.push({
+                gradeitemid: item.gradeitemid,
+                weight: item.alteredweight,
+            });
+        });
+
+        fetchMany([{
+            methodname: 'local_gugrades_save_altered_weights',
+            args: {
+                courseid: courseid,
+                categoryid: props.categoryid,
+                userid: props.userid,
+                revert: false,
+                reason: reason.value,
+                items: saveitems,
+            }
+        }])[0]
+        .then((result) => {
+            emit('weightsaltered');
+            toast.success(mstrings.weightsaltered);
+
+            showaltermodal.value = false;
+        })
+        .catch((error) => {
+            window.console.error(error);
+            debug.value = error;
+        });
+    }
+
+    /**
+     * Revert altered weights
+     */
+     function revert_altered_weights() {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_save_altered_weights',
+            args: {
+                courseid: courseid,
+                categoryid: props.categoryid,
+                userid: props.userid,
+                revert: true,
+                reason: '',
+                items: [],
+            }
+        }])[0]
+        .then((result) => {
+            emit('weightsaltered');
+            toast.success(mstrings.weightsreverted);
+
+            showaltermodal.value = false;
         })
         .catch((error) => {
             window.console.error(error);
