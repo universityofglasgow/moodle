@@ -2125,12 +2125,15 @@ class api {
         $userfields = $user->fields;
         foreach ($columns[0] as $id => $column) {
             $field = $userfields[$id];
+            [$originalweight, $alteredweight, $isaltered] = \local_gugrades\grades::get_altered_weight($column->gradeitemid, $userid);
             $item = new \stdClass;
             $item->fullname = $column->fullname;
             $item->gradeitemid = $column->gradeitemid;
             $item->gradetype = $column->gradetype;
             $item->display = $field['display'];
-            $item->weight = $field['weight'];
+            $item->originalweight = $originalweight;
+            $item->alteredweight = $alteredweight;
+            $item->isaltered = $isaltered;
             $items[$id] = $item;
         }
 

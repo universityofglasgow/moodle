@@ -86,7 +86,9 @@ class get_alter_weight_form extends external_api {
                     'gradeitemid' => new external_value(PARAM_INT, 'Grade item id'),
                     'gradetype' => new external_value(PARAM_TEXT, 'Grade type'),
                     'display' => new external_value(PARAM_TEXT, 'Current displayed grade'),
-                    'weight' => new external_value(PARAM_FLOAT, 'Current weight'),
+                    'originalweight' => new external_value(PARAM_FLOAT, 'Weight from grade_items table.'),
+                    'alteredweight' => new external_value(PARAM_FLOAT, 'Altered weighting (same as original is isaltered = false)'),
+                    'isaltered' => new external_value(PARAM_BOOL, 'Is this an altered weight?'),
                 ])
             ),
         ]);

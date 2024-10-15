@@ -1115,4 +1115,30 @@ class grades {
 
         return $gradecategory->aggregateonlygraded;
     }
+
+    /**
+     * Get weight of gradeitem. Taking into consideration possibility of
+     * it being altered for a user.
+     * Return the value and boolean true = altered
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return array [float, float, boolean]
+     */
+    public static function get_altered_weight(int $gradeitemid) {
+        global $DB;
+
+        // Get original weight
+        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $originalweight = $gradeitem->aggregationcoef;
+        $alteredweight = $originalweight;
+        $isaltered = false;
+
+        // Is there an altered weight?
+        if ($altered = $DB->get_record('local_gugrades_altered_weight', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            $isaltered = true;
+            $alteredweight = $altered->weight;
+        }
+
+        return [$originalweight, $alteredweight, $isaltered];
+    }
 }
