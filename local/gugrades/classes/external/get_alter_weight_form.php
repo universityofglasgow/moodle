@@ -42,7 +42,7 @@ class get_alter_weight_form extends external_api {
     public static function execute_parameters() {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'gradecategoryid' => new external_value(PARAM_INT, 'Grade category id'),
+            'categoryid' => new external_value(PARAM_INT, 'Grade category id'),
             'userid' => new external_value(PARAM_INT, 'User id - for user we are adding grade'),
         ]);
     }
@@ -50,17 +50,17 @@ class get_alter_weight_form extends external_api {
     /**
      * Execute function
      * @param int $courseid
-     * @param int $gradecategoryid
+     * @param int $categoryid
      * @param int $userid
      * @return array
      */
-    public static function execute($courseid, $gradecategoryid, $userid) {
+    public static function execute($courseid, $categoryid, $userid) {
         global $DB;
 
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
-            'gradeitemid' => $gradecategoryid,
+            'categoryid' => $categoryid,
             'userid' => $userid,
         ]);
 
@@ -68,7 +68,7 @@ class get_alter_weight_form extends external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        return \local_gugrades\api::get_alter_weight_form($courseid, $gradecategoryid, $userid);
+        return \local_gugrades\api::get_alter_weight_form($courseid, $categoryid, $userid);
     }
 
     /**
@@ -77,19 +77,16 @@ class get_alter_weight_form extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure([
-            'itemname' => new external_value(PARAM_TEXT, 'Grade item name'),
-            'fullname' => new external_value(PARAM_TEXT, 'User full name'),
+            'categoryname' => new external_value(PARAM_TEXT, 'Category name'),
+            'userfullname' => new external_value(PARAM_TEXT, 'User full name'),
             'idnumber' => new external_value(PARAM_TEXT, 'User ID number'),
-            'iscategory' => new external_value(PARAM_BOOL, 'Is this a category?'),
-            'overridden' => new external_value(PARAM_BOOL, 'Is this an overridden category?'),
-            'available' => new external_value(PARAM_BOOL, 'Is add/override available at all in this context?'),
-            'error' => new external_value(PARAM_BOOL, 'Is the aggregation in error (cannot determine type)?'),
-            'usescale' => new external_value(PARAM_BOOL, 'Is it a scale (true) or value/points (false)'),
-            'grademax' => new external_value(PARAM_FLOAT, 'Maximum grade value - or 0 if not value'),
             'items' => new external_multiple_structure(
                 new external_single_structure([
-                    'value' => new external_value(PARAM_INT, 'Scale value'),
-                    'label' => new external_value(PARAM_TEXT, 'Scale item name'),
+                    'fullname' => new external_value(PARAM_TEXT, 'Name of grade item'),
+                    'gradeitemid' => new external_value(PARAM_INT, 'Grade item id'),
+                    'gradetype' => new external_value(PARAM_TEXT, 'Grade type'),
+                    'display' => new external_value(PARAM_TEXT, 'Current displayed grade'),
+                    'weight' => new external_value(PARAM_FLOAT, 'Current weight'),
                 ])
             ),
         ]);

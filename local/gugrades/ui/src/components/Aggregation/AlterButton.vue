@@ -18,17 +18,40 @@
 
     const showaltermodal = ref(false);
     const mstrings = inject('mstrings');
+    const debug = ref({});
     const toast = useToast();
 
     const props = defineProps({
         userid: Number,
         itemid: Number,
+        categoryid: Number,
     });
 
     /**
      * Alter weights button has been clicked
      */
     function alter_weights() {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
         showaltermodal.value = true;
+
+        fetchMany([{
+            methodname: 'local_gugrades_get_alter_weight_form',
+            args: {
+                courseid: courseid,
+                categoryid: props.categoryid,
+                userid: props.userid,
+            }
+        }])[0]
+        .then((result) => {
+            //toast.success('Grades recalculated');
+            window.console.log(result);
+        })
+        .catch((error) => {
+            window.console.error(error);
+            debug.value = error;
+        });
     }
 </script>

@@ -2098,11 +2098,49 @@ class api {
     /**
      * Get the form for altering weights
      * @param int $courseid
-     * @param int $gradecategoryid
+     * @param int $categoryid
      * @param int $userid
      * @return array
      */
-    public static function get_alter_weight_form(int $courseid, int $gradecategoryid, int $userid) {
+    public static function get_alter_weight_form(int $courseid, int $categoryid, int $userid) {
+        global $DB;
 
+        // Check gradecategory exists.
+        // (courseid forces proper check).
+        $category = $DB->get_record('grade_categories', ['id' => $categoryid, 'courseid' => $courseid], '*', MUST_EXIST);
+
+        // Get gradeitemid
+        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($categoryid);
+
+        // Get the columns for this grade category
+        $columns = \local_gugrades\aggregation::get_columns($courseid, $categoryid);
+        //var_dump($columns); die;
+
+        // Ensure aggregation data for this user is current.
+        $user = self::get_aggregation_user($courseid, $categoryid, $userid);
+        //var_dump($user); die;
+
+        // Combine required user fields and column data.
+        $items = [];
+        $userfields = $user->fields;
+        foreach ($columns[0] as $id => $column) {
+            $field = $userfields[$id];
+            $item = new \stdClass;
+            $item->fullname = $column->fullname;
+            $item->gradeitemid = $column->gradeitemid;
+            $item->gradetype = $column->gradetype;
+            $item->display = $field['display'];
+            $item->weight = $field['weight'];
+            $items[$id] = $item;
+        }
+
+        //var_dump($items); die;
+
+        return [
+            'categoryname' => $category->fullname,
+            'userfullname' => fullname($user),
+            'idnumber' => $user->idnumber,
+            'items' => $items,
+        ];
     }
 }
