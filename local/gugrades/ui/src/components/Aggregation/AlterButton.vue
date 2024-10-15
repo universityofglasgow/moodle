@@ -60,8 +60,6 @@
                 type="textarea"
                 outer-class="mb-3"
                 :label="mstrings.reasonforammendment"
-                validation="required"
-                validation-visibility="live"
                 name="reason"
                 v-model="reason"
             />
