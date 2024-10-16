@@ -158,6 +158,10 @@
                     <div>
                         <span v-if="item.error">{{ item.error }}</span>
                         <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
+                        <span v-if="item.alteredweight">
+                            <br />
+                            <span class="badge badge-info ml-1">ALTERED</span>
+                        </span>
                     </div>
                     <div>
                         <!-- add/override for total grade -->
