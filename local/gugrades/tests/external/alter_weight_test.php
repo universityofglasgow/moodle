@@ -135,6 +135,16 @@ final class alter_weight_test extends \local_gugrades\external\gugrades_aggregat
         $this->assertCount(2, $weights);
         $this->assertEquals(0.33, $weights[0]->weight);
 
+        // Get aggregation page.
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $users = $page['users'];
+        $this->assertTrue($users[0]['alteredweight']);
+
         // Revert weights.
         $nothing = save_altered_weights::execute($this->course->id, $gradecatsummer->id, $this->student->id, true, '', []);
         $nothing = external_api::clean_returnvalue(
@@ -148,15 +158,15 @@ final class alter_weight_test extends \local_gugrades\external\gugrades_aggregat
 
         $this->assertCount(0, $weights);
 
-        return;
-
-        // Get aggregation page for above (without conversion - yet).
-        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        // Get aggregation page.
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, true);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
 
+        $users = $page['users'];
+        $this->assertFalse($users[0]['alteredweight']);
 
     }
 

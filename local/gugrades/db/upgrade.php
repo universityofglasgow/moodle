@@ -197,6 +197,20 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024101501, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024101600) {
+
+        // Define field categoryid to be added to local_gugrades_altered_weight.
+        $table = new xmldb_table('local_gugrades_altered_weight');
+        $field = new xmldb_field('categoryid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'courseid');
+
+        // Conditionally launch add field categoryid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024101600, 'local', 'gugrades');
+    }
 
     return true;
 }

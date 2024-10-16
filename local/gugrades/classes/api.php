@@ -1710,7 +1710,7 @@ class api {
         $warnings = array_intersect_key($warnings, array_unique(array_map('serialize', $warnings)));
 
         // Get all the students.
-        $users = \local_gugrades\aggregation::get_users($courseid, $firstname, $lastname, $groupid);
+        $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, $firstname, $lastname, $groupid);
         $timeusers = microtime(true);
 
         // Recalculate?
@@ -1802,7 +1802,7 @@ class api {
 
         // Get user aggregation data
         $context = \context_course::instance($courseid);
-        $user = \local_gugrades\aggregation::get_user($courseid, $userid);
+        $user = \local_gugrades\aggregation::get_user($courseid, $gradecategoryid, $userid);
         $user = \local_gugrades\aggregation::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
 
         return $user;
@@ -2086,7 +2086,7 @@ class api {
     public static function recalculate(int $courseid, int $gradecategoryid) {
 
         // Get all the students.
-        $users = \local_gugrades\aggregation::get_users($courseid, '', '', 0);
+        $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, '', '', 0);
 
         // Get the level 1 parent category.
         $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
@@ -2160,7 +2160,7 @@ class api {
             \local_gugrades\grades::revert_altered_weights($courseid, $categoryid, $userid);
         } else {
             foreach ($items as $item) {
-                \local_gugrades\grades::update_altered_weight($courseid, $item['gradeitemid'], $userid, $item['weight']);
+                \local_gugrades\grades::update_altered_weight($courseid, $categoryid, $item['gradeitemid'], $userid, $item['weight']);
             }
         }
 

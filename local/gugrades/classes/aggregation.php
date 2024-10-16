@@ -227,16 +227,30 @@ class aggregation {
     }
 
     /**
+     * Are grades altered for user?
+     * @param int $categoryid
+     * @param int $userid
+     * @return bool
+     */
+    protected static function are_weights_altered(int $categoryid, int $userid) {
+        global $DB;
+
+        return $DB->record_exists('local_gugrades_altered_weight', ['categoryid' => $categoryid, 'userid' => $userid]);
+    }
+
+    /**
      * Get single user for aggregation.
      * @param int $courseid
+     * @param int $categoryid
      * @param int $userid
      * @return object
      */
-    public static function get_user(int $courseid, int $userid) {
+    public static function get_user(int $courseid, int $categoryid, int $userid) {
         $context = \context_course::instance($courseid);
         $user = \local_gugrades\users::get_gradeable_user($context, $userid);
         $user->displayname = fullname($user);
         $user->resitrequired = self::is_resit_required($courseid, $userid);
+        $user->alteredweight = self::are_weights_altered($categoryid, $userid);
 
         $user = \local_gugrades\users::add_picture_and_profile_to_user_record($courseid, $user);
 
@@ -247,12 +261,13 @@ class aggregation {
      * Get students - with some filtering
      * $firstname and $lastname are single initial character only.
      * @param int $courseid
+     * @param int $categoryid
      * @param string $firstname
      * @param string $lastname
      * @param int $groupid
      * @return array
      */
-    public static function get_users(int $courseid, string $firstname, string $lastname, int $groupid) {
+    public static function get_users(int $courseid, int $categoryid, string $firstname, string $lastname, int $groupid) {
         $context = \context_course::instance($courseid);
         $users = \local_gugrades\users::get_gradeable_users($context, $firstname,
             $lastname, $groupid);
@@ -261,6 +276,7 @@ class aggregation {
         foreach ($users as $user) {
             $user->displayname = fullname($user);
             $user->resitrequired = self::is_resit_required($courseid, $user->id);
+            $user->alteredweight = self::are_weights_altered($categoryid, $user->id);
 
             // These get overwritten by actual total data.
             $user->total = get_string('gradesmissing', 'local_gugrades');
@@ -987,6 +1003,22 @@ class aggregation {
     }
 
     /**
+     * Check if there is an altered weight for given item
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return float | bool
+     */
+    protected static function get_altered_weight(int $gradeitemid, int $userid) {
+        global $DB;
+
+        if ($alteredweight = $DB->get_record('local_gugrades_altered_weight', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            return $alteredweight->weight;
+        }
+
+        return false;
+    }
+
+    /**
      * Aggregate user data recursively
      * (starting with current category)
      * Returning array of category totals for that user
@@ -1017,6 +1049,11 @@ class aggregation {
             // Clear droplow flag. We'll put it back later if required
             self::clear_droplow($child->itemid, $userid);
 
+            // Get correct weight.
+            // *exactly* false means no altered grade
+            $alteredweight = self::get_altered_weight($child->itemid, $userid);
+            $weight = $alteredweight === false ? $child->weight : $alteredweight;
+
             // If this is itself a grade category then we need to recurse to get the aggregated total
             // of this category (and any error). Call with the 'child' segment of the category tree.
             if ($child->iscategory) {
@@ -1040,7 +1077,7 @@ class aggregation {
                     'displaygrade' => $display,
                     'admingrade' => $admingrade,
                     'grademax' => $child->grademax,
-                    'weight' => $child->weight,
+                    'weight' => $weight,
                     'error' => $error,
                 ];
             } else {
@@ -1057,7 +1094,7 @@ class aggregation {
                         'grade' => $provisional->convertedgrade,
                         'admingrade' => $provisional->admingrade,
                         'grademax' => $child->grademax,
-                        'weight' => $child->weight,
+                        'weight' => $weight,
                         'displaygrade' => $provisional->displaygrade,
                         'isscale' => $child->isscale,
                     ];
@@ -1066,7 +1103,7 @@ class aggregation {
                         'itemid' => $child->itemid,
                         'iscategory' => false,
                         'grademissing' => true,
-                        'weight' => $child->weight,
+                        'weight' => $weight,
                         'admingrade' => '',
                     ];
                 }
@@ -1125,7 +1162,7 @@ class aggregation {
         $toplevel = self::recurse_tree($courseid, $level1categoryid, $force);
 
         // Basic user object.
-        $user = self::get_user($courseid, $userid);
+        $user = self::get_user($courseid, $gradecategoryid, $userid);
 
         // Aggregate this user.
         self::aggregate_user($courseid, $toplevel, $userid, 1);
