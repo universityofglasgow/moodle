@@ -505,6 +505,7 @@ class aggregation {
      * a. Error in any child
      * b. All weights are zero
      * c. mixture of points and scales (mixture of scales ok)
+     * d. top level grades must all be scales
      * @param array $items
      * @param int $gradecategoryid
      * @return [$atype, $warnings]
@@ -513,6 +514,8 @@ class aggregation {
         global $DB;
 
         $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+
+        $istoplevel = self::is_top_level($gradecategoryid);
 
         $sumofweights = 0;
         $sumscheduleaweights = 0;
@@ -535,6 +538,13 @@ class aggregation {
             } else if ($item->schedule == 'P') {
                 $countpoints++;
             }
+        }
+
+        // If top level then ALL must be scales.
+        // We cannot convert the top level aggregation!
+        if ($istoplevel && $countpoints) {
+            $atype = \local_gugrades\GRADETYPE_ERROR;
+            $warnings[] = ['message' => get_string('toplevelpoints', 'local_gugrades')];
         }
 
         // ONLY if weighted mean aggregation...
@@ -652,6 +662,7 @@ class aggregation {
             'shortname' => shorten_text($gcat->fullname, SHORTNAME_LENGTH),
             'keephigh' => (int)$gcat->keephigh,
             'droplow' => (int)$gcat->droplow,
+            'excludeempty' => (boolean)$gcat->aggregateonlygraded,
             'aggregation' => (int)$gcat->aggregation,
             'weight' => (float)$gradeitem->aggregationcoef,
             'grademax' => 0.0, // Calculated further down.

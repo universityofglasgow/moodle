@@ -1,0 +1,37 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "aggregation": "weighted_mean",
+        "children": [
+            {
+                "name": "Item 1",
+                "category": false,
+                "type": "points",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 2",
+                "category": false,
+                "type": "points",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 3",
+                "category": false,
+                "type": "points",
+                "weight": 0.6
+            },
+            {
+                "name": "Item 4",
+                "category": false,
+                "type": "points",
+                "weight": 0.4
+            }
+        ]
+
+    }
+
+]
