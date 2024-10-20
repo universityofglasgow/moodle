@@ -2,7 +2,7 @@
     <DebugDisplay :debug="debug"></DebugDisplay>
 
     <!-- info button -->
-    <a href="#" class="ml-2"  @click="info_clicked" data-toggle="tooltip" data-placement="middle" :title="mstrings.gradeiteminfo">
+    <a href="#" class="ml-2"  @click="info_clicked" data-toggle="tooltip" :title="mstrings.gradeiteminfo">
         <span v-if="props.text" class="text-light"><u>{{ props.text }}</u></span>
         <i v-else class="fa fa-info-circle align-middle text-warning" :class="customclasses" aria-hidden="true"></i>
     </a>
