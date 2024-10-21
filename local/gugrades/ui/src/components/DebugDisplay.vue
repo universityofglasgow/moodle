@@ -36,3 +36,9 @@ op<template>
         return !_.isEmpty(simpledebug);
     });
 </script>
+
+<style>
+    pre {
+        white-space: pre-wrap !important;
+    }
+</style>
