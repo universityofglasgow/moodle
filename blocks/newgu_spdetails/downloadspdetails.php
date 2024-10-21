@@ -104,57 +104,67 @@ if ($coursestype) {
 
             if ($mygradesenabled) {
                 $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($activities, $coursestype,
-                $ltiactivities, '', 'shortname', 'ASC');
+                $ltiactivities, '');
             }
 
             if (!$mygradesenabled) {
                 $activitydata = \block_newgu_spdetails\activity::process_default_items($activities, $coursestype,
-                $ltiactivities, '', 'shortname', 'ASC');
+                $ltiactivities, '', true);
             }
 
             if ($activitydata) {
                 foreach ($activitydata as $activityitem) {
                     $spdetailspdf .= "<tr>";
                     $spdetailspdf .= "<td $tdstl>" . $course->fullname . "</td>";
-                    $spdetailspdf .= "<td $tdstl>" . $activityitem['item_name'] . "</td>";
+                    $spdetailspdf .= "<td $tdstl>" . $activityitem->item_name . "</td>";
                     // The assessment type is normally derived from the parent category - which works only
                     // as long as the parent name contains 'Formative' or 'Summative', and the item weight.
                     // As we have the original activities array, we can get the category id from there and
                     // use it to then work out the category name for this item.
-                    $categoryid = $activities[$activityitem['id']]->categoryid;
+                    $categoryid = $activities[$activityitem->id]->categoryid;
                     $category = grade_category::fetch(['id' => $categoryid]);
                     $categoryname = '';
                     if ($category) {
                         $categoryname = $category->fullname;
                     }
-                    $weight = (float) $activityitem['raw_assessment_weight'];
+                    $weight = (float) $activityitem->raw_assessment_weight;
                     $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($categoryname, $weight);
                     $spdetailspdf .= "<td $tdstc>" . $assessmenttype . "</td>";
-                    $spdetailspdf .= "<td $tdstc>" . $activityitem['assessment_weight'] . "</td>";
+
+                    // MGU-1066 - Only display activity item weights when a weighted strategy is being used.
+                    // If 'drop the lowest' value is greater than 0 however, then don't any display weights.
+                    if (($category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
+                        $category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
+                        if ($category->droplow > 0) {
+                            $activityitem->assessment_weight = '-';
+                        }
+                    }
+
+                    $spdetailspdf .= "<td $tdstc>" . $activityitem->assessment_weight . "</td>";
                     if ($coursestype == 'current') {
-                        $spdetailspdf .= "<td $tdstc>" . $activityitem['due_date'] . "</td>";
-                        $spdetailspdf .= "<td $tdstc>" . $activityitem['status_text'] . "</td>";
+                        $spdetailspdf .= "<td $tdstc>" . $activityitem->due_date . "</td>";
+                        $spdetailspdf .= "<td $tdstc>" . $activityitem->status_text . "</td>";
                     } else {
                         $spdetailspdf .= "<td $tdstc>" . $startdate . "</td>";
                         $spdetailspdf .= "<td $tdstc>" . $enddate . "</td>";
                     }
-                    $spdetailspdf .= "<td $tdstc>" . $activityitem['grade'] . "</td>";
+                    $spdetailspdf .= "<td $tdstc>" . $activityitem->grade . "</td>";
                     $spdetailspdf .= "</tr>";
 
                     $row++;
                     $col = 0;
                     $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $course->fullname];
                     $col++;
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['item_name']];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->item_name];
                     $col++;
                     $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $assessmenttype];
                     $col++;
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['assessment_weight']];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->assessment_weight];
                     $col++;
                     if ($coursestype == 'current') {
-                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['due_date']];
+                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->due_date];
                         $col++;
-                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['status_text']];
+                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->status_text];
                         $col++;
                     } else {
                         $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $startdate];
@@ -162,7 +172,7 @@ if ($coursestype) {
                         $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $enddate];
                         $col++;
                     }
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => strip_tags($activityitem['grade'])];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => strip_tags($activityitem->grade)];
                     $col++;
                 }
             }

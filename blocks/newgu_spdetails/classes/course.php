@@ -23,7 +23,7 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- namespace block_newgu_spdetails;
+namespace block_newgu_spdetails;
 
 use block_newgu_spdetails;
 use stdClass;
@@ -131,57 +131,94 @@ class course {
     }
 
     /**
-     * Process and prepare for display sub categories for this course.
-     * As there is nothing fundamentally different for a MyGrades course or a Gradebook course,
-     * we no longer need the previous approach of having 2 methods doing effectively the same thing.
+     * Process and prepare for display MyGrades type sub categories for this course.
+     *
+     * @param int $courseid
+     * @param array $gradecategories
+     * @param array $tmpgradecategories
+     * @param string $assessmenttype
+     * @return array
+     */
+    public static function process_mygrades_subcategories(int $courseid, array $gradecategories, array $tmpgradecategories, string $assessmenttype): array {
+        $gradessubcatdata = [];
+        $index = 0;
+        foreach ($gradecategories as $gradecategory) {
+            if ($gradecategory['hidden']) {
+                continue;
+            }
+
+            if ($gradecategory['released'] == true) {
+                $tokens = explode('AGG_', $gradecategory['fieldname']);
+                $fieldid = $tokens[1];
+                $has_items_or_categories = self::has_items_or_categories($courseid, 'id', $fieldid);
+                if ($has_items_or_categories) {
+                    $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $fieldid,
+                    'itemtype' => 'category']);
+                    $rawsubcatweight = (($gradecategory['weight'] != null) ? $gradecategory['weight'] : 0);
+                    $subcatweight = (($gradecategory['normalisedweight'] != null) ? course::return_weight($gradecategory['normalisedweight']) . '%' : 0);
+                    $subcat = new \stdClass();
+                    // iteminstance is our grade category id here. $fieldid above is actually from the grade item record.
+                    $subcat->id = $item->iteminstance;
+                    $subcat->name = $tmpgradecategories[$index]->category->fullname;
+                    $subcat->sortorder = $item->sortorder;
+                    $subcat->is_gradecategory = true;
+                    $subcat->mygradesenabled = true;
+                    $subcat->assessment_type = $assessmenttype;
+                    $subcat->sub_category_weight = $subcatweight;
+                    $subcat->raw_category_weight = $rawsubcatweight;
+                    $subcat->grade_category_grade = $gradecategory['display'];
+
+                    $gradessubcatdata[] = $subcat;
+                }
+            } elseif ($gradecategory['released'] == false) {
+                // Fallback to processing this as a regular Gradebook grade category if nothing has been released.
+                $tmpgradecategory = $tmpgradecategories[$index];
+                $tmp = self::process_default_subcategories($courseid, [$tmpgradecategory], $assessmenttype);
+                $gradessubcatdata[] = array_shift($tmp);
+            }
+            $index++;
+        }
+        
+        return $gradessubcatdata;
+    }
+
+    /**
+     * Process and prepare for display default type sub categories for this course.
      *
      * @param int $courseid
      * @param array $gradecategories
      * @param string $assessmenttype
-     * @param string $sortorder
      * @return array
      */
-    public static function process_subcategories(int $courseid, array $gradecategories, string $assessmenttype,
-    string $sortorder): array {
+    public static function process_default_subcategories(int $courseid, array $gradecategories, string $assessmenttype): array {
         $gradessubcatdata = [];
-        $tmp = [];
-        foreach ($gradecategories as $obj) {
+        foreach ($gradecategories as $gradecategory) {
             // We've no way of filtering out the PLUGIN RELATED DATA items by this point, so we need to do this.
-            if ($obj->category->hidden) {
+            if ($gradecategory->category->hidden) {
                 continue;
             }
-            
-            // MGU-973 - Don't display the category if it doesn't contain any grade items.
-            // However, it may only contain further sub categories.
-            $items = \grade_item::fetch_all(['courseid' => $courseid, 'categoryid' => $obj->category->id,
-            'hidden' => 0]);
-            $subcategories = \grade_category::fetch_all(['parent' => $obj->category->id, 'hidden' => 0]);
-            if ($items || $subcategories) {
-                $item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $obj->category->id,
+
+            $has_items_or_categories = self::has_items_or_categories($courseid, 'categoryid', $gradecategory->category->id);
+            if ($has_items_or_categories) {
+                $item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $gradecategory->category->id,
                 'itemtype' => 'category']);
-                $subcatweight = self::return_weight($item->aggregationcoef);
-                // We need to work out the grade aggregate for any graded items w/in this sub category...
-                // Is there an API call for this?
+
+                $gradecategoryweight = course::get_grade_category_weight($item, $gradecategory->category);
+                $rawsubcatweight = $gradecategoryweight->raw_weight;
+                $subcatweight = $gradecategoryweight->grade_category_weight;
+                // MGU-1033 - Grade Category Grades are not required here as Moodle doesn't do aggregation the way UofG requires.
                 $subcat = new \stdClass();
-                $subcat->id = $obj->category->id;
-                $subcat->name = $obj->category->fullname;
+                $subcat->id = $gradecategory->category->id;
+                $subcat->name = $gradecategory->category->fullname;
+                $subcat->sortorder = $item->sortorder;
+                $subcat->is_gradecategory = true;
                 $subcat->assessment_type = $assessmenttype;
-                $subcat->subcatweight = $subcatweight . '%';
-                $subcat->raw_category_weight = $subcatweight;
+                $subcat->sub_category_weight = $subcatweight;
+                $subcat->raw_category_weight = $rawsubcatweight;
+                $subcat->grade_category_grade = '-';
 
-                $tmp[] = $subcat;
+                $gradessubcatdata[] = $subcat;
             }
-        }
-
-        // This needs redone. $mygradecategories comes in as an array of
-        // objects, whose category property is also an object - making
-        // sorting a tad awkward. The items property that comes in also,
-        // is an array of objects containing the necessary property/key
-        // which ^can^ get sorted and returned in the correct order needed
-        // by the mustache engine. @todo!
-        $tmp2 = self::sort_items($tmp, $sortorder);
-        foreach ($tmp2 as $sortedarray) {
-            $gradessubcatdata[] = $sortedarray;
         }
 
         return $gradessubcatdata;
@@ -214,15 +251,94 @@ class course {
     }
 
     /**
-     * Reusing the code from local_gugrades/api::get_dashboard_get_courses.
+     * Reusing the code from local_gugrades/api::is_mygrades_enabled_for_course.
      *
      * @param int $courseid
      * @return bool
      */
     public static function is_type_mygrades(int $courseid): bool {
-        $mygradesenabled = \local_gugrades\api::is_mygrades_enabled_for_course($courseid);
+        $dashboardenabled = \local_gugrades\api::get_dashboard_enabled($courseid);
+        $mygradesenabled = $dashboardenabled[0];
 
         return $mygradesenabled;
+    }
+
+    /**
+     * MGU-973 - Don't display the category if it doesn't contain any grade items.
+     * However, it may only contain further sub categories.
+     * @param int $courseid
+     * @param string $field
+     * @param int $categoryid
+     * @return bool
+     */
+    public static function has_items_or_categories(int $courseid, string $field, int $id) {
+
+        $items = \grade_item::fetch_all(['courseid' => $courseid, $field => $id,
+        'hidden' => 0]);
+        $subcategories = \grade_category::fetch_all(['parent' => $id, 'hidden' => 0]);
+        if ($items || $subcategories) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * MGU-1066 If we're using a weighted strategy and the weighting has inadvertantly been entered/changed to > 1,
+     * Then don't show the "weight towards course" value, or weights for the items. For all other aggregation strategies,
+     * just return whatever weight was entered into Gradebook.
+     *
+     * @param object $item - the activity item
+     * @param object $gradecategory - the grade category object
+     * @return object
+     */
+    public static function get_grade_category_weight(object $item, object $gradecategory): object {
+        $gradecategoryweight = new stdClass();
+        $gradecategoryweight->raw_weight = 0;
+        $gradecategoryweight->grade_category_weight = '-';
+        if (($gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
+            $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
+            if ((int) $item->aggregationcoef <= 1) {
+                $gradecategoryweight->raw_weight = course::return_weight($item->aggregationcoef);
+                $gradecategoryweight->grade_category_weight = (($gradecategoryweight->raw_weight > 0) ?
+                    $gradecategoryweight->raw_weight . '%' : '-');
+            }
+        } else {
+            $gradecategoryweight->raw_weight = course::return_weight($item->aggregationcoef);
+            $gradecategoryweight->grade_category_weight = (($gradecategoryweight->raw_weight > 0) ?
+                $gradecategoryweight->raw_weight . '%' : '-');
+        }
+
+        return $gradecategoryweight;
+    }
+
+    /**
+     * MGU-1066 - Only display activity item weights if a weighted strategy is being used.
+     * However, if using a weighted strategy with 'drop the lowest' and the value is greater
+     * than 0, then don't display any weights.
+     *
+     * @param object $activityitem
+     * @return object
+     */
+    public static function get_activity_weight(object $activityitem): object {
+
+        $categoryid = $activityitem->categoryid;
+        $category = \grade_category::fetch(['id' => $categoryid]);
+        $activityweight = new stdClass();
+        $activityweight->rawassessmentweight = 0;
+        $activityweight->assessmentweight = '-';
+
+        if (($category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
+            $category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
+            $rawassessmentweight = self::return_weight($activityitem->aggregationcoef);
+            $activityweight->assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . '%' : '-');
+            if ($category->droplow > 0) {
+                $activityweight->rawassessmentweight = 0;
+                $activityweight->assessmentweight = '-';
+            }
+        }
+
+        return $activityweight;
     }
 
     /**
@@ -241,7 +357,7 @@ class course {
     }
 
     /**
-     * Returns the 'assessment type' for an assessment. Achieved through using the
+     * Returns the 'assessment type' for a given assessment. Achieved through using the
      * assessments aggregation coefficient and category name. If the item only has
      * a weighting value - then we consider it to be a summative assessment.
      *
@@ -576,9 +692,10 @@ class course {
                                                     $a->activityname = $cm->name;
                                                     $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
                                                 }
-                                                $assessmentweight = self::return_weight($item->aggregationcoef);
+
                                                 $assessmenttype = self::return_assessmenttype($course->fullname,
                                                 $item->aggregationcoef);
+                                                $activityweight = self::get_activity_weight($activityitem);
                                                 $status = $activityitem->get_status($USER->id);
                                                 $duedate = $activityitem->get_formattedduedate($assessment->duedate);
                                                 $rawduedate = $activityitem->get_rawduedate();
@@ -591,8 +708,8 @@ class course {
                                                     'icon_alt' => $iconalt,
                                                     'item_name' => $assessment->name,
                                                     'assessment_type' => $assessmenttype,
-                                                    'assessment_weight' => $assessmentweight . '%',
-                                                    'raw_assessment_weight' => $assessmentweight,
+                                                    'assessment_weight' => $activityweight->assessmentweight,
+                                                    'raw_assessment_weight' => $activityweight->rawassessmentweight,
                                                     'due_date' => $duedate,
                                                     'raw_due_date' => $rawduedate,
                                                     'grade_status' => $status->grade_status,
@@ -986,7 +1103,8 @@ class course {
 
                                         $assessmenttype = self::return_assessmenttype($course->fullname,
                                         $activityitem->aggregationcoef);
-                                        $assessmentweight = self::return_weight($activityitem->aggregationcoef);
+                                        $activityweight = self::get_activity_weight($activityitem);
+
                                         $tmp = [
                                             'id' => $activityitem->id,
                                             'courseurl' => $courseurl->out(),
@@ -996,8 +1114,8 @@ class course {
                                             'icon_alt' => $iconalt,
                                             'item_name' => $activityitem->itemname,
                                             'assessment_type' => $assessmenttype,
-                                            'assessment_weight' => $assessmentweight . '%',
-                                            'raw_assessment_weight' => $assessmentweight,
+                                            'assessment_weight' => $activityweight->assessmentweight,
+                                            'raw_assessment_weight' => $activityweight->rawassessmentweight,
                                             'due_date' => $date,
                                             'raw_due_date' => $rawduedate,
                                             'grade_status' => $gradestatus->grade_status,
