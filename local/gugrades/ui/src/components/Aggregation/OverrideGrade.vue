@@ -18,7 +18,7 @@
                 @gradeadded = "grade_added()">
             </AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
-            <AlterButton :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightsaltered="grade_added()"></AlterButton>
+            <AlterButton v-if="props.showweights" :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightsaltered="grade_added()"></AlterButton>
         </div>
     </span>
 </template>
@@ -40,6 +40,7 @@
         awaitingcapture: Boolean,
         gradehidden: Boolean,
         converted: Boolean,
+        showweights: Boolean,
     });
 
     const emit = defineEmits([

@@ -128,6 +128,7 @@
                     :gradehidden = "item[header.value].hidden"
                     :itemname = "header.fullname"
                     :name = "item.displayname"
+                    :showweights = "header.showweights"
                     @gradeadded = "grade_changed(item.id)"
                 ></OverrideGrade>
             </template>
@@ -161,7 +162,7 @@
                         <span v-if="item.alteredweight">
                             <br />
                             <span class="badge badge-info ml-1">ALTERED</span>
-                        </span>
+                         </span>
                     </div>
                     <div>
                         <!-- add/override for total grade -->
@@ -173,6 +174,7 @@
                             :gradehidden = "false"
                             :itemname = "mstrings.total"
                             :name = "mstrings.total"
+                            :showweights = "showweights"
                             @gradeadded = "grade_changed(item.id)"
                         ></OverrideGrade>
                     </div>
@@ -403,6 +405,7 @@
                 grademax: column.grademax,
                 isscale: column.isscale,
                 strategy: column.strategy,
+                showweights: column.showweights,
             });
         });
 
@@ -555,6 +558,8 @@
             released.value = result.released;
             showweights.value = result.showweights;
             excludeempty.value = result.excludeempty;
+
+            window.console.log(columns.value);
 
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;

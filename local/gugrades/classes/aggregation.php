@@ -176,6 +176,7 @@ class aggregation {
                 'schedule' => $gradecategory->schedule,
                 'strategy' => self::get_formatted_strategy($gradecategory->categoryid),
                 'strategyid' => $gradecategory->aggregation,
+                'showweights' => self::show_weights($gradecategory->categoryid),
                 'userids' => [],
 
                 // TODO - may not be so simple.
