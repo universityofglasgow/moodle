@@ -314,7 +314,7 @@ class base {
         if (array_key_exists($aggregationid, $lookup)) {
             $agf = $lookup[$aggregationid];
         } else {
-            throw new \moodle_exception('Unknown or unsupported aggregation strategy');
+            throw new \moodle_exception('Unknown or unsupported aggregation strategy. Aggregation ID ' . $aggregationid);
         }
 
         return "strategy_" .$agf;
