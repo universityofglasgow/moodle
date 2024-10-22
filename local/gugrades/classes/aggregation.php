@@ -202,6 +202,7 @@ class aggregation {
                 'schedule' => $mapping->get_schedule(),
                 'strategy' => '',
                 'strategyid' => 0,
+                'showweights' => false,
                 'userids' => $userids,
 
                 // TODO - may not be so simple.
