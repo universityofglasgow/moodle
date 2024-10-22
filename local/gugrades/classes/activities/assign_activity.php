@@ -191,21 +191,22 @@ class assign_activity extends base {
     }
 
     /**
+     * Modify assignment workflow state
+     */
+    private function set_marking_workflow($userid, $workflowstate) {
+        $userflags = $this->assign->get_user_flags($userid, true);
+        $userflags->workflowstate = $workflowstate;
+        $this->assign->update_user_flags($userflags);
+    }
+
+    /**
      * Action to take when releasing grades
      * For Assignment, update workflow
      * @param int $userid
      */
     public function release_grades(int $userid) {
-        $data = (object) [
-            'attemptnumber' => 0,
-            'workflowstate' => 'released',
-            'feedbackformat' => 0,
-            'assignfeedbackcomments_editor' => [
-                'text' => '',
-                'format' => 0,
-            ],
-        ];
-        $this->assign->save_grade($userid, $data);
+
+        $this->set_marking_workflow($userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
 
         return;
     }
@@ -216,16 +217,8 @@ class assign_activity extends base {
      * @param int $userid
      */
     public function unrelease_grades(int $userid) {
-        $data = (object) [
-            'attemptnumber' => 0,
-            'workflowstate' => 'readyforrelease',
-            'feedbackformat' => 0,
-            'assignfeedbackcomments_editor' => [
-                'text' => '',
-                'format' => 0,
-            ],
-        ];
-        $this->assign->save_grade($userid, $data);
+
+        $this->set_marking_workflow($userid, ASSIGN_MARKING_WORKFLOW_STATE_READYFORRELEASE);
 
         return;
     }
