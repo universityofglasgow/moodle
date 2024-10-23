@@ -325,6 +325,7 @@ class aggregation {
             $fieldname = 'AGG_' . $column->gradeitemid;
             $data = [
                 'itemid' => $gradecatitem->id,
+                'gradeitemid' => $column->gradeitemid,
                 'fieldname' => $fieldname, // Required by WS.
                 'itemname' => $column->shortname, // Required by WS.
                 'display' => '', // Required by WS.
