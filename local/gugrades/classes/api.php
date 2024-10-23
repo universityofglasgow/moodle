@@ -1823,7 +1823,7 @@ class api {
 
         // Run over the fields and add released status.
         foreach ($user->fields as $id => $field) {
-            $released = \local_gugrades\grades::is_grades_released($courseid, $field['itemid']);
+            $released = \local_gugrades\grades::is_grades_released($courseid, $field['gradeitemid']);
             $user->fields[$id]['released'] = $released;
         }
 

@@ -61,13 +61,24 @@ final class capture_release_grades_test extends \local_gugrades\external\gugrade
             $status
         );
 
-        // Get the capture page
+        // Get the capture page.
         $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign2, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_capture_page::execute_returns(),
             $page
         );
 
+        $fred = $page['users'][0];
+        $this->assertEquals('A3:20', $fred['grades'][0]['displaygrade']);
+        $this->assertEquals('FIRST', $fred['grades'][0]['gradetype']);
+        $this->assertEquals('A3:20', $fred['grades'][1]['displaygrade']);
+        $this->assertEquals('PROVISIONAL', $fred['grades'][1]['gradetype']);
+
+        // Check student mygrades API returns correct data.
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $this->gradecatsumm->id, $this->student->id);
+
+        $this->assertEquals('Assignment 2', $user->fields[2]['itemname']);
+        $this->assertFalse($user->fields[2]['released']);
 
         $status = release_grades::execute($this->course->id, $this->gradeitemidassign2, 0, false);
         $status = external_api::clean_returnvalue(
@@ -75,12 +86,26 @@ final class capture_release_grades_test extends \local_gugrades\external\gugrade
             $status
         );
 
-        // Get the capture page - post release
+        // Get the capture page - post release.
         $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign2, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_capture_page::execute_returns(),
             $page
         );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('A3:20', $fred['grades'][0]['displaygrade']);
+        $this->assertEquals('FIRST', $fred['grades'][0]['gradetype']);
+        $this->assertEquals('A3:20', $fred['grades'][1]['displaygrade']);
+        $this->assertEquals('RELEASED', $fred['grades'][1]['gradetype']);
+        $this->assertEquals('A3:20', $fred['grades'][2]['displaygrade']);
+        $this->assertEquals('PROVISIONAL', $fred['grades'][2]['gradetype']);
+
+        // Check student mygrades API returns correct data.
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $this->gradecatsumm->id, $this->student->id);
+
+        $this->assertEquals('Assignment 2', $user->fields[2]['itemname']);
+        $this->assertTrue($user->fields[2]['released']);
 
     }
 }
