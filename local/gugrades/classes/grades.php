@@ -35,6 +35,22 @@ require_once($CFG->dirroot . '/grade/lib.php');
 class grades {
 
     /**
+     * Get a grade item.
+     * As we can constantly look up the same grade item over and over
+     * @param int $gradeitemid
+     * @return object
+     */
+    public static function get_gradeitem(int $gradeitemid) {
+        global $DB, $GRADEITEM;
+
+        if (!empty($GRADEITEM->id) && ($GRADEITEM->id == $gradeitemid)) {
+            return $GRADEITEM;
+        }
+
+        return $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+    }
+
+    /**
      * Get item name from gradeitemid
      * @param int $gradeitemid
      * @return string
@@ -244,7 +260,7 @@ class grades {
     public static function recursive_import_match(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $courseid = $gradeitem->courseid;
         $categoryid = $gradeitem->categoryid;
 
@@ -581,7 +597,7 @@ class grades {
     public static function is_grade_supported(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
         if (($gradetype == GRADE_TYPE_NONE) || ($gradetype == GRADE_TYPE_TEXT)) {
             return false;
@@ -605,7 +621,7 @@ class grades {
     public static function is_grade_hidden_locked(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
 
         return [
             $gradeitem->hidden,
@@ -635,7 +651,7 @@ class grades {
             return [false, false];
         }
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
 
         // Could be an (aggregated) category.
         // In this case, the grade details are determined by aggregation.
@@ -793,7 +809,7 @@ class grades {
     public static function mapping_factory(int $courseid, int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
 
         // Is it a category?
@@ -962,7 +978,7 @@ class grades {
     public static function showconversion(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
 
         // Ropey check for exact 22.
@@ -1090,7 +1106,7 @@ class grades {
         global $DB;
 
         // Is this definitely a category
-        $item = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $item = self::get_gradeitem($gradeitemid);
         if ($item->itemtype != 'category') {
             return false;
         }
@@ -1128,7 +1144,7 @@ class grades {
         global $DB;
 
         // Get original weight
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $originalweight = $gradeitem->aggregationcoef;
         $alteredweight = $originalweight;
         $isaltered = false;

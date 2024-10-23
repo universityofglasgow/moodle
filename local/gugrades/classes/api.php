@@ -358,7 +358,7 @@ class api {
         global $DB;
 
         // Get item.
-        $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);
+        $item = \local_gugrades\grades::get_gradeitem($itemid);
         $courseid = $item->courseid;
 
         // Get the mapping class.
@@ -687,7 +687,7 @@ class api {
         }
 
         // Get parent grade category.
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
         $categoryid = $gradeitem->categoryid;
         $gradecategory = $DB->get_record('grade_categories', ['id' => $categoryid], '*', MUST_EXIST);
 
