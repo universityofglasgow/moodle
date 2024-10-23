@@ -223,6 +223,88 @@ class grade {
     }
 
     /**
+     * MGU-1004 - For an Admin grade, we need to map the short code to the value. Otherwise just return the grade as is.
+     * @param string $admingrade
+     * @param string $displaygrade
+     * @return string
+     */
+    public static function is_admin_or_generic_grade(string $admingrade, string $displaygrade): string {
+        if ($admingrade) {
+            // It seems in PHP (at least) I can't set this up as a static array, probably because of the get_string calls.
+            $admingrades = [
+                '07' => get_string('admin07', 'local_gugrades'),
+                'MV' => get_string('adminmv', 'local_gugrades'),
+                'NS' => get_string('adminns', 'local_gugrades'),
+                'CW' => get_string('admincw', 'local_gugrades'),
+                'UNS' => get_string('adminuns', 'local_gugrades'),
+                'SAT' => get_string('adminsat', 'local_gugrades'),
+                'NP' => get_string('adminnp', 'local_gugrades'),
+                'P' => get_string('adminp', 'local_gugrades'),
+                'NC' => get_string('adminnc', 'local_gugrades'),
+                'CP' => get_string('admincp', 'local_gugrades'),
+                'CR' => get_string('admincr', 'local_gugrades'),
+                'CA' => get_string('adminca', 'local_gugrades'),
+                'AU' => get_string('adminau', 'local_gugrades'),
+            ];
+            $gradetodisplay = $admingrades[$displaygrade];
+            return $gradetodisplay;
+        } else {
+            return $displaygrade;
+        }
+    }
+
+    /**
+     * Recursive routine to reduce items from all categories
+     * to a flat list of items that can then be iterated over.
+     *
+     * @param string $category
+     * @param array $gradeitems
+     * @param array $items
+     * @param array $gradecategories
+     * @return object
+     */
+    public static function recurse_categorytree(string $category, array $gradeitems, array $items,
+    array $gradecategories): object {
+        // While this looks odd, when we call this method recursively, we are in fact
+        // passing in the previously built up array of $items. We also (re)set $record
+        // here since after the final iteration, when control is returned, $items will
+        // contain everything bar the items from the last iteration, thereby having the
+        // side effect of inadvertantly losing those last items. Setting $record to
+        // null allows us us to check (after the last iteration and control is returned)
+        // if the object already exist - which it will at the point of last iteration.
+        $items = $items;
+        $record = null;
+
+        // First find any grade items attached to the current category.
+        foreach ($gradeitems as $item) {
+            if ($item->categoryid == $category) {
+                $items[$item->id] = $item;
+            }
+        }
+
+        // Next find any sub-categories of this category.
+        $categories = [];
+        foreach ($gradecategories as $gradecategory) {
+            if ($gradecategory->category->parent == $category) {
+                if (is_object($record)) {
+                    $items = $record->items;
+                }
+                $record = self::recurse_categorytree($gradecategory->category->id, $gradecategory->items, $items,
+                $gradecategory->categories);
+                $tmp = 0;
+            }
+        }
+
+        // Add this all up.
+        if (!is_object($record)) {
+            $record = new \stdClass();
+            $record->items = $items;
+        }
+
+        return $record;
+    }
+
+    /**
      * For a given userid, return the current grading status for this assessment item.
      *
      * @param string $modulename
@@ -552,57 +634,6 @@ class grade {
             "finalgrade" => $finalgrade,
             "rawgrade" => $rawgrade,
         ];
-    }
-
-    /**
-     * Recursive routine to reduce items from all categories
-     * to a flat list of items that can then be iterated over.
-     *
-     * @param string $category
-     * @param array $gradeitems
-     * @param array $items
-     * @param array $gradecategories
-     * @return object
-     */
-    public static function recurse_categorytree(string $category, array $gradeitems, array $items,
-    array $gradecategories): object {
-        // While this looks odd, when we call this method recursively, we are in fact
-        // passing in the previously built up array of $items. We also (re)set $record
-        // here since after the final iteration, when control is returned, $items will
-        // contain everything bar the items from the last iteration, thereby having the
-        // side effect of inadvertantly losing those last items. Setting $record to
-        // null allows us us to check (after the last iteration and control is returned)
-        // if the object already exist - which it will at the point of last iteration.
-        $items = $items;
-        $record = null;
-
-        // First find any grade items attached to the current category.
-        foreach ($gradeitems as $item) {
-            if ($item->categoryid == $category) {
-                $items[$item->id] = $item;
-            }
-        }
-
-        // Next find any sub-categories of this category.
-        $categories = [];
-        foreach ($gradecategories as $gradecategory) {
-            if ($gradecategory->category->parent == $category) {
-                if (is_object($record)) {
-                    $items = $record->items;
-                }
-                $record = self::recurse_categorytree($gradecategory->category->id, $gradecategory->items, $items,
-                $gradecategory->categories);
-                $tmp = 0;
-            }
-        }
-
-        // Add this all up.
-        if (!is_object($record)) {
-            $record = new \stdClass();
-            $record->items = $items;
-        }
-
-        return $record;
     }
 
 }

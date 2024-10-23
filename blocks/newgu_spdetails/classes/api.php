@@ -121,8 +121,7 @@ class api extends external_api {
             $sortorder);
             return \block_newgu_spdetails\course::get_course_structure($courses, $currentcourses);
         } else {
-            $gradableactivities = \block_newgu_spdetails\activity::get_activityitems($subcategory, $userid, $activetab, $sortby,
-            $sortorder);
+            $gradableactivities = \block_newgu_spdetails\activity::get_activityitems($subcategory, $userid, $activetab);
         }
 
         return $gradableactivities;

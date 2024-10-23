@@ -92,12 +92,9 @@ class activity {
      * @param int $subcategoryid
      * @param int $userid
      * @param string $activetab
-     * @param string $sortby
-     * @param string $sortorder
      * @return array
      */
-    public static function get_activityitems(int $subcategoryid, int $userid, string $activetab, string $sortby,
-    string $sortorder): array {
+    public static function get_activityitems(int $subcategoryid, int $userid, string $activetab): array {
         $activitydata = [];
         $coursedata = [];
 
@@ -177,7 +174,14 @@ class activity {
                 }
             }
             $data['mygradesenabled'] = true;
-            $data['weighttowardscourse'] = (($gradedata->parent->normalisedweight) ? course::return_weight($gradedata->parent->normalisedweight) . '%' : '-');
+
+            // MGU-1048/MGU-1065/MGU-1066 - We need to get the 'normalised' weight for the parent grade category
+            $weighttowardscourse = 0;
+            if ($item = \grade_item::fetch(['courseid' => $courseid, 'id' => $gradedata->parent->gradeitemid])) {
+                $weighttowardscourse = course::get_grade_category_weight($item, $activityitems->category);
+            }
+            $data['weighttowardscourse'] = $weighttowardscourse->grade_category_weight;
+
             if ($gradecategories) {
                 $categorydata = [];
                 $categorydata = course::process_mygrades_subcategories($courseid, $gradecategories, $activityitems->categories, $assessmenttype);
@@ -311,6 +315,7 @@ class activity {
                         $duedate = 'N/A';
                     }
                     $rawduedate = $activityduedate;
+                    // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
                     if (!$mygradesitem['dropped']) {
                         $rawassessmentweight = course::return_weight($mygradesitem['weight']);
                         $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
@@ -347,7 +352,8 @@ class activity {
 
                     if (!$isgradehidden) {
                         $mygradesactivityitem->grade_class = true;
-                        $mygradesactivityitem->grade = $mygradesitem['display'];
+                        // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
+                        $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['admingrade'], $mygradesitem['display']);
                         $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
                         $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' . $tmpgradeitems[$index]->courseid;
                     }

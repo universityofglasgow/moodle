@@ -102,8 +102,23 @@ if ($coursestype) {
             // This returns an array of objects - process_[x]_items() is expecting an ordinary array. It seems to work still.
             $activities = \block_newgu_spdetails\course::get_activities($course->id);
 
+            // We need to get the individual grade category id's now..
+            if ($course->firstlevel) {
+                $mygradeitems = [];
+                foreach($course->firstlevel as $id => $firstlevel) {
+                    $mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevel['id'], $USER->id);
+                    $tmpitems = $mygradesdata->fields;
+                    foreach($tmpitems as $tmpitem) {
+                        if ($tmpitem['iscategory'] == false) {
+                            $mygradeitems[] = $tmpitem;
+                        }
+                    }
+                }
+            }
+
+
             if ($mygradesenabled) {
-                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($activities, $coursestype,
+                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
                 $ltiactivities, '');
             }
 
