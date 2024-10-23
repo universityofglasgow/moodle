@@ -127,6 +127,7 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         // Get gradeitemid for summer exam.
         $summeritemid = $this->get_gradeitemid_from_grade_category('Summer exam');
 
+        // Release aggregated grade "Summer Exam".
         $status = release_grades::execute($this->course->id, $summeritemid, 0, false);
         $status = external_api::clean_returnvalue(
             release_grades::execute_returns(),
@@ -196,6 +197,7 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertEquals('A2 (mismatch)', $user->releasegrade);
         $this->assertEquals('NS', $user->displaygrade);
         $this->assertTrue($user->mismatch);
+        $this->assertTrue($user->parent->released);
 
         // Release grades for a second time.
         $status = release_grades::execute($this->course->id, $summeritemid, 0, false);
