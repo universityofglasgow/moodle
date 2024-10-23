@@ -135,7 +135,6 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
 
         // Get resulting grades.
         $grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id, 'gradeitemid' => $summeritemid]);
-        //var_dump($grades); die;
 
         // Released grades should be there (where there are grades to release).
         $grades = array_values($grades);
@@ -153,6 +152,12 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertTrue($page['released']);
         $fred = $page['users'][0];
         $this->assertEquals('A2', $fred['releasegrade']);
+
+        // Addition check for direct API call (used by Student MyGrades).
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $summercategoryid, $this->student->id);
+
+        $this->assertEquals('A2', $user->parent->displaygrade);
+        $this->assertTrue($user->parent->released);
 
         // Change one of the grades so the aggregated grade changes.
         $q2id = $this->get_gradeitemid('Question 2');
@@ -185,6 +190,13 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertEquals('NS', $fred['displaygrade']);
         $this->assertTrue($fred['mismatch']);
 
+        // Addition check for direct API call (used by Student MyGrades).
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $summercategoryid, $this->student->id);
+
+        $this->assertEquals('A2 (mismatch)', $user->releasegrade);
+        $this->assertEquals('NS', $user->displaygrade);
+        $this->assertTrue($user->mismatch);
+
         // Release grades for a second time.
         $status = release_grades::execute($this->course->id, $summeritemid, 0, false);
         $status = external_api::clean_returnvalue(
@@ -207,6 +219,14 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertEquals('NS', $fred['releasegrade']);
         $this->assertEquals('NS', $fred['displaygrade']);
 
+        // Addition check for direct API call (used by Student MyGrades).
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $summercategoryid, $this->student->id);
+
+        $this->assertEquals('NS', $user->releasegrade);
+        $this->assertEquals('NS', $user->displaygrade);
+        $this->assertFalse($user->mismatch);
+        $this->assertTrue($user->parent->released);
+
         // Revert release.
         $status = release_grades::execute($this->course->id, $summeritemid, 0, true);
         $status = external_api::clean_returnvalue(
@@ -221,13 +241,18 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
             $page
         );
 
-        //$grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id, 'gradeitemid' => $summeritemid]);
-        //var_dump($grades);
-
         $this->assertFalse($page['released']);
         $fred = $page['users'][0];
         $this->assertEquals('', $fred['releasegrade']);
         $this->assertEquals('NS', $fred['displaygrade']);
+
+        // Addition check for direct API call (used by Student MyGrades).
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $summercategoryid, $this->student->id);
+
+        $this->assertEquals('', $user->releasegrade);
+        $this->assertEquals('NS', $user->displaygrade);
+        $this->assertTrue($user->mismatch);
+        $this->assertFalse($user->parent->released);
 
     }
 }
