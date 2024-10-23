@@ -121,7 +121,7 @@ class aggregation {
     public static function get_columns(int $courseid, int $gradecategoryid) {
         global $DB;
 
-        // Clear reset cache foravailability (lists of users)
+        // Clear reset cache foravailability (lists of users).
         \local_gugrades\users::clear_availability_cache($courseid);
 
         // Accumulate any warnings.
@@ -178,8 +178,6 @@ class aggregation {
                 'strategyid' => $gradecategory->aggregation,
                 'showweights' => self::show_weights($gradecategory->categoryid),
                 'userids' => [],
-
-                // TODO - may not be so simple.
                 'weight' => round($gradecategory->weight * 100, 1),
             ];
         }
@@ -204,8 +202,6 @@ class aggregation {
                 'strategyid' => 0,
                 'showweights' => false,
                 'userids' => $userids,
-
-                // TODO - may not be so simple.
                 'weight' => round($gradeitem->weight * 100, 1),
             ];
         }
@@ -376,7 +372,7 @@ class aggregation {
 
         $user->fields = $fields;
 
-        // Get released grade (if there is one)
+        // Get released grade (if there is one).
         $released = \local_gugrades\grades::get_released_grade($courseid, $gradecatitem->id, $user->id);
         $releasegrade = $released ? $released->displaygrade : '';
 
@@ -388,13 +384,18 @@ class aggregation {
         // Get original data for "aggregated category" as we may not have got it elsewhere.
         // This is needed if no aggregation is performed.
         $item = $DB->get_record('local_gugrades_grade',
-            ['courseid' => $courseid, 'gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1],
-            '*', MUST_EXIST);
+            [
+                'courseid' => $courseid,
+                'gradeitemid' => $gradecatitem->id,
+                'gradetype' => 'CATEGORY',
+                'userid' => $user->id,
+                'iscurrent' => 1,
+            ], '*', MUST_EXIST);
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;
         $user->displaygrade = $item->displaygrade;
         $user->releasegrade = $releasegrade;
-        $user->mismatch = $item->displaygrade != $releasegrade; // TODO - might not get away with this
+        $user->mismatch = $item->displaygrade != $releasegrade;
         $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
@@ -429,14 +430,15 @@ class aggregation {
         $gradecatitem = $DB->get_record('grade_items',
             ['itemtype' => 'category', 'iteminstance' => $gradecategoryid], '*', MUST_EXIST);
 
-        // debugging stuff.
+        // Debugging stuff.
         $userhelpercount = 0;
 
         foreach ($users as $id => $user) {
 
             // The agregated 'CATEGORY' field should already be in the grades table.
-            // If it's not, we need to aggregate this user
-            if (!$DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1])) {
+            // If it's not, we need to aggregate this user.
+            if (!$DB->record_exists('local_gugrades_grade',
+                ['gradeitemid' => $gradecatitem->id, 'gradetype' => 'CATEGORY', 'userid' => $user->id, 'iscurrent' => 1])) {
                 self::aggregate_user_helper($courseid, $gradecategoryid, $user->id);
                 $userhelpercount++;
             }
@@ -580,8 +582,9 @@ class aggregation {
         }
 
         // If we have decided it's points but a conversion map has been applied,
-        // then it's whatever that map says
-        if (($atype == \local_gugrades\GRADETYPE_POINTS) && ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradecategoryid' => $gradecategoryid]))) {
+        // then it's whatever that map says.
+        if (($atype == \local_gugrades\GRADETYPE_POINTS) &&
+            ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradecategoryid' => $gradecategoryid]))) {
             $mapid = $mapitem->mapid;
             $map = $DB->get_record('local_gugrades_map', ['id' => $mapid], '*', MUST_EXIST);
             $atype = $map->scale == 'schedulea' ? \local_gugrades\GRADETYPE_SCHEDULEA : \local_gugrades\GRADETYPE_SCHEDULEB;
@@ -620,7 +623,7 @@ class aggregation {
 
         $cache = \cache::make('local_gugrades', 'gradeitems');
 
-        // Get all grade category ids for this course
+        // Get all grade category ids for this course.
         $gradecats = $DB->get_records('grade_categories', ['courseid' => $courseid]);
 
         foreach ($gradecats as $gradecat) {

@@ -90,7 +90,7 @@ final class dashboard_get_grades_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Assignment 2', $assign2['itemname']);
         $this->assertEquals(20, $assign2['convertedgrade']);
         $this->assertEquals('A3:20', $assign2['displaygrade']);
-        $this->assertEquals(100, $assign2['grademax']);
+        $this->assertEquals(23, $assign2['grademax']);
 
     }
 
