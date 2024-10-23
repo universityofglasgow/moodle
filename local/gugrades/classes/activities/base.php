@@ -100,7 +100,7 @@ abstract class base {
 
         $this->viewfullnames = false;
 
-        // Get the course module (or false it it isn't one)
+        // Get the course module (or false it it isn't one).
         $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
     }
 
@@ -148,7 +148,7 @@ abstract class base {
     public function get_user_ids() {
         $cache = \cache::make('local_gugrades', 'availableusers');
 
-        // Unique cache tag for course and gradeitem
+        // Unique cache tag for course and gradeitem.
         $cachetag = 'AVAILABLE_' . $this->courseid . '_' . $this->gradeitemid;
         if (!$userids = $cache->get($cachetag)) {
             $users = $this->get_users();
@@ -168,7 +168,7 @@ abstract class base {
         $context = \context_course::instance($this->courseid);
         $user = \local_gugrades\users::get_gradeable_user($context, $userid);
 
-        // Add displayname
+        // Add displayname.
         $user->displayname = fullname($user);
 
         return $user;

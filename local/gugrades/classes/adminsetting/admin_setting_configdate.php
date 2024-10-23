@@ -17,7 +17,7 @@
 /**
  * Date select for admin pages.
  *
- * @package     local_slcodesnippets
+ * @package     local_gugrades
  * @author      Davo Smith
  * @copyright   2022 Synergy Learning
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,8 +27,9 @@ namespace local_gugrades\adminsetting;
 
 use html_writer;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Custom admit setting.
+ */
 class admin_setting_configdate extends \admin_setting {
 
     /**
@@ -55,6 +56,12 @@ class admin_setting_configdate extends \admin_setting {
         return ($result ? '' : get_string('errorsetting', 'admin'));
     }
 
+    /**
+     * Output HTML
+     * @param object $data
+     * @param string $query
+     * @return string
+     */
     public function output_html($data, $query='') {
         $default = $this->get_defaultsetting();
         if ($default) {
@@ -68,11 +75,11 @@ class admin_setting_configdate extends \admin_setting {
         }
 
         $yearnow = intval(userdate(time(), '%Y'));
-        $monopts = array();
+        $monopts = [];
         for ($i = 1; $i <= 12; $i++) {
             $monopts[$i] = userdate(gmmktime(12, 0, 0, $i, 15, 2000), "%B");
         }
-        $opts = array(
+        $opts = [
             'mday' => range(1, 31),
             'mon' => $monopts,
             'year' => range($yearnow - 10, $yearnow + 5),
@@ -80,7 +87,7 @@ class admin_setting_configdate extends \admin_setting {
             'hours' => range(0, 23),
             ':',
             'minutes' => range(0, 59),
-        );
+        ];
 
         $out = '';
         foreach ($opts as $type => $range) {
