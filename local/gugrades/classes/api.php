@@ -776,7 +776,7 @@ class api {
 
         // Scale.
         if ($converted) {
-            $scale = \local_gugrades\mapping::get_conversion_scale($courseid, $gradeitemid);
+            $scale = \local_gugrades\conversion::get_conversion_scale($courseid, $gradeitemid);
             $scalemenu = self::formkit_menu($scale, true);
         } else if ($gradeitem->gradetype == GRADE_TYPE_SCALE) {
             $scale = \local_gugrades\grades::get_scale($gradeitem->scaleid);
