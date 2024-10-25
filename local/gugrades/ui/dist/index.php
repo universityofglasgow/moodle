@@ -70,4 +70,10 @@ echo '<img id="mygradeslogo" src="' . $logo . '" alt="MyGrades logo"></img>';
 echo '</div>';
 
 echo "<div id=\"app\"></div>";
+
+// LISU Link
+$lisuurl = "https://gla.sharepoint.com/sites/learning-innovation/SitePages/LISU-Guides-MyGrades.aspx";
+echo '<div class="text-center my-3">
+          <a class="btn btn-info px-5" href="' . $lisuurl . '" target="_blank">LISU MyGrades help and support</a>
+      </div>';
 echo $OUTPUT->footer();

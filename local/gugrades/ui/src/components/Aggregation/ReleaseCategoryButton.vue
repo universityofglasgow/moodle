@@ -3,8 +3,8 @@
 
     <button type="button" class="btn btn-outline-primary mr-1" :disabled="props.disabled" @click="showreleasemodal=true">
         <span>
-            <span v-if="grouprelease">{{ mstrings.releaseaggregatedgroup }}</span>
-            <span v-else>{{ mstrings.releaseaggregatedgrade }}</span>
+            <span v-if="grouprelease"><span v-if="props.released">(Un-)</span>{{ mstrings.releaseaggregatedgroup }}</span>
+            <span v-else><span v-if="props.released">(Un-)</span>{{ mstrings.releaseaggregatedgrade }}</span>
         </span>
     </button>
 

@@ -680,6 +680,9 @@ class api {
     public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, bool $additional, bool $fillns) {
         global $DB;
 
+        // This could legitimately take forever
+        set_time_limit(0);
+
         // Check!
         list($recursiveavailable, $recursivematch, $allgradesvalid) = \local_gugrades\grades::recursive_import_match($gradeitemid);
         if (!$recursiveavailable) {
@@ -1495,6 +1498,9 @@ class api {
 
         // Delete hidden.
         $DB->delete_records('local_gugrades_hidden', ['courseid' => $courseid]);
+
+        // Delete altered weight.
+        $DB->delete_records('local_gugrades_altered_weight', ['courseid' => $courseid]);
 
         // Clear cache items for this course.
         \local_gugrades\aggregation::invalidate_cache($courseid);
