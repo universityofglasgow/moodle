@@ -179,6 +179,7 @@ class aggregation {
                 'showweights' => self::show_weights($gradecategory->categoryid),
                 'userids' => [],
                 'weight' => round($gradecategory->weight * 100, 1),
+                'released' => \local_gugrades\grades::is_grades_released($courseid, $gradecategory->itemid),
             ];
         }
         foreach ($gradeitems as $gradeitem) {
@@ -203,6 +204,7 @@ class aggregation {
                 'showweights' => false,
                 'userids' => $userids,
                 'weight' => round($gradeitem->weight * 100, 1),
+                'released' => \local_gugrades\grades::is_grades_released($courseid, $gradeitem->gradeitemid),
             ];
         }
 

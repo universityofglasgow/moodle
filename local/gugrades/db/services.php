@@ -51,6 +51,7 @@ $services = [
             'local_gugrades_dashboard_get_courses',
             'local_gugrades_dashboard_get_grades',
             'local_gugrades_release_grades',
+            'local_gugrades_release_grade',
             'local_gugrades_reset',
             'local_gugrades_get_groups',
             'local_gugrades_get_csv_download',
@@ -219,7 +220,13 @@ $functions = [
     ],
     'local_gugrades_release_grades' => [
         'classname' => 'local_gugrades\external\release_grades',
-        'description' => 'Get the list of grades for a given user and grade category. Also returns sub-categories (if any).',
+        'description' => 'Release all grades for a single grade item.',
+        'type' => 'write',
+        'ajax' => true,
+    ],
+    'local_gugrades_release_grade' => [
+        'classname' => 'local_gugrades\external\release_grade',
+        'description' => 'Release the grade for a single gradeitem/user.',
         'type' => 'write',
         'ajax' => true,
     ],

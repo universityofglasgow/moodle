@@ -129,6 +129,7 @@
                     :itemname = "header.fullname"
                     :name = "item.displayname"
                     :showweights = "header.showweights"
+                    :released = "header.released"
                     @gradeadded = "grade_changed(item.id)"
                 ></OverrideGrade>
             </template>
@@ -175,6 +176,7 @@
                             :itemname = "mstrings.total"
                             :name = "mstrings.total"
                             :showweights = "showweights"
+                            :released = "false"
                             @gradeadded = "grade_changed(item.id)"
                         ></OverrideGrade>
                     </div>
@@ -406,6 +408,7 @@
                 isscale: column.isscale,
                 strategy: column.strategy,
                 showweights: column.showweights,
+                released: column.released,
             });
         });
 
