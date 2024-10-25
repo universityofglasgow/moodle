@@ -1405,6 +1405,56 @@ class api {
     }
 
     /**
+     * Release grade for single user.
+     * In practice, this would/should only be used to re-release the updated
+     * grade where the overall item has already been released.
+     * If valid activity factory passed it will be used. If null it is looked up.
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @param object $activity
+     */
+    public static function release_user_grade(int $courseid, int $gradeitemid, int $userid, object $activity = null) {
+        global $DB;
+
+        // Look up actvity object if we need to
+        if (!$activity) {
+            $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);
+        }
+
+        // Is it an aggregated category
+        if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $userid)) {
+
+            // Nope. So get 'normal' grade.
+            $usercapture = new usercapture($courseid, $gradeitemid, $userid);
+            $released = $usercapture->get_released();
+        }
+
+        // Don't bother if grade is in error.
+        if ($released && !$released->iserror) {
+            \local_gugrades\grades::write_grade(
+                courseid: $courseid,
+                gradeitemid: $gradeitemid,
+                userid: $userid,
+                admingrade: $released->admingrade,
+                rawgrade: $released->rawgrade,
+                convertedgrade: $released->convertedgrade,
+                displaygrade: $released->displaygrade,
+                weightedgrade: $released->weightedgrade,
+                gradetype: 'RELEASED',
+                other: '',
+                iscurrent: true,
+                iserror: false,
+                auditcomment: 'Release grades',
+                ispoints: $released->points,
+            );
+        }
+
+        // Activity action .
+        $activity->release_grades($userid);
+    }
+
+    /**
      * Release grades
      * @param int $courseid
      * @param int $gradeitemid
@@ -1438,36 +1488,7 @@ class api {
                 $activity->unrelease_grades($user->id);
             } else {
 
-                // Is it an aggregated category
-                if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $user->id)) {
-
-                    // Nope. So get 'normal' grade.
-                    $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
-                    $released = $usercapture->get_released();
-                }
-
-                // Don't bother if grade is in error.
-                if ($released && !$released->iserror) {
-                    \local_gugrades\grades::write_grade(
-                        courseid: $courseid,
-                        gradeitemid: $gradeitemid,
-                        userid: $user->id,
-                        admingrade: $released->admingrade,
-                        rawgrade: $released->rawgrade,
-                        convertedgrade: $released->convertedgrade,
-                        displaygrade: $released->displaygrade,
-                        weightedgrade: $released->weightedgrade,
-                        gradetype: 'RELEASED',
-                        other: '',
-                        iscurrent: true,
-                        iserror: false,
-                        auditcomment: 'Release grades',
-                        ispoints: $released->points,
-                    );
-                }
-
-                // Activity action .
-                $activity->release_grades($user->id);
+                self::release_user_grade($courseid, $gradeitemid, $user->id, $activity);
             }
         }
     }

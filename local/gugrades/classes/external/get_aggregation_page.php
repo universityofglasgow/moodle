@@ -153,6 +153,7 @@ class get_aggregation_page extends external_api {
                     'schedule' => new external_value(PARAM_TEXT, 'A, B or empty string'),
                     'strategy' => new external_value(PARAM_TEXT, 'If a category, then aggregation strategy formatted for display'),
                     'showweights' => new external_value(PARAM_BOOL, 'Should weights be shown in sub-cat?'),
+                    'released' => new external_value(PARAM_BOOL, 'Has this grade item been released?'),
                 ])
             ),
             'breadcrumb' => new external_multiple_structure(

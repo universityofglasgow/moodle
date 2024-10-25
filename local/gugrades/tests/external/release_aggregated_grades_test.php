@@ -160,6 +160,20 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertEquals('A2', $user->parent->displaygrade);
         $this->assertTrue($user->parent->released);
 
+        // Get the aggregation page for the parent (summative) category
+        // To check that the child category is marked as released.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $columns = $page['columns'];
+        $this->assertEquals('Summer exam', $columns[0]['shortname']);
+        $this->assertTrue($columns[0]['released']);
+        $this->assertEquals('Item 1', $columns[1]['shortname']);
+        $this->assertFalse($columns[1]['released']);
+
         // Change one of the grades so the aggregated grade changes.
         $q2id = $this->get_gradeitemid('Question 2');
         $nothing = write_additional_grade::execute(
@@ -256,5 +270,26 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
         $this->assertTrue($user->mismatch);
         $this->assertFalse($user->parent->released);
 
+        // Release grades for Item 1 to check that is flagged properly
+        $item1id = $this->get_gradeitemid('Item 1');
+        $status = release_grades::execute($this->course->id, $item1id, 0, false);
+        $status = external_api::clean_returnvalue(
+            release_grades::execute_returns(),
+            $status
+        );
+
+        // Get the aggregation page for the parent (summative) category
+        // To check that Item1 is marked as released.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $columns = $page['columns'];
+        $this->assertEquals('Summer exam', $columns[0]['shortname']);
+        $this->assertFalse($columns[0]['released']);
+        $this->assertEquals('Item 1', $columns[1]['shortname']);
+        $this->assertTrue($columns[1]['released']);
     }
 }
