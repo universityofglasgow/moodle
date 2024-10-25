@@ -46,6 +46,28 @@ $tdstl = 'border="1px" cellpadding="10" valign="middle" height="22" style="margi
 $tdstc = 'border="1px" cellpadding="10" valign="middle" height="22" style="text-align:center;"';
 $spdetailspdf = get_string('nocoursesfound', 'block_newgu_spdetails');
 
+// Quick and dirty way of getting all of the mygrades grade category items in the format we need.
+function get_aggregation_items(int $courseid, int $gradeitemid, int $userid, array $items): array {
+    $items = $items;                        
+    if ($gradecat = \grade_item::fetch(['id' => $gradeitemid])) {
+        $gradecatid = $gradecat->iteminstance;
+        $tmp = \local_gugrades\api::get_aggregation_dashboard_user($courseid, $gradecatid, $userid);
+        $tmpitems = $tmp->fields;
+        foreach($tmpitems as $tmpitem) {
+            if ($tmpitem['iscategory'] == true) {
+                $aggitems = get_aggregation_items($courseid, $tmpitem['gradeitemid'], $userid, $items);
+                foreach($aggitems as $aggitem) {
+                    $items[] = $aggitem;
+                }
+            }
+            if ($tmpitem['iscategory'] == false) {
+                $items[] = $tmpitem;
+            }
+        }
+    }
+    return $items;
+}
+
 if ($coursestype) {
     switch ($coursestype) {
         case "current":
@@ -102,22 +124,31 @@ if ($coursestype) {
             // This returns an array of objects - process_[x]_items() is expecting an ordinary array. It seems to work still.
             $activities = \block_newgu_spdetails\course::get_activities($course->id);
 
-            // We need to get the individual grade category id's now..
-            if ($course->firstlevel) {
-                $mygradeitems = [];
-                foreach($course->firstlevel as $id => $firstlevel) {
-                    $mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevel['id'], $USER->id);
-                    $tmpitems = $mygradesdata->fields;
-                    foreach($tmpitems as $tmpitem) {
-                        if ($tmpitem['iscategory'] == false) {
-                            $mygradeitems[] = $tmpitem;
+            if ($mygradesenabled) {
+                // get_aggregation_dashboard_user() gets us items for the current category only.
+                // As we need every item in every category, we need to recursively fetch them.
+                if ($course->firstlevel) {
+                    $mygradeitems = [];
+                    foreach($course->firstlevel as $firstlevel) {
+                        $firstlevelid = 0;
+                        $firstlevelid = $firstlevel['id'];
+                        $mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevelid, $USER->id);
+                        $tmpitems = $mygradesdata->fields;
+                        foreach($tmpitems as $tmpitem) {
+                            if ($tmpitem['iscategory'] == true) {
+                                $fielditems = get_aggregation_items($course->id, $tmpitem['gradeitemid'], $USER->id, []);
+                                foreach($fielditems as $fielditem) {
+                                    $mygradeitems[$fielditem['gradeitemid']] = $fielditem;
+                                }
+                            }
+                            if ($tmpitem['iscategory'] == false) {
+                                $mygradeitems[$tmpitem['gradeitemid']] = $tmpitem;
+                            }
                         }
                     }
                 }
-            }
-
-
-            if ($mygradesenabled) {
+                asort($mygradeitems);
+                asort($activities);
                 $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
                 $ltiactivities, '');
             }

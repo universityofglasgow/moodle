@@ -175,7 +175,7 @@ class activity {
             }
             $data['mygradesenabled'] = true;
 
-            // MGU-1048/MGU-1065/MGU-1066 - We need to get the 'normalised' weight for the parent grade category
+            // To get the weight for this grade category, we can tap into the $gradedata->parent property.
             $weighttowardscourse = 0;
             if ($item = \grade_item::fetch(['courseid' => $courseid, 'id' => $gradedata->parent->gradeitemid])) {
                 $weighttowardscourse = course::get_grade_category_weight($item, $activityitems->category);
@@ -200,11 +200,10 @@ class activity {
             $data['mygradesenabled'] = false;
             
             // The weight for this grade category can be derived from the aggregation coefficient
-            // value of the grade item, but only if it's been set in the gradebook however.
+            // value of the grade item, this needs to have been set in Gradebook Setup however.
             $weighttowardscourse = 0;
             if ($item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $activityitems->category->id,
             'itemtype' => 'category'])) {
-                // MGU-1066
                 $weighttowardscourse = course::get_grade_category_weight($item, $activityitems->category);
             }
             $data['weighttowardscourse'] = $weighttowardscourse->grade_category_weight;
@@ -219,22 +218,7 @@ class activity {
             if ($activityitems->items) {
                 $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
                 $activitydata = [];
-
-                // MGU-1066 - Only display activity item weights if a weighted strategy is being used.
-                // However, if using a weighted strategy with 'drop the lowest' and the value is greater 
-                // than 0, then don't display any weights.
-                $displayweights = false;
-                if (($activityitems->category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
-                    $activityitems->category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
-                    // If we're using a weighted strategy and the weighting has inadvertantly been entered/changed to > 1,
-                    // Then don't show the weighting for the category ^and^ items.
-                    if ((int) $weighttowardscourse->grade_category_weight > 0) {
-                        $displayweights = true;
-                    }
-                    if ($activityitems->category->droplow > 0) {
-                        $displayweights = false;
-                    }
-                }
+                $displayweights = self::get_display_activity_item_weights($weighttowardscourse, $activityitems->category);
                 $activitydata = self::process_default_items($activityitems->items, $activetab, $ltiactivities, $assessmenttype,
                 $displayweights);
                 $data['courseitems'] = array_merge((array) $data['courseitems'], (array) $activitydata);
@@ -317,7 +301,10 @@ class activity {
                     $rawduedate = $activityduedate;
                     // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
                     if (!$mygradesitem['dropped']) {
-                        $rawassessmentweight = course::return_weight($mygradesitem['weight']);
+                        $rawassessmentweight = (
+                            ($mygradesitem['normalisedweight'] != null) ? course::return_weight($mygradesitem['normalisedweight'])
+                            : (($mygradesitem['weight'] != null) ? course::return_weight(
+                                $mygradesitem['weight']) : '-'));
                         $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
                     } else {
                         $rawassessmentweight = 0;
@@ -367,145 +354,20 @@ class activity {
                     // Fallback to processing this as a regular Gradebook grade item if nothing has been released.
                     $tmpgradeitem = $tmpgradeitems[$index];
 
-                    // The weight for this grade category can be derived from the aggregation coefficient
-                    // value of the grade item, but only if it's been set in the gradebook however.
-                    $weighttowardscourse = 0;
-                    if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' => $tmpgradeitem->category->id,
-                    'itemtype' => 'category'])) {
-                        // MGU-1066
-                        $weighttowardscourse = course::get_grade_category_weight($item, $tmpgradeitem->category);
+                    // MGU-1065 - We need to get a reference to this category first,
+                    // we don't have access to it when processing "mygrades" items.
+                    $gradecategoryweight = 0;
+                    if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' => $tmpgradeitem->iteminstance,
+                    'itemtype' => 'mod'])) {
+                        $gradecategoryweight = course::get_grade_category_weight($item, $tmpgradeitem);
                     }
 
-                    // MGU-1065 - Only display activity item weights if a weighted strategy is being used.
-                    // However, if using a weighted strategy with 'drop the lowest' and the value is greater 
-                    // than 0, then don't display any weights.
                     $displayweights = false;
-                    if (($tmpgradeitem->category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
-                    $tmpgradeitem->category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
-                        // If we're using a weighted strategy and the weighting has inadvertantly been entered/changed to > 1,
-                        // Then don't show the weighting for the category ^and^ items.
-                        if ((int) $weighttowardscourse->grade_category_weight > 0) {
-                            $displayweights = true;
-                        }
-                        if ($tmpgradeitem->category->droplow > 0) {
-                            $displayweights = false;
-                        }
+                    if ($tmpgradecategory = \grade_category::fetch(['id' => $tmpgradeitem->categoryid, 'hidden' => 0])) {
+                        $displayweights = self::get_display_activity_item_weights($gradecategoryweight, $tmpgradecategory);
                     }
-
                     $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype, $displayweights);
                     $mygradesdata[] = array_shift($tmp);
-                    // $gradessubcatdata[] = array_shift($tmp);
-                    
-                    // if (!in_array($tmpgradeitems[$index]->itemmodule, self::$excludedactivities)) {
-                    //     // Cater for manual grade items that may have been added.
-                    //     if ($tmpgradeitems[$index]->itemtype == 'manual') {
-                    //         $mygradesdata[] = self::process_manual_grade_item($tmpgradeitems[$index], $assessmenttype, 'mygradesenabled');
-                    //     } else {
-                    //         if (array_key_exists($cm->id, $cms)) {
-                    //             $cm = $modinfo->get_cm($cm->id); 
-                                    
-                    //             // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                    //             // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
-                    //             if ($tmpgradeitems[$index]->itemmodule == 'lti') {
-                    //                 if (is_array($ltiactivities) && !in_array($tmpgradeitems[$index]->iteminstance, $ltiactivities)) {
-                    //                     continue;
-                    //                 }
-                    //             }
-
-                    //             $assessmenturl = $cm->url->out();
-                    //             $itemicon = '';
-                    //             $iconalt = '';
-                    //             $iconrestricted = false;
-                    //             if ($activityicon = self::get_activity_icon($cm, $tmpgradeitems[$index]->itemmodule)) {
-                    //                 $itemicon = $activityicon->iconurl;
-                    //                 $iconalt = $activityicon->iconalt;
-                    //             }
-                    //             $rawassessmentweight = course::return_weight($tmpgradeitems[$index]->aggregationcoef);
-                    //             $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
-                    //             $duedate = '';
-                    //             $rawduedate = '';
-                    //             $gradestatus = get_string('status_tobeconfirmed', 'block_newgu_spdetails');
-                    //             $statuslink = '';
-                    //             $statusclass = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
-                    //             $statustext = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-                    //             $grade = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-                    //             $gradeclass = false;
-                    //             $gradeprovisional = false;
-                    //             $gradefeedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-                    //             $gradefeedbacklink = '';
-
-                    //             // By default, items that have been graded (in Gradebook) will appear here - unless Marking Workflow
-                    //             // has been enabled. The display of the grade will then be decided based on the marking workflow state.
-                    //             $gradestatobj = grade::get_grade_status_and_feedback($tmpgradeitems[$index]->courseid,
-                    //             $tmpgradeitems[$index]->id,
-                    //                 $USER->id,
-                    //                 $tmpgradeitems[$index]->gradetype,
-                    //                 $tmpgradeitems[$index]->scaleid,
-                    //                 $tmpgradeitems[$index]->grademax,
-                    //                 'mygradesenabled'
-                    //             );
-
-                    //             // MGU-631/MGU-1027 - Restrict Access wasn't being taken into account when checking visibility.
-                    //             if ($cm->uservisible) {
-                    //                 $duedate = $gradestatobj->due_date;
-                    //                 $rawduedate = $gradestatobj->raw_due_date;
-                    //                 $gradestatus = $gradestatobj->grade_status;
-                    //                 $statuslink = $gradestatobj->status_link;
-                    //                 $statusclass = $gradestatobj->status_class;
-                    //                 $statustext = $gradestatobj->status_text;
-                    //                 // MGU-631 - Honour hidden grades and hidden activities.
-                    //                 $grade = $gradestatobj->grade_to_display;
-                    //                 $gradeclass = $gradestatobj->grade_class;
-                    //                 $gradeprovisional = $gradestatobj->grade_provisional;
-                    //                 if (!$tmpgradeitems[$index]->hidden) {
-                    //                     $gradefeedback = $gradestatobj->grade_feedback;
-                    //                     $gradefeedbacklink = $gradestatobj->grade_feedback_link;
-                    //                 }
-                    //             } elseif ($cm->availableinfo) {
-                    //                 $iconalt = substr($activityicon->iconalt, 8);
-                    //                 $assessmenturl = '';
-                    //                 $duedate = $gradestatobj->due_date;
-                    //                 $rawduedate = $gradestatobj->raw_due_date;
-                    //                 $statustext = get_string('status_text_restricted', 'block_newgu_spdetails');
-                    //                 $iconrestricted = true;
-                    //             } else {
-                    //                 // User cannot access this activity - they simply will not see it at all.
-                    //                 continue;
-                    //             }
-
-                    //             $mygradesactivityitem = new \stdClass();
-                    //             $mygradesactivityitem->id = $tmpgradeitems[$index]->id;
-                    //             $mygradesactivityitem->sortorder = $tmpgradeitems[$index]->sortorder;
-                    //             $mygradesactivityitem->is_gradecategory = false;
-                    //             $mygradesactivityitem->assessment_url = $assessmenturl;
-                    //             $mygradesactivityitem->item_icon = $itemicon;
-                    //             $mygradesactivityitem->icon_alt = $iconalt;
-                    //             $mygradesactivityitem->icon_restricted = $iconrestricted;
-                    //             $mygradesactivityitem->item_name = $tmpgradeitems[$index]->itemname;
-                    //             $mygradesactivityitem->assessment_type = $assessmenttype;
-                    //             $mygradesactivityitem->assessment_weight = $assessmentweight;
-                    //             $mygradesactivityitem->raw_assessment_weight = $rawassessmentweight;
-                    //             $mygradesactivityitem->due_date = $duedate;
-                    //             $mygradesactivityitem->raw_due_date = $rawduedate;
-                    //             $mygradesactivityitem->grade_status = $gradestatus;
-                    //             $mygradesactivityitem->status_link = $statuslink;
-                    //             $mygradesactivityitem->status_class = $statusclass;
-                    //             $mygradesactivityitem->status_text = $statustext;
-                    //             $mygradesactivityitem->grade = $grade;
-                    //             $mygradesactivityitem->grade_class = $gradeclass;
-                    //             $mygradesactivityitem->grade_provisional = $gradeprovisional;
-                    //             $mygradesactivityitem->grade_feedback = $gradefeedback;
-                    //             $mygradesactivityitem->grade_feedback_link = $gradefeedbacklink;
-                    //             $mygradesactivityitem->mygradesenabled = true;
-
-                    //             if ($activetab == 'past') {
-                    //                 unset($mygradesactivityitem->grade_status);
-                    //             }
-
-                    //             $mygradesdata[] = $mygradesactivityitem;
-                    //         }
-                    //     }
-                    // }
                 }
                 $index++;
             }
@@ -771,6 +633,32 @@ class activity {
     }
 
     /**
+     * MGU-1065/MGU-1066 - Only display activity item weights if a weighted strategy is being used.
+     * However, if using a weighted strategy with 'drop the lowest' and the value is greater 
+     * than 0, then don't display any weights.
+     * @param object $gradecategoryweight
+     * @param object $gradecategory
+     * @return bool
+     */
+    public static function get_display_activity_item_weights(object $gradecategoryweight, object $gradecategory = null): bool {
+        $displayweights = false;
+        
+        if (($gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
+            $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
+            if ((int) $gradecategoryweight->grade_category_weight > 0) {
+                $displayweights = true;
+            }
+            if ($gradecategory->droplow > 0) {
+                $displayweights = false;
+            }
+        }
+
+        return $displayweights;
+    }
+
+    /**
+     * This method replaces the previous sorting attempt. Now that we have access
+     * to the sortorder property, this makes sorting somewhat easier to do.
      * @param array $courseitems
      * @return array
      */
