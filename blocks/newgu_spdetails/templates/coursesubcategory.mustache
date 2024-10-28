@@ -77,7 +77,7 @@
         </div>
         <div>
             <span class="subcategory-details-label">{{#str}} label_weight, block_newgu_spdetails {{/str}}</span>
-            <span id="subcategory-details-weight" class="subcategory-details-value">{{#data.coursedata}}{{weight}}{{/data.coursedata}}</span>
+            <span id="subcategory-details-weight" class="subcategory-details-value">{{#data.coursedata}}{{weighttowardscourse}}{{/data.coursedata}}</span>
         </div>
     </div>
 </div>
@@ -92,38 +92,61 @@
         <thead>
             <tr>
                 <th id="sortby_fullname" data-sortby="fullname" class="td50 th-sortable">{{#str}} header_category, block_newgu_spdetails {{/str}}</th>
-                <th id="sortby_assessmenttype" data-sortby="assessmenttype" class="td10 th-sortable">{{#str}} header_type, block_newgu_spdetails {{/str}}</th>
+                <th id="sortby_assessmenttype" data-sortby="assessmenttype" class="td15 th-sortable">{{#str}} header_type, block_newgu_spdetails {{/str}}</th>
                 <th id="sortby_weight" data-sortby="weight" class="td5 th-sortable">{{#str}} header_weight, block_newgu_spdetails {{/str}}</th>
-                {{#data.coursedata}}
-                    {{#assessmentitems.length}}
-                <th id="sortby_duedate" data-sortby="duedate" class="td10 th-sortable"{{#data.coursedata}}{{#hidestatuscol}} colspan="2"{{/hidestatuscol}}{{/data.coursedata}}>{{#str}} header_duedate, block_newgu_spdetails {{/str}}</th>
+                {{#data.coursedata.hascourseitems}}
+                <th id="sortby_duedate" data-sortby="duedate" class="td10 th-sortable"{{#data.coursedata.hidestatuscol}} colspan="2"{{/data.coursedata.hidestatuscol}}>{{#str}} header_duedate, block_newgu_spdetails {{/str}}</th>
                 <th id="sortby_status" data-sortby="status" class="td15 th-sortable">{{#str}} header_status, block_newgu_spdetails {{/str}}</th>
                 <th id="sortby_grade" data-sortby="grade" class="td10 th-sortable">{{#str}} header_grade, block_newgu_spdetails {{/str}}</th>
                 <th class="td10">{{#str}} header_feedback, block_newgu_spdetails {{/str}}</th>
-                    {{/assessmentitems.length}}
-                {{/data.coursedata}}
+                {{/data.coursedata.hascourseitems}}
+                {{^data.coursedata.hascourseitems}}
+                    {{#data.coursedata.mygradesenabled}}
+                        {{#data.coursedata.hasgradecategory}}
+                <th id="sortby_grade" data-sortby="grade" class="td10 th-sortable">{{#str}} header_grade, block_newgu_spdetails {{/str}}</th>
+                        {{/data.coursedata.hasgradecategory}}
+                    {{/data.coursedata.mygradesenabled}}
+                {{/data.coursedata.hascourseitems}}
             </tr>
         </thead>
         <tbody>
-        {{#data.coursedata}}
-            {{#subcategories}}
+        {{#data.coursedata.courseitems}}
+            {{#is_gradecategory}}
             <tr data-id="{{id}}">
+            {{/is_gradecategory}}
+            {{^is_gradecategory}}
+            <tr data-assessmentid="{{id}}">
+            {{/is_gradecategory}}
+                {{#is_gradecategory}}
                 <td class="td50 subcategory-row"><a href="#"><i class="icon fa fa-fw  fa-sharp fa-solid fa-folder"></i><strong>{{name}}</strong></a></td>
                 <td class="td15 subcategory-row">{{assessment_type}}</td>
-                <td class="td5 subcategory-row" data-rawcategoryweight="{{raw_category_weight}}">{{subcatweight}}</td>
+                <td class="subcategory-row"{{#data.coursedata.hascourseitems}} colspan="3"{{/data.coursedata.hascourseitems}} data-rawcategoryweight="{{raw_category_weight}}">{{sub_category_weight}}</td>
+                    {{#mygradesenabled}}
+                <td>
+                        {{#grade_category_grade}}
+                    <span class="{{#str}} status_graded, block_newgu_spdetails {{/str}}">{{grade_category_grade}}</span>
+                        {{/grade_category_grade}}
+                        {{^grade_category_grade}}
+                    <span>-</span>
+                        {{/grade_category_grade}}
+                </td>
                 <td></td>
+                    {{/mygradesenabled}}
+                    {{^mygradesenabled}}
+                        {{#data.coursedata.hascourseitems}}
+                <td>
+                    <span>-</span>
+                </td>
                 <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            {{/subcategories}}
-            {{#assessmentitems}}
-            <tr data-assessmentid="{{id}}">
+                        {{/data.coursedata.hascourseitems}}
+                    {{/mygradesenabled}}
+                {{/is_gradecategory}}
+                {{^is_gradecategory}}
                 <td class="td50">{{#assessment_url}}<a href="{{assessment_url}}">{{#item_icon}}<img class="icon itemicon" src="{{item_icon}}" title="{{icon_alt}}" alt="{{icon_alt}}" />{{/item_icon}}{{/assessment_url}}{{^assessment_url}}<span title="{{item_name}}" tabindex="0"><i class="icon fa fa-pencil-square-o fa-fw icon itemicon" title="{{icon_alt}}" role="img" aria-label="{{icon_alt}}"></i>{{/assessment_url}}{{item_name}}{{^assessment_url}}</span>{{/assessment_url}}{{#assessment_url}}</a>{{/assessment_url}}{{#icon_restricted}}<i class="icon fa fa-lock fa-fw " aria-hidden="true" tabindex="0" aria-selected="true"></i>{{/icon_restricted}}</td>
                 <td class="td10">{{assessment_type}}</td>
                 <td class="td5" data-rawassessmentweight="{{raw_assessment_weight}}">{{assessment_weight}}</td>
-                <td class="td15"{{#data.coursedata}}{{#hidestatuscol}} colspan="2"{{/hidestatuscol}}{{/data.coursedata}} data-rawduedate="{{raw_due_date}}">{{due_date}}</td>
-                {{#data.coursedata}}{{^hidestatuscol}}
+                <td class="td15"{{#data.coursedata.hidestatuscol}} colspan="2"{{/data.coursedata.hidestatuscol}} data-rawduedate="{{raw_due_date}}">{{due_date}}</td>
+                {{^data.coursedata.hidestatuscol}}
                 <td class="td15">
                 {{#grade_status}}
                     {{#status_link}}
@@ -135,9 +158,8 @@
                     {{/status_link}}
                 {{/grade_status}}
                 </td>
-                {{/hidestatuscol}}{{/data.coursedata}}
-                <td class="td10">{{#grade_class}}<span class="{{#str}} status_graded, block_newgu_spdetails {{/str}}">{{/grade_class}}{{grade}}{{#grade_class}}</span>{{/grade_class}}{{#grade_provisional}} ({{#str}} status_text_provisional, block_newgu_spdetails {{/str}}){{/grade_provisional}}
-                </td>
+                {{/data.coursedata.hidestatuscol}}
+                <td class="td10">{{#grade_class}}<span class="{{#str}} status_graded, block_newgu_spdetails {{/str}}">{{/grade_class}}{{grade}}{{#grade_class}}</span>{{/grade_class}}{{#grade_provisional}} ({{#str}} status_text_provisional, block_newgu_spdetails {{/str}}){{/grade_provisional}}</td>
                 <td class="td10">
                 {{#grade_feedback_link}}
                     <a href="{{grade_feedback_link}}">
@@ -147,9 +169,9 @@
                     </a>
                 {{/grade_feedback_link}}
                 </td>
+                {{/is_gradecategory}}
             </tr>
-            {{/assessmentitems}}
-        {{/data.coursedata}}
+        {{/data.coursedata.courseitems}}
         </tbody>
     </table>
 

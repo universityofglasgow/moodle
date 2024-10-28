@@ -46,6 +46,28 @@ $tdstl = 'border="1px" cellpadding="10" valign="middle" height="22" style="margi
 $tdstc = 'border="1px" cellpadding="10" valign="middle" height="22" style="text-align:center;"';
 $spdetailspdf = get_string('nocoursesfound', 'block_newgu_spdetails');
 
+// Quick and dirty way of getting all of the mygrades grade category items in the format we need.
+function get_aggregation_items(int $courseid, int $gradeitemid, int $userid, array $items): array {
+    $items = $items;                        
+    if ($gradecat = \grade_item::fetch(['id' => $gradeitemid])) {
+        $gradecatid = $gradecat->iteminstance;
+        $tmp = \local_gugrades\api::get_aggregation_dashboard_user($courseid, $gradecatid, $userid);
+        $tmpitems = $tmp->fields;
+        foreach($tmpitems as $tmpitem) {
+            if ($tmpitem['iscategory'] == true) {
+                $aggitems = get_aggregation_items($courseid, $tmpitem['gradeitemid'], $userid, $items);
+                foreach($aggitems as $aggitem) {
+                    $items[] = $aggitem;
+                }
+            }
+            if ($tmpitem['iscategory'] == false) {
+                $items[] = $tmpitem;
+            }
+        }
+    }
+    return $items;
+}
+
 if ($coursestype) {
     switch ($coursestype) {
         case "current":
@@ -103,58 +125,109 @@ if ($coursestype) {
             $activities = \block_newgu_spdetails\course::get_activities($course->id);
 
             if ($mygradesenabled) {
-                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($activities, $coursestype,
-                $ltiactivities, '', 'shortname', 'ASC');
+                // get_aggregation_dashboard_user() gets us items for the current category only.
+                // As we need every item in every category, we need to recursively fetch them.
+                if ($course->firstlevel) {
+                    $mygradeitems = [];
+                    foreach($course->firstlevel as $firstlevel) {
+                        $firstlevelid = 0;
+                        $firstlevelid = $firstlevel['id'];
+                        $mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevelid, $USER->id);
+                        $tmpitems = $mygradesdata->fields;
+                        foreach($tmpitems as $tmpitem) {
+                            if ($tmpitem['iscategory'] == true) {
+                                $fielditems = get_aggregation_items($course->id, $tmpitem['gradeitemid'], $USER->id, []);
+                                foreach($fielditems as $fielditem) {
+                                    $mygradeitems[$fielditem['gradeitemid']] = $fielditem;
+                                }
+                            }
+                            if ($tmpitem['iscategory'] == false) {
+                                $mygradeitems[$tmpitem['gradeitemid']] = $tmpitem;
+                            }
+                        }
+                    }
+                }
+                // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
+                // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
+                // be/not able to access the arrays using the item id as an index.
+                ksort($mygradeitems);
+                asort($activities);
+
+                // This is clearly a rubbish way to do this but array_values doesn't seem to want to reindex either
+                // a regular array, or an array of objects. Temp workaround until I can think of a better solution.
+                $tmpmygradesitems = [];
+                foreach ($mygradeitems as $mygradeitem) {
+                    $tmpmygradesitems[] = $mygradeitem;
+                }
+                $mygradeitems = $tmpmygradesitems;
+
+                $tmpactivities = [];
+                foreach ($activities as $activity) {
+                    $tmpactivities[] = $activity;
+                }
+                $activities = $tmpactivities;
+                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
+                $ltiactivities, '');
             }
 
             if (!$mygradesenabled) {
                 $activitydata = \block_newgu_spdetails\activity::process_default_items($activities, $coursestype,
-                $ltiactivities, '', 'shortname', 'ASC');
+                $ltiactivities, '', true);
             }
 
             if ($activitydata) {
                 foreach ($activitydata as $activityitem) {
                     $spdetailspdf .= "<tr>";
                     $spdetailspdf .= "<td $tdstl>" . $course->fullname . "</td>";
-                    $spdetailspdf .= "<td $tdstl>" . $activityitem['item_name'] . "</td>";
+                    $spdetailspdf .= "<td $tdstl>" . $activityitem->item_name . "</td>";
                     // The assessment type is normally derived from the parent category - which works only
                     // as long as the parent name contains 'Formative' or 'Summative', and the item weight.
                     // As we have the original activities array, we can get the category id from there and
                     // use it to then work out the category name for this item.
-                    $categoryid = $activities[$activityitem['id']]->categoryid;
+                    $categoryid = $activities[$activityitem->id]->categoryid;
                     $category = grade_category::fetch(['id' => $categoryid]);
                     $categoryname = '';
                     if ($category) {
                         $categoryname = $category->fullname;
                     }
-                    $weight = (float) $activityitem['raw_assessment_weight'];
+                    $weight = (float) $activityitem->raw_assessment_weight;
                     $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($categoryname, $weight);
                     $spdetailspdf .= "<td $tdstc>" . $assessmenttype . "</td>";
-                    $spdetailspdf .= "<td $tdstc>" . $activityitem['assessment_weight'] . "</td>";
+
+                    // MGU-1066 - Only display activity item weights when a weighted strategy is being used.
+                    // If 'drop the lowest' value is greater than 0 however, then don't any display weights.
+                    if (($category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
+                        $category->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
+                        if ($category->droplow > 0) {
+                            $activityitem->assessment_weight = '-';
+                        }
+                    }
+
+                    $spdetailspdf .= "<td $tdstc>" . $activityitem->assessment_weight . "</td>";
                     if ($coursestype == 'current') {
-                        $spdetailspdf .= "<td $tdstc>" . $activityitem['due_date'] . "</td>";
-                        $spdetailspdf .= "<td $tdstc>" . $activityitem['status_text'] . "</td>";
+                        $spdetailspdf .= "<td $tdstc>" . $activityitem->due_date . "</td>";
+                        $spdetailspdf .= "<td $tdstc>" . $activityitem->status_text . "</td>";
                     } else {
                         $spdetailspdf .= "<td $tdstc>" . $startdate . "</td>";
                         $spdetailspdf .= "<td $tdstc>" . $enddate . "</td>";
                     }
-                    $spdetailspdf .= "<td $tdstc>" . $activityitem['grade'] . "</td>";
+                    $spdetailspdf .= "<td $tdstc>" . $activityitem->grade . "</td>";
                     $spdetailspdf .= "</tr>";
 
                     $row++;
                     $col = 0;
                     $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $course->fullname];
                     $col++;
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['item_name']];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->item_name];
                     $col++;
                     $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $assessmenttype];
                     $col++;
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['assessment_weight']];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->assessment_weight];
                     $col++;
                     if ($coursestype == 'current') {
-                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['due_date']];
+                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->due_date];
                         $col++;
-                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem['status_text']];
+                        $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->status_text];
                         $col++;
                     } else {
                         $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $startdate];
@@ -162,7 +235,7 @@ if ($coursestype) {
                         $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $enddate];
                         $col++;
                     }
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => strip_tags($activityitem['grade'])];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => strip_tags($activityitem->grade)];
                     $col++;
                 }
             }
