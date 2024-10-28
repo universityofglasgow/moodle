@@ -99,6 +99,7 @@
 <style>
     .navbar-dark .navbar-nav .active > .nav-link {
         font-weight: bold;
+        text-decoration: underline;
     }
 
     .navbar-dark .navbar-nav .nav-link {
