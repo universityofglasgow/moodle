@@ -147,8 +147,25 @@ if ($coursestype) {
                         }
                     }
                 }
-                asort($mygradeitems);
+                // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
+                // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
+                // be/not able to access the arrays using the item id as an index.
+                ksort($mygradeitems);
                 asort($activities);
+
+                // This is clearly a rubbish way to do this but array_values doesn't seem to want to reindex either
+                // a regular array, or an array of objects. Temp workaround until I can think of a better solution.
+                $tmpmygradesitems = [];
+                foreach ($mygradeitems as $mygradeitem) {
+                    $tmpmygradesitems[] = $mygradeitem;
+                }
+                $mygradeitems = $tmpmygradesitems;
+
+                $tmpactivities = [];
+                foreach ($activities as $activity) {
+                    $tmpactivities[] = $activity;
+                }
+                $activities = $tmpactivities;
                 $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
                 $ltiactivities, '');
             }
