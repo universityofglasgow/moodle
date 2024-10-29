@@ -168,7 +168,7 @@
                     <div>
                         <!-- add/override for total grade -->
                         <OverrideGrade
-                            v-if="toplevel"
+                            :toplevel="toplevel"
                             :itemid = "gradeitemid"
                             :categoryid = "categoryid"
                             :userid = "item.id"
