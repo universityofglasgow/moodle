@@ -5,7 +5,7 @@
         {{ mstrings.altertitle }}
     </a>
 
-    <VueModal v-model="showaltermodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.altertitle">
+    <VueModal v-model="showaltermodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.altertitle">
 
         <!-- basic details of category -->
         <ul class="list-unstyled">

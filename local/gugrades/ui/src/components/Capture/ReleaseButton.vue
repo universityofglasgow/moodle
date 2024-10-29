@@ -12,7 +12,7 @@
         </span>
     </button>
 
-    <VueModal v-model="showreleasemodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releasegrades">
+    <VueModal v-model="showreleasemodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releasegrades">
 
         <div class="p-2 border rounded">
             <h4>{{ mstrings.releasegrades }}</h4>

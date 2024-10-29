@@ -3,7 +3,7 @@
 
     <button type="button" class="btn btn-outline-primary  mr-1" :disabled="!props.show" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
 
-    <VueModal v-model="showcsvmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
+    <VueModal v-model="showcsvmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
 
         <!-- Initial download/upload page -->
         <div v-if="pagestate == 'showuploadpage'">

@@ -8,7 +8,7 @@
         </span>
     </button>
 
-    <VueModal v-model="showreleasemodal" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releaseaggregatedgrade">
+    <VueModal v-model="showreleasemodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releaseaggregatedgrade">
 
         <div class="p-2 border rounded">
             <h4>{{ mstrings.releaseaggregatedgrade }}</h4>

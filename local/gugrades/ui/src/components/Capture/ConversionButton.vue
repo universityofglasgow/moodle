@@ -5,7 +5,7 @@
         {{ mstrings.convertgrades }}
     </button>
 
-    <VueModal v-model="showselectmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
+    <VueModal v-model="showselectmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
         <!-- Show the selected map name (if there is one)-->
         <p v-if="mapname" class="mb-2">
