@@ -7,6 +7,8 @@
 
     <VueModal v-model="showselectmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
+        <PleaseWait v-if="waiting"></PleaseWait>
+
         <!-- Show the selected map name (if there is one)-->
         <p v-if="mapname" class="mb-2">
             {{ mstrings.selectedmap }}: <b>{{ mapname }}</b>
@@ -58,6 +60,7 @@
 
 <script setup>
     import {ref, inject, defineProps, defineEmits} from '@vue/runtime-core';
+    import PleaseWait from '@/components/PleaseWait.vue';
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
 
@@ -71,6 +74,7 @@
     const anygrades = ref(false);
     const mapname = ref('');
     const debug = ref({});
+    const waiting = ref(false);
 
     const toast = useToast();
 
@@ -159,6 +163,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_select_conversion',
             args: {
@@ -169,6 +175,7 @@
             }
         }])[0]
         .then(() => {
+            waiting.value = false;
             toast.success('Map selection saved');
             emits('converted');
         })
@@ -190,6 +197,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_select_conversion',
             args: {
@@ -200,6 +209,7 @@
             }
         }])[0]
         .then(() => {
+            waiting.value = false;
             toast.success('Map selection removed');
             emits('converted');
         })
