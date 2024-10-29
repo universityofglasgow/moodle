@@ -108,6 +108,12 @@ class base {
             // Usort only likes integers, so the 100* is required.
             $normalised1 = 100 * $g1->grade / $g1->grademax;
             $normalised2 = 100 * $g2->grade / $g2->grademax;
+
+            // If either are admingrades, then just make them -1
+            // Such that they are sorted below zero. MGU-1116.
+            $normalised1 = empty($g1->admingrade) ? $normalised1 : -1;
+            $normalised2 = empty($g2->admingrade) ? $normalised2 : -1;
+
             return $normalised1 - $normalised2;
         });
 
