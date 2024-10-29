@@ -364,7 +364,7 @@ class aggregation {
                 $available = in_array($user->id, $column->userids);
                 $data['available'] = $available;
                 if (!$available) {
-                    $data['display'] = '--';
+                    $data['display'] = get_string('notavailable', 'local_gugrades');
                     $data['rawgrade'] = 0;
                 }
             }

@@ -21,7 +21,7 @@
 
             <!-- message if not available -->
             <div v-if="!available" class="alert alert-danger">
-            {{ mstrings.notavailable }}
+            {{ mstrings.overridenotavailable }}
             </div>
 
             <!-- message if error -->
