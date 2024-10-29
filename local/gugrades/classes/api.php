@@ -1448,6 +1448,10 @@ class api {
                 auditcomment: 'Release grades',
                 ispoints: $released->points,
             );
+
+            // Re-aggregate this user
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
+            \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
         }
 
         // Activity action .
