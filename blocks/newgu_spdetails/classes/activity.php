@@ -351,11 +351,11 @@ class activity {
 
                     if (!$isgradehidden) {
                         // The grade item may have been released, but it may not yet have been given a grade.
-                        if ($mygradesitem['releasegrade'] == 'true') {
+                        if (is_object($mygradesitem['releasegrade'])) {
                             if (!$mygradesitem['grademissing']) {
                                 // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
-                                $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['admingrade'],
-                                    $mygradesitem['display']);
+                                $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['releasegrade']->admingrade,
+                                    $mygradesitem['releasegrade']->displaygrade);
                                 $mygradesactivityitem->grade_class = true;
                                 $mygradesactivityitem->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
                                 $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
