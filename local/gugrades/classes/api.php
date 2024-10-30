@@ -1855,7 +1855,9 @@ class api {
         // Run over the fields and add released status.
         foreach ($user->fields as $id => $field) {
             $released = \local_gugrades\grades::is_grades_released($courseid, $field['gradeitemid']);
+            $releasegrade = \local_gugrades\grades::get_released_grade($courseid, $field['gradeitemid'], $userid);
             $user->fields[$id]['released'] = $released;
+            $user->fields[$id]['releasegrade'] = $releasegrade;
         }
 
         // Get the category
