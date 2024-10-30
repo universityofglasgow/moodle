@@ -262,10 +262,15 @@ class activity {
             // While processing each item, we will need to 'key into' $tmpgradeitems for help with things along the way.
             $index = 0;
             foreach ($mygradesitems as $mygradesitem) {
-                $cm = get_coursemodule_from_instance($tmpgradeitems[$index]->itemmodule, $tmpgradeitems[$index]->iteminstance,
-                $tmpgradeitems[$index]->courseid);
-                $modinfo = get_fast_modinfo($tmpgradeitems[$index]->courseid);
-                $cms = $modinfo->get_cms();
+                $cm = null;
+                $modinfo = null;
+                $cms = null;
+                if ($tmpgradeitems[$index]->itemtype != 'manual') {
+                    $cm = get_coursemodule_from_instance($tmpgradeitems[$index]->itemmodule, $tmpgradeitems[$index]->iteminstance,
+                    $tmpgradeitems[$index]->courseid);
+                    $modinfo = get_fast_modinfo($tmpgradeitems[$index]->courseid);
+                    $cms = $modinfo->get_cms();
+                }
 
                 // Deal with the easy state first.
                 if ($mygradesitem['released'] == true) {
@@ -276,13 +281,19 @@ class activity {
                     $iconalt = '';
                     $iconrestricted = false;
                     $assessmenturl = '';
-                    if (array_key_exists($cm->id, $cms)) {
-                        $cm = $modinfo->get_cm($cm->id);
-                        $assessmenturl = $cm->url->out();
-                        if ($activityicon = self::get_activity_icon($cm, $tmpgradeitems[$index]->itemmodule)) {
-                            $itemicon = $activityicon->iconurl;
-                            $iconalt = $activityicon->iconalt;
+                    if ($cm) {
+                        if (array_key_exists($cm->id, $cms)) {
+                            $cm = $modinfo->get_cm($cm->id);
+                            $assessmenturl = $cm->url->out();
+                            if ($activityicon = self::get_activity_icon($cm, $tmpgradeitems[$index]->itemmodule)) {
+                                $itemicon = $activityicon->iconurl;
+                                $iconalt = $activityicon->iconalt;
+                            }
                         }
+                    }
+
+                    if ($tmpgradeitems[$index]->itemtype == 'manual') {
+                        $iconalt = get_string('manualitem', 'grades');
                     }
                     
                     $statusclass = get_string('status_class_graded', 'block_newgu_spdetails');
@@ -291,7 +302,10 @@ class activity {
                     $isgradehidden = $mygradesitem['hidden'];
                     $gradestatus = get_string('status_graded', 'block_newgu_spdetails');
                     // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
-                    $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
+                    $activityduedate = 0;
+                    if ($cm) {
+                        $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
+                    }
                     // @see MGU-1025.
                     if ($activityduedate > 0) {
                         $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
@@ -340,7 +354,9 @@ class activity {
                     if (!$isgradehidden) {
                         $mygradesactivityitem->grade_class = true;
                         // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
-                        $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['admingrade'], $mygradesitem['display']);
+                        if (!$mygradesitem['grademissing']) {
+                            $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['admingrade'], $mygradesitem['display']);
+                        }
                         $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
                         $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' . $tmpgradeitems[$index]->courseid;
                     }
@@ -354,20 +370,25 @@ class activity {
                     // Fallback to processing this as a regular Gradebook grade item if nothing has been released.
                     $tmpgradeitem = $tmpgradeitems[$index];
 
-                    // MGU-1065 - We need to get a reference to this category first,
-                    // we don't have access to it when processing "mygrades" items.
-                    $gradecategoryweight = 0;
-                    if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' => $tmpgradeitem->iteminstance,
-                    'itemtype' => 'mod'])) {
-                        $gradecategoryweight = course::get_grade_category_weight($item, $tmpgradeitem);
-                    }
+                    if ($tmpgradeitem->itemtype == 'manual') {
+                        $mygradesdata[] = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype, 'mygradesenabled');
+                    } else {
 
-                    $displayweights = false;
-                    if ($tmpgradecategory = \grade_category::fetch(['id' => $tmpgradeitem->categoryid, 'hidden' => 0])) {
-                        $displayweights = self::get_display_activity_item_weights($gradecategoryweight, $tmpgradecategory);
+                        // MGU-1065 - We need to get a reference to this category first,
+                        // we don't have access to it when processing "mygrades" items.
+                        $gradecategoryweight = 0;
+                        if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' => $tmpgradeitem->iteminstance,
+                        'itemtype' => 'mod'])) {
+                            $gradecategoryweight = course::get_grade_category_weight($item, $tmpgradeitem);
+                        }
+
+                        $displayweights = false;
+                        if ($tmpgradecategory = \grade_category::fetch(['id' => $tmpgradeitem->categoryid, 'hidden' => 0])) {
+                            $displayweights = self::get_display_activity_item_weights($gradecategoryweight, $tmpgradecategory);
+                        }
+                        $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype, $displayweights);
+                        $mygradesdata[] = array_shift($tmp);
                     }
-                    $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype, $displayweights);
-                    $mygradesdata[] = array_shift($tmp);
                 }
                 $index++;
             }
