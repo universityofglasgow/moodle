@@ -159,9 +159,9 @@ class course {
                     $subcat->assessment_type = $assessmenttype;
                     $subcat->sub_category_weight = $subcatweight;
                     $subcat->raw_category_weight = $rawsubcatweight;
-                    if ($gradecategory['releasegrade'] == true) {
+                    if (is_object($gradecategory['releasegrade'])) {
                         if (!$gradecategory['grademissing']) {
-                            $subcat->grade_category_grade = $gradecategory['display'];
+                            $subcat->grade_category_grade = $gradecategory['releasegrade']->displaygrade;
                         }
                     }
 
