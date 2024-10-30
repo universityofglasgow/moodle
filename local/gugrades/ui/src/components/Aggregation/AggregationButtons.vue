@@ -2,7 +2,13 @@
     <div class="col-12 mt-2">
         <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
         <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
-        <ReleaseCategoryButton :disabled="!props.allowrelease" :gradeitemid="props.gradeitemid" :groupid="props.groupid" :released="props.released" @released="refreshtable"></ReleaseCategoryButton>
+        <ReleaseCategoryButton v-if="!props.toplevel"
+            :disabled="!props.allowrelease"
+            :gradeitemid="props.gradeitemid"
+            :groupid="props.groupid"
+            :released="props.released"
+            @released="refreshtable"
+        ></ReleaseCategoryButton>
     </div>
 </template>
 

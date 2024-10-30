@@ -154,6 +154,17 @@
                 {{ item.completed }}%
             </template>
 
+            <!-- Releasegrade -->
+            <template #item-releasegrade="item">
+                <div v-if="!toplevel">
+                    {{ item.releasegrade }}
+                    <span v-if="item.mismatch">
+                        <br />
+                        <span class="badge badge-danger mt-1">MISMATCH</span>
+                    </span>
+                </div>
+            </template>
+
             <!-- Total -->
             <template #item-total="item">
                 <div class="d-flex justify-content-center align-items-center">
@@ -162,7 +173,7 @@
                         <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
                         <span v-if="item.alteredweight">
                             <br />
-                            <span class="badge badge-info ml-1">ALTERED</span>
+                            <span class="badge badge-info mt-1">ALTERED</span>
                          </span>
                     </div>
                     <div>
@@ -455,8 +466,8 @@
             });
         }
 
-        // Released grade
-        if (released.value) {
+        // Released grade (not shown for grand total)
+        if (released.value && !toplevel.value) {
             heads.push({
                 text: mstrings.released,
                 value: 'releasegrade',
