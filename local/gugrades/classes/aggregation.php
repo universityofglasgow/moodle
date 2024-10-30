@@ -398,7 +398,7 @@ class aggregation {
         $user->total = $item->convertedgrade;
         $user->displaygrade = $item->displaygrade;
         $user->releasegrade = $releasegrade;
-        $user->mismatch = $item->displaygrade != $releasegrade;
+        $user->mismatch = $released && ($item->displaygrade != $releasegrade);
         $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
@@ -407,9 +407,6 @@ class aggregation {
 
         // Mismatch (can possibly do better).
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradecatitem->id);
-        if ($user->mismatch && $released) {
-            $user->releasegrade .= ' (mismatch)';
-        }
 
         return $user;
     }
