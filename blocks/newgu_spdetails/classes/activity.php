@@ -295,9 +295,7 @@ class activity {
                     if ($tmpgradeitems[$index]->itemtype == 'manual') {
                         $iconalt = get_string('manualitem', 'grades');
                     }
-                    
-                    $statusclass = get_string('status_class_graded', 'block_newgu_spdetails');
-                    $statustext = get_string('status_text_graded', 'block_newgu_spdetails');
+
                     // MGU-631 - Honour hidden grades and hidden activities.
                     $isgradehidden = $mygradesitem['hidden'];
                     $gradestatus = get_string('status_graded', 'block_newgu_spdetails');
@@ -341,24 +339,32 @@ class activity {
                     $mygradesactivityitem->raw_due_date = $rawduedate;
                     $mygradesactivityitem->grade_status = $gradestatus;
                     $mygradesactivityitem->status_link = '';
-                    $mygradesactivityitem->status_class = $statusclass;
-                    $mygradesactivityitem->status_text = $statustext;
+                    $mygradesactivityitem->status_class = '';
+                    $mygradesactivityitem->status_text = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
                     $mygradesactivityitem->grade = get_string('status_text_tobeconfirmed',
                     'block_newgu_spdetails');
                     $mygradesactivityitem->grade_class = false;
                     $mygradesactivityitem->grade_provisional = false;
-                    $mygradesactivityitem->grade_feedback = '';
+                    $mygradesactivityitem->grade_feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
                     $mygradesactivityitem->grade_feedback_link = '';
                     $mygradesactivityitem->mygradesenabled = true;
 
                     if (!$isgradehidden) {
-                        $mygradesactivityitem->grade_class = true;
-                        // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
-                        if (!$mygradesitem['grademissing']) {
-                            $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['admingrade'], $mygradesitem['display']);
+                        // The grade item may have been released, but it may not yet have been given a grade.
+                        if (is_object($mygradesitem['releasegrade'])) {
+                            if (!$mygradesitem['grademissing']) {
+                                // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
+                                $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['releasegrade']->admingrade,
+                                    $mygradesitem['releasegrade']->displaygrade);
+                                $mygradesactivityitem->grade_class = true;
+                                $mygradesactivityitem->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
+                                $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
+                                $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
+                                    'block_newgu_spdetails');
+                                $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
+                                    $tmpgradeitems[$index]->courseid;
+                            }
                         }
-                        $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
-                        $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' . $tmpgradeitems[$index]->courseid;
                     }
 
                     if ($activetab == 'past') {
