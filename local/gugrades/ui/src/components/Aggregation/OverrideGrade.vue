@@ -50,6 +50,7 @@
     ]);
 
     function grade_added() {
+        window.console.log('OVERRIDE GRADE - GRADE ADDED');
         emit('gradeadded');
     }
 
