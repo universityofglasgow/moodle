@@ -839,6 +839,13 @@ class aggregation {
         // 0 based keys, please.
         $items = array_values($items);
 
+        // Get the correct aggregation function.
+        $aggfunction = $aggregation->strategy_factory($aggmethod);
+
+        // Populate lists of available users.
+        // Used to drop unavailable
+        $items = $aggregation->availability($items, $userid);
+
         // If level 1 then calculate completion %age.
         // This can be calculated even though we can't run rest of aggregation (incomplete).
         $completion = 0;
@@ -851,13 +858,6 @@ class aggregation {
         if ($category->atype == \local_gugrades\GRADETYPE_ERROR) {
             return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades')];
         }
-
-        // Get the correct aggregation function.
-        $aggfunction = $aggregation->strategy_factory($aggmethod);
-
-        // Populate lists of available users.
-        // Used to drop unavailable
-        $items = $aggregation->availability($items, $userid);
 
         // Admingrade check for anything that happens before drop lowest and
         // checks for all items graded etc.

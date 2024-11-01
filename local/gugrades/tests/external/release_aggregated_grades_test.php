@@ -201,14 +201,14 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
 
         $this->assertTrue($page['released']);
         $fred = $page['users'][0];
-        $this->assertEquals('A2 (mismatch)', $fred['releasegrade']);
+        $this->assertEquals('A2', $fred['releasegrade']);
         $this->assertEquals('NS', $fred['displaygrade']);
         $this->assertTrue($fred['mismatch']);
 
         // Addition check for direct API call (used by Student MyGrades).
         $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $summercategoryid, $this->student->id);
 
-        $this->assertEquals('A2 (mismatch)', $user->releasegrade);
+        $this->assertEquals('A2', $user->releasegrade);
         $this->assertEquals('NS', $user->displaygrade);
         $this->assertTrue($user->mismatch);
         $this->assertTrue($user->parent->released);
@@ -267,7 +267,7 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
 
         $this->assertEquals('', $user->releasegrade);
         $this->assertEquals('NS', $user->displaygrade);
-        $this->assertTrue($user->mismatch);
+        $this->assertFalse($user->mismatch);
         $this->assertFalse($user->parent->released);
 
         // Release grades for Item 1 to check that is flagged properly

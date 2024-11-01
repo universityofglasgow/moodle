@@ -288,4 +288,23 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
         $this->student = $student;
         $this->student2 = $student2;
     }
+
+    /**
+     * Set activity restriction
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param string $restriction
+     */
+    public function restrict_activity(int $courseid, int $gradeitemid, string $restriction) {
+        global $DB;
+
+        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        if ($gradeitem->itemtype != 'mod') {
+            throw new \moodle_exception('Only works with modules: ' . $gradeitem->itemtype);
+        }
+
+        $cm = get_coursemodule_from_instance($gradeitem->itemmodule, $gradeitem->iteminstance, $courseid, false, MUST_EXIST);
+
+        $DB->set_field('course_modules', $restriction, ['id' => $cm->id]);
+    }
 }

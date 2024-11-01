@@ -1721,6 +1721,9 @@ class api {
 
         global $CFG;
 
+        // I know :(
+        set_time_limit(0);
+
         // Are we collecting debug information
         $debugon = $CFG->debug >= DEBUG_DEVELOPER;
         $timestart = microtime(true);

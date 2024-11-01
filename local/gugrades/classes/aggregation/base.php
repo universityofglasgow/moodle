@@ -61,21 +61,23 @@ class base {
     public function availability(array $items, int $userid) {
         $this->availableuserids = [];
 
+        $filtereditems = [];
         foreach ($items as $id => $item) {
             $activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
             $userids = $activity->get_user_ids();
             if (empty($userids)) {
+                //$filtereditems[$id] = $item;
                 continue;
             }
 
             // If selected user is not in the list of available users,
             // remove the item from the list of items.
-            if (!in_array($userid, $userids)) {
-                unset($items[$id]);
+            if (in_array($userid, $userids)) {
+                $filtereditems[$id] = $item;
             }
         }
 
-        return $items;
+        return $filtereditems;
     }
 
     /**
@@ -246,6 +248,11 @@ class base {
         $countcompleted = 0;
 
         foreach ($items as $item) {
+
+            // If item is not available, then just ignore it.
+            if (isset($item->available) && !$item->available) {
+                continue;
+            }
             $weight = $weighted ? $item->weight : 1;
             $totalweights += $weight;
             $countall++;
