@@ -19,7 +19,7 @@
                 @gradeadded = "grade_added()">
             </AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
-            <AlterButton v-if="props.showweights" :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightsaltered="grade_added()"></AlterButton>
+            <AlterButton v-if="props.showweights && !props.overridden" :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightsaltered="grade_added()"></AlterButton>
         </div>
     </span>
 </template>
@@ -41,6 +41,7 @@
         awaitingcapture: Boolean,
         gradehidden: Boolean,
         converted: Boolean,
+        overridden: Boolean,
         showweights: Boolean,
         released: Boolean,
     });
