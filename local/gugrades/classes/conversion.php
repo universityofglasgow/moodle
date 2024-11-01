@@ -614,6 +614,26 @@ class conversion {
     }
 
     /**
+     * Has a gradeitem had a conversion applied?
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return bool
+     */
+    public static function is_category_conversion_applied(int $courseid, int $gradecategoryid) {
+        global $DB;
+
+        if ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradecategoryid' => $gradecategoryid])) {
+            if ($courseid != $mapitem->courseid) {
+                throw new \moodle_exception('courseid does not match ' . $courseid);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Has a grade category got an associated map
      * Return the mapid or false
      * @param int $gradecategoryid

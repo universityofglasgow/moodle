@@ -177,7 +177,7 @@ final class aggregation_schema4_test extends \local_gugrades\external\gugrades_a
         $this->assertTrue($page['allowconversion']);
         $this->assertEquals('Test import map', $page['conversion']);
         $users = $page['users'];
-        $this->assertEquals('A0', $users[0]['displaygrade']);
+        $this->assertEquals('A0 (18.75704)', $users[0]['displaygrade']);
         $this->assertEquals(18.75704, $users[0]['rawgrade']);
         $this->assertEquals(22, $users[0]['total']);
 
@@ -225,7 +225,7 @@ final class aggregation_schema4_test extends \local_gugrades\external\gugrades_a
 
         $fred = $page['users'][0];
         $this->assertTrue($fred['overridden']);
-        $this->assertEquals('D0', $fred['displaygrade']);
+        $this->assertEquals('D0 (11.00000)', $fred['displaygrade']);
         $this->assertEquals(11, $fred['rawgrade']);
 
         $grades = $DB->get_records('local_gugrades_grade', ['gradeitemid' => $summerexamitem->id, 'userid' => $this->student->id]);

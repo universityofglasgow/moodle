@@ -384,6 +384,9 @@ class aggregation {
         [$atype, $warnings] = self::get_aggregation_type($items, $gradecategoryid);
         $aggregation = self::aggregation_factory($courseid, $atype);
 
+        // Has grade been converted
+        $converted = \local_gugrades\conversion::is_category_conversion_applied($courseid, $gradecategoryid);
+
         // Get original data for "aggregated category" as we may not have got it elsewhere.
         // This is needed if no aggregation is performed.
         $item = $DB->get_record('local_gugrades_grade',
@@ -396,7 +399,7 @@ class aggregation {
             ], '*', MUST_EXIST);
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;
-        $user->displaygrade = $item->displaygrade;
+        $user->displaygrade = $converted && empty($item->admingrade) ? $item->displaygrade . ' (' . $item->rawgrade . ')' : $item->displaygrade;
         $user->releasegrade = $releasegrade;
         $user->mismatch = $released && ($item->displaygrade != $releasegrade);
         $user->admingrade = $item->admingrade;
