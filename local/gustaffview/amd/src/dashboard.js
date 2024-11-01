@@ -136,7 +136,8 @@ const UpdateDashboard = (event) => {
             });
         }).catch((error) => {
             document.querySelector(Selectors.DASHBOARD_BLOCK).innerHTML = '<div class="alert alert-danger" ' +
-            'role="alert">Something went wrong.</div>';
+            'role="alert">There was an issue retrieving the data for this user.<br />The error returned from the sever was: ' +
+            `${error.message}` + '<br />Please raise a ticket via the IT helpdesk if you continue to receive this message.</div>';
             Log.debug(`Error: ${error.message}`);
         });
     }

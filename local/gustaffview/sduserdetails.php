@@ -69,7 +69,6 @@ $html .= html_writer::start_tag('div', ['id' => 'student_block', 'class' => 'row
 $html .= html_writer::tag('label', 'Student: ', array('class' => 'col-md-2', 'for' => 'selectstudent'));
 
 $enrolledstudents = get_enrolled_users($context, 'moodle/grade:view', 0, 'u.id, u.firstname, u.lastname',  null, 0, 0, true);
-
 $studentoptions = [];
 $studentoptions[0] = "Select";
 

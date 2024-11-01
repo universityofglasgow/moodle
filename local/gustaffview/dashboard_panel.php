@@ -61,7 +61,9 @@ $currentcourses = \block_newgu_spdetails\course::return_enrolledcourses($student
 $str_currentcourses = implode(",", $currentcourses);
 
 // FETCH LTI IDs TO BE INCLUDED
-$str_ltiinstancenottoinclude = get_ltiinstancenottoinclude();
+//$str_ltiinstancenottoinclude = get_ltiinstancenottoinclude();
+$ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
+$str_ltiinstancenottoinclude = implode(',',$ltiactivities);
 
 $ts = optional_param('ts', "", PARAM_ALPHA);
 $tdr = optional_param('tdr', 1, PARAM_INT);
@@ -105,14 +107,14 @@ if ($str_currentcourses == "") {
 }
 
 if ($str_itemsnotvisibletouser != "") {
-    $table->set_sql('gi.*, c.shortname as coursename,' . $studentid . ' as userid', "{grade_items} gi, {course} c", "gi.courseid in ("
-        . $str_currentcourses . ") && gi.courseid=" . $courseid . " && ((gi.iteminstance IN ("
-        . $str_ltiinstancenottoinclude . ") && gi.itemmodule='lti') OR gi.itemmodule!='lti') && gi.itemtype='mod' && gi.id not in ("
-        . $str_itemsnotvisibletouser . ") && gi.courseid=c.id $addsort");
+    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, {course} c, {grade_categories} gc", "gi.courseid in ("
+        . $str_currentcourses . ") AND gi.courseid=" . $courseid . " AND ((gi.iteminstance IN ("
+        . $str_ltiinstancenottoinclude . ") AND gi.itemmodule='lti') OR gi.itemmodule!='lti') AND gi.itemtype='mod' AND gi.id not in ("
+        . $str_itemsnotvisibletouser . ") AND gi.courseid=c.id AND gc.courseid = c.id GROUP BY gi.id $addsort");
 } else {
-    $table->set_sql('gi.*, c.shortname as coursename,' . $studentid . ' as userid', "{grade_items} gi, {course} c", "gi.courseid in ("
-        . $str_currentcourses . ") && gi.courseid=" . $courseid . " && ((gi.iteminstance IN ("
-        . $str_ltiinstancenottoinclude . ") && gi.itemmodule='lti') OR gi.itemmodule!='lti') && gi.itemtype='mod' && gi.courseid=c.id"
+    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, {course} c, {grade_categories} gc", "gi.courseid in ("
+        . $str_currentcourses . ") AND gi.courseid=" . $courseid . " AND ((gi.iteminstance IN ("
+        . $str_ltiinstancenottoinclude . ") AND gi.itemmodule='lti') OR gi.itemmodule!='lti') AND gi.itemtype='mod' AND gi.courseid=c.id AND gc.courseid = c.id GROUP BY gi.id "
         . $addsort);
 }
 
@@ -123,7 +125,7 @@ $table->no_sorting('itemmodule');
 $table->no_sorting('duedate');
 $table->no_sorting('source');
 $table->no_sorting('status');
-$table->no_sorting('includedingcat');
+$table->no_sorting('source');
 $table->no_sorting('grade');
 $table->no_sorting('feedback');
 
