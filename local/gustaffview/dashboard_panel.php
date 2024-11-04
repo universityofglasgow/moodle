@@ -60,8 +60,7 @@ $PAGE->set_context($context);
 $currentcourses = \block_newgu_spdetails\course::return_enrolledcourses($studentid, "current", "student");
 $str_currentcourses = implode(",", $currentcourses);
 
-// FETCH LTI IDs TO BE INCLUDED
-//$str_ltiinstancenottoinclude = get_ltiinstancenottoinclude();
+// Don't include activities that are essentially LTI configured.
 $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
 $str_ltiinstancenottoinclude = implode(',',$ltiactivities);
 
@@ -107,15 +106,17 @@ if ($str_currentcourses == "") {
 }
 
 if ($str_itemsnotvisibletouser != "") {
-    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, {course} c, {grade_categories} gc", "gi.courseid in ("
-        . $str_currentcourses . ") AND gi.courseid=" . $courseid . " AND ((gi.iteminstance IN ("
-        . $str_ltiinstancenottoinclude . ") AND gi.itemmodule='lti') OR gi.itemmodule!='lti') AND gi.itemtype='mod' AND gi.id not in ("
-        . $str_itemsnotvisibletouser . ") AND gi.courseid=c.id AND gc.courseid = c.id GROUP BY gi.id $addsort");
+    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, "
+        . "{course} c, {grade_categories} gc", "gi.courseid in (" . $str_currentcourses . ") AND gi.courseid=" . $courseid
+        . " AND ((gi.iteminstance IN (" . $str_ltiinstancenottoinclude . ") AND gi.itemmodule = 'lti') OR gi.itemmodule != 'lti')"
+        . " AND gi.itemtype = 'mod' AND gi.itemmodule != 'attendance' AND gi.id NOT IN (" . $str_itemsnotvisibletouser . ") AND"
+        . " gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id $addsort");
 } else {
-    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, {course} c, {grade_categories} gc", "gi.courseid in ("
-        . $str_currentcourses . ") AND gi.courseid=" . $courseid . " AND ((gi.iteminstance IN ("
-        . $str_ltiinstancenottoinclude . ") AND gi.itemmodule='lti') OR gi.itemmodule!='lti') AND gi.itemtype='mod' AND gi.courseid=c.id AND gc.courseid = c.id GROUP BY gi.id "
-        . $addsort);
+    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, "
+        . "{course} c, {grade_categories} gc", "gi.courseid in (" . $str_currentcourses . ") AND gi.courseid=" . $courseid
+        . " AND ((gi.iteminstance IN (" . $str_ltiinstancenottoinclude . ") AND gi.itemmodule = 'lti') OR gi.itemmodule != 'lti')"
+        . " AND gi.itemtype = 'mod' AND gi.itemmodule != 'attendance' AND gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id"
+        . " " . $addsort);
 }
 
 $table->no_sorting('assessment');
