@@ -141,7 +141,7 @@ function get_weight($courseid, $categoryid, $aggregationcoef, $aggregationcoef2)
  */
 function get_assessmenttypeorder($coursetype, $tdr, $userid) {
 
-    global $DB, $CFG;
+    global $DB;
 
     $courses = \block_newgu_spdetails\course::return_enrolledcourses($userid, $coursetype);
     $strcourses = implode(",", $courses);
@@ -154,16 +154,11 @@ function get_assessmenttypeorder($coursetype, $tdr, $userid) {
     $arrorder = [];
 
     foreach ($arrcc as $keycc) {
-        $cmid = $keycc->id;
         $modulename = $keycc->itemmodule;
-        $iteminstance = $keycc->iteminstance;
         $courseid = $keycc->courseid;
         $itemid = $keycc->id;
         $categoryid = $keycc->categoryid;
-
-        // DUE DATE.
         $assessmenttype = "";
-        $strassessmenttype = "—";
 
         // READ individual TABLE OF ACTIVITY (MODULE).
         if ($modulename != "") {
@@ -282,161 +277,4 @@ function get_duedateorder($tdr, $userid) {
     $strorder = rtrim($strorder, ",");
 
     return $strorder;
-}
-
-/**
- * Does something.
- *
- * @param string $tdr
- */
-function get_startenddateorder($tdr) {
-
-    global $USER, $DB, $CFG;
-
-    $pastcourses = \block_newgu_spdetails\course::return_enrolledcourses($USER->id, "past");
-    $strpastcourses = implode(",", $pastcourses);
-    $pastxl = [];
-
-    if ($strpastcourses != "") {
-
-        $stritemsnotvisibletouser = \block_newgu_spdetails\api::fetch_itemsnotvisibletouser($USER->id, $strpastcourses);
-        $sqlcc = 'SELECT gi.*, c.fullname as coursename FROM {grade_items} gi, {course} c WHERE gi.courseid in (' .
-        $strpastcourses . ') && gi.courseid>1 && gi.itemtype="mod" && gi.id not in (' .
-        $stritemsnotvisibletouser . ') && gi.courseid=c.id';
-        $arrcc = $DB->get_records_sql($sqlcc);
-        $arrsdorder = [];
-        $arredorder = [];
-
-        foreach ($arrcc as $keycc) {
-            $cmid = $keycc->id;
-            $modulename = $keycc->itemmodule;
-            $iteminstance = $keycc->iteminstance;
-            $courseid = $keycc->courseid;
-            $categoryid = $keycc->categoryid;
-            $itemid = $keycc->id;
-            $aggregationcoef = $keycc->aggregationcoef;
-            $aggregationcoef2 = $keycc->aggregationcoef2;
-
-            // FETCH ASSESSMENT TYPE.
-            $arrgradecategory = $DB->get_record('grade_categories', ['courseid' => $courseid, 'id' => $categoryid]);
-            if (!empty($arrgradecategory)) {
-                $gradecategoryname = $arrgradecategory->fullname;
-            }
-
-            $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($gradecategoryname, $aggregationcoef);
-
-            // START DATE.
-            $submissionstartdate = 0;
-            $startdate = "";
-            $duedate = 0;
-            $enddate = "";
-
-            // READ individual TABLE OF ACTIVITY (MODULE).
-            if ($modulename != "") {
-                $arrsubmissionstartdate = $DB->get_record($modulename, ['course' => $courseid, 'id' => $iteminstance]);
-
-                if (!empty($arrsubmissionstartdate)) {
-                    if ($modulename == "assign") {
-                        $submissionstartdate = $arrsubmissionstartdate->allowsubmissionsfromdate;
-                        $duedate = $arrsubmissionstartdate->duedate;
-                    }
-                    if ($modulename == "forum") {
-                        $submissionstartdate = $arrsubmissionstartdate->assesstimestart;
-                        $duedate = $arrsubmissionstartdate->duedate;
-                    }
-                    if ($modulename == "quiz") {
-                        $submissionstartdate = $arrsubmissionstartdate->timeopen;
-                        $duedate = $arrsubmissionstartdate->timeclose;
-                    }
-                    if ($modulename == "workshop") {
-                        $submissionstartdate = $arrsubmissionstartdate->submissionstart;
-                        $duedate = $arrsubmissionstartdate->submissionend;
-                    }
-                }
-            }
-
-            $startdate = date("d/m/Y", $submissionstartdate);
-            $arrsdorder[$itemid] = $submissionstartdate;
-            $enddate = date("d/m/Y", $duedate);
-            $arredorder[$itemid] = $duedate;
-        }
-    }
-
-    if ($tdr == 3) {
-        asort($arrsdorder);
-    }
-    if ($tdr == 4) {
-        arsort($arrsdorder);
-    }
-    $strsdorder = "";
-    foreach ($arrsdorder as $keyorder => $value) {
-        $strsdorder .= $keyorder . ",";
-    }
-    $strsdorder = rtrim($strsdorder, ",");
-
-    if ($tdr == 3) {
-        asort($arredorder);
-    }
-    if ($tdr == 4) {
-        arsort($arredorder);
-    }
-    $stredorder = "";
-    foreach ($arredorder as $keyorder => $value) {
-        $stredorder .= $keyorder . ",";
-    }
-    $stredorder = rtrim($stredorder, ",");
-    $arrayorder = ["startdateorder" => $strsdorder, "enddateorder" => $stredorder];
-
-    return $arrayorder;
-}
-
-/**
- * Does something.
- */
-function get_ltiinstancenottoinclude() {
-    // FETCH LTI IDs TO BE INCLUDED.
-    global $DB;
-
-    $strltitoinclude = "99999";
-    $strltinottoinclude = "99999";
-    $sqlltitoinclude = "SELECT * FROM {config} WHERE name like '%block_newgu_spdetails_include_%' AND value=1";
-    $arrltitoinclude = $DB->get_records_sql($sqlltitoinclude);
-    $arrayltitoinclude = [];
-
-    foreach ($arrltitoinclude as $keyltitoinclude) {
-        $name = $keyltitoinclude->name;
-        $namepieces = explode("block_newgu_spdetails_include_", $name);
-        $ltitype = $namepieces[1];
-        $arrayltitoinclude[] = $ltitype;
-    }
-    $strltitoinclude = implode(",", $arrayltitoinclude);
-
-    if ($strltitoinclude == "") {
-        $strltitoinclude = "99999";
-    }
-
-    $sqlltitypenottoinclude = "SELECT id FROM {lti_types} WHERE id not in (".$strltitoinclude.")";
-    $arrltitypenottoinclude = $DB->get_records_sql($sqlltitypenottoinclude);
-
-    $arrayltitypenottoinclude = [];
-    $arrayltitypenottoinclude[] = 0;
-    foreach ($arrltitypenottoinclude as $keyltitypenottoinclude) {
-        $arrayltitypenottoinclude[] = $keyltitypenottoinclude->id;
-    }
-    $strltitypenottoinclude = implode(",", $arrayltitypenottoinclude);
-
-    $sqlltiinstancenottoinclude = "SELECT * FROM {lti} WHERE typeid NOT IN (".$strltitypenottoinclude.")";
-    $arrltiinstancenottoinclude = $DB->get_records_sql($sqlltiinstancenottoinclude);
-
-    $arrayltiinstancenottoinclude = [];
-    foreach ($arrltiinstancenottoinclude as $keyltiinstancenottoinclude) {
-        $arrayltiinstancenottoinclude[] = $keyltiinstancenottoinclude->id;
-    }
-    $strltiinstancenottoinclude = implode(",", $arrayltiinstancenottoinclude);
-
-    if ($strltiinstancenottoinclude == "") {
-        $strltiinstancenottoinclude = 99999;
-    }
-
-    return $strltiinstancenottoinclude;
 }
