@@ -458,17 +458,28 @@ class course {
      * Return a list of the activities for a given course id.
      *
      * @param int $courseid
+     * @param array $extraparams - This is to allow the export PDF/Excel feature to work. We need to include 'manual' items.
      * @return object
      */
-    public static function get_activities(int $courseid) {
+    public static function get_activities(int $courseid, array $extraparams = []) {
         global $DB;
 
-        $gradeitems = $DB->get_records('grade_items', [
-            'courseid' => $courseid,
-            'itemtype' => 'mod',
-            'hidden' => 0
-        ],
-        'sortorder ASC');
+        $gradeitemselect = 'courseid = ? AND (itemtype = ?';
+        $gradeitemparams = [
+            $courseid,
+            'mod'
+        ];
+
+        if ($extraparams) {
+            foreach($extraparams as $k => $v) {
+                $gradeitemselect .= ' OR ' . $k . ' = ?';
+                $gradeitemparams[] = $v;
+            }
+        }
+
+        $gradeitemselect .= ') AND hidden = 0';
+
+        $gradeitems = $DB->get_records_select('grade_items', $gradeitemselect, $gradeitemparams, '', '*');
 
         return $gradeitems;
     }

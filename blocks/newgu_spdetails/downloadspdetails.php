@@ -122,7 +122,7 @@ if ($coursestype) {
             }
 
             // This returns an array of objects - process_[x]_items() is expecting an ordinary array. It seems to work still.
-            $activities = \block_newgu_spdetails\course::get_activities($course->id);
+            $activities = \block_newgu_spdetails\course::get_activities($course->id, ['itemtype' => 'manual']);
 
             if ($mygradesenabled) {
                 // get_aggregation_dashboard_user() gets us items for the current category only.
