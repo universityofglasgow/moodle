@@ -160,6 +160,13 @@ class course {
                     $subcat->sub_category_weight = $subcatweight;
                     $subcat->raw_category_weight = $rawsubcatweight;
                     if (is_object($gradecategory['releasegrade'])) {
+                        // MGU-1162 - The display of adjusted category weights wasn't being set correctly.
+                        $rawsubcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ? 
+                        $gradecategory['releasegrade']->normalisedweight : 0);
+                        $subcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ? course::return_weight(
+                            $gradecategory['releasegrade']->normalisedweight) . '%' : '-');
+                        $subcat->sub_category_weight = $subcatweight;
+                        $subcat->raw_category_weight = $rawsubcatweight;
                         if (!$gradecategory['grademissing']) {
                             $subcat->grade_category_grade = grade::is_admin_or_generic_grade($gradecategory['releasegrade']->admingrade,
                             $gradecategory['releasegrade']->displaygrade);
