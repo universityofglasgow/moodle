@@ -578,7 +578,7 @@ class activity {
      * @return object
      */
     public static function process_manual_grade_item(object $manualgradeitem, string $assessmenttype, string $coursetype,
-    int $userid): object {
+    int $userid = null): object {
 
         global $USER;
         $whichuser = null;
