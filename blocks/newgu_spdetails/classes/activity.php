@@ -416,12 +416,20 @@ class activity {
      * @param array $ltiactivities
      * @param string $assessmenttype
      * @param bool $displayweights
+     * @param int $userid - this is being passed in by Student MyGrades Staff View - $USER would actually be the teacher here.
      * @return array
      */
     public static function process_default_items(array $defaultitems, string $activetab, array $ltiactivities,
-    string $assessmenttype, bool $displayweights): array {
+    string $assessmenttype, bool $displayweights, int $userid = null): array {
 
         global $USER;
+        $whichuser = null;
+
+        if ($userid) {
+            $whichuser = $userid;
+        } else {
+            $whichuser = $USER->id;
+        }
         $defaultdata = [];
 
         if ($defaultitems && count($defaultitems) > 0) {
@@ -430,7 +438,7 @@ class activity {
                 if (!in_array($defaultitem->itemmodule, self::$excludedactivities)) {
                     // Cater for manual grade items that may have been added.
                     if ($defaultitem->itemtype == 'manual') {
-                        $defaultdata[] = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled');
+                        $defaultdata[] = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled', $whichuser);
                     } else {
                         $cm = get_coursemodule_from_instance($defaultitem->itemmodule, $defaultitem->iteminstance,
                         $defaultitem->courseid);
@@ -471,7 +479,7 @@ class activity {
                             $gradefeedbacklink = '';
                             $gradestatobj = grade::get_grade_status_and_feedback($defaultitem->courseid,
                                 $defaultitem->id,
-                                $USER->id,
+                                $whichuser,
                                 $defaultitem->gradetype,
                                 $defaultitem->scaleid,
                                 $defaultitem->grademax,
@@ -566,11 +574,20 @@ class activity {
      * @param object $manualgradeitem
      * @param string $assessmenttype
      * @param string $coursetype - this is more to satisfy the unit tests - for now at least.
+     * @param int $userid - this is being passed in by Student MyGrades Staff View - $USER would actually be the teacher here.
      * @return object
      */
-    public static function process_manual_grade_item(object $manualgradeitem, string $assessmenttype, string $coursetype): object {
+    public static function process_manual_grade_item(object $manualgradeitem, string $assessmenttype, string $coursetype,
+    int $userid): object {
 
         global $USER;
+        $whichuser = null;
+
+        if ($userid) {
+            $whichuser = $userid;
+        } else {
+            $whichuser = $USER->id;
+        }
         $processedmanualgradeitem = new \stdClass();
         $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
         if ($manualgradeitem->hidden == 0 || ($manualgradeitem->hidden > 1 && $manualgradeitem->hidden < $now)) {
@@ -588,7 +605,7 @@ class activity {
 
             $gradestatobj = grade::get_manual_grade_item_grade_status_and_feedback($manualgradeitem->courseid,
                 $manualgradeitem->id,
-                $USER->id,
+                $whichuser,
                 $manualgradeitem->gradetype,
                 $manualgradeitem->scaleid,
                 $manualgradeitem->grademax

@@ -382,13 +382,11 @@ class sduserdetailscurrent_table extends table_sql
      */
     function col_grade($values){
         $userid = $values->userid;
-        $modulename = $values->itemmodule;
-        $iteminstance = $values->iteminstance;
         $courseid = $values->courseid;
         $itemid = $values->id;
-        $gradetype = $values->gradetype;
         $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($courseid);
         $gradetodisplay = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+        $fallbacktogradebook = false;
 
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
@@ -401,11 +399,25 @@ class sduserdetailscurrent_table extends table_sql
                         $releasedgrade->displaygrade);
                     $gradetodisplay .= "<strong></span>";
                 }
+            } else {
+                $fallbacktogradebook = true;
             }
         } elseif (!$mygradesenabled) {
-            $arr_gradetodisplay = \block_newgu_spdetails\grade::get_gradefeedback($modulename, $iteminstance, $courseid, $itemid,
-                $userid, $values->grademax, $gradetype);
-            $gradetodisplay = $arr_gradetodisplay["gradetodisplay"];
+            $fallbacktogradebook = true;
+        }
+
+        // MGU-1152 - Default to using whatever was added/released in Gradebook.
+        if ($fallbacktogradebook) {
+            $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
+            $activitydata = \block_newgu_spdetails\activity::process_default_items([$values], 'current', $ltiactivities, '',
+            false, $userid);
+            $opentag = '';
+            $closetag = '';
+            if ($activitydata[0]->grade_status == get_string('status_graded', 'block_newgu_spdetails')) {
+                $opentag = "<span class='status-graded'><strong>";
+                $closetag = "<strong></span>";
+            }
+            $gradetodisplay = $opentag . $activitydata[0]->grade . $closetag;
         }
 
         return $gradetodisplay;
