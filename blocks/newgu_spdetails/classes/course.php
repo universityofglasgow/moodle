@@ -161,7 +161,8 @@ class course {
                     $subcat->raw_category_weight = $rawsubcatweight;
                     if (is_object($gradecategory['releasegrade'])) {
                         if (!$gradecategory['grademissing']) {
-                            $subcat->grade_category_grade = $gradecategory['releasegrade']->displaygrade;
+                            $subcat->grade_category_grade = grade::is_admin_or_generic_grade($gradecategory['releasegrade']->admingrade,
+                            $gradecategory['releasegrade']->displaygrade);
                         }
                     }
 
