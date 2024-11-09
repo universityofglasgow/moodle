@@ -1,0 +1,30 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Item 1",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.50
+            },
+            {
+                "name": "Item 2",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.25
+            },
+            {
+                "name": "Item 3",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.25
+            }
+        ]
+
+    }
+
+]

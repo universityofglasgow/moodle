@@ -570,7 +570,7 @@ class base {
         }
 
         // Must be level 1, so grade displayed depends on completion %age.
-        if ($completion > 75) {
+        if ($completion >= 75) {
             return $convertedgrade . " ($rawgrade)";
         } else {
             return "$rawgrade";
