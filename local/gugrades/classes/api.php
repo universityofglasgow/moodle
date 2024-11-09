@@ -357,12 +357,17 @@ class api {
     public static function get_grade_item(int $itemid) {
         global $DB;
 
+        // Is grade supported at all?
+        $gradesupported = \local_gugrades\grades::is_grade_supported($itemid);
+
         // Get item.
         $item = \local_gugrades\grades::get_gradeitem($itemid);
         $courseid = $item->courseid;
 
         // Get the mapping class.
-        $mapping = \local_gugrades\grades::mapping_factory($courseid, $itemid);
+        if ($gradesupported) {
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $itemid);
+        }
 
         // If the type is a category, get that as well.
         if ($item->itemtype == 'category') {
@@ -379,7 +384,7 @@ class api {
         }
 
         // Get the scale name.
-        $scalename = $mapping->name();
+        $scalename = $gradesupported ? $mapping->name() : 'Unsupported';
 
         // Get module name.
         if ($item->itemtype == 'mod') {
@@ -406,7 +411,7 @@ class api {
             'itemtype' => get_string($item->itemtype, 'local_gugrades'),
             'itemmodule' => $modname,
             'iteminstance' => $item->iteminstance,
-            'isscale' => $mapping->is_scale(),
+            'isscale' => $gradesupported ? $mapping->is_scale() : false,
             'scalename' => $scalename,
             'grademax' => $item->itemtype == 'category' ? $enhancedcat->grademax : $item->grademax,
             'weight' => round($item->aggregationcoef * 100),
