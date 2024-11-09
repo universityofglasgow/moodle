@@ -608,6 +608,15 @@ class grades {
                 ['scaleid' => $scaleid])) {
                 return false;
             }
+
+            // If it's a valid scale, is it configured to work with MyGrades?
+            if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $scaleid])) {
+                return false;
+            } else {
+                if (($scaletype->type != 'schedulea') && ($scaletype->type != 'scheduleb')) {
+                    return false;
+                }
+            }
         }
 
         return true;
