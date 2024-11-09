@@ -174,7 +174,7 @@
                         <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
                         <span v-if="item.alteredweight">
                             <br />
-                            <span class="badge badge-info mt-1">ALTERED</span>
+                            <span class="badge badge-warning mt-1">ALTERED</span>
                          </span>
                     </div>
                     <div>

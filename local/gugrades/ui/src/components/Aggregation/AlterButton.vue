@@ -145,6 +145,8 @@
 
         showaltermodal.value = true;
 
+        reason.value = '';
+
         fetchMany([{
             methodname: 'local_gugrades_get_alter_weight_form',
             args: {
