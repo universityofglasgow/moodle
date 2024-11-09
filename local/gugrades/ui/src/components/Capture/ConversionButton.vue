@@ -177,6 +177,7 @@
         .then(() => {
             waiting.value = false;
             toast.success('Map selection saved');
+            showselectmodal.value = false;
             emits('converted');
         })
         .catch((error) => {
@@ -185,7 +186,6 @@
             debug.value = error;
         });
 
-        showselectmodal.value = false;
     }
 
     /**
