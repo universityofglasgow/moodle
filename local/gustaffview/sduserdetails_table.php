@@ -177,7 +177,8 @@ class sduserdetailscurrent_table extends table_sql
 
         // The assessment type is derived from the parent - which works only
         // as long as the parent name contains 'Formative' or 'Summative'.
-        if (!$item = grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $categoryid, 'itemtype' => 'category'])) {
+        $item = grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $categoryid, 'itemtype' => 'category']);
+        if (!$item) {
             $item = grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $categoryid, 'itemtype' => 'course']);
         }
         $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($gradecategory->fullname, $item->aggregationcoef);
@@ -189,7 +190,6 @@ class sduserdetailscurrent_table extends table_sql
         $userid = $values->userid;
         $courseid = $values->courseid;
         $itemid = $values->id;
-        $categoryid = $values->categoryid;
         $itemweight = $values->aggregationcoef;
         $gradecategory = new stdClass();
         $gradecategory->aggregationcoef = $itemweight;
@@ -201,21 +201,22 @@ class sduserdetailscurrent_table extends table_sql
             $isgradereleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($isgradereleased) {
                 $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
-                if (!$releasedgrade->dropped) {
-                    $rawassessmentweight = (
-                        ($releasedgrade->normalisedweight > 0) ? \block_newgu_spdetails\course::return_weight(
-                            $releasedgrade->normalisedweight)
-                        : (($releasedgrade->weightedgrade > 0) ? \block_newgu_spdetails\course::return_weight(
-                            $releasedgrade->weightedgrade) : (($itemweight > 0) ? \block_newgu_spdetails\course::return_weight(
-                                $itemweight) : '-')));
-                    $finalweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
-                } else {
-                    $finalweight = '-';
+                if ($releasedgrade) {
+                    // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
+                    if (!$releasedgrade->dropped) {
+                        $rawassessmentweight = (
+                            ($releasedgrade->normalisedweight > 0) ? \block_newgu_spdetails\course::return_weight(
+                                $releasedgrade->normalisedweight)
+                            : (($releasedgrade->weightedgrade > 0) ? \block_newgu_spdetails\course::return_weight(
+                                $releasedgrade->weightedgrade) : (($itemweight > 0) ? \block_newgu_spdetails\course::return_weight(
+                                    $itemweight) : '-')));
+                        $finalweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
+                    }
                 }
             } else {
                 // Fallback to whatever is in gradebook.
-                if ($item = \grade_item::fetch(['courseid' => $courseid, 'id' => $itemid])) {
+                $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $itemid]);
+                if ($item) {
                     $weighttowardscourse = \block_newgu_spdetails\course::get_grade_category_weight($item, $gradecategory);
                     $displayweights = \block_newgu_spdetails\activity::get_display_activity_item_weights($weighttowardscourse,
                         $gradecategory);
@@ -226,7 +227,8 @@ class sduserdetailscurrent_table extends table_sql
                 }
             }
         } elseif (!$mygradesenabled) {
-            if ($item = \grade_item::fetch(['courseid' => $courseid, 'id' => $itemid])) {
+            $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $itemid]);
+            if ($item) {
                 $weighttowardscourse = \block_newgu_spdetails\course::get_grade_category_weight($item, $gradecategory);
                 $displayweights = \block_newgu_spdetails\activity::get_display_activity_item_weights($weighttowardscourse,
                     $gradecategory);
@@ -366,14 +368,18 @@ class sduserdetailscurrent_table extends table_sql
                 // Fallback to whatever is in gradebook.
                 $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
                     $scaleid, $grademax, '');
-                $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
-                "</span>";
+                if ($gradestatus) {
+                    $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
+                    "</span>";
+                }
             }
         } elseif (!$mygradesenabled) {
             $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
                 $scaleid, $grademax, '');
-            $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
-            "</span>";
+            if ($gradestatus) {
+                $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
+                "</span>";
+            }
         }
 
         return $statustodisplay;
@@ -402,9 +408,13 @@ class sduserdetailscurrent_table extends table_sql
                         $gradetodisplay .= \block_newgu_spdetails\grade::is_admin_or_generic_grade($releasedgrade->admingrade,
                             $releasedgrade->displaygrade);
                         $gradetodisplay .= "<strong></span>";
+                    } else {
+                        $fallbacktogradebook = true;
                     }
+                } else {
+                    $fallbacktogradebook = true;
                 }
-            } else {
+            } elseif (!$gradesreleased) {
                 $fallbacktogradebook = true;
             }
         } elseif (!$mygradesenabled) {
@@ -434,8 +444,6 @@ class sduserdetailscurrent_table extends table_sql
      */
     function col_feedback($values){
         $userid = $values->userid;
-        $modulename = $values->itemmodule;
-        $iteminstance = $values->iteminstance;
         $courseid = $values->courseid;
         $itemid = $values->id;
         $gradetype = $values->gradetype;
@@ -453,12 +461,16 @@ class sduserdetailscurrent_table extends table_sql
                 // Fallback to whatever is in gradebook.
                 $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid,
                     $gradetype, $scaleid, $grademax, '');
-                $feedback = $gradefeedback->grade_feedback;
+                if ($gradefeedback) {
+                    $feedback = $gradefeedback->grade_feedback;
+                }
             }
         } elseif (!$mygradesenabled) {
             $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
                 $scaleid, $grademax, '');
-            $feedback = $gradefeedback->grade_feedback;
+            if ($gradefeedback) {
+                $feedback = $gradefeedback->grade_feedback;
+            }
         }
 
         return $feedback;
