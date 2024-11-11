@@ -36,10 +36,10 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG, $USER, $DB;
 
 require_once $CFG->dirroot . '/blocks/newgu_spdetails/locallib.php';
-require_once "sduserdetails_table.php";
+require_once 'sduserdetails_table.php';
 
-$courseid = optional_param('courseid', "", PARAM_INT);
-$studentid = optional_param('studentid', "", PARAM_INT);
+$courseid = optional_param('courseid', '', PARAM_INT);
+$studentid = optional_param('studentid', '', PARAM_INT);
 
 $url = new moodle_url('/local/gustaffview/dashboard_panel.php', [
     'courseid' => $courseid,
@@ -57,21 +57,21 @@ require_login($course);
 $context = context_course::instance($courseid);
 $PAGE->set_context($context);
 
-$currentcourses = \block_newgu_spdetails\course::return_enrolledcourses($studentid, "current", "student");
+$currentcourses = \block_newgu_spdetails\course::return_enrolledcourses($studentid, 'current', 'student');
 $str_currentcourses = implode(",", $currentcourses);
 
 // Don't include activities that are essentially LTI configured.
 $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
 $str_ltiinstancenottoinclude = implode(',',$ltiactivities);
 
-$ts = optional_param('ts', "", PARAM_ALPHA);
+$ts = optional_param('ts', '', PARAM_ALPHA);
 $tdr = optional_param('tdr', 1, PARAM_INT);
 
-$addsort = "";
-$assessmenttypeorder = "";
-if ($ts == "assessmenttype") {
-    $assessmenttypeorder = get_assessmenttypeorder("current", $tdr, $studentid);
-    if ($assessmenttypeorder != "") {
+$addsort = '';
+$assessmenttypeorder = '';
+if ($ts == 'assessmenttype') {
+    $assessmenttypeorder = get_assessmenttypeorder('current', $tdr, $studentid);
+    if ($assessmenttypeorder != '') {
         $addsort = " ORDER BY FIELD(gi.id, $assessmenttypeorder)";
     }
 }
@@ -79,44 +79,55 @@ if ($ts == "assessmenttype") {
 // This saves us having to hook into the other plugin's code, as the
 // above and below code needs to do.
 if ($ts == 'itemmodule') {
-    $sortdirection = (($tdr == 3) ? "ASC" : "DESC");
-    $addsort = " ORDER BY gi.itemmodule " . $sortdirection;
+    $sortdirection = (($tdr == 3) ? 'ASC' : 'DESC');
+    $addsort = ' ORDER BY gi.itemmodule ' . $sortdirection;
 }
 
-$duedateorder = "";
-if ($ts == "duedate") {
+$duedateorder = '';
+if ($ts == 'duedate') {
     $duedateorder = get_duedateorder($tdr, $studentid);
 
-    if ($duedateorder != "") {
+    if ($duedateorder != '') {
         $addsort = " ORDER BY FIELD(gi.id, $duedateorder)";
     }
 }
 
-// Looks like when using the Staff View of the Student Dashboard,
-// the generated objects were the same, table headings became un-sortable
-// and broke things, hence...
+// Looks like when using the Student MyGrades Staff View, generated objects 
+// were the same, table headings became un-sortable and broke things, hence...
 $bytes = random_bytes(5);
 $tableid = bin2hex($bytes);
 $table = new sduserdetailscurrent_table($tableid);
 
 $str_itemsnotvisibletouser = \block_newgu_spdetails\api::fetch_itemsnotvisibletouser($studentid, $courseid);
 
-if ($str_currentcourses == "") {
-    $str_currentcourses = "0";
+if ($str_currentcourses == '') {
+    $str_currentcourses = '0';
 }
 
-if ($str_itemsnotvisibletouser != "") {
-    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, "
-        . "{course} c, {grade_categories} gc", "gi.courseid in (" . $str_currentcourses . ") AND gi.courseid=" . $courseid
-        . " AND ((gi.iteminstance IN (" . $str_ltiinstancenottoinclude . ") AND gi.itemmodule = 'lti') OR gi.itemmodule != 'lti')"
-        . " AND gi.itemtype = 'mod' AND gi.itemmodule != 'attendance' AND gi.id NOT IN (" . $str_itemsnotvisibletouser . ") AND"
-        . " gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id $addsort");
+if ($str_itemsnotvisibletouser != '') {
+    $whereclause = 'gi.courseid IN (' . $str_currentcourses . ') AND gi.courseid = ' . $courseid;
+    
+    if ($str_ltiinstancenottoinclude != '') {
+        $whereclause .= ' AND ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') AND gi.itemmodule = "lti")'
+        . ' OR gi.itemmodule != "lti")';
+    }
+    
+    $whereclause .= ' AND gi.itemtype = "mod" AND gi.itemmodule != "attendance" AND gi.id NOT IN (' . $str_itemsnotvisibletouser
+    . ') AND gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id' . $addsort;
+    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation',
+        '{grade_items} gi, {course} c, {grade_categories} gc', 
+        $whereclause);
 } else {
-    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation', "{grade_items} gi, "
-        . "{course} c, {grade_categories} gc", "gi.courseid in (" . $str_currentcourses . ") AND gi.courseid=" . $courseid
-        . " AND ((gi.iteminstance IN (" . $str_ltiinstancenottoinclude . ") AND gi.itemmodule = 'lti') OR gi.itemmodule != 'lti')"
-        . " AND gi.itemtype = 'mod' AND gi.itemmodule != 'attendance' AND gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id"
-        . " " . $addsort);
+    $whereclause = 'gi.courseid IN (' . $str_currentcourses . ') AND gi.courseid = ' . $courseid;
+    if ($str_ltiinstancenottoinclude != '') {
+        $whereclause .= ' AND ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') AND gi.itemmodule = "lti")'
+        . ' OR gi.itemmodule != "lti")';
+    }
+    $whereclause .= ' AND gi.itemtype = "mod" AND gi.itemmodule != "attendance" AND gi.courseid = c.id AND gc.courseid = c.id'
+    . ' GROUP BY gi.id' . $addsort;
+    $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation',
+        '{grade_items} gi, {course} c, {grade_categories} gc',
+        $whereclause);
 }
 
 $table->no_sorting('assessment');
@@ -130,5 +141,5 @@ $table->no_sorting('source');
 $table->no_sorting('grade');
 $table->no_sorting('feedback');
 
-$table->define_baseurl("$CFG->wwwroot/local/gustaffview/sduserdetails.php?courseid=" . $courseid);
+$table->define_baseurl('$CFG->wwwroot/local/gustaffview/sduserdetails.php?courseid=' . $courseid);
 $table->out(20, true);
