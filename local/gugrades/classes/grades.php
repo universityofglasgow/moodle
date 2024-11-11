@@ -627,11 +627,13 @@ class grades {
     public static function is_grade_hidden_locked(int $gradeitemid) {
         global $DB;
 
+        // Hidden and locked fields either hold 0/1 or a date.
+        // To save madness, ignore the date. May not survive.
         $gradeitem = self::get_gradeitem($gradeitemid);
 
         return [
-            $gradeitem->hidden,
-            $gradeitem->locked,
+            $gradeitem->hidden == 1 ? true : false,
+            $gradeitem->locked == 1 ? true : false,
         ];
     }
 
