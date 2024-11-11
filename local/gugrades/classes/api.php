@@ -1781,7 +1781,7 @@ class api {
         // Only available for level 2 categories - MGU-997
         $level = \local_gugrades\grades::get_category_level($gradecategoryid);
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
-        $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
+        $allowconversion = ($level >= 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
 
         // Corresponding gradeitemid for category.
         $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
