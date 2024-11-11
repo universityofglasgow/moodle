@@ -542,20 +542,17 @@ class grades {
         // ...id is a proxy for time added.
         // Cannot use the timestamp as the unit tests write the test grades all in the
         // same second (potentially).
-        $grades = $DB->get_records('local_gugrades_grade', [
+        $sql = 'SELECT * FROM {local_gugrades_grade}
+            WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
+                WHERE gradeitemid = :gradeitemid
+                AND userid = :userid
+                AND iscurrent = 1)';
+        $grade = $DB->get_record_sql($sql, [
             'gradeitemid' => $gradeitemid,
             'userid' => $userid,
-            'iscurrent' => 1,
-        ], 'id ASC');
+        ]);
 
-        // Work out / add provisional grade.
-        if ($grades) {
-            $lastgrade = end($grades);
-
-            return $lastgrade;
-        } else {
-            return false;
-        }
+        return $grade;
     }
 
     /**

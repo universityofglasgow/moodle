@@ -35,6 +35,7 @@
                 </FormKit>
             </div>
 
+            <!-- See MGU-1166, short-term removal of recursive option
             <div v-if="recursiveavailable" class="alert alert-secondary">
                 <div v-if="!allgradesvalid" class="alert alert-danger">
                     {{ mstrings.invalidgradetype }}
@@ -53,6 +54,7 @@
                     </FormKit>
                 </div>
             </div>
+            -->
 
             <div class="alert alert-success">
                 <FormKit

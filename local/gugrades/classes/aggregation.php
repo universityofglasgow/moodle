@@ -17,6 +17,9 @@
 /**
  * Aggregation functions
  *
+ * While this is mostly static functions, it can also be instantiated using the singleton
+ * pattern to reduce database overload.
+ *
  * @package    local_gugrades
  * @copyright  2024
  * @author     Howard Miller
@@ -39,6 +42,18 @@ require_once($CFG->dirroot . '/grade/lib.php');
  * Class to store and manipulate grade structures for course
  */
 class aggregation {
+
+    /**
+     * Store instance(s)
+     */
+    private $instances = [];
+
+    /**
+     * Constructor is protected to prevent new()
+     */
+    protected function __construct() {
+
+    }
 
     /**
      * Factory for aggregation rule set
@@ -1195,7 +1210,6 @@ class aggregation {
      * @return array
      */
     public static function aggregate(int $courseid, int $gradecategoryid, array $users) {
-        global $DB;
 
         // As $gradecategoryid could be second level + then we first need to find the 1st level
         // categoryid (as we're aggregating everything).

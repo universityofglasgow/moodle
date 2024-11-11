@@ -212,5 +212,44 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024101600, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024111100) {
+
+        // Define index local_gugrades_giuiic (not unique) to be dropped form local_gugrades_grade.
+        $table = new xmldb_table('local_gugrades_grade');
+        $index = new xmldb_index('local_gugrades_giuiic', XMLDB_INDEX_NOTUNIQUE, ['gradeitemid', 'userid', 'iscurrent']);
+
+        // Conditionally launch drop index local_gugrades_giuiic.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Define index local_gugrades_giuiic (not unique) to be added to local_gugrades_grade.
+        $table = new xmldb_table('local_gugrades_grade');
+        $index = new xmldb_index('local_gugrades_giuiic', XMLDB_INDEX_NOTUNIQUE, ['id', 'gradeitemid', 'userid', 'iscurrent']);
+
+        // Conditionally launch add index local_gugrades_giuiic.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024111100, 'local', 'gugrades');
+    }
+
+    if ($oldversion < 2024111101) {
+
+        // Define index local_gugrades_prov (not unique) to be added to local_gugrades_grade.
+        $table = new xmldb_table('local_gugrades_grade');
+        $index = new xmldb_index('local_gugrades_prov', XMLDB_INDEX_NOTUNIQUE, ['gradeitemid', 'userid', 'iscurrent']);
+
+        // Conditionally launch add index local_gugrades_prov.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024111101, 'local', 'gugrades');
+    }
+
     return true;
 }
