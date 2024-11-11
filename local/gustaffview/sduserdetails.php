@@ -66,7 +66,7 @@ $html = '';
 $html .= html_writer::div(html_writer::tag('h1',$title),'',['id' => 'staffview']);
 $html .= html_writer::div(get_string('staffview_summary', 'local_gustaffview'),'',['id' => 'staffview_summary']);
 $html .= html_writer::start_tag('div', ['id' => 'student_block', 'class' => 'row m-4']);
-$html .= html_writer::tag('label', 'Student: ', array('class' => 'col-md-2', 'for' => 'selectstudent'));
+$html .= html_writer::tag('label', 'Student: ', ['class' => 'col-md-2', 'for' => 'selectstudent']);
 
 $enrolledstudents = get_enrolled_users($context, 'moodle/grade:view', 0, 'u.id, u.firstname, u.lastname',  null, 0, 0, true);
 $studentoptions = [];
@@ -81,11 +81,14 @@ if (!empty($enrolledstudents)) {
 }
 
 $html .= html_writer::select($studentoptions, 'selectstudent', 0, '', array('id' => 'selectstudent', 'class' => 'col-md-3 ml-4'));
+//$mform = new \local_gustaffview\enrolled_students_picker( null, ['context' => $context]);
+//$html .= $mform->render();
 $html .= html_writer::end_tag('div');
 $html .= html_writer::tag('div', '',['id' => 'tmpContainer']);
 
 echo $html;
 
 $PAGE->requires->js_call_amd('local_gustaffview/dashboard', 'init');
+//$PAGE->requires->js_call_amd('local_gustaffview/potential-user-selector', 'init');
 
 echo $OUTPUT->footer();
