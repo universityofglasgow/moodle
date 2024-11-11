@@ -35,3 +35,4 @@ $string['readytosubmit'] = 'To be submitted';
 $string['privacy:metadata'] = 'The Staff View Student Dashboard plugin does not store any personal data.';
 $string['mygradesenabled'] = 'MyGrades';
 $string['regulargradebook'] = 'Gradebook';
+$string['selectuser'] = 'Select user';

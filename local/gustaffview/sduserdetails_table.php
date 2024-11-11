@@ -330,6 +330,9 @@ class sduserdetailscurrent_table extends table_sql
                 $releasegrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
                 if ($releasegrade) {
                     return get_string('mygradesenabled', 'local_gustaffview');
+                } else {
+                    // Fallback to whatever is in gradebook.
+                    return get_string('regulargradebook', 'local_gustaffview');
                 }
             } else {
                 // Fallback to whatever is in gradebook.
@@ -394,10 +397,12 @@ class sduserdetailscurrent_table extends table_sql
                 $hidden_or_locked = \local_gugrades\grades::is_grade_hidden_locked($itemid);
                 if ($hidden_or_locked[0] != 1 && $hidden_or_locked[1] != 1) {
                     $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                    $gradetodisplay = "<span class='status-graded'><strong>";
-                    $gradetodisplay .= \block_newgu_spdetails\grade::is_admin_or_generic_grade($releasedgrade->admingrade,
-                        $releasedgrade->displaygrade);
-                    $gradetodisplay .= "<strong></span>";
+                    if ($releasedgrade) {
+                        $gradetodisplay = "<span class='status-graded'><strong>";
+                        $gradetodisplay .= \block_newgu_spdetails\grade::is_admin_or_generic_grade($releasedgrade->admingrade,
+                            $releasedgrade->displaygrade);
+                        $gradetodisplay .= "<strong></span>";
+                    }
                 }
             } else {
                 $fallbacktogradebook = true;
