@@ -849,7 +849,7 @@ class grades {
             $map = $DB->get_record('local_gugrades_map', ['id' => $mapitem->mapid], '*', MUST_EXIST);
 
             $classname = 'local_gugrades\\mapping\\' . $map->scale;
-            if (!class_exists($classname, add_grades_to_user_records)) {
+            if (!class_exists($classname, true)) {
                 throw new \moodle_exception('Unknown conversion class - "' . $classname . '"');
             }
 
