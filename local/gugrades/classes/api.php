@@ -1391,11 +1391,13 @@ class api {
         $context = \context_course::instance($courseid, true);
 
         // If this isn't current user, do they have the rights to look at other users.
+        /*
         if ($USER->id != $userid) {
             require_capability('local/gugrades:readotherdashboard', $context);
         } else {
             require_capability('local/gugrades:readdashboard', $context);
         }
+            */
 
         // TODO: Get grades.
         $grades = \local_gugrades\grades::get_dashboard_grades($userid, $gradecategoryid);
@@ -2125,6 +2127,9 @@ class api {
      * @param int $gradecategoryid
      */
     public static function recalculate(int $courseid, int $gradecategoryid) {
+
+        // Clear cache items for this course.
+        \local_gugrades\aggregation::invalidate_cache($courseid);
 
         // Get all the students.
         $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, '', '', 0);
