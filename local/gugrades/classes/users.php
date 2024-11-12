@@ -71,7 +71,7 @@ class users {
             return new \local_gugrades\activities\manual($gradeitemid, $courseid, $groupid);
         } else {
             $classname = '\\local_gugrades\\activities\\' . $module . '_activity';
-            if (class_exists($classname)) {
+            if (class_exists($classname, true)) {
                 return new $classname($gradeitemid, $courseid, $groupid);
             } else {
                 return new \local_gugrades\activities\default_activity($gradeitemid, $courseid, $groupid);

@@ -251,5 +251,20 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024111101, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2024111200) {
+
+        // Define index gugrades_giid (not unique) to be added to local_gugrades_map_item.
+        $table = new xmldb_table('local_gugrades_map_item');
+        $index = new xmldb_index('gugrades_giid', XMLDB_INDEX_NOTUNIQUE, ['gradeitemid']);
+
+        // Conditionally launch add index gugrades_giid.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2024111200, 'local', 'gugrades');
+    }
+
     return true;
 }
