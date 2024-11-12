@@ -1,7 +1,7 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <button type="button" class="btn btn-outline-primary mr-1" @click="showreleasemodal=true">
+    <button type="button" class="btn btn-outline-primary mr-1" @click="release_button_clicked">
         <span v-if="props.released">
             <span v-if="grouprelease">{{ mstrings.unreleasegradesgroup }}</span>
             <span v-else>{{ mstrings.unreleasegrades }}</span>
@@ -13,6 +13,10 @@
     </button>
 
     <VueModal v-model="showreleasemodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releasegrades">
+
+        <div v-if="loading">
+            <PleaseWait></PleaseWait>
+        </div>
 
         <div class="p-2 border rounded">
             <h4>{{ mstrings.releasegrades }}</h4>
@@ -61,8 +65,10 @@
     import {ref, inject, defineProps, defineEmits, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const showreleasemodal = ref(false);
+    const loading = ref(false);
     const mstrings = inject('mstrings');
     const debug = ref({});
 
@@ -79,6 +85,14 @@
     const grouprelease = computed(() => {
         return props.groupid > 0;
     });
+
+    /**
+     * Release button clicked
+     */
+    function release_button_clicked() {
+        loading.value = false;
+        showreleasemodal.value = true;
+    }
 
     /**
      * Get current state of dashboard enabled/disabled
@@ -121,6 +135,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        loading.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_release_grades',
             args: {
@@ -132,8 +148,8 @@
         }])[0]
         .then(() => {
             emit('released');
-            showreleasemodal.value = false;
             get_dashboard_enabled();
+            showreleasemodal.value = false;
             toast.success(mstrings.gradesreleased);
         })
         .catch((error) => {
@@ -141,8 +157,6 @@
             showreleasemodal.value = false;
             debug.value = error;
         });
-
-        showreleasemodal.value = true;
     }
 
     /**
@@ -152,6 +166,8 @@
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
+
+        loading.value = true;
 
         fetchMany([{
             methodname: 'local_gugrades_release_grades',
@@ -164,15 +180,13 @@
         }])[0]
         .then(() => {
             emit('released');
-            showreleasemodal.value = false;
             get_dashboard_enabled();
+            showreleasemodal.value = false;
             toast.success(mstrings.gradesunreleased);
         })
         .catch((error) => {
             showreleasemodal.value = false;
             debug.value = error;
         });
-
-        showreleasemodal.value = true;
     }
 </script>
