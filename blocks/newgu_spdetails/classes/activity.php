@@ -132,6 +132,8 @@ class activity {
         $coursedata['courseitems'] = ((array_key_exists('courseitems', $activitiesdata)) ? $activitiesdata['courseitems'] : '');
         $coursedata['hasdata'] = ((!empty($activitiesdata['courseitems']) ? true : false));
         $coursedata['mygradesenabled'] = ((!empty($activitiesdata['mygradesenabled']) ? true : false));
+        //$coursedata['hascategorygrade'] = ((!empty($activitiesdata['hascategorygrade']) ? true : false));
+        //$coursedata['categorygrade'] = ((!empty($activitiesdata['categorygrade']) ? $activitiesdata['categorygrade'] : ''));
         $coursedata['hasgradecategory'] = ((array_key_exists('hasgradecategory', $activitiesdata)) ? true : false);
         $coursedata['hascourseitems'] = ((array_key_exists('hascourseitems', $activitiesdata)) ? true : false);
         $coursedata['weighttowardscourse'] = ((array_key_exists('weighttowardscourse', $activitiesdata)) ? $activitiesdata['weighttowardscourse'] : '-');
@@ -162,6 +164,15 @@ class activity {
             // This call should return grade data that has been processed through the MyGrades tool.
             // This includes grade category data as well as individual grade item data.
             $gradedata = api::get_aggregation_dashboard_user($courseid, $subcategory, $userid);
+
+            // MGU-1153 - Reinstate the label for the category grade.
+            // $data['hascategorygrade'] = false;
+            // if (is_object($gradedata->parent)) {
+            //     if ($gradedata->parent->released) {
+            //         $data['hascategorygrade'] = true;
+            //         $data['categorygrade'] = $gradedata->parent->displaygrade;
+            //     }
+            // }
             $tmpitems = $gradedata->fields;
 
             $gradecategories = [];
@@ -184,7 +195,8 @@ class activity {
 
             if ($gradecategories) {
                 $categorydata = [];
-                $categorydata = course::process_mygrades_subcategories($courseid, $gradecategories, $activityitems->categories, $assessmenttype);
+                $categorydata = course::process_mygrades_subcategories($courseid, $gradecategories, $activityitems->categories,
+                    $assessmenttype);
                 $data['courseitems'] = $categorydata;
                 $data['hasgradecategory'] = true;
             }
@@ -354,7 +366,8 @@ class activity {
                         if (is_object($mygradesitem['releasegrade'])) {
                             if (!$mygradesitem['grademissing']) {
                                 // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
-                                $mygradesactivityitem->grade = grade::is_admin_or_generic_grade($mygradesitem['releasegrade']->admingrade,
+                                $mygradesactivityitem->grade = grade::is_admin_or_generic_grade(
+                                    $mygradesitem['releasegrade']->admingrade,
                                     $mygradesitem['releasegrade']->displaygrade);
                                 $mygradesactivityitem->grade_class = true;
                                 $mygradesactivityitem->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
@@ -377,13 +390,15 @@ class activity {
                     $tmpgradeitem = $tmpgradeitems[$index];
 
                     if ($tmpgradeitem->itemtype == 'manual') {
-                        $mygradesdata[] = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype, 'mygradesenabled');
+                        $mygradesdata[] = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype,
+                            'mygradesenabled');
                     } else {
 
                         // MGU-1065 - We need to get a reference to this category first,
                         // we don't have access to it when processing "mygrades" items.
                         $gradecategoryweight = 0;
-                        if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' => $tmpgradeitem->iteminstance,
+                        if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' =>
+                            $tmpgradeitem->iteminstance,
                         'itemtype' => 'mod'])) {
                             $gradecategoryweight = course::get_grade_category_weight($item, $tmpgradeitem);
                         }
@@ -392,7 +407,8 @@ class activity {
                         if ($tmpgradecategory = \grade_category::fetch(['id' => $tmpgradeitem->categoryid, 'hidden' => 0])) {
                             $displayweights = self::get_display_activity_item_weights($gradecategoryweight, $tmpgradecategory);
                         }
-                        $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype, $displayweights);
+                        $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype,
+                            $displayweights);
                         $mygradesdata[] = array_shift($tmp);
                     }
                 }
@@ -435,10 +451,13 @@ class activity {
         if ($defaultitems && count($defaultitems) > 0) {
 
             foreach ($defaultitems as $defaultitem) {
+                // MGU-1181 - $defaultactivityitem needs to be reset after each iteration, to prevent is being added inadvertantly.
+                $defaultactivityitem = null;
                 if (!in_array($defaultitem->itemmodule, self::$excludedactivities)) {
                     // Cater for manual grade items that may have been added.
                     if ($defaultitem->itemtype == 'manual') {
-                        $defaultdata[] = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled', $whichuser);
+                        $defaultdata[] = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled',
+                            $whichuser);
                     } else {
                         $cm = get_coursemodule_from_instance($defaultitem->itemmodule, $defaultitem->iteminstance,
                         $defaultitem->courseid);
