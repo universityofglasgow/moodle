@@ -277,6 +277,7 @@ class activity {
                 $cm = null;
                 $modinfo = null;
                 $cms = null;
+                $processasgradebookitem = false;
                 if ($tmpgradeitems[$index]->itemtype != 'manual') {
                     $cm = get_coursemodule_from_instance($tmpgradeitems[$index]->itemmodule, $tmpgradeitems[$index]->iteminstance,
                     $tmpgradeitems[$index]->courseid);
@@ -284,116 +285,126 @@ class activity {
                     $cms = $modinfo->get_cms();
                 }
 
-                // Deal with the easy state first.
+                // Deal with ^a kind of^ easy state first.
                 if ($mygradesitem['released'] == true) {
-                    // We will assume here that as this item has been released, it is therefore not in a list of things to be
-                    // excluded, is not subject to being in a list of course module id's, is not a manual item and is not an
-                    // LTI activity that needs to be excluded.
-                    $itemicon = '';
-                    $iconalt = '';
-                    $iconrestricted = false;
-                    $assessmenturl = '';
-                    if ($cm) {
-                        if (array_key_exists($cm->id, $cms)) {
-                            $cm = $modinfo->get_cm($cm->id);
-                            $assessmenturl = $cm->url->out();
-                            if ($activityicon = self::get_activity_icon($cm, $tmpgradeitems[$index]->itemmodule)) {
-                                $itemicon = $activityicon->iconurl;
-                                $iconalt = $activityicon->iconalt;
+                    // The item may have been released, but is there a released grade for this item and for this student.
+                    if (is_object($mygradesitem['releasegrade'])) {
+                        // We will assume here that as this item has been released, it is therefore not in a list of things to be
+                        // excluded, is not subject to being in a list of course module id's, is not a manual item and is not an
+                        // LTI activity that needs to be excluded.
+                        $itemicon = '';
+                        $iconalt = '';
+                        $iconrestricted = false;
+                        $assessmenturl = '';
+                        if ($cm) {
+                            if (array_key_exists($cm->id, $cms)) {
+                                $cm = $modinfo->get_cm($cm->id);
+                                $assessmenturl = $cm->url->out();
+                                if ($activityicon = self::get_activity_icon($cm, $tmpgradeitems[$index]->itemmodule)) {
+                                    $itemicon = $activityicon->iconurl;
+                                    $iconalt = $activityicon->iconalt;
+                                }
                             }
                         }
-                    }
 
-                    if ($tmpgradeitems[$index]->itemtype == 'manual') {
-                        $iconalt = get_string('manualitem', 'grades');
-                    }
+                        if ($tmpgradeitems[$index]->itemtype == 'manual') {
+                            $iconalt = get_string('manualitem', 'grades');
+                        }
 
-                    // MGU-631 - Honour hidden grades and hidden activities.
-                    $isgradehidden = $mygradesitem['hidden'];
-                    $gradestatus = get_string('status_graded', 'block_newgu_spdetails');
-                    // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
-                    $activityduedate = 0;
-                    if ($cm) {
-                        $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
-                    }
-                    // @see MGU-1025.
-                    if ($activityduedate > 0) {
-                        $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
-                    } else {
-                        $duedate = 'N/A';
-                    }
-                    $rawduedate = $activityduedate;
-                    // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
-                    if (!$mygradesitem['dropped']) {
-                        $rawassessmentweight = (
-                            ($mygradesitem['normalisedweight'] != null) ? course::return_weight($mygradesitem['normalisedweight'])
-                            : (($mygradesitem['weight'] != null) ? course::return_weight(
-                                $mygradesitem['weight']) : '-'));
-                        $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
-                    } else {
-                        $rawassessmentweight = 0;
-                        $assessmentweight = '-';
-                    }
+                        // MGU-631 - Honour hidden grades and hidden activities.
+                        $isgradehidden = $mygradesitem['hidden'];
+                        $gradestatus = get_string('status_graded', 'block_newgu_spdetails');
+                        // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
+                        $activityduedate = 0;
+                        if ($cm) {
+                            $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
+                        }
+                        // @see MGU-1025.
+                        if ($activityduedate > 0) {
+                            $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
+                        } else {
+                            $duedate = 'N/A';
+                        }
+                        $rawduedate = $activityduedate;
+                        // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
+                        if (!$mygradesitem['dropped']) {
+                            $rawassessmentweight = (
+                                ($mygradesitem['normalisedweight'] != null) ? course::return_weight($mygradesitem['normalisedweight'])
+                                : (($mygradesitem['weight'] != null) ? course::return_weight(
+                                    $mygradesitem['weight']) : '-'));
+                            $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
+                        } else {
+                            $rawassessmentweight = 0;
+                            $assessmentweight = '-';
+                        }
 
-                    $mygradesactivityitem = new \stdClass();
-                    $mygradesactivityitem->id = $mygradesitem['id'];
-                    $mygradesactivityitem->sortorder = $tmpgradeitems[$index]->sortorder;
-                    $mygradesactivityitem->is_gradecategory = false;
-                    $mygradesactivityitem->assessment_url = $assessmenturl;
-                    $mygradesactivityitem->item_icon = $itemicon;
-                    $mygradesactivityitem->icon_alt = $iconalt;
-                    $mygradesactivityitem->icon_restricted = $iconrestricted;
-                    $mygradesactivityitem->item_name = $tmpgradeitems[$index]->itemname;
-                    $mygradesactivityitem->assessment_type = $assessmenttype;
-                    $mygradesactivityitem->assessment_weight = $assessmentweight;
-                    $mygradesactivityitem->raw_assessment_weight = $rawassessmentweight;
-                    $mygradesactivityitem->due_date = $duedate;
-                    $mygradesactivityitem->raw_due_date = $rawduedate;
-                    $mygradesactivityitem->grade_status = $gradestatus;
-                    $mygradesactivityitem->status_link = '';
-                    $mygradesactivityitem->status_class = '';
-                    $mygradesactivityitem->status_text = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-                    $mygradesactivityitem->grade = get_string('status_text_tobeconfirmed',
-                    'block_newgu_spdetails');
-                    $mygradesactivityitem->grade_class = false;
-                    $mygradesactivityitem->grade_provisional = false;
-                    $mygradesactivityitem->grade_feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-                    $mygradesactivityitem->grade_feedback_link = '';
-                    $mygradesactivityitem->mygradesenabled = true;
+                        $mygradesactivityitem = new \stdClass();
+                        $mygradesactivityitem->id = $mygradesitem['itemid'];
+                        $mygradesactivityitem->sortorder = $tmpgradeitems[$index]->sortorder;
+                        $mygradesactivityitem->is_gradecategory = false;
+                        $mygradesactivityitem->assessment_url = $assessmenturl;
+                        $mygradesactivityitem->item_icon = $itemicon;
+                        $mygradesactivityitem->icon_alt = $iconalt;
+                        $mygradesactivityitem->icon_restricted = $iconrestricted;
+                        $mygradesactivityitem->item_name = $tmpgradeitems[$index]->itemname;
+                        $mygradesactivityitem->assessment_type = $assessmenttype;
+                        $mygradesactivityitem->assessment_weight = $assessmentweight;
+                        $mygradesactivityitem->raw_assessment_weight = $rawassessmentweight;
+                        $mygradesactivityitem->due_date = $duedate;
+                        $mygradesactivityitem->raw_due_date = $rawduedate;
+                        $mygradesactivityitem->grade_status = $gradestatus;
+                        $mygradesactivityitem->status_link = '';
+                        $mygradesactivityitem->status_class = '';
+                        $mygradesactivityitem->status_text = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+                        $mygradesactivityitem->grade = get_string('status_text_tobeconfirmed',
+                        'block_newgu_spdetails');
+                        $mygradesactivityitem->grade_class = false;
+                        $mygradesactivityitem->grade_provisional = false;
+                        $mygradesactivityitem->grade_feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+                        $mygradesactivityitem->grade_feedback_link = '';
+                        $mygradesactivityitem->mygradesenabled = true;
 
-                    if (!$isgradehidden) {
-                        // The grade item may have been released, but it may not yet have been given a grade.
-                        if (is_object($mygradesitem['releasegrade'])) {
-                            if (!$mygradesitem['grademissing']) {
-                                // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
-                                $mygradesactivityitem->grade = grade::is_admin_or_generic_grade(
-                                    $mygradesitem['releasegrade']->admingrade,
-                                    $mygradesitem['releasegrade']->displaygrade);
-                                $mygradesactivityitem->grade_class = true;
-                                $mygradesactivityitem->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
-                                $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
-                                $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
-                                    'block_newgu_spdetails');
-                                $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
-                                    $tmpgradeitems[$index]->courseid;
+                        if (!$isgradehidden) {
+                            // The grade item may have been released, but it may not yet have been given a grade.
+                            if (is_object($mygradesitem['releasegrade'])) {
+                                if (!$mygradesitem['grademissing']) {
+                                    // MGU-1004 - Account for whether this is an Admin grade or just a regular grade.
+                                    $mygradesactivityitem->grade = grade::is_admin_or_generic_grade(
+                                        $mygradesitem['releasegrade']->admingrade,
+                                        $mygradesitem['releasegrade']->displaygrade);
+                                    $mygradesactivityitem->grade_class = true;
+                                    $mygradesactivityitem->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
+                                    $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
+                                    $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
+                                        'block_newgu_spdetails');
+                                    $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
+                                        $tmpgradeitems[$index]->courseid;
+                                }
                             }
                         }
-                    }
 
-                    if ($activetab == 'past') {
-                        unset($mygradesactivityitem->grade_status);
-                    }
+                        if ($activetab == 'past') {
+                            unset($mygradesactivityitem->grade_status);
+                        }
 
-                    $mygradesdata[] = $mygradesactivityitem;
+                        $mygradesdata[] = $mygradesactivityitem;
+                    } else {
+                        $processasgradebookitem = true;
+                    }
                 } elseif ($mygradesitem['released'] == false) {
-                    // Fallback to processing this as a regular Gradebook grade item if nothing has been released.
+                    $processasgradebookitem = true;
+                }
+
+                if ($processasgradebookitem) {
+                    // Fallback to processing this as a regular Gradebook grade item. The item may have been released,
+                    // but for this student there may not have been any MyGrades processing completed, or the item may
+                    // not even be applicable to them.
                     $tmpgradeitem = $tmpgradeitems[$index];
 
                     if ($tmpgradeitem->itemtype == 'manual') {
                         $mygradesdata[] = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype,
                             'mygradesenabled');
                     } else {
-
                         // MGU-1065 - We need to get a reference to this category first,
                         // we don't have access to it when processing "mygrades" items.
                         $gradecategoryweight = 0;
@@ -409,7 +420,10 @@ class activity {
                         }
                         $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype,
                             $displayweights);
-                        $mygradesdata[] = array_shift($tmp);
+                        // We need to check if we do indeed get a valid record back before adding it back to the return data.
+                        if ($tmp) {
+                            $mygradesdata[] = array_shift($tmp);
+                        }
                     }
                 }
                 $index++;
