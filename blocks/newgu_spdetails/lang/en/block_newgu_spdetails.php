@@ -111,6 +111,7 @@ $string['header_gradecategory'] = 'Grade Category Grade';
 $string['label_course'] = 'Course: ';
 $string['label_componentname'] = 'Component: ';
 $string['label_weight'] = 'Weight towards course: ';
+$string['label_coursecategorygrade'] = 'Category grade: ';
 $string['label_grade'] = 'Overall grade: ';
 $string['previous'] = 'Previous';
 $string['back_to'] = 'Back to assessment details';

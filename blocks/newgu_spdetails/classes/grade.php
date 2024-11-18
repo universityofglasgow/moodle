@@ -25,6 +25,10 @@
 
 namespace block_newgu_spdetails;
 
+require_once($CFG->libdir . '/grade/grade_scale.php');
+
+use grade_scale;
+
 /**
  * This class provides utility methods for grading attributes.
  */
@@ -209,7 +213,7 @@ class grade {
                 $scaleparams = [
                     'id' => $scaleid,
                 ];
-                $scale = new \grade_scale($scaleparams, false);
+                $scale = new grade_scale($scaleparams, false);
                 $returngrade = $scale->get_nearest_item($grade);
                 break;
 

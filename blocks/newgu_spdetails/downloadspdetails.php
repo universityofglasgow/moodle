@@ -28,7 +28,6 @@
 
 require_once(dirname(dirname(__FILE__)) . '../../config.php');
 require_once("$CFG->libdir/excellib.class.php");
-require_once('locallib.php');
 
 defined('MOODLE_INTERNAL') || die();
 
