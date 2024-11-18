@@ -5,8 +5,8 @@
     <VueModal v-model="showhistorymodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.gradehistory">
         <div>
             <ul class="list-unstyled">
-                <li><b>{{ mstrings.name }}:</b> {{ name }}</li>
-                <li><b>{{ mstrings.itemname }}:</b> {{ itemname }}</li>
+                <li><b>{{ mstrings.name }}:</b> {{ props.name }}</li>
+                <li><b>{{ mstrings.itemname }}:</b> {{ props.itemname }}</li>
             </ul>
         </div>
         <div v-if="grades.length == 0" class="alert alert-warning">{{ mstrings.nohistory }}</div>

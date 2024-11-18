@@ -423,6 +423,7 @@ class aggregation {
         //$user->error = $item->auditcomment;
         $user->error = '';
         $user->overridden = $item->catoverride;
+        $user->itemname = $gcat->fullname;
 
         // Mismatch (can possibly do better).
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradecatitem->id);
