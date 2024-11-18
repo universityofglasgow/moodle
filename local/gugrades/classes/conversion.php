@@ -399,6 +399,10 @@ class conversion {
 
         if ($gradeitemid) {
             self::apply_capture_conversion($courseid, $gradeitemid, $mapinfo);
+
+            // Get the containing gradecategory for aggregation recalc.
+            $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+            \local_gugrades\api::recalculate($courseid, $gradeitem->categoryid);
         } else {
 
             // Recalculate everything :(

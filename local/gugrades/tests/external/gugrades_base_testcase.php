@@ -92,6 +92,20 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Get gradeitemid from grade category name
+     * @param string $catname
+     * @return int
+     */
+    public function get_gradeitemid_from_grade_category(string $catname) {
+        global $DB;
+
+        $catid = $this->get_grade_category($catname);
+        $item = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $catid], '*', MUST_EXIST);
+
+        return $item->id;
+    }
+
+    /**
      * Fill local_gugrades_scalevalue table
      * @param array $scale
      * @param int $scaleid

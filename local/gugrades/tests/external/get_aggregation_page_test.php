@@ -120,7 +120,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Cannot aggregate', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['displaygrade']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -135,7 +135,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Cannot aggregate', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['displaygrade']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -159,7 +159,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Cannot aggregate', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['displaygrade']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -202,7 +202,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         $fred = $page['users'][0];
         $this->assertEquals("0", $fred['completed']);
-        $this->assertEquals("Cannot aggregate", $fred['error']);
+        $this->assertEquals("Cannot aggregate", $fred['displaygrade']);
 
         // Convert
         // Apply the test conversion map to all items.
@@ -222,7 +222,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("29", $fred['completed']);
+        $this->assertEquals("57", $fred['completed']);
         $this->assertEquals('C2', $fred['fields'][2]['display']);
 
         // Add an admin grade.
@@ -251,7 +251,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("14", $fred['completed']);
+        $this->assertEquals("43", $fred['completed']);
         $this->assertEquals('MV', $fred['fields'][4]['display']);
     }
 

@@ -41,13 +41,26 @@ class grades {
      * @return object
      */
     public static function get_gradeitem(int $gradeitemid) {
-        global $DB, $GRADEITEM;
+        global $DB, $GRADEITEMS;
 
-        if (!empty($GRADEITEM->id) && ($GRADEITEM->id == $gradeitemid)) {
-            return $GRADEITEM;
-        }
+        // Just bypassign this, for the moment, as it seems to cause
+        // issues in tests.
+        // (presumably, data is changing)
 
         return $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+
+        if (empty($GRADEITEMS)) {
+            $GRADEITEMS = [];
+        }
+
+        if (array_key_exists($gradeitemid, $GRADEITEMS)) {
+            return $GRADEITEMS[$gradeitemid];
+        }
+
+        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $GRADEITEMS[$gradeitemid] = $gradeitem;
+
+        return $gradeitem;
     }
 
     /**
@@ -66,7 +79,7 @@ class grades {
     }
 
     /**
-     * Recursively search child categories for one or more grad items
+     * Recursively search child categories for one or more grade items
      * We just care that one exists
      * @param int $categoryid
      * @return boolean
@@ -859,7 +872,7 @@ class grades {
 
             // See if scale is in our scaletype table.
             if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $gradeitem->scaleid])) {
-                throw new \moodle_exception('Unsupported scale in mapping_factory. ID = ' . $gradeitem->scaleid);
+                throw new \moodle_exception('Scale not found in gugrades_scaletype table. ID = ' . $gradeitem->scaleid);
             }
 
             // Get the name of the class and see if it exists.

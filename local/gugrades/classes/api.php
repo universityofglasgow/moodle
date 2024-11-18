@@ -1509,7 +1509,7 @@ class api {
      * @param int $courseid
      */
     public static function reset(int $courseid) {
-        global $DB;
+        global $DB, $GRADEITEMS;
 
         // Delete grades.
         $DB->delete_records('local_gugrades_grade', ['courseid' => $courseid]);
@@ -1533,6 +1533,9 @@ class api {
 
         // Delete altered weight.
         $DB->delete_records('local_gugrades_altered_weight', ['courseid' => $courseid]);
+
+        // "Cached" gradeitems.
+        $GRADEITEMS = [];
 
         // Clear cache items for this course.
         \local_gugrades\aggregation::invalidate_cache($courseid);

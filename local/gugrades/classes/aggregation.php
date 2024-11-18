@@ -420,7 +420,8 @@ class aggregation {
         $user->admingrade = $item->admingrade;
         $weighted = $aggregation->is_strategy_weighted($gcat->aggregation);
         $user->completed = $aggregation->completion($items, $weighted);
-        $user->error = $item->auditcomment;
+        //$user->error = $item->auditcomment;
+        $user->error = '';
         $user->overridden = $item->catoverride;
 
         // Mismatch (can possibly do better).

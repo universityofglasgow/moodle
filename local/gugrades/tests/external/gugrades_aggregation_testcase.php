@@ -264,20 +264,6 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
     }
 
     /**
-     * Get gradeitemid from grade category name
-     * @param string $catname
-     * @return int
-     */
-    public function get_gradeitemid_from_grade_category(string $catname) {
-        global $DB;
-
-        $catid = $this->get_grade_category($catname);
-        $item = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $catid], '*', MUST_EXIST);
-
-        return $item->id;
-    }
-
-    /**
      * Import json data
      * Data refers to item names already uploaded in the schema,
      * so make sure the data matches the schema!
