@@ -46,8 +46,6 @@ if (!$course = $DB->get_record('course', ['id' => $courseid])) {
 
 require_login($course);
 
-require_once($CFG->dirroot . '/blocks/newgu_spdetails/locallib.php');
-
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
 $title = get_string('staffview', 'local_gustaffview');

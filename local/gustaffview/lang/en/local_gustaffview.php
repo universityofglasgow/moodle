@@ -36,3 +36,4 @@ $string['privacy:metadata'] = 'The Staff View Student Dashboard plugin does not 
 $string['mygradesenabled'] = 'MyGrades';
 $string['regulargradebook'] = 'Gradebook';
 $string['selectuser'] = 'Select user';
+$string['manualitem'] = 'Manual item';

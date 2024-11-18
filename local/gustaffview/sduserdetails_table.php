@@ -56,7 +56,7 @@ class sduserdetailscurrent_table extends table_sql
     function __construct($unequeid)
     {
         parent::__construct($unequeid);
-        
+
         // Define the list of columns to show.
         $columns = [
             'assessment',
@@ -73,70 +73,12 @@ class sduserdetailscurrent_table extends table_sql
         $this->collapsible(false);
         $this->define_columns($columns);
 
-        $tdr = optional_param('tdr', '', PARAM_INT);
-        $ts = optional_param('ts', '', PARAM_ALPHA);
-        $page = optional_param('page', 0, PARAM_INT);
-        $tdrnew = 4;
-        $tdirdd_icon = '';
-        $tdirat_icon = '';
-        $tdiract_icon = '';
-
-        switch($ts) {
-            case 'assessmenttype':
-                $tdirat_icon = ' <i class="fa fa-caret-';
-                switch ($tdr) {
-                    case 3:
-                        $tdirat_icon .= 'up';
-                        break;
-                    case 4:
-                        $tdirat_icon .= 'down';
-                        $tdrnew = 3;
-                        break;
-
-                }
-                $tdirat_icon .= '" data-ts="assessmenttype" data-tdr="' . $tdrnew . '"></i>';
-                break;
-
-            case 'itemmodule':
-                $tdiract_icon = ' <i class="fa fa-caret-';
-                switch ($tdr) {
-                    case 3:
-                        $tdiract_icon .= 'up';
-                        break;
-                    case 4:
-                        $tdiract_icon .= 'down';
-                        $tdrnew = 3;
-                        break;
-
-                }
-                $tdiract_icon .= '" data-ts="itemmodule" data-tdr="' . $tdrnew . '"></i>';
-                break;
-
-            case 'duedate':
-                $tdirdd_icon = ' <i class="fa fa-caret-';
-                switch($tdr) {
-                    case 3:
-                        $tdirdd_icon .= 'up';
-                    break;
-
-                    case 4:
-                        $tdirdd_icon .= 'down';
-                        $tdrnew = 3;
-                    break;
-                }
-                $tdirdd_icon .= '" data-ts="duedate" data-tdr="' . $tdrnew . '"></i>';
-                break;
-        }
-
         $headers = [
             get_string('assessment'),
-            '<a data-page="' . $page . '" data-ts="assessmenttype" data-tdr="' . $tdrnew . '" href="#">' .
-            get_string('assessmenttype','block_newgu_spdetails') . $tdirat_icon . '</a>',
+            get_string('assessmenttype','block_newgu_spdetails'),
             get_string('weight', 'block_newgu_spdetails'),
-            '<a data-page="' . $page . '" data-ts="itemmodule" data-tdr="' . $tdrnew . '" href="#">' . get_string('activity') .
-            $tdiract_icon . '</a>',
-            '<a data-page="' . $page . '" data-ts="duedate" data-tdr="' . $tdrnew . '" href="#">' . get_string('duedate',
-                'block_newgu_spdetails') . $tdirdd_icon . '</a>',
+            get_string('activity'),
+            get_string('duedate', 'block_newgu_spdetails'),
             get_string('source', 'block_newgu_spdetails'),
             get_string('status'),
             get_string('grade', 'local_gustaffview'),
@@ -151,13 +93,20 @@ class sduserdetailscurrent_table extends table_sql
      */
     function col_assessment($values){
         global $CFG;
-
-        $itemname = $values->itemname;
-        $modulename = $values->itemmodule;
-        $iteminstance = $values->iteminstance;
-        $courseid = $values->courseid;
-        $cmid = \block_newgu_spdetails\course::get_cmid($modulename, $courseid, $iteminstance);
-        $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
+        $link = '';
+        if ($values->itemtype == 'manual') {
+            $userid = $values->userid;
+            $manualitem = \block_newgu_spdetails\activity::process_manual_grade_item($values, 'current', '', $userid);
+            $link = true;
+            $itemname = $manualitem->item_name;
+        } else {
+            $itemname = $values->itemname;
+            $modulename = $values->itemmodule;
+            $iteminstance = $values->iteminstance;
+            $courseid = $values->courseid;
+            $cmid = \block_newgu_spdetails\course::get_cmid($modulename, $courseid, $iteminstance);
+            $link = $CFG->wwwroot . '/mod/' . $modulename . '/view.php?id=' . $cmid;
+        }
 
         if (!empty($link)) {
             return $itemname;
@@ -247,7 +196,13 @@ class sduserdetailscurrent_table extends table_sql
      * @return mixed
      */
     function col_itemmodule($values){
-        return ucfirst($values->itemmodule);
+        if ($values->itemtype == 'manual') {
+            return get_string('manualitem', 'local_gustaffview');
+        } else {
+            return ucfirst($values->itemmodule);
+        }
+
+        return '';
     }
 
     /**
@@ -255,51 +210,49 @@ class sduserdetailscurrent_table extends table_sql
      * @return string
      */
     function col_duedate($values){
-        global $DB;
-
         $userid = $values->userid;
         $modulename = $values->itemmodule;
         $gradeitemid = $values->id;
         $courseid = $values->courseid;
-        $duedate = 0;
+        $duedate = 'N/A';
 
-        if ($modulename!="") {
+        if ($modulename != '') {
             switch($modulename) {
-                case "assign":
+                case 'assign':
                     $activity = new assign_activity($gradeitemid, $courseid, 0);
                     break;
-                case "forum":
+                case 'forum':
                     $activity = new forum_activity($gradeitemid, $courseid, 0);
                     break;
 
-                case "h5pactivity":
+                case 'h5pactivity':
                     $activity = new h5pactivity_activity($gradeitemid, $courseid, 0);
                     break;
-                case "hvp":
+                case 'hvp':
                     $activity = new hvp_activity($gradeitemid, $courseid, 0);
                     break;
-                case "kalvidassign":
+                case 'kalvidassign':
                     $activity = new kalvidassign_activity($gradeitemid, $courseid, 0);
                     break;
-                case "lesson":
+                case 'lesson':
                     $activity = new lesson_activity($gradeitemid, $courseid, 0);
                     break;
-                case "lti":
+                case 'lti':
                     $activity = new lti_activity($gradeitemid, $courseid, 0);
                     break;
-                case "peerwork":
+                case 'peerwork':
                     $activity = new peerwork_activity($gradeitemid, $courseid, 0);
                     break;
-                case "quiz":
+                case 'quiz':
                     $activity = new quiz_activity($gradeitemid, $courseid, 0);
                     break;
-                case "questionnaire":
+                case 'questionnaire':
                     $activity = new questionnaire_activity($gradeitemid, $courseid, 0);
                     break;
-                case "scorm":
+                case 'scorm':
                     $activity = new scorm_activity($gradeitemid, $courseid, 0);
                     break;
-                case "workshop":
+                case 'workshop':
                     $activity = new workshop_activity($gradeitemid, $courseid, 0);
                     break;
                 default:
@@ -366,19 +319,37 @@ class sduserdetailscurrent_table extends table_sql
                     'block_newgu_spdetails') . "</span>";
             } else {
                 // Fallback to whatever is in gradebook.
+                if ($values->itemtype == 'manual') {
+                    $gradestatus = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid, $itemid,
+                        $userid, $gradetype, $scaleid, $grademax);
+                    if ($gradestatus) {
+                        $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
+                        "</span>";
+                    }
+                } else {
+                    $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
+                        $scaleid, $grademax, '');
+                    if ($gradestatus) {
+                        $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
+                        "</span>";
+                    }
+                }
+            }
+        } elseif (!$mygradesenabled) {
+            if ($values->itemtype == 'manual') {
+                $gradestatus = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid, $itemid,
+                    $userid, $gradetype, $scaleid, $grademax);
+                if ($gradestatus) {
+                    $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
+                    "</span>";
+                }
+            } else {
                 $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
                     $scaleid, $grademax, '');
                 if ($gradestatus) {
                     $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
                     "</span>";
                 }
-            }
-        } elseif (!$mygradesenabled) {
-            $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
-                $scaleid, $grademax, '');
-            if ($gradestatus) {
-                $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
-                "</span>";
             }
         }
 
@@ -424,15 +395,27 @@ class sduserdetailscurrent_table extends table_sql
         // MGU-1152 - Default to using whatever was added/released in Gradebook.
         if ($fallbacktogradebook) {
             $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
-            $activitydata = \block_newgu_spdetails\activity::process_default_items([$values], 'current', $ltiactivities, '',
-            false, $userid);
+            if ($values->itemtype == 'manual') {
+                $activitydata[] = \block_newgu_spdetails\activity::process_manual_grade_item($values, 'current', '', $userid);
+            } else {
+                $activitydata = \block_newgu_spdetails\activity::process_default_items([$values], 'current', $ltiactivities, '',
+                false, $userid);
+            }
             $opentag = '';
             $closetag = '';
-            if ($activitydata[0]->grade_status == get_string('status_graded', 'block_newgu_spdetails')) {
+            if ($activitydata[0]->grade_status == get_string('status_graded', 'block_newgu_spdetails') &&
+            $activitydata[0]->grade != get_string('status_text_tobeconfirmed', 'block_newgu_spdetails')) {
                 $opentag = "<span class='status-graded'><strong>";
                 $closetag = "<strong></span>";
             }
-            $gradetodisplay = $opentag . $activitydata[0]->grade . $closetag;
+            $activitygrade = $activitydata[0]->grade;
+            if ($activitydata[0]->grade != get_string('status_text_tobeconfirmed', 'block_newgu_spdetails')) {
+                if (is_numeric($activitydata[0]->grade)) {
+                    $activitygrade = \block_newgu_spdetails\grade::get_formatted_grade_from_grade_type($activitydata[0]->grade,
+                        $values->gradetype, $values->scaleid, $values->grademax);
+                }
+            }
+            $gradetodisplay = $opentag . $activitygrade . $closetag;
         }
 
         return $gradetodisplay;
@@ -450,26 +433,58 @@ class sduserdetailscurrent_table extends table_sql
         $scaleid = $values->scaleid;
         $grademax = $values->grademax;
         $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($courseid);
+        $processmanualitemfeedback = false;
+        $processgradebookfeedback = false;
         $feedback = '-';
 
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
                 $releasegrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
+                // Not sure what needs to be displayed here as the spec doesn't define things clearly enough.
                 $feedback = $releasegrade->auditcomment;
             } else {
                 // Fallback to whatever is in gradebook.
-                $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid,
-                    $gradetype, $scaleid, $grademax, '');
-                if ($gradefeedback) {
-                    $feedback = $gradefeedback->grade_feedback;
+                if ($values->itemtype == 'manual') {
+                    $processmanualitemfeedback = true;
+                } else {
+                    $processgradebookfeedback = true;
                 }
             }
         } elseif (!$mygradesenabled) {
+            if ($values->itemtype == 'manual') {
+                $processmanualitemfeedback = true;
+            } else {
+                $processgradebookfeedback = true;
+            }
+        }
+
+        if ($processmanualitemfeedback) {
+            $manualgradefeedback = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid,
+                $itemid,
+                $userid,
+                $gradetype,
+                $scaleid,
+                $grademax
+            );
+            if ($manualgradefeedback) {
+                $feedback = $manualgradefeedback->grade_feedback;
+                $manualgradefeedbacklink = $manualgradefeedback->grade_feedback_link;
+                if ($manualgradefeedbacklink) {
+                    $feedback = '<a href="' . $manualgradefeedbacklink . '">' . $manualgradefeedback->grade_feedback . '</a>';
+                }
+            }
+        }
+
+        if ($processgradebookfeedback) {
             $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
                 $scaleid, $grademax, '');
             if ($gradefeedback) {
                 $feedback = $gradefeedback->grade_feedback;
+                $gradefeedbacklink = $gradefeedback->grade_feedback_link;
+                if ($gradefeedbacklink) {
+                    $feedback = '<a href="' . $gradefeedbacklink . '">' . $gradefeedback->grade_feedback . '</a>';
+                }
             }
         }
 
