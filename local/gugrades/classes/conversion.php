@@ -362,9 +362,14 @@ class conversion {
                 \local_gugrades\grades::cleanup_empty_columns($gradeitemid);
             }
 
-            // If we deleted a category override, we need to recalculate
-            if ($category) {
+            // Get the containing gradecategory for aggregation recalc.
+            if ($gradecategoryid) {
                 \local_gugrades\api::recalculate($courseid, $gradecategoryid);
+            } else if ($gradeitemid){
+                $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+                if ($gradeitem->categoryid) {
+                    \local_gugrades\api::recalculate($courseid, $gradeitem->categoryid);
+                }
             }
 
             return;

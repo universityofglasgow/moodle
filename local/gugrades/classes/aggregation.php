@@ -136,7 +136,7 @@ class aggregation {
     public static function get_columns(int $courseid, int $gradecategoryid) {
         global $DB;
 
-        // Clear reset cache foravailability (lists of users).
+        // Clear reset cache for availability (lists of users).
         \local_gugrades\users::clear_availability_cache($courseid);
 
         // Accumulate any warnings.

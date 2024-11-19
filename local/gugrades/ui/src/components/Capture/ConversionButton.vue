@@ -211,6 +211,7 @@
         .then(() => {
             waiting.value = false;
             toast.success('Map selection removed');
+            showselectmodal.value = false;
             emits('converted');
         })
         .catch((error) => {
@@ -218,7 +219,5 @@
             showselectmodal.value = false;
             debug.value = error;
         });
-
-        showselectmodal.value = false;
     }
 </script>
