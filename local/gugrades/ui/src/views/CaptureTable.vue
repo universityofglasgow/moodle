@@ -682,4 +682,8 @@
     .capture-warning {
         font-size: 125%;
     }
+
+    .buttons-pagination .item.button.active {
+        color: black !important;
+    }
 </style>

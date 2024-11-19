@@ -630,4 +630,8 @@
     .border-lg {
         border-width: thick !important;
     }
+
+    .buttons-pagination .item.button.active {
+        color: black !important;
+    }
 </style>

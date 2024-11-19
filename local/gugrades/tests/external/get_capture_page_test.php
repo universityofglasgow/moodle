@@ -82,7 +82,7 @@ final class get_capture_page_test extends \local_gugrades\external\gugrades_adva
             $status
         );
 
-        xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
+        //xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
 
         // Get first csv test string.
         $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign2, '', '', 0, false);
@@ -91,7 +91,7 @@ final class get_capture_page_test extends \local_gugrades\external\gugrades_adva
             $page
         );
 
-        file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         $this->assertIsArray($page);
         $this->assertEquals('assign', $page['itemtype']);

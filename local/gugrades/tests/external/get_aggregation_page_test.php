@@ -96,7 +96,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         // Install test data for student.
         $this->load_data('data1a', $this->student->id);
 
-        xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
+        //xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
@@ -107,7 +107,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             );
         }
 
-        file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         // Get first csv test string.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, true);

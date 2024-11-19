@@ -129,7 +129,7 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
         // Set aggregation strategy.
         $this->set_strategy($this->gradecatsummative->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
-        xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
+        //xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
 
         // Get aggregation page for above.
         $start = microtime(true);
@@ -141,7 +141,7 @@ final class aggregation_schema9_test extends \local_gugrades\external\gugrades_a
         $end = microtime(true);
         $elapsed = $end - $start;
 
-        file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         $debug = $page['debug'];
     }
