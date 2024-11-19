@@ -155,11 +155,13 @@ class users {
      * @param object $cm
      * @param int $userid
      */
+    /*
     public static function is_user_visible(object $cm, int $userid) {
         $info = new \core_availability\info_module($cm);
 
         return $info->is_user_visible($cm, $userid, false);
     }
+    */
 
     /**
      * Add pictures to user records

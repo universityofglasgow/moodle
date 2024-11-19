@@ -150,11 +150,17 @@ abstract class base {
 
         // Unique cache tag for course and gradeitem.
         $cachetag = 'AVAILABLE_' . $this->courseid . '_' . $this->gradeitemid;
+
+        // README: Disable cache for now as may be causing problems - MGU-1171
+        /*
         if (!$userids = $cache->get($cachetag)) {
             $users = $this->get_users();
             $userids = array_column($users, 'id');
             $cache->set($cachetag, $userids);
-        }
+        }*/
+
+        $users = $this->get_users();
+        $userids = array_column($users, 'id');
 
         return $userids;
     }
