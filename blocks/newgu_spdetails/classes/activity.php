@@ -128,7 +128,8 @@ class activity {
         $coursedata['hidestatuscol'] = (($activetab == 'past') ? true : false);
 
         $activities = api::get_activities($course->id, $subcategoryid);
-        $activitiesdata = self::process_get_activities($activities, $course->id, $subcategoryid, $userid, $activetab, $assessmenttype);
+        $activitiesdata = self::process_get_activities($activities, $course->id, $subcategoryid, $userid, $activetab,
+            $assessmenttype);
         $coursedata['courseitems'] = ((array_key_exists('courseitems', $activitiesdata)) ? $activitiesdata['courseitems'] : '');
         $coursedata['hasdata'] = ((!empty($activitiesdata['courseitems']) ? true : false));
         $coursedata['mygradesenabled'] = ((!empty($activitiesdata['mygradesenabled']) ? true : false));
@@ -136,7 +137,8 @@ class activity {
         //$coursedata['categorygrade'] = ((!empty($activitiesdata['categorygrade']) ? $activitiesdata['categorygrade'] : ''));
         $coursedata['hasgradecategory'] = ((array_key_exists('hasgradecategory', $activitiesdata)) ? true : false);
         $coursedata['hascourseitems'] = ((array_key_exists('hascourseitems', $activitiesdata)) ? true : false);
-        $coursedata['weighttowardscourse'] = ((array_key_exists('weighttowardscourse', $activitiesdata)) ? $activitiesdata['weighttowardscourse'] : '-');
+        $coursedata['weighttowardscourse'] = ((array_key_exists('weighttowardscourse', $activitiesdata)) ?
+            $activitiesdata['weighttowardscourse'] : '-');
         $activitydata['coursedata'] = $coursedata;
 
         return $activitydata;
@@ -250,11 +252,9 @@ class activity {
 
     /**
      * Process and prepare for display MyGrades specific gradable items.
-     *
-     * Agreement between HM/TW/GP that we're only displaying items that
-     * are visible - so if an assessment has been graded and then the item
-     * hidden - this will not display. No further checks for hidden grades
-     * are being done - based on how Moodle currenly does things.
+     * Grade items should honour what has been entered via the MyGrades tool. This can 
+     * include altered weights for example. Fallback to honouring what has been set up
+     * in Gradebook - (think restrictions, visibility etc).
      *
      * @param array $mygradesitems
      * @param array $tmpgradeitems
@@ -326,16 +326,18 @@ class activity {
                             $duedate = 'N/A';
                         }
                         $rawduedate = $activityduedate;
+                        $rawassessmentweight = 0;
+                        $assessmentweight = '-';
                         // If we're using a weighted strategy with a drop the lowest [n] configuration, don't display the weight.
                         if (!$mygradesitem['dropped']) {
-                            $rawassessmentweight = (
-                                ($mygradesitem['normalisedweight'] != null) ? course::return_weight($mygradesitem['normalisedweight'])
-                                : (($mygradesitem['weight'] != null) ? course::return_weight(
-                                    $mygradesitem['weight']) : '-'));
-                            $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
-                        } else {
-                            $rawassessmentweight = 0;
-                            $assessmentweight = '-';
+                            // MGU-1176 - Don't display the activity item's weight if an admin grade has been entered.
+                            if (!$mygradesitem['isadmin']) {
+                                $rawassessmentweight = (
+                                ($mygradesitem['normalisedweight'] != null) ? course::return_weight(
+                                    $mygradesitem['normalisedweight']) : (($mygradesitem['weight'] != null) ?
+                                    course::return_weight($mygradesitem['weight']) : '-'));
+                                $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
+                            }
                         }
 
                         $mygradesactivityitem = new \stdClass();
@@ -373,7 +375,8 @@ class activity {
                                         $mygradesitem['releasegrade']->admingrade,
                                         $mygradesitem['releasegrade']->displaygrade);
                                     $mygradesactivityitem->grade_class = true;
-                                    $mygradesactivityitem->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
+                                    $mygradesactivityitem->status_class = get_string('status_class_graded',
+                                        'block_newgu_spdetails');
                                     $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
                                     $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
                                         'block_newgu_spdetails');
@@ -409,8 +412,7 @@ class activity {
                         // we don't have access to it when processing "mygrades" items.
                         $gradecategoryweight = 0;
                         if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' =>
-                            $tmpgradeitem->iteminstance,
-                        'itemtype' => 'mod'])) {
+                            $tmpgradeitem->iteminstance, 'itemtype' => 'mod'])) {
                             $gradecategoryweight = course::get_grade_category_weight($item, $tmpgradeitem);
                         }
 
@@ -576,7 +578,8 @@ class activity {
                                 $defaultactivityitem->raw_due_date = 0;
                                 $defaultactivityitem->grade_status = get_string('status_text_restricted', 'block_newgu_spdetails');
                                 $defaultactivityitem->status_link = '';
-                                $defaultactivityitem->status_class = get_string('status_class_restricted', 'block_newgu_spdetails');
+                                $defaultactivityitem->status_class = get_string('status_class_restricted',
+                                    'block_newgu_spdetails');
                                 $defaultactivityitem->status_text = get_string('status_text_restricted', 'block_newgu_spdetails');
                                 $defaultactivityitem->grade = $grade;
                                 $defaultactivityitem->grade_class = $gradeclass;

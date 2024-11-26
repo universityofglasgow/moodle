@@ -81,7 +81,8 @@ if ($str_itemsnotvisibletouser != '') {
         . ' OR gi.itemmodule != "lti")';
     }
     
-    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") OR gi.itemmodule NOT IN ("attendance", "game")) AND gi.id NOT IN (' .
+    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
+    . ' "game"))) AND gi.id NOT IN (' .
     $str_itemsnotvisibletouser . ') AND gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id';
 } else {
     $whereclause = 'gi.courseid = ' . $courseid;
@@ -91,7 +92,8 @@ if ($str_itemsnotvisibletouser != '') {
         . ' OR gi.itemmodule != "lti")';
     }
 
-    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") OR gi.itemmodule NOT IN ("attendance", "game")) AND gi.courseid = c.id AND '
+    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
+    . ' "game"))) AND gi.courseid = c.id AND '
     . 'gc.courseid = c.id GROUP BY gi.id';
 }
 
