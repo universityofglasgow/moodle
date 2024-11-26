@@ -76,6 +76,8 @@ $services = [
             'local_gugrades_get_aggregation_user',
             'local_gugrades_get_alter_weight_form',
             'local_gugrades_save_altered_weights',
+            'local_gugrades_get_aggregation_export_plugins',
+            'local_gugrades_get_aggregation_export_form',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -376,6 +378,18 @@ $functions = [
         'classname' => 'local_gugrades\external\save_altered_weights',
         'description' => 'Save the modified weights for a single aggregated user.',
         'type' => 'write',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_aggregation_export_plugins' => [
+        'classname' => 'local_gugrades\external\get_aggregation_export_plugins',
+        'description' => 'Get the list of available plugins for aggregation export.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_aggregation_export_form' => [
+        'classname' => 'local_gugrades\external\get_aggregation_export_form',
+        'description' => 'Get the options form for export plugin (if there is one).',
+        'type' => 'read',
         'ajax' => true,
     ],
 ];

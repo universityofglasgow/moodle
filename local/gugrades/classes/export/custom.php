@@ -15,21 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
- *
+ * Custom aggregation export
  * @package    local_gugrades
- * @copyright  2022
+ * @copyright  2024
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_gugrades\export;
 
-$plugin->version      = 2024112200;
-$plugin->requires     = 2022041900; // Moodle 4.0.
-$plugin->component    = 'local_gugrades';
+/**
+ * Access data in course activities
+ *
+ */
+class custom extends base {
 
-$plugin->maturity     = MATURITY_BETA;
+    /**
+     * Define name of export
+     * @return string
+     */
+    public function get_name() {
+        return get_string('customexport', 'local_gugrades');
+    }
 
-$plugin->release      = '0.1 Beta';
-
+}

@@ -2216,4 +2216,27 @@ class api {
         // Re-aggregate this user
         \local_gugrades\aggregation::aggregate_user_helper($courseid, $categoryid, $userid);
     }
+
+    /**
+     * Get list of aggregation export plugins
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return array
+     */
+    public static function get_aggregation_export_plugins(int $courseid, int $gradecategoryid) {
+
+        return \local_gugrades\export::get_aggregation_export_plugins($courseid, $gradecategoryid);
+    }
+
+    /**
+     * Get aggregation export form
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param string $plugin
+     * @return array
+     */
+    public static function get_aggregation_export_form(int $courseid, int $gradecategoryid, string $plugin) {
+
+        return \local_gugrades\export::get_aggregation_export_form($courseid, $gradecategoryid, $plugin);
+    }
 }

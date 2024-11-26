@@ -9,6 +9,7 @@
             :released="props.released"
             @released="refreshtable"
         ></ReleaseCategoryButton>
+        <ExportAggregationButton v-if="props.toplevel" :categoryid="props.categoryid" :groupid="props.groupid"></ExportAggregationButton>
     </div>
 </template>
 
@@ -17,6 +18,7 @@
     import RecalculateButton from '@/components/Aggregation/RecalculateButton.vue';
     import ConversionButton from '@/components/Aggregation/ConversionButton.vue';
     import ReleaseCategoryButton from '@/components/Aggregation/ReleaseCategoryButton.vue';
+    import ExportAggregationButton from '@/components/Aggregation/ExportAggregationButton.vue';
 
     const props = defineProps({
         categoryid: Number,
