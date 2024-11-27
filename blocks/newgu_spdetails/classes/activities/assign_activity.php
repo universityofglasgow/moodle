@@ -484,6 +484,8 @@ class assign_activity extends base {
 
     /**
      * Return the due date of the assignment if it hasn't been submitted.
+     * This method also checks if the assignment is part of a group submission.
+     * For students not in a group, this assignment won't be included in their chart data.
      *
      * @return array
      */
@@ -532,13 +534,41 @@ class assign_activity extends base {
         $allowsubmissionsfromdate = $assignment->allowsubmissionsfromdate;
         $duedate = $assignment->duedate;
 
-        // Check if any individual overrides have been set up first of all...
+        // Check if any group overrides have been created for this assignment.
+        $groupselect = 'assignid = :assignid AND groupid IS NOT NULL AND userid IS NULL';
+        $groupparams = ['assignid' => $assignment->id];
+        $groupoverrides = $DB->get_records_select('assign_overrides', $groupselect, $groupparams, '',
+        'groupid, allowsubmissionsfromdate, duedate, cutoffdate');
+        if (!empty($groupoverrides)) {
+            foreach ($groupoverrides as $groupoverride) {
+                // An override for this assignment exists - is our user a member of the group?
+                if ($groupmembers = $DB->record_exists('groups_members', ['groupid' => $groupoverride->groupid,
+                    'userid' => $USER->id])) {
+                    // If any of these fields are NULL, the override is using the default activity settings.
+                    if ($groupoverride->allowsubmissionsfromdate != null) {
+                        $allowsubmissionsfromdate = $groupoverride->allowsubmissionsfromdate;
+                    }
+                    if ($groupoverride->duedate != null) {
+                        $duedate = $groupoverride->duedate;
+                    }
+                    if ($groupoverride->cutoffdate != null) {
+                        $duedate = $groupoverride->cutoffdate;
+                    }
+                }
+            }
+        }
+
+        // Individual overrides however, take precedence - based on how Moodle does things.
         $overrides = $DB->get_record('assign_overrides', ['assignid' => $assignment->id, 'userid' => $USER->id]);
         if (!empty($overrides)) {
             $allowsubmissionsfromdate = $overrides->allowsubmissionsfromdate;
             $duedate = $overrides->duedate;
         }
 
+        // This table is used for extensions to the due date. But it also contain entries for when
+        // Marking Workflow has been enabled - but these only appear when marking has begun however.
+        // Point of interest - extension due date trumps the settings/override "cut-off date".
+        // For this method, we'll just use the extensionduedate as the due date if a result is found.
         $userflags = $DB->get_record('assign_user_flags', ['assignment' => $assignment->id, 'userid' => $USER->id]);
         if (!empty($userflags)) {
             if ($userflags->extensionduedate > 0) {
@@ -546,15 +576,79 @@ class assign_activity extends base {
             }
         }
 
-        // Looks like when visiting an activity, you end up with a submission entry by default.
-        if (!array_key_exists($assignment->id, $assignmentsubmissions) ||
-            (array_key_exists($assignment->id, $assignmentsubmissions) &&
-            (is_object($assignmentsubmissions[$assignment->id]) &&
-            property_exists($assignmentsubmissions[$assignment->id], 'status') &&
-            $assignmentsubmissions[$assignment->id]->status == 'new'))) {
-            if ($allowsubmissionsfromdate < $now) {
-                if ($duedate > $now) {
-                    $assignmentdata[] = $assignment;
+
+        // Is this a group or individual assignment.
+        if ($assignment->teamsubmission) {
+            $cansubmitassessment = true;
+            $checkanyteammembersubmission = false;
+            $checkallteammembersubmissions = false;
+            // If this activity can only be submitted by a student who is in a group, check this first...
+            if ($assignment->preventsubmissionnotingroup) {
+                $cansubmitassessment = false;
+                // Is the student in a group.
+                if ($isgroupmember = $DB->get_record('groups_members', ['userid' => $USER->id])) {
+                    $cansubmitassessment = true;
+                } 
+            }
+
+            if (!$assignment->preventsubmissionnotingroup) {
+                $cansubmitassessment = true;
+            }
+
+            // The submission as part of a group is determined by a combination of the 'Require student to click...' option
+            // being set to 'Yes' as well as 'Require all group members submit' option being set to 'Yes'. Note - this option
+            // can be set to 'Yes' but also 'disabled' in the settings page - so we need to check that this isn't the case.
+            if ($assignment->submissiondrafts) {
+                if ($assignment->requireallteammemberssubmit) {
+                    // I don't think we need to do anything special here, since 'this' item that we are checking, will be for
+                    // each student anyway. We perhaps need to check that the current student is indeed in a group however.
+                    if ($isgroupmember = $DB->get_record('groups_members', ['userid' => $USER->id])) {
+                        $checkallteammembersubmissions = true;
+                    }
+                }
+                if (!$assignment->requireallteammemberssubmit) {
+                    $checkanyteammembersubmission = true;
+                }
+            }
+
+            if ($cansubmitassessment) {
+                if ($checkanyteammembersubmission) {
+                    if ($anyassignmentsubmissions = $DB->get_records('assign_submission', ['assignment' => $assignment->id]
+                        )) {
+                        // If any submission has been made and is in a 'submitted' state, then
+                        // we don't need to include this in the assessments due any more.
+                        $assignmentsubmitted = false;
+                        foreach ($anyassignmentsubmissions as $assignmentsubmission) {
+                            if ($assignmentsubmission->status == get_string('status_submitted', 'block_newgu_spdetails')) {
+                                $assignmentsubmitted = true;
+                                break;
+                            }
+                        }
+
+                        if (!$assignmentsubmitted) {
+                            // No one has submitted anything, is this still a valid assignment.
+                            if ($allowsubmissionsfromdate < $now) {
+                                if ($duedate > $now) {
+                                    $assignmentdata[] = $assignment;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!$assignment->teamsubmission || $checkallteammembersubmissions == true) {
+            // Looks like when visiting an activity, you end up with a submission entry by default.
+            if (!array_key_exists($assignment->id, $assignmentsubmissions) ||
+                (array_key_exists($assignment->id, $assignmentsubmissions) &&
+                (is_object($assignmentsubmissions[$assignment->id]) &&
+                property_exists($assignmentsubmissions[$assignment->id], 'status') &&
+                $assignmentsubmissions[$assignment->id]->status == 'new'))) {
+                if ($allowsubmissionsfromdate < $now) {
+                    if ($duedate > $now) {
+                        $assignmentdata[] = $assignment;
+                    }
                 }
             }
         }
