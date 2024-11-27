@@ -128,6 +128,7 @@ $string['status_new'] = 'new';
 $string['status_tobeconfirmed'] = 'To be confirmed';
 $string['status_notopen'] = 'notopen';
 $string['status_submissionnotopen'] = 'submissionnotopen';
+$string['status_submissionunavailable'] = 'submissionunavailable';
 $string['status_draft'] = 'draft';
 $string['status_submit'] = 'submit';
 $string['status_submitted'] = 'submitted';
