@@ -30,6 +30,27 @@ namespace local_gugrades;
  */
 class export {
 
+
+    /**
+     * Instantiate export plugin
+     * @param string $pluginname
+     * @return object
+     */
+    public static function get_export_plugin(string $pluginname) {
+
+        // Cannot use base class.
+        if ($pluginname == 'base') {
+            throw new \moodle_exception('Cannot load export base class');
+        }
+
+        $classname = 'local_gugrades\\export\\' . $pluginname;
+        if (!class_exists($classname, true)) {
+            throw new \moodle_exception('Export plugin does not exist - "' . $pluginname . '"');
+        }
+
+        return new $classname;
+    }
+
     /**
      * Get list of aggregation export plugins
      * @param int $courseid
@@ -76,13 +97,24 @@ class export {
      * Get aggregation export form
      * @param int $courseid
      * @param int $gradecategoryid
-     * @param string $plugin
+     * @param string $pluginname
      * @return array
      */
-    public static function get_aggregation_export_form(int $courseid, int $gradecategoryid, string $plugin) {
+    public static function get_aggregation_export_form(int $courseid, int $gradecategoryid, string $pluginname) {
+
+        $plugin = self::get_export_plugin($pluginname);
+
+        // Does the plugin define a form at all?
+        $hasform = $plugin->defines_optional_fields();
+
+        $form = [];
+        if ($hasform) {
+            $form = $plugin->get_form_fields($courseid, $gradecategoryid);
+        }
 
         return [
-            'hasform' => false,
+            'hasform' => $hasform,
+            'form' => $form,
         ];
     }
 

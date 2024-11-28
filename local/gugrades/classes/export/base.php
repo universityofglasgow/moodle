@@ -38,4 +38,12 @@ abstract class base {
         return '';
     }
 
+    /**
+     * Does the plugin define optional fields?
+     * @return boolean
+     */
+    public function defines_optional_fields() {
+        return false;
+    }
+
 }

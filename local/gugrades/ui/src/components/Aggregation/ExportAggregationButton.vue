@@ -7,14 +7,40 @@
 
         <PleaseWait v-if="pleasewait"></PleaseWait>
 
-        <div class="mb-5">
+        <!-- step to select plugin -->
+        <div v-if="step == 'selectplugin'" class="mb-5">
             <FormKit
-                type="select"
-                :label="mstrings.selectexport"
-                :options="plugins"
-                v-model="selectedplugin"
-            ></FormKit>
-            <button class="btn btn-primary mt-2" type="button" @click="plugin_selected">{{  mstrings.next }}</button>
+                type="form"
+                @submit="plugin_selected()"
+                :submit-label="mstrings.next"
+            >
+                <FormKit
+                    type="select"
+                    :label="mstrings.selectexport"
+                    :options="plugins"
+                    v-model="selectedplugin"
+                ></FormKit>
+            </FormKit>
+        </div>
+
+        <!-- step to select form fields-->
+        <div v-if="step == 'selectfields'" class="mb-5">
+
+            <div class="alert alert-primary">{{ mstrings.selectfields }}</div>
+
+            <FormKit
+                type="form"
+                @submit="fields_selected()"
+                :submit-label="mstrings.export"
+            >
+                <FormKit
+                    v-for="field in form"
+                    type="checkbox"
+                    :label="field.description"
+                    :label-class="field.category ? 'font-weight-bold' : ''"
+                    v-model="selected[field.identifier]"
+                />
+            </FormKit>
         </div>
 
         <div class="row mt-2">
@@ -39,8 +65,12 @@
     const pleasewait = ref(false);
     const options = ref([]);
     const plugins = ref([]);
-    const selectedplugin = ref('');
+    const selectedplugin = ref('custom');
     const mstrings = inject('mstrings');
+    const debug = ref({});
+    const step = ref('selectplugin');
+    const form = ref([]);
+    const selected = ref({});
 
     const toast = useToast();
 
@@ -58,7 +88,7 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
-        pleasewait.value = false;
+        pleasewait.value = true;
 
         fetchMany([{
             methodname: 'local_gugrades_get_aggregation_export_plugins',
@@ -76,6 +106,7 @@
                     value: option.name,
                 });
             });
+            pleasewait.value = false;
         })
         .catch((error) => {
             showexportmodal.value = false;
@@ -86,11 +117,56 @@
     }
 
     /**
+     * Initialise selected array
+     */
+    function initialise_selected() {
+        form.value.forEach(field => {
+            selected[field.identifier] = field.selected;
+        });
+    }
+
+    /**
      * Plugin type has been selected
      * Get the settings form for selected (if there is one)
      */
     function plugin_selected() {
-        window.console.log(selectedplugin.value);
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        pleasewait.value = true;
+
+        fetchMany([{
+            methodname: 'local_gugrades_get_aggregation_export_form',
+            args: {
+                courseid: courseid,
+                gradecategoryid: props.categoryid,
+                plugin: selectedplugin.value,
+            }
+        }])[0]
+        .then(result => {
+            const hasform = result.hasform;
+            form.value = result.form;
+            if (hasform) {
+                initialise_selected();
+            }
+            pleasewait.value = false;
+            step.value = "selectfields";
+        })
+        .catch((error) => {
+            showexportmodal.value = false;
+            debug.value = error;
+        });
+    }
+
+    /**
+     * Fields required have been selected on form
+     * (If the plugin has a form)
+     *
+     */
+    function fields_selected() {
+        window.console.log('GOT TO FIELDS SELECTED');
+        window.console.log(selected.value);
     }
 
     /**

@@ -78,6 +78,7 @@ $services = [
             'local_gugrades_save_altered_weights',
             'local_gugrades_get_aggregation_export_plugins',
             'local_gugrades_get_aggregation_export_form',
+            'local_gugrades_get_aggregation_export_data',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -389,6 +390,12 @@ $functions = [
     'local_gugrades_get_aggregation_export_form' => [
         'classname' => 'local_gugrades\external\get_aggregation_export_form',
         'description' => 'Get the options form for export plugin (if there is one).',
+        'type' => 'read',
+        'ajax' => true,
+    ],
+    'local_gugrades_get_aggregation_export_data' => [
+        'classname' => 'local_gugrades\external\get_aggregation_export_data',
+        'description' => 'Get the data for aggregation export download.',
         'type' => 'read',
         'ajax' => true,
     ],

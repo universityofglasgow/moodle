@@ -87,6 +87,17 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
             $form
         );
 
+        $this->assertFalse($form['hasform']);
+        $this->assertCount(0, $form['form']);
+
+        // Same again for 'custom' form plugin
+        // (which does).
+        $form = get_aggregation_export_form::execute($courseid, $categoryid, 'custom');
+        $form = external_api::clean_returnvalue(
+            get_aggregation_export_form::execute_returns(),
+            $form
+        );
+
         var_dump($form); die;
     }
 

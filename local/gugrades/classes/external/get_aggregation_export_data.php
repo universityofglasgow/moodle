@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Get the form to make selections for aggregation export
+ * Get the aggregation export data ready to download
  * @package    local_gugrades
  * @copyright  2024
  * @author     Howard Miller
@@ -33,7 +33,7 @@ use core_external\external_value;
 /**
  * Define function get_audit
  */
-class get_aggregation_export_form extends external_api {
+class get_aggregation_export_data extends external_api {
 
     /**
      * Define function parameters
@@ -82,7 +82,6 @@ class get_aggregation_export_form extends external_api {
                     'identifier' => new external_value(PARAM_TEXT, 'Unique identifier for field'),
                     'description' => new external_value(PARAM_TEXT, 'Human readable description of field'),
                     'selected' => new external_value(PARAM_BOOL, 'Previously selected by this user'),
-                    'category' => new external_value(PARAM_BOOL, 'Is this a grade category?'),
                 ])
             ),
         ]);

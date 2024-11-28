@@ -38,4 +38,90 @@ class custom extends base {
         return get_string('customexport', 'local_gugrades');
     }
 
+    /**
+     * Does the plugin define optional fields?
+     * @return boolean
+     */
+    public function defines_optional_fields() {
+        return true;
+    }
+
+    /**
+     * Walk aggregation tree to get a flat list of grade items
+     * and categories.
+     * @param object $segment
+     * @param array $list
+     * @param array $prefixes
+     * @return array
+     */
+    protected static function walk_tree(object $segment, array $list, array $prefixes = []) {
+
+        $prefixes[] = $segment->name;
+
+        // Add top level of segment to list
+        $list[] = [
+            'description' => implode(' > ', $prefixes),
+            'identifier' => 'ITEM_' . $segment->itemid,
+            'category' => $segment->iscategory,
+        ];
+
+        // If this is a category then we can iterate through its children.
+        if ($segment->iscategory) {
+            foreach ($segment->children as $child) {
+                $list = self::walk_tree($child, $list, $prefixes);
+            }
+        }
+
+        return $list;
+    }
+
+    /**
+     * Return list of fields for form
+     * (called if defines_optional_fields() is true)
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return array
+     */
+    public function get_form_fields(int $courseid, int $gradecategoryid) {
+
+        $form = [];
+
+        // Following fields are fixed.
+        $form[] = [
+            'identifier' => 'studentname',
+            'description' => get_string('studentname', 'local_gugrades'),
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'idnumber',
+            'description' => get_string('idnumber', 'local_gugrades'),
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'email',
+            'description' => get_string('email', 'local_gugrades'),
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'resitrequired',
+            'description' => get_string('resitrequired', 'local_gugrades'),
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'completed',
+            'description' => get_string('completed'),
+            'category' => false,
+        ];
+
+        // Get tree from aggregation tab.
+        $tree = \local_gugrades\aggregation::recurse_tree($courseid, $gradecategoryid);
+        $form = self::walk_tree($tree, $form);
+
+        // Add 'selected' field
+        foreach ($form as $key => $record) {
+            $form[$key]['selected'] = false;
+        }
+
+        return $form;
+    }
 }
