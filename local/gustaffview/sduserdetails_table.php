@@ -145,6 +145,7 @@ class sduserdetailscurrent_table extends table_sql
         $gradecategory->aggregation = $values->aggregation;
         $finalweight = '-';
         $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($courseid);
+        $fallbacktogradebook = false;
 
         if ($mygradesenabled) {
             $isgradereleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
@@ -161,21 +162,19 @@ class sduserdetailscurrent_table extends table_sql
                                     $itemweight) : '-')));
                         $finalweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
                     }
+                } else {
+                    // Fallback to whatever is in gradebook.
+                    $fallbacktogradebook = true;
                 }
             } else {
                 // Fallback to whatever is in gradebook.
-                $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $itemid]);
-                if ($item) {
-                    $weighttowardscourse = \block_newgu_spdetails\course::get_grade_category_weight($item, $gradecategory);
-                    $displayweights = \block_newgu_spdetails\activity::get_display_activity_item_weights($weighttowardscourse,
-                        $gradecategory);
-                    if ($displayweights) {
-                        $rawassessmentweight = \block_newgu_spdetails\course::return_weight($itemweight);
-                        $finalweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
-                    }
-                }
+                $fallbacktogradebook = true;
             }
         } elseif (!$mygradesenabled) {
+            $fallbacktogradebook = true;
+        }
+
+        if ($fallbacktogradebook) {
             $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $itemid]);
             if ($item) {
                 $weighttowardscourse = \block_newgu_spdetails\course::get_grade_category_weight($item, $gradecategory);
@@ -282,8 +281,8 @@ class sduserdetailscurrent_table extends table_sql
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
-                $releasegrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                if ($releasegrade) {
+                $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
+                if ($releasedgrade) {
                     return get_string('mygradesenabled', 'local_gustaffview');
                 } else {
                     // Fallback to whatever is in gradebook.
@@ -311,31 +310,29 @@ class sduserdetailscurrent_table extends table_sql
         $grademax = $values->grademax;
         $statustodisplay = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($courseid);
+        $fallbacktogradebook = false;
 
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
-                $statustodisplay = "<span class='status-item status-graded'>" . get_string('status_text_graded',
-                    'block_newgu_spdetails') . "</span>";
+                $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
+                if ($releasedgrade) {
+                    $statustodisplay = "<span class='status-item status-graded'>" . get_string('status_text_graded',
+                        'block_newgu_spdetails') . "</span>";
+                } else {
+                    // Fallback to whatever is in gradebook.
+                    $fallbacktogradebook = true;
+                }
             } else {
                 // Fallback to whatever is in gradebook.
-                if ($values->itemtype == 'manual') {
-                    $gradestatus = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid, $itemid,
-                        $userid, $gradetype, $scaleid, $grademax);
-                    if ($gradestatus) {
-                        $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
-                        "</span>";
-                    }
-                } else {
-                    $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
-                        $scaleid, $grademax, '');
-                    if ($gradestatus) {
-                        $statustodisplay = "<span class='status-item " . $gradestatus->status_class . "'>" . $gradestatus->status_text .
-                        "</span>";
-                    }
-                }
+                $fallbacktogradebook = true;
             }
         } elseif (!$mygradesenabled) {
+            $fallbacktogradebook = true;
+        }
+
+        // MGU-1152 - Default to using whatever was added/released in Gradebook.
+        if ($fallbacktogradebook) {
             if ($values->itemtype == 'manual') {
                 $gradestatus = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid, $itemid,
                     $userid, $gradetype, $scaleid, $grademax);
@@ -433,57 +430,54 @@ class sduserdetailscurrent_table extends table_sql
         $scaleid = $values->scaleid;
         $grademax = $values->grademax;
         $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($courseid);
-        $processmanualitemfeedback = false;
-        $processgradebookfeedback = false;
+        $fallbacktogradebook = false;
         $feedback = '-';
 
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
-                $releasegrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                // Not sure what needs to be displayed here as the spec doesn't define things clearly enough.
-                $feedback = $releasegrade->auditcomment;
+                $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
+                if ($releasedgrade) {
+                    // Not sure what needs to be displayed here as the spec doesn't define things clearly enough.
+                    $feedback = $releasedgrade->auditcomment;
+                } else {
+                    // Fallback to whatever is in gradebook.
+                    $fallbacktogradebook = true;
+                }
             } else {
                 // Fallback to whatever is in gradebook.
-                if ($values->itemtype == 'manual') {
-                    $processmanualitemfeedback = true;
-                } else {
-                    $processgradebookfeedback = true;
-                }
+                $fallbacktogradebook = true;
             }
         } elseif (!$mygradesenabled) {
+            $fallbacktogradebook = true;
+        }
+
+        if ($fallbacktogradebook) {
+
             if ($values->itemtype == 'manual') {
-                $processmanualitemfeedback = true;
-            } else {
-                $processgradebookfeedback = true;
-            }
-        }
-
-        if ($processmanualitemfeedback) {
-            $manualgradefeedback = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid,
-                $itemid,
-                $userid,
-                $gradetype,
-                $scaleid,
-                $grademax
-            );
-            if ($manualgradefeedback) {
-                $feedback = $manualgradefeedback->grade_feedback;
-                $manualgradefeedbacklink = $manualgradefeedback->grade_feedback_link;
-                if ($manualgradefeedbacklink) {
-                    $feedback = '<a href="' . $manualgradefeedbacklink . '">' . $manualgradefeedback->grade_feedback . '</a>';
+                $manualgradefeedback = \block_newgu_spdetails\grade::get_manual_grade_item_grade_status_and_feedback($courseid,
+                    $itemid,
+                    $userid,
+                    $gradetype,
+                    $scaleid,
+                    $grademax
+                );
+                if ($manualgradefeedback) {
+                    $feedback = $manualgradefeedback->grade_feedback;
+                    $manualgradefeedbacklink = $manualgradefeedback->grade_feedback_link;
+                    if ($manualgradefeedbacklink) {
+                        $feedback = '<a href="' . $manualgradefeedbacklink . '">' . $manualgradefeedback->grade_feedback . '</a>';
+                    }
                 }
-            }
-        }
-
-        if ($processgradebookfeedback) {
-            $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
-                $scaleid, $grademax, '');
-            if ($gradefeedback) {
-                $feedback = $gradefeedback->grade_feedback;
-                $gradefeedbacklink = $gradefeedback->grade_feedback_link;
-                if ($gradefeedbacklink) {
-                    $feedback = '<a href="' . $gradefeedbacklink . '">' . $gradefeedback->grade_feedback . '</a>';
+            } else {
+                $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
+                    $scaleid, $grademax, '');
+                if ($gradefeedback) {
+                    $feedback = $gradefeedback->grade_feedback;
+                    $gradefeedbacklink = $gradefeedback->grade_feedback_link;
+                    if ($gradefeedbacklink) {
+                        $feedback = '<a href="' . $gradefeedbacklink . '">' . $gradefeedback->grade_feedback . '</a>';
+                    }
                 }
             }
         }
