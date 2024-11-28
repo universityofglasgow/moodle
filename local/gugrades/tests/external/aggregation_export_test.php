@@ -98,7 +98,14 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
             $form
         );
 
-        var_dump($form); die;
+        $this->assertTrue($form['hasform']);
+        $form = $form['form'];
+        $this->assertEquals('studentname', $form[0]['identifier']);
+        $this->assertEquals(get_string('studentname', 'local_gugrades'), $form[0]['description']);
+        $this->assertEquals("ITEM_345001", $form[5]['identifier']);
+        $this->assertEquals('Summative', $form[5]['description']);
+        $this->assertEquals('strategy', $form[23]['identifier']);
+        $this->assertEquals(get_string('showstrategy', 'local_gugrades'), $form[23]['description']);
     }
 
 }

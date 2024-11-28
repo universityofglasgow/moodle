@@ -26,13 +26,21 @@
         <!-- step to select form fields-->
         <div v-if="step == 'selectfields'" class="mb-5">
 
-            <div class="alert alert-primary">{{ mstrings.selectfields }}</div>
+
 
             <FormKit
                 type="form"
                 @submit="fields_selected()"
                 :submit-label="mstrings.export"
             >
+
+                <div class="alert alert-primary">{{ mstrings.selectfields }}</div>
+
+                <div class="mb-2">
+                    <a href="#" class="btn btn-sm btn-info mr-1" @click="all_selected">{{ mstrings.checkall }}</a>
+                    <a href="#" class="btn btn-sm btn-secondary" @click="none_selected">{{ mstrings.checknone }}</a>
+                </div>
+
                 <FormKit
                     v-for="field in form"
                     type="checkbox"
@@ -121,7 +129,25 @@
      */
     function initialise_selected() {
         form.value.forEach(field => {
-            selected[field.identifier] = field.selected;
+            selected.value[field.identifier] = field.selected;
+        });
+    }
+
+    /**
+     * Make all fields selected
+     */
+    function all_selected() {
+        form.value.forEach(field => {
+            selected.value[field.identifier] = true;
+        });
+    }
+
+    /**
+     * Make all fields unselected
+     */
+     function none_selected() {
+        form.value.forEach(field => {
+            selected.value[field.identifier] = false;
         });
     }
 

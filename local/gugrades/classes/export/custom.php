@@ -117,6 +117,23 @@ class custom extends base {
         $tree = \local_gugrades\aggregation::recurse_tree($courseid, $gradecategoryid);
         $form = self::walk_tree($tree, $form);
 
+        // Add additional options
+        $form[] = [
+            'identifier' => 'weights',
+            'description' => get_string('showweights', 'local_gugrades'),
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'released',
+            'description' => get_string('showreleased', 'local_gugrades'),
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'strategy',
+            'description' => get_string('showstrategy', 'local_gugrades'),
+            'category' => false,
+        ];
+
         // Add 'selected' field
         foreach ($form as $key => $record) {
             $form[$key]['selected'] = false;
