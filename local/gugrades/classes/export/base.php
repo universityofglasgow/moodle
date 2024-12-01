@@ -46,4 +46,44 @@ abstract class base {
         return false;
     }
 
+    /**
+     * Return list of fields for form
+     * (called if defines_optional_fields() is true)
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return array
+     */
+    public function get_form_fields(int $courseid, int $gradecategoryid) {
+        return [];
+    }
+
+    /**
+     * Return data for CSV export
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $groupid
+     * @param array $form
+     * @return array
+     */
+    public function get_form_data(int $courseid, int $gradecategoryid, int $groupid, array $form) {
+        return [];
+    }
+
+    /**
+     * Convert array of arrays into CSV string
+     * @param array $data
+     * @return string
+     */
+    protected function convert_csv(array $data) {
+        $csv = '';
+        foreach ($data as $line) {
+            $quoted = array_map(function($str) {
+                return sprintf('"%s"', $str);
+            }, $line);
+            $csv .= implode(',', $quoted) . PHP_EOL;
+        }
+
+        return $csv;
+    }
+
 }

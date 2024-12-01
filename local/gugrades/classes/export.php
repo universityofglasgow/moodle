@@ -118,4 +118,22 @@ class export {
         ];
     }
 
+    /**
+     * Get aggregation export data
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $groupid
+     * @param string $pluginname
+     * @param array $form
+     * @return array
+     */
+    public static function get_aggregation_export_data(int $courseid, int $gradecategoryid, int $groupid, string $pluginname, array $form) {
+
+        $plugin = self::get_export_plugin($pluginname);
+
+        $data = $plugin->get_form_data($courseid, $gradecategoryid, $groupid, $form);
+
+        return ['csv' => $data];
+    }
+
 }

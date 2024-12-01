@@ -43,7 +43,14 @@ class get_aggregation_export_data extends external_api {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'gradecategoryid' => new external_value(PARAM_INT, 'Selected grade category ID (in case needed).'),
+            'groupid' => new external_value(PARAM_INT, 'Group id. 0 for everybody'),
             'plugin' => new external_value(PARAM_ALPHA, 'Name of export plugin (class)'),
+            'form' => new external_multiple_structure(
+                new external_single_structure([
+                    'identifier' => new external_value(PARAM_TEXT, 'Unique identifier for field'),
+                    'selected' => new external_value(PARAM_BOOL, 'Previously selected by this user'),
+                ])
+            ),
         ]);
     }
 
@@ -51,23 +58,27 @@ class get_aggregation_export_data extends external_api {
      * Execute function
      * @param int $courseid
      * @param int $gradecategoryid
+     * @param int $groupid
      * @param string $plugin
+     * @param array $form
      * @return array
      */
-    public static function execute($courseid, $gradecategoryid, $plugin) {
+    public static function execute($courseid, $gradecategoryid, $groupid, $plugin, $form) {
 
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'gradecategoryid' => $gradecategoryid,
+            'groupid' => $groupid,
             'plugin' => $plugin,
+            'form' => $form,
         ]);
 
         // Security.
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        return \local_gugrades\api::get_aggregation_export_form($courseid, $gradecategoryid, $plugin);
+        return \local_gugrades\api::get_aggregation_export_data($courseid, $gradecategoryid, $groupid, $plugin, $form);
     }
 
     /**
@@ -76,14 +87,7 @@ class get_aggregation_export_data extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure([
-            'hasform' => new external_value(PARAM_BOOL, 'Does this plugin have an options form?'),
-            'form' => new external_multiple_structure(
-                new external_single_structure([
-                    'identifier' => new external_value(PARAM_TEXT, 'Unique identifier for field'),
-                    'description' => new external_value(PARAM_TEXT, 'Human readable description of field'),
-                    'selected' => new external_value(PARAM_BOOL, 'Previously selected by this user'),
-                ])
-            ),
+            'csv' => new external_value(PARAM_TEXT, 'CSV string'),
         ]);
     }
 }

@@ -141,4 +141,126 @@ class custom extends base {
 
         return $form;
     }
+
+    /**
+     * Process (grade)item for user
+     * @param string $identifier
+     * @param int $userid
+     */
+    protected function process_item(string $identifier, int $userid) {
+
+        // Identifier should be ITEM_nnnn - we need the number.
+        $parts = explode('_', $identifier);
+        if (isset($parts[1])) {
+            $gradeitemid = $parts[1];
+        } else {
+            throw new \moodle_exception('Invalid identifier - "' . $identifier . '"');
+        }
+
+        // First get the provisional grade
+        if ($provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid)) {
+
+            $displaygrade = $provisional->displaygrade;
+
+            return $displaygrade;
+        } else {
+            return get_string('nodata', 'local_gugrades');
+        }
+    }
+
+    /**
+     * Work out if an identifier is enabled in $form
+     * @param string $identifier
+     * @param array $form
+     * @return boolean
+     */
+    private function identifier_enabled(string $identifier, array $form) {
+        foreach ($form as $record) {
+            $ident = $record['identifier'];
+            if (($ident == $identifier) && $record['selected']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get headings line
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param array $form
+     * @return array
+     */
+    protected function get_heading(int $courseid, int $gradecategoryid, array $form) {
+
+        $originalform = $this->get_form_fields($courseid, $gradecategoryid);
+        $headings = [];
+        foreach ($originalform as $record) {
+            $ident = $record['identifier'];
+            if ($this->identifier_enabled($ident, $form)) {
+                $headings[$ident] = $record['description'];
+            }
+        }
+
+        return $headings;
+    }
+
+    /**
+     * Return data for CSV export
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $groupid
+     * @param array $form
+     * @return array
+     */
+    public function get_form_data(int $courseid, int $gradecategoryid, int $groupid, array $form) {
+
+        set_time_limit(0);
+
+        // Get list of students.
+        $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, '', '', $groupid);
+
+        // Aggregate all the users.
+        \local_gugrades\aggregation::aggregate($courseid, $gradecategoryid, $users);
+
+        // Array holds CSV lines.
+        $lines = [];
+
+        // Headings
+        $lines[] = $this->get_heading($courseid, $gradecategoryid, $form);
+
+        // Iterate over users getting requested data.
+        foreach ($users as $user) {
+            $line = [];
+
+            foreach ($form as $record) {
+                $ident = $record['identifier'];
+                $selected = $record['selected'];
+                if (!$selected) {
+                    continue;
+                }
+
+                // Deal with basic data
+                if ($ident == 'studentname') {
+                    $line[$ident] = $user->displayname;
+                } else if ($ident == 'idnumber') {
+                    $line[$ident] = $user->idnumber;
+                } else if ($ident == 'email') {
+                    $line[$ident] = $user->email;
+                } else if ($ident == 'resitrequired') {
+                    $line[$ident] = $user->resitrequired ? get_string('yes') : get_string('no');
+                } else if ($ident == 'completed') {
+                    $line[$ident] = $user->completed;
+                } else if (str_starts_with($ident, 'ITEM_')) {
+                    $line[$ident] = $this->process_item($ident, $user->id);
+                }
+
+            }
+
+            $lines[] = $line;
+        }
+
+        return $this->convert_csv($lines);
+    }
 }

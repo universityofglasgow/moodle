@@ -2239,4 +2239,18 @@ class api {
 
         return \local_gugrades\export::get_aggregation_export_form($courseid, $gradecategoryid, $plugin);
     }
+
+    /**
+     * Get aggregation export data
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $groupid
+     * @param string $plugin
+     * @param array $form
+     * @return array
+     */
+    public static function get_aggregation_export_data(int $courseid, int $gradecategoryid, int $groupid, string $plugin, array $form) {
+
+        return \local_gugrades\export::get_aggregation_export_data($courseid, $gradecategoryid, $groupid, $plugin, $form);
+    }
 }
