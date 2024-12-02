@@ -75,6 +75,12 @@
             <span class="subcategory-details-label">{{#str}} label_componentname, block_newgu_spdetails {{/str}}</span>
             <span id="subcategory-details-name" class="subcategory-details-value">{{#data.coursedata}}{{subcatfullname}}{{/data.coursedata}}</span>
         </div>
+        {{#data.coursedata.hascategorygrade}}
+        <div>
+            <span class="subcategory-details-label">{{#str}} label_coursecategorygrade, block_newgu_spdetails {{/str}}</span>
+            <span id="subcategory-details-categorygrade" class="subcategory-details-value">{{#data.coursedata}}{{categorygrade}}{{/data.coursedata}}</span>
+        </div>
+        {{/data.coursedata.hascategorygrade}}
         <div>
             <span class="subcategory-details-label">{{#str}} label_weight, block_newgu_spdetails {{/str}}</span>
             <span id="subcategory-details-weight" class="subcategory-details-value">{{#data.coursedata}}{{weighttowardscourse}}{{/data.coursedata}}</span>
