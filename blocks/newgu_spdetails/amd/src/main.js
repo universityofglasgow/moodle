@@ -23,7 +23,7 @@
  */
 
 import * as BetaNotification from 'block_newgu_spdetails/betanotification';
-import * as AssessmentSummary from 'block_newgu_spdetails/assessmentsummary';
+import * as AssessmentsOverview from 'block_newgu_spdetails/assessmentsoverview';
 import * as AssessmentsDueSoon from 'block_newgu_spdetails/assessmentsduesoon';
 import * as CourseTabs from 'block_newgu_spdetails/coursetabs';
 
@@ -33,8 +33,8 @@ import * as CourseTabs from 'block_newgu_spdetails/coursetabs';
 export const init = () => {
     // Insert the Beta notification as we can't do this via the rendering mechanism.
     BetaNotification.init();
-    // Initialise the assessment summary section.
-    AssessmentSummary.init();
+    // Initialise the assessment overview section.
+    AssessmentsOverview.init();
     // Initialise the assessments due soon section
     AssessmentsDueSoon.init();
     // Initialise the assessment tabs section.
