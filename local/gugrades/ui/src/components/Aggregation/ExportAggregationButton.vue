@@ -3,7 +3,7 @@
 
     <button type="button" class="btn btn-outline-primary  mr-1" @click="open_modal()">{{ mstrings.exportaggregation }}</button>
 
-    <VueModal v-model="showexportmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.exportaggregation">
+    <VueModal v-model="showexportmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.exportaggregation">
 
         <PleaseWait v-if="pleasewait"></PleaseWait>
 
@@ -24,10 +24,7 @@
         </div>
 
         <!-- step to select form fields-->
-        <div v-if="step == 'selectfields'" class="mb-5">
-
-
-
+        <div v-if="step == 'selectfields'" class="mb-5 scrollable-content">
             <FormKit
                 type="form"
                 @submit="fields_selected()"
@@ -51,13 +48,14 @@
             </FormKit>
         </div>
 
-        <div class="row mt-2">
+        <div class="row scrollable-modal-footer">
             <div class="col-sm-12">
                 <div class="float-right">
                     <button class="btn btn-warning" type="button" @click="close_modal()">{{  mstrings.cancel }}</button>
                 </div>
             </div>
         </div>
+
     </VueModal>
 </template>
 
@@ -191,8 +189,44 @@
      *
      */
     function fields_selected() {
-        window.console.log('GOT TO FIELDS SELECTED');
-        window.console.log(selected.value);
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        pleasewait.value = true;
+
+        // Munge selected array into required form.
+        const paramform = [];
+        for (const [identifier, isselect] of Object.entries(selected.value)) {
+            paramform.push({
+                identifier: identifier,
+                selected: isselect,
+            });
+        }
+
+        fetchMany([{
+            methodname: 'local_gugrades_get_aggregation_export_data',
+            args: {
+                courseid: courseid,
+                gradecategoryid: props.categoryid,
+                plugin: selectedplugin.value,
+                groupid: props.groupid,
+                form: paramform,
+            }
+        }])[0]
+        .then(result => {
+            const csv = result['csv'];
+            const d = new Date();
+            const filename = 'MyGrades_' + d.toLocaleString() + '.csv';
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+            saveAs(blob, filename);
+
+            showexportmodal.value = false;
+        })
+        .catch((error) => {
+            showexportmodal.value = false;
+            debug.value = error;
+        });
     }
 
     /**
@@ -266,3 +300,34 @@
         showexportmodal.value = false;
     }
 </script>
+
+<style>
+    .scrollable-modal {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 150px);
+    }
+    .scrollable-modal .vm-titlebar {
+    flex-shrink: 0;
+    }
+    .scrollable-modal .vm-content {
+    padding: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    }
+    .scrollable-modal .vm-content .scrollable-content {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 15px 10px 15px;
+    flex-grow: 1;
+    }
+    .scrollable-modal .scrollable-modal-footer {
+    padding: 15px 0px 15px 0px;
+    border-top: 1px solid #e5e5e5;
+    margin-left: 0;
+    margin-right: 0;
+    }
+</style>

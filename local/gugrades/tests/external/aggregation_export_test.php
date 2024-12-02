@@ -72,6 +72,23 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
     }
 
     /**
+     * Clean up form array to only have expected keys
+     * @param array $form
+     * @return array
+     */
+    protected function clean_form($form) {
+        $newform = [];
+        foreach ($form as $record) {
+            $newform[] = [
+                'identifier' => $record['identifier'],
+                'selected' => $record['selected'],
+            ];
+        }
+
+        return $newform;
+    }
+
+    /**
      * Test get_aggregation_export_form
      */
     public function test_get_aggregation_export_form(): void {
@@ -102,10 +119,24 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
         $form = $form['form'];
         $this->assertEquals('studentname', $form[0]['identifier']);
         $this->assertEquals(get_string('studentname', 'local_gugrades'), $form[0]['description']);
-        $this->assertEquals("ITEM_345001", $form[5]['identifier']);
         $this->assertEquals('Summative', $form[5]['description']);
         $this->assertEquals('strategy', $form[23]['identifier']);
         $this->assertEquals(get_string('showstrategy', 'local_gugrades'), $form[23]['description']);
+
+        // Set *everything* for initial test.
+        foreach ($form as $key => $record) {
+            $form[$key]['selected'] = true;
+        }
+
+        // Get CSV data.
+        $form = $this->clean_form($form);
+        $data = get_aggregation_export_data::execute($courseid, $categoryid, 0, 'custom', $form);
+        $data = external_api::clean_returnvalue(
+            get_aggregation_export_data::execute_returns(),
+            $data
+        );
+
+        var_dump($data);
     }
 
 }

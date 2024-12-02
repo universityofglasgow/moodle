@@ -79,6 +79,22 @@ class grades {
     }
 
     /**
+     * Get gradecategoryid from gradeitemid
+     * @param int $gradeitemid
+     * @return int
+     */
+    public static function get_gradecategoryid_from_gradeitemid(int $gradeitemid) {
+        global $DB;
+
+        $gradeitem = self::get_gradeitem($gradeitemid);
+        if ($gradeitem->itemtype == 'category') {
+            return $gradeitem->iteminstance;
+        } else {
+            throw new \moodle_exception('Grade item does not relate to a grade category. Itemid = ' . $gradeitemid);
+        }
+    }
+
+    /**
      * Recursively search child categories for one or more grade items
      * We just care that one exists
      * @param int $categoryid

@@ -144,10 +144,18 @@ class custom extends base {
 
     /**
      * Process (grade)item for user
+     * Can return multiple items (weight etc. if selected)
+     * Options are
+     * 'weights', 'strategy' and 'released'
      * @param string $identifier
      * @param int $userid
+     * @param array $options
+     * @return array
      */
-    protected function process_item(string $identifier, int $userid) {
+    protected function process_item(string $identifier, int $userid, array $options) {
+
+        // CSV items to return
+        $csvitems = [];
 
         // Identifier should be ITEM_nnnn - we need the number.
         $parts = explode('_', $identifier);
@@ -161,11 +169,25 @@ class custom extends base {
         if ($provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid)) {
 
             $displaygrade = $provisional->displaygrade;
-
-            return $displaygrade;
+            $csvitems[$identifier] = $displaygrade;
         } else {
-            return get_string('nodata', 'local_gugrades');
+            $csvitems[$identifier] = get_string('nodata', 'local_gugrades');
         }
+
+        // If this is a category and showing strategy
+        if ($provisional && ($provisional->gradetype == 'CATEGORY') && ($options['strategy'])) {
+            $gradecategoryid = \local_gugrades\grades::get_gradecategoryid_from_gradeitemid($gradeitemid);
+            $strategy = \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid);
+            $csvitems[$identifier . '_strategy'] = $strategy;
+        }
+
+        // If showing weight.
+        if ($options['weights']) {
+            [$weight, $alteredweight, $isaltered] = \local_gugrades\grades::get_altered_weight($gradeitemid, $userid);
+            $csvitems[$identifier . '_weights'] = number_format(100 * $alteredweight, 2) . '%';
+        }
+
+        return $csvitems;
     }
 
     /**
@@ -187,20 +209,46 @@ class custom extends base {
 
     /**
      * Get headings line
+     *
+     * All the data lines should have the same data
      * @param int $courseid
      * @param int $gradecategoryid
-     * @param array $form
+     * @param array $line
      * @return array
      */
-    protected function get_heading(int $courseid, int $gradecategoryid, array $form) {
+    protected function get_heading(int $courseid, int $gradecategoryid, array $line) {
 
         $originalform = $this->get_form_fields($courseid, $gradecategoryid);
-        $headings = [];
+
+        // Convert original form to simple(r) ident => description
+        $descriptions = [];
         foreach ($originalform as $record) {
-            $ident = $record['identifier'];
-            if ($this->identifier_enabled($ident, $form)) {
-                $headings[$ident] = $record['description'];
+            $descriptions[$record['identifier']] = $record['description'];
+        }
+
+        $headings = [];
+
+        foreach ($line as $ident => $value) {
+            if (str_ends_with($ident, '_weights') || str_ends_with($ident, '_strategy') || str_ends_with($ident, '_released')) {
+                $parts = explode('_', $ident);
+                if (count($parts) !== 3) {
+                    throw new \moodle_exception('Incorrectly formatted option identifier - "' . $ident . '"');
+                }
+                $newident = $parts[0] . '_' . $parts[1];
+                $option = $parts[2];
+            } else {
+                $newident = $ident;
+                $option = '';
             }
+
+            if (!array_key_exists($newident, $descriptions)) {
+                throw new \moodle_exception('Identifier not found in descriptions - "' . $newident . '"');
+            }
+            $description = $descriptions[$newident];
+            if ($option) {
+                $description .= ' ' . get_string('option_' . $option, 'local_gugrades');
+            }
+            $headings[$ident] = $description;
         }
 
         return $headings;
@@ -224,11 +272,15 @@ class custom extends base {
         // Aggregate all the users.
         \local_gugrades\aggregation::aggregate($courseid, $gradecategoryid, $users);
 
+        // Get the non-data settings and create options array.
+        $options = [
+            'weights' => $this->identifier_enabled('weights', $form),
+            'strategy' => $this->identifier_enabled('strategy', $form),
+            'released' => $this->identifier_enabled('released', $form),
+        ];
+
         // Array holds CSV lines.
         $lines = [];
-
-        // Headings
-        $lines[] = $this->get_heading($courseid, $gradecategoryid, $form);
 
         // Iterate over users getting requested data.
         foreach ($users as $user) {
@@ -238,6 +290,17 @@ class custom extends base {
                 $ident = $record['identifier'];
                 $selected = $record['selected'];
                 if (!$selected) {
+                    continue;
+                }
+
+                // Ignore the non-data flags
+                if ($ident == 'weights') {
+                    continue;
+                }
+                if ($ident == 'strategy') {
+                    continue;
+                }
+                if ($ident == 'released') {
                     continue;
                 }
 
@@ -253,12 +316,20 @@ class custom extends base {
                 } else if ($ident == 'completed') {
                     $line[$ident] = $user->completed;
                 } else if (str_starts_with($ident, 'ITEM_')) {
-                    $line[$ident] = $this->process_item($ident, $user->id);
+                    $itemcsv = $this->process_item($ident, $user->id, $options);
+                    $line = array_merge($line, $itemcsv);
                 }
 
             }
 
             $lines[] = $line;
+        }
+
+        // Headings.
+        // The first line of data will do.
+        if (count($lines)) {
+            $headings = $this->get_heading($courseid, $gradecategoryid, $lines[0]);
+            array_unshift($lines, $headings);
         }
 
         return $this->convert_csv($lines);
