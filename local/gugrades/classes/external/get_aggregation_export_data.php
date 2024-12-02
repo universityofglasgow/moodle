@@ -87,6 +87,7 @@ class get_aggregation_export_data extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure([
+            'filename' => new external_value(PARAM_TEXT, 'Filename of export'),
             'csv' => new external_value(PARAM_TEXT, 'CSV string'),
         ]);
     }

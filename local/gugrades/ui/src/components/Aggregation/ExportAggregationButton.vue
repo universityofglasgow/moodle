@@ -215,9 +215,10 @@
             }
         }])[0]
         .then(result => {
+            const filename = result['filename'];
             const csv = result['csv'];
             const d = new Date();
-            const filename = 'MyGrades_' + d.toLocaleString() + '.csv';
+            //const filename = 'MyGrades_' + d.toLocaleString() + '.csv';
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
             saveAs(blob, filename);
 

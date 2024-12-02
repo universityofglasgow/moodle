@@ -131,9 +131,15 @@ class export {
 
         $plugin = self::get_export_plugin($pluginname);
 
+        $course = get_course($courseid);
+        $filename = $course->shortname . '_' . date('Y-m-d_G:i:s');
+
         $data = $plugin->get_form_data($courseid, $gradecategoryid, $groupid, $form);
 
-        return ['csv' => $data];
+        return [
+            'filename' => $filename,
+            'csv' => $data,
+        ];
     }
 
 }

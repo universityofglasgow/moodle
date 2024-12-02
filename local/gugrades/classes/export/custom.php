@@ -143,6 +143,36 @@ class custom extends base {
     }
 
     /**
+     * Does the parent category specify a weighted category?
+     * @param int $gradeitemid
+     * @return boolean
+     */
+    protected function is_weighted_category(int $gradeitemid) {
+        global $DB, $GUGRADES_WEIGHTED;
+
+        // Cached in global scope (sorry).
+        if (isset($GUGRADES_WEIGHTED[$gradeitemid])) {
+            return $GUGRADES_WEIGHTED[$gradeitemid];
+        }
+
+        $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+        if ($gradeitem->itemtype == 'category') {
+            $gradecategoryid = $gradeitem->iteminstance;
+            $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+            $parentid = $gradecategory->parent;
+        } else {
+            $parentid = $gradeitem->categoryid;
+        }
+
+        $parent = $DB->get_record('grade_categories', ['id' => $parentid], '*', MUST_EXIST);
+
+        $weighted = $parent->aggregation == \GRADE_AGGREGATE_WEIGHTED_MEAN;
+        $GUGRADES_WEIGHTED['$gradeitemid'] = $weighted;
+
+        return $weighted;
+    }
+
+    /**
      * Process (grade)item for user
      * Can return multiple items (weight etc. if selected)
      * Options are
@@ -182,7 +212,12 @@ class custom extends base {
         }
 
         // If showing weight.
-        if ($options['weights']) {
+        if ($options['weights'] && $this->is_weighted_category($gradeitemid)) {
+
+            // Aggregation strategy of parent grade?
+            $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+            $gradecategoryid =
+
             [$weight, $alteredweight, $isaltered] = \local_gugrades\grades::get_altered_weight($gradeitemid, $userid);
             $csvitems[$identifier . '_weights'] = number_format(100 * $alteredweight, 2) . '%';
         }
