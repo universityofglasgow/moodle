@@ -1955,7 +1955,7 @@ class api {
     public static function get_capture_export_options(int $courseid, int $gradeitemid, int $groupid) {
 
         // Get preferences (if any).
-        $pref = get_user_preferences('local_gugrades_exportselect');
+        $pref = get_user_preferences('local_gugrades_captureexportselect');
         if ($pref) {
             $savedoptions = unserialize($pref);
         } else {
@@ -2018,7 +2018,7 @@ class api {
         int $courseid, int $gradeitemid, int $groupid, bool $viewfullnames, array $options) {
 
         // Save user's selection.
-        set_user_preference('local_gugrades_exportselect', serialize($options));
+        set_user_preference('local_gugrades_captureexportselect', serialize($options));
 
         // Convet options into a simple array of those selected.
         $selected = [];

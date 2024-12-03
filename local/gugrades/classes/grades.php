@@ -1233,4 +1233,40 @@ class grades {
 
         $DB->delete_records('local_gugrades_altered_weight', ['courseid' => $courseid, 'categoryid' => $categoryid]);
     }
+
+    /**
+     * Get category provisional and released grade
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_category_grades(int $gradeitemid, int $userid) {
+        global $DB;
+
+        // Category.
+        $sql = 'SELECT * FROM {local_gugrades_grade}
+        WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
+            WHERE gradeitemid = :gradeitemid
+            AND userid = :userid
+            AND gradetype = "CATEGORY"
+            AND iscurrent = 1)';
+        $category = $DB->get_record_sql($sql, [
+            'gradeitemid' => $gradeitemid,
+            'userid' => $userid,
+        ]);
+
+        // Released
+        $sql = 'SELECT * FROM {local_gugrades_grade}
+        WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
+            WHERE gradeitemid = :gradeitemid
+            AND userid = :userid
+            AND gradetype = "RELEASED"
+            AND iscurrent = 1)';
+        $released = $DB->get_record_sql($sql, [
+            'gradeitemid' => $gradeitemid,
+            'userid' => $userid,
+        ]);
+
+        return [$category, $released];
+    }
 }

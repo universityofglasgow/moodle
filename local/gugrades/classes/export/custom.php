@@ -134,9 +134,22 @@ class custom extends base {
             'category' => false,
         ];
 
+        // Stored preferences
+        $preferences = get_user_preferences('local_gugrades_customaggregationexportselect');
+        if ($preferences) {
+            $selected = unserialize($preferences);
+        } else {
+            $selected = [];
+        }
+
         // Add 'selected' field
         foreach ($form as $key => $record) {
-            $form[$key]['selected'] = false;
+            $identifier = $record['identifier'];
+            if (array_key_exists($identifier, $selected)) {
+                $form[$key]['selected'] = $selected[$identifier];
+            } else {
+                $form[$key]['selected'] = false;
+            }
         }
 
         return $form;
@@ -178,14 +191,18 @@ class custom extends base {
      * Options are
      * 'weights', 'strategy' and 'released'
      * @param string $identifier
+     * @param int $courseid
      * @param int $userid
      * @param array $options
      * @return array
      */
-    protected function process_item(string $identifier, int $userid, array $options) {
+    protected function process_item(string $identifier, int $courseid, int $userid, array $options) {
 
         // CSV items to return
         $csvitems = [];
+
+        // We need this all over the place.
+        $strnodata = get_string('nodata', 'local_gugrades');
 
         // Identifier should be ITEM_nnnn - we need the number.
         $parts = explode('_', $identifier);
@@ -195,30 +212,69 @@ class custom extends base {
             throw new \moodle_exception('Invalid identifier - "' . $identifier . '"');
         }
 
-        // First get the provisional grade
-        if ($provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid)) {
+        // Get the gradeitem
+        $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+        $iscategory = $gradeitem->itemtype == 'category';
 
-            $displaygrade = $provisional->displaygrade;
-            $csvitems[$identifier] = $displaygrade;
+        // Is this grade released?
+        $isreleased = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
+
+        // Is this IN a weighted category?
+        $isweighted = $this->is_weighted_category($gradeitemid);
+
+        // If category...
+        if ($iscategory) {
+
+            // get the aggregated category grades
+            [$category, $released] = \local_gugrades\grades::get_category_grades($gradeitemid, $userid);
+
+            // Add aggregated category if there is one
+            if ($category) {
+                $csvitems[$identifier] = $category->displaygrade;
+            } else {
+                $csvitems[$identifier] = $strnodata;
+            }
+
+            // Released if there is one and released grades option.
+            if ($options['released'] && $isreleased) {
+                if ($released) {
+                    $csvitems[$identifier . '_released'] = $released->displaygrade;
+                } else {
+                    $csvitems[$identifier . '_released'] = $strnodata;
+                }
+            }
+
+            // If showing strategy for category
+            if ($options['strategy']) {
+                $gradecategoryid = \local_gugrades\grades::get_gradecategoryid_from_gradeitemid($gradeitemid);
+                $strategy = \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid);
+                $csvitems[$identifier . '_strategy'] = $strategy;
+            }
         } else {
-            $csvitems[$identifier] = get_string('nodata', 'local_gugrades');
-        }
 
-        // If this is a category and showing strategy
-        if ($provisional && ($provisional->gradetype == 'CATEGORY') && ($options['strategy'])) {
-            $gradecategoryid = \local_gugrades\grades::get_gradecategoryid_from_gradeitemid($gradeitemid);
-            $strategy = \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid);
-            $csvitems[$identifier . '_strategy'] = $strategy;
+            // Ordinary item.
+            if ($provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid)) {
+
+                $displaygrade = $provisional->displaygrade;
+                $csvitems[$identifier] = $displaygrade;
+            } else {
+                $csvitems[$identifier] = get_string('nodata', 'local_gugrades');
+            }
+
+            // If option for released grades
+            if ($options['released'] && $isreleased) {
+                if ($provisional) {
+                    $csvitems[$identifier . '_released'] = $released->displaygrade;
+                } else {
+                    $csvitems[$identifier . '_released'] = $strnodata;
+                }
+            }
         }
 
         // If showing weight.
-        if ($options['weights'] && $this->is_weighted_category($gradeitemid)) {
+        if ($options['weights'] && $isweighted) {
 
-            // Aggregation strategy of parent grade?
-            $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
-            $gradecategoryid =
-
-            [$weight, $alteredweight, $isaltered] = \local_gugrades\grades::get_altered_weight($gradeitemid, $userid);
+            [ , $alteredweight] = \local_gugrades\grades::get_altered_weight($gradeitemid, $userid);
             $csvitems[$identifier . '_weights'] = number_format(100 * $alteredweight, 2) . '%';
         }
 
@@ -290,6 +346,21 @@ class custom extends base {
     }
 
     /**
+     * Save the user selections in user preferences
+     * @param array $form
+     */
+    protected function save_preferences(array $form) {
+
+        // Convert form to a simple array
+        $preferences = [];
+        foreach ($form as $record) {
+            $preferences[$record['identifier']] = $record['selected'];
+        }
+
+        set_user_preference('local_gugrades_customaggregationexportselect', serialize($preferences));
+    }
+
+    /**
      * Return data for CSV export
      * @param int $courseid
      * @param int $gradecategoryid
@@ -301,11 +372,15 @@ class custom extends base {
 
         set_time_limit(0);
 
+        $this->save_preferences($form);
+
         // Get list of students.
         $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, '', '', $groupid);
 
         // Aggregate all the users.
-        \local_gugrades\aggregation::aggregate($courseid, $gradecategoryid, $users);
+        //\local_gugrades\aggregation::aggregate($courseid, $gradecategoryid, $users);
+        [$columns] = \local_gugrades\aggregation::get_columns($courseid, $gradecategoryid);
+        [$users] = \local_gugrades\aggregation::add_aggregation_fields_to_users($courseid, $gradecategoryid, $users, $columns);
 
         // Get the non-data settings and create options array.
         $options = [
@@ -351,7 +426,7 @@ class custom extends base {
                 } else if ($ident == 'completed') {
                     $line[$ident] = $user->completed;
                 } else if (str_starts_with($ident, 'ITEM_')) {
-                    $itemcsv = $this->process_item($ident, $user->id, $options);
+                    $itemcsv = $this->process_item($ident, $courseid, $user->id, $options);
                     $line = array_merge($line, $itemcsv);
                 }
 

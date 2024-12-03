@@ -93,6 +93,8 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
      */
     public function test_get_aggregation_export_form(): void {
 
+        global $DB;
+
         $courseid = $this->course->id;
         $categoryid = $this->get_grade_category('Summative');
 
@@ -136,7 +138,19 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
             $data
         );
 
-        var_dump($data);
+        // Check user preferences have been set
+        $preferences = unserialize(get_user_preferences('local_gugrades_customaggregationexportselect'));
+        $this->assertCount(24, $preferences);
+        $this->assertTrue($preferences["idnumber"]);
+
+        // Get form again, to check saved settings
+        $form = get_aggregation_export_form::execute($courseid, $categoryid, 'custom');
+        $form = external_api::clean_returnvalue(
+            get_aggregation_export_form::execute_returns(),
+            $form
+        );
+
+        //var_dump($form);
     }
 
 }
