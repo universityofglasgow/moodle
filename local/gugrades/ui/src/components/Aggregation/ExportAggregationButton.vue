@@ -24,7 +24,7 @@
         </div>
 
         <!-- step to select form fields-->
-        <div v-if="step == 'selectfields'" class="mb-5 scrollable-content">
+        <div v-if="(step == 'selectfields') && hasform" class="mb-5 scrollable-content">
             <FormKit
                 type="form"
                 @submit="fields_selected()"
@@ -46,6 +46,12 @@
                     v-model="selected[field.identifier]"
                 />
             </FormKit>
+        </div>
+
+        <!-- alternatively -->
+        <div v-if="(step == 'selectfields') && !hasform" class="mb-5 scrollable-content">
+            <div class="alert alert-primary">{{ mstrings.noselectfields }}</div>
+            <button class="btn btn-primary" type="button" @click="fields_selected()">{{  mstrings.next }}</button>
         </div>
 
         <div class="row scrollable-modal-footer">
@@ -75,6 +81,7 @@
     const mstrings = inject('mstrings');
     const debug = ref({});
     const step = ref('selectplugin');
+    const hasform = ref(false);
     const form = ref([]);
     const selected = ref({});
 
@@ -95,6 +102,7 @@
         const fetchMany = GU.fetchMany;
 
         pleasewait.value = true;
+        step.value = 'selectplugin';
 
         fetchMany([{
             methodname: 'local_gugrades_get_aggregation_export_plugins',
@@ -169,9 +177,9 @@
             }
         }])[0]
         .then(result => {
-            const hasform = result.hasform;
+            hasform.value = result.hasform;
             form.value = result.form;
-            if (hasform) {
+            if (hasform.value) {
                 initialise_selected();
             }
             pleasewait.value = false;
@@ -229,70 +237,6 @@
             debug.value = error;
         });
     }
-
-    /**
-     * Watch for all/none changing
-     */
-    watch(allnone, (newallnone) => {
-        options.value.forEach((option) => {
-            option.selected = newallnone;
-        });
-    });
-
-    /**
-     * Convert options to version required
-     * for web service
-     */
-    function get_data_options(options) {
-        let newoptions = [];
-        options.forEach((option) => {
-            newoptions.push({
-                gradetype: option.gradetype,
-                other: option.other,
-                selected: option.selected
-            });
-        });
-
-        return newoptions;
-    }
-
-    /**
-     * Download the pro-forma csv file
-     */
-    function submit_export_form() {
-        const GU = window.GU;
-        const courseid = GU.courseid;
-        const fetchMany = GU.fetchMany;
-
-        pleasewait.value = true;
-
-        fetchMany([{
-            methodname: 'local_gugrades_get_capture_export_data',
-            args: {
-                courseid: courseid,
-                gradeitemid: props.itemid,
-                groupid: props.groupid,
-                viewfullnames: props.revealnames,
-                options: get_data_options(options.value),
-            }
-        }])[0]
-        .then((result) => {
-            const csv = result['csv'];
-            const d = new Date();
-            const filename = props.itemname + '_' + d.toLocaleString() + '.csv';
-            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
-            saveAs(blob, filename);
-
-            showexportmodal.value = false;
-        })
-        .catch((error) => {
-            window.console.error(error);
-            showexportmodal.value = false;
-            debug.value = error;
-        });
-    }
-
-
 
     /**
      * Close the modal

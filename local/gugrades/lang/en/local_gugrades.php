@@ -227,6 +227,7 @@ $string['nohistory'] = 'No history';
 $string['noids'] = 'None of the students have ID numbers. This will prevent some functionality working (properly).';
 $string['noimportafterconversion'] = 'WARNING: You can no longer import or add points grades after conversion is applied. Complete all grading in points first.';
 $string['nomaps'] = 'No conversion maps have been defined for this course. Click the \'Conversion\' tab to create one.';
+$string['noselectfields'] = 'There are no options for this export type. Click Next... to continue.';
 $string['notallscales'] = 'Cannot aggregate. All grades must first be (converted to) Schedule A or B.';
 $string['notavailable'] = 'Not available';
 $string['notes'] = 'Notes';
