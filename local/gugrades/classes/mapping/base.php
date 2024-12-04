@@ -199,9 +199,14 @@ abstract class base {
 
             // Check if the grade is in the array of scale values.
             if (!array_key_exists($csvgrade, $this->items)) {
-                return [false, 0];
+
+                // Failing that, we will accept the 'basic' grade (A1, A2...)
+                if (!$grade = array_search($csvgrade, $this->get_map())) {
+                    return [false, 0];
+                }
+            } else {
+                $grade = $this->items[$csvgrade];
             }
-            $grade = $this->items[$csvgrade];
         } else {
             $grade = floatval(trim($csvgrade));
         }

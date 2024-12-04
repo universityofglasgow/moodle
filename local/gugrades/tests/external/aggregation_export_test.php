@@ -188,7 +188,9 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
             $data
         );
 
-        var_dump($data);
+        $expected = '"EMPLID","Name","Grade"
+"1234567","Bloggs,Fred",""
+"1234560","Perez,Juan","';
+        $this->assertEquals($expected, $data['csv']);
     }
-
 }

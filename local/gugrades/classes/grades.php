@@ -395,6 +395,31 @@ class grades {
     }
 
     /**
+     * Unpack OTHER
+     * Where we have OTHER_xxx
+     * @param int $courseid
+     * @param string $other
+     * @return $string
+     */
+    public static function unpack_other(int $courseid, string $other) {
+        global $DB;
+
+        $parts = explode('_', $other);
+        if (count($parts) != 2) {
+            throw new \moodle_exception('Invalid OTHER_ code - "' . $other . '"');
+        }
+        $columnid = $parts[1];
+        if (!$column = $DB->get_record('local_gugrades_column', ['courseid' => $courseid, 'id' => $columnid])) {
+            throw new \moodle_exception('Column not found (or not valid for course) - ' . $columnid);
+        }
+        if ($column->gradetype != 'OTHER') {
+            throw new \moodle_exception('Column is not an OTHER column - ' . $columnid);
+        }
+
+        return $column->other;
+    }
+
+    /**
      * Write grade to local_gugrades_grade table
      * NOTE: $overwrite means that we don't make multiple copies (for aggregated categories)
      *

@@ -219,6 +219,13 @@ class api {
         $lines = self::unpack_csv($csv);
         array_shift($lines);
 
+        // If existing "other" then reason will look like OTHER_xxx,
+        // where xxx is the columnid
+        if (str_starts_with($reason, 'OTHER_')) {
+            $other = \local_gugrades\grades::unpack_other($courseid, $reason);
+            $reason = 'OTHER';
+        };
+
         // Get the possible users for this grade item. And re-key by idnumber.
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, $groupid);
         $users = $activity->get_users();
@@ -245,6 +252,9 @@ class api {
             'csvidinvalid' => 0,
             'csvgradeinvalid' => 0,
         ];
+
+        // Because it can take a while.
+        set_time_limit(0);
 
         // Iterate over CSV lines, checking and (optionally) adding new grade.
         foreach ($lines as $line) {
@@ -307,8 +317,6 @@ class api {
             }
 
             $testrunlines[] = $testrunline;
-
-
 
             // If we get to here and not a testrun, we can actually save the data.
             if (!$testrun) {

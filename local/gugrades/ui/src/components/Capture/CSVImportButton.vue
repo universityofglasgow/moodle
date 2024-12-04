@@ -5,6 +5,8 @@
 
     <VueModal v-model="showcsvmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
 
+        <PleaseWait v-if="waiting"></PleaseWait>
+
         <!-- Initial download/upload page -->
         <div v-if="pagestate == 'showuploadpage'">
             <div class="border rounded p-5">
@@ -91,6 +93,7 @@
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import { saveAs } from 'file-saver';
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const showcsvmodal = ref(false);
     const pagestate = ref('showuploadpage');
@@ -104,6 +107,7 @@
     const reason = ref('');
     const other = ref('');
     const debug = ref({});
+    const waiting = ref(false);
     const lines10 = computed(() =>{
         return lines.value.slice(0, 10);
     });
@@ -128,6 +132,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_get_csv_download',
             args: {
@@ -142,6 +148,7 @@
             const filename = props.itemname + '_' + d.toLocaleString() + '.csv';
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
             saveAs(blob, filename);
+            waiting.value = false;
         })
         .catch((error) => {
             window.console.error(error);
@@ -158,6 +165,8 @@
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
+
+        waiting.value = true;
 
         fetchMany([{
             methodname: 'local_gugrades_upload_csv',
@@ -177,6 +186,7 @@
             addcount.value = result.addcount;
             errorlist.value = result.errorlist;
             pagestate.value = 'showtestrun';
+            waiting.value = false;
             if (!testrun) {
                 toast.success(mstrings.csvgradesadded + ' (' + addcount.value + ')');
                 emits('uploaded');
