@@ -133,8 +133,8 @@ class activity {
         $coursedata['courseitems'] = ((array_key_exists('courseitems', $activitiesdata)) ? $activitiesdata['courseitems'] : '');
         $coursedata['hasdata'] = ((!empty($activitiesdata['courseitems']) ? true : false));
         $coursedata['mygradesenabled'] = ((!empty($activitiesdata['mygradesenabled']) ? true : false));
-        //$coursedata['hascategorygrade'] = ((!empty($activitiesdata['hascategorygrade']) ? true : false));
-        //$coursedata['categorygrade'] = ((!empty($activitiesdata['categorygrade']) ? $activitiesdata['categorygrade'] : ''));
+        $coursedata['hascategorygrade'] = ((!empty($activitiesdata['hascategorygrade']) ? true : false));
+        $coursedata['categorygrade'] = ((!empty($activitiesdata['categorygrade']) ? $activitiesdata['categorygrade'] : ''));
         $coursedata['hasgradecategory'] = ((array_key_exists('hasgradecategory', $activitiesdata)) ? true : false);
         $coursedata['hascourseitems'] = ((array_key_exists('hascourseitems', $activitiesdata)) ? true : false);
         $coursedata['weighttowardscourse'] = ((array_key_exists('weighttowardscourse', $activitiesdata)) ?
@@ -168,13 +168,14 @@ class activity {
             $gradedata = api::get_aggregation_dashboard_user($courseid, $subcategory, $userid);
 
             // MGU-1153 - Reinstate the label for the category grade.
-            // $data['hascategorygrade'] = false;
-            // if (is_object($gradedata->parent)) {
-            //     if ($gradedata->parent->released) {
-            //         $data['hascategorygrade'] = true;
-            //         $data['categorygrade'] = $gradedata->parent->displaygrade;
-            //     }
-            // }
+            $data['hascategorygrade'] = false;
+            if (is_object($gradedata->parent)) {
+                if ($gradedata->parent->released) {
+                    $data['hascategorygrade'] = true;
+                    $data['categorygrade'] = grade::is_admin_or_generic_grade($gradedata->parent->admingrade,
+                        $gradedata->parent->displaygrade);
+                }
+            }
             $tmpitems = $gradedata->fields;
 
             $gradecategories = [];
