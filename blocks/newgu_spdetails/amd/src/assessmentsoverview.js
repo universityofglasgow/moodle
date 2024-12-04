@@ -30,6 +30,7 @@
 
 import * as Log from 'core/log';
 import * as ajax from 'core/ajax';
+import {getStrings} from 'core/str';
 import {exception as displayException} from 'core/notification';
 import Templates from 'core/templates';
 import sortTable from 'block_newgu_spdetails/sorting';
@@ -70,6 +71,26 @@ const fetchAssessmentsOverview = () => {
         let tooltipFontColour = '';
         let labelFontSize = '0.7em';
         let labelDistance = -28;
+        const requiredStrings = [
+            {key: 'status_text_tobesubmitted', component: 'block_newgu_spdetails'},
+            {key: 'status_text_overdue', component: 'block_newgu_spdetails'},
+            {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
+            {key: 'status_text_graded', component: 'block_newgu_spdetails'}
+        ];
+        let status_text_tobesubmitted = '';
+        let status_text_overdue = '';
+        let status_text_submitted = '';
+        let status_text_graded = '';
+        getStrings(requiredStrings).then((result) => {
+            status_text_tobesubmitted = result[0];
+            status_text_overdue = result[1];
+            status_text_submitted = result[2];
+            status_text_graded = result[3];
+            return;
+        }).catch((err) => {
+            Log.debug(err);
+            return;
+        });
         // Check for the contrast setting
         if (document.querySelector('.hillhead40-night')) {
             tmpFontColour = '#95B7E6';
@@ -177,7 +198,7 @@ const fetchAssessmentsOverview = () => {
                 },
                 accessibility: {
                     description: 'This is the Assessments overview chart. It displays your assessments that need to be submitted' +
-                    ', are overdue, have been submitted, or have been graded.'
+                    ', are overdue, have been submitted, or have been graded.',
                 },
                 legend: {
                     align: 'right',
@@ -235,21 +256,20 @@ const fetchAssessmentsOverview = () => {
                 },
                 series: [{
                     innerSize: '50%',
-                    name: 'Assessments',
                     data: [{
-                        name: 'To be submitted',
+                        name: status_text_tobesubmitted,
                         y: tobe_submitted,
                         color: 'rgba(255,153,0)',
                     }, {
-                        name: 'Overdue',
+                        name: status_text_overdue,
                         y: overdue,
                         color: 'rgba(255,0,0)',
                     }, {
-                        name: 'Submitted',
+                        name: status_text_submitted,
                         y: submitted,
                         color: 'rgba(0,153,0)',
                     }, {
-                        name: 'Graded',
+                        name: status_text_graded,
                         y: graded,
                         color: 'rgba(129,187,255)',
                     }]
