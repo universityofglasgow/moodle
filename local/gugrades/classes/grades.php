@@ -600,6 +600,7 @@ class grades {
             WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
                 WHERE gradeitemid = :gradeitemid
                 AND userid = :userid
+                AND gradetype<>"RELEASED"
                 AND iscurrent = 1)';
         $grade = $DB->get_record_sql($sql, [
             'gradeitemid' => $gradeitemid,
