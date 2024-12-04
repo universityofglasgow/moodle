@@ -324,8 +324,6 @@
      * Grade has been modified for user
      */
     function grade_changed(userid) {
-        window.console.log('GRADE_CHANGED');
-        window.console.log(userid);
         user_update(userid);
     }
 
