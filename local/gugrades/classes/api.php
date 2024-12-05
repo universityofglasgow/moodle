@@ -78,6 +78,9 @@ class api {
             ];
         }
 
+        // Cleanup unused columns for grade item.
+        //\local_gugrades\grades::cleanup_empty_columns($gradeitemid);
+
         // Hidden or locked in gradebook?
         [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
 
@@ -1741,6 +1744,10 @@ class api {
 
         // I know :(
         set_time_limit(0);
+
+        // Cleanup any empty capture page columns.
+        // (It's hard to do over on the capture page - trust me).
+        \local_gugrades\grades::cleanup_unused_columns_course($courseid);
 
         // Are we collecting debug information
         $debugon = $CFG->debug >= DEBUG_DEVELOPER;

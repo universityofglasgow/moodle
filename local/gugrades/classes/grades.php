@@ -1295,4 +1295,20 @@ class grades {
 
         return [$category, $released];
     }
+
+    /**
+     * Cleanup unused columns
+     * If a column has no grades, it will be removed
+     * @param int $courseid
+     */
+    public static function cleanup_unused_columns_course(int $courseid) {
+        global $DB;
+
+        $columns = $DB->get_records('local_gugrades_column', ['courseid' => $courseid]);
+        foreach ($columns as $column) {
+            if (!$DB->record_exists('local_gugrades_grade', ['columnid' => $column->id])) {
+                $DB->delete_records('local_gugrades_column', ['id' => $column->id]);
+            }
+        }
+    }
 }
