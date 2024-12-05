@@ -78,6 +78,16 @@ class get_aggregation_export_data extends external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
+        // Log.
+        $event = \local_gugrades\event\export_aggregation::create([
+            'objectid' => $gradecategoryid,
+            'context' => \context_course::instance($courseid),
+            'other' => [
+                'gradecategoryid' => $gradecategory,
+            ],
+        ]);
+        $event->trigger();
+
         return \local_gugrades\api::get_aggregation_export_data($courseid, $gradecategoryid, $groupid, $plugin, $form);
     }
 
