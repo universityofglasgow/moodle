@@ -83,7 +83,7 @@ class get_aggregation_export_data extends external_api {
             'objectid' => $gradecategoryid,
             'context' => \context_course::instance($courseid),
             'other' => [
-                'gradecategoryid' => $gradecategory,
+            'gradecategoryid' => $gradecategoryid,
             ],
         ]);
         $event->trigger();

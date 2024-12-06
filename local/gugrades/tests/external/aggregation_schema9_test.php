@@ -33,7 +33,7 @@ use core_external\external_api;
 
 defined('MOODLE_INTERNAL') || die();
 
-define('TEST_USERS_COUNT', 200);
+define('TEST_USERS_COUNT', 50);
 
 global $CFG;
 

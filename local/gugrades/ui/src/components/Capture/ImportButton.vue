@@ -58,14 +58,15 @@
 
             <div class="alert alert-success">
                 <FormKit
-                    type="checkbox"
-                    :label="mstrings.importfillns"
+                    type="select"
+                    :label="mstrings.importfillns + ':'"
                     :help="mstrings.importfillnshelp"
+                    :options="options"
                     name="importfillns"
                     v-model="importfillns"
                     >
                     <template #help>
-                        <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.importfillnshelp }}</p>
+                        <p><i class="fa fa-info-circle mt-2" aria-hidden="true"></i> {{ mstrings.importfillnshelp }}</p>
                     </template>
                 </FormKit>
             </div>
@@ -116,11 +117,29 @@
     const recursivematch = ref(false);
     const recursiveselect = ref(false);
     const importadditional = ref(false);
-    const importfillns = ref(false);
+    const importfillns = ref('');
     const allgradesvalid = ref(false);
+    const level = ref(0);
     const loading = ref(false);
     const debug = ref({});
     const mstrings = inject('mstrings');
+
+    /**
+     * Options for NS/NS0 dropdown
+     */
+    const options = computed(() => {
+        const options = {
+            none: mstrings.donotfill,
+            fillns: mstrings.fillns,
+        };
+
+        // NS0 only available level >=2
+        if (level.value > 1) {
+            options.fillns0 = mstrings.fillns0;
+        }
+
+        return options;
+    })
 
     /**
      * Import confirmed. Select appropriate importfunction
@@ -237,6 +256,7 @@
             recursiveavailable.value = result.recursiveavailable;
             recursivematch.value = result.recursivematch;
             allgradesvalid.value = result.allgradesvalid;
+            level.value = result.level;
         })
         .catch((error) => {
             window.console.error(error);

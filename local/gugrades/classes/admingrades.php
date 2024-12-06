@@ -36,17 +36,26 @@ class admingrades {
 
     /**
      * Define the different types of grade
-     * for non-level 1
+     * for level 1 cat total grades
+     * @param int $level
      */
-    private static function define() {
+    private static function define(int $level) {
         $admingrades = [
             'MV' => get_string('adminmv', 'local_gugrades'),
+            'MV0' => get_string('adminmv0', 'local_gugrades'),
             'NS' => get_string('adminns', 'local_gugrades'),
+            'NS0' => get_string('adminns0', 'local_gugrades'),
             '07' => get_string('admin07', 'local_gugrades'),
         ];
 
         foreach ($admingrades as $code => $admingrade) {
             $admingrades[$code] = "$code - $admingrade";
+        }
+
+        // NS0 & MV0 is not available at Level 1
+        if ($level == 1) {
+            unset($admingrades['NS0']);
+            unset($admingrades['MV0']);
         }
 
         return $admingrades;
@@ -90,10 +99,12 @@ class admingrades {
 
     /**
      * Get admincodes for non level 1 total menu
+     * @param int $gradeitemid
      * @return array
      */
-    public static function get_menu() {
-        $gradetypes = self::define();
+    public static function get_menu(int $gradeitemid) {
+        $level = \local_gugrades\grades::get_gradeitem_level($gradeitemid);
+        $gradetypes = self::define($level);
 
         return $gradetypes;
     }

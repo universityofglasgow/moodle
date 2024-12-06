@@ -78,6 +78,7 @@ class is_grades_imported extends external_api {
             'recursiveavailable' => new external_value(PARAM_BOOL, '>= grade category depth 2?'),
             'recursivematch' => new external_value(PARAM_BOOL, 'Do all the grades match for recursive import?'),
             'allgradesvalid' => new external_value(PARAM_BOOL, 'If recursive is available, are all gradetypes value?'),
+            'level' => new external_value(PARAM_INT, 'Level of grade categery. 1 = top.'),
         ]);
     }
 }

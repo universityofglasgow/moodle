@@ -179,6 +179,17 @@ class base {
             }
         }
 
+        // If ALL grades are NS/NS0, then return NS (MGU-1191)
+        $allns = true;
+        foreach ($items as $item) {
+            if (($item->admingrade != 'NS') && ($item->admingrade != 'NS0')) {
+                $allns = false;
+            }
+        }
+        if ($allns) {
+            return 'NS';
+        }
+
         // No admin grade found
         return '';
     }

@@ -449,6 +449,26 @@ class api {
     }
 
     /**
+     * Check/convert fillns
+     * (empty is permitted to save having to change a million tests)
+     * @param string $fillns
+     * @return string
+     */
+    protected static function check_fillns(string $fillns) {
+        if (empty($fillns)) {
+            return '';
+        } else if ($fillns == 'none') {
+            return '';
+        } else if ($fillns == 'fillns') {
+            return 'NS';
+        } else if ($fillns == 'fillns0') {
+            return 'NS0';
+        } else {
+            throw new \moodle_exception('Fillns can only be none, fillns or fillns0. We found - "' . $fillns . '"');
+        }
+    }
+
+    /**
      * Import grade
      * @param int $courseid
      * @param int $gradeitemid
@@ -456,7 +476,7 @@ class api {
      * @param \local_gugrades\activities\base $activity
      * @param int $userid
      * @param bool $additional
-     * @param bool $fillns
+     * @param string $fillns
      * @return bool - was a grade imported
      */
     public static function import_grade(
@@ -466,7 +486,9 @@ class api {
         \local_gugrades\activities\base $activity,
         int $userid,
         bool $additional,
-        bool $fillns) {
+        string $fillns) {
+
+        $fillns = self::check_fillns($fillns);
 
         // If additional selected then skip users who already have data.
         if ($additional && \local_gugrades\grades::user_has_grades($gradeitemid, $userid)) {
@@ -510,7 +532,7 @@ class api {
 
                 return true;
             }
-        } else if ($fillns) {
+        } else if (!empty($fillns)) {
 
             // If there's no grade and fillns is enabled, write
             // an NS grade, instead.
@@ -522,7 +544,7 @@ class api {
                 admingrade:     'NS',
                 rawgrade:       0,
                 convertedgrade: 0,
-                displaygrade:   'NS',
+                displaygrade:   $fillns,
                 weightedgrade:  0,
                 gradetype:      'FIRST',
                 other:          '',
@@ -674,12 +696,14 @@ class api {
     public static function is_grades_imported(int $courseid, int $gradeitemid, $groupid) {
         $imported = \local_gugrades\grades::is_grades_imported($courseid, $gradeitemid, $groupid);
         list($recursiveavailable, $recursivematch, $allgradesvalid) = \local_gugrades\grades::recursive_import_match($gradeitemid);
+        $level = \local_gugrades\grades::get_gradeitem_level($gradeitemid);
 
         return [
             'imported' => $imported,
             'recursiveavailable' => $recursiveavailable,
             'recursivematch' => $recursivematch,
             'allgradesvalid' => $allgradesvalid,
+            'level' => $level,
         ];
     }
 
@@ -690,10 +714,10 @@ class api {
      * @param int $gradeitemid
      * @param int $groupid
      * @param bool $additional
-     * @param bool $fillns
+     * @param string $fillns
      * @return array [itemcount, gradecount]
      */
-    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, bool $additional, bool $fillns) {
+    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, bool $additional, string $fillns) {
         global $DB;
 
         // This could legitimately take forever
@@ -805,7 +829,7 @@ class api {
         }
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admingrades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Is it a scale?
@@ -875,7 +899,7 @@ class api {
         if ($level == 1) {
             $admingrades = \local_gugrades\admingrades::get_menu_level_one();
         } else {
-            $admingrades = \local_gugrades\admingrades::get_menu();
+            $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         }
         $adminmenu = self::formkit_menu($admingrades, true);
 
@@ -950,7 +974,7 @@ class api {
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admingrades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Gradeitem.
@@ -1018,7 +1042,7 @@ class api {
         $wsgradetypes = self::formkit_menu($gradetypes);
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admingrades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         $adminmenu = self::formkit_menu($admingrades, true);
 
         return [$wsgradetypes, $adminmenu];

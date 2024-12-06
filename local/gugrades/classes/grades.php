@@ -1083,7 +1083,7 @@ class grades {
     }
 
     /**
-     * Get gradeitem level
+     * Get grade category level
      * Our level 1 is 'depth' in the table minus 1 (in core, depth 1 is the course)
      * @param int $gradecategoryid
      * @return int
@@ -1094,6 +1094,26 @@ class grades {
         $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
 
         return $gradecategory->depth - 1;
+    }
+
+    /**
+     * Get grade item level
+     * (of the grade category it lives in)
+     * Effectively the depth of the parent category
+     * @param int $gradeitemid
+     * @return int
+     */
+    public static function get_gradeitem_level(int $gradeitemid) {
+        global $DB;
+
+        $item = self::get_gradeitem($gradeitemid);
+        if ($item->itemtype == 'category') {
+            $category = $DB->get_record('grade_categories', ['id' => $item->iteminstance], '*', MUST_EXIST);
+
+            return self::get_gradecategory_level($category->parent);
+        } else {
+            return self::get_gradecategory_level($item->categoryid);
+        }
     }
 
     /**
