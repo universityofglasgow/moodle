@@ -177,7 +177,7 @@ const fetchAssessmentsOverview = () => {
         });
         require([
             'highcharts',
-            'highcharts/modules/exporting',
+            'highcharts/modules/no-data-to-display',
             'highcharts/modules/accessibility'
         ], function (Highcharts) {
             Highcharts.chart('assessmentSummaryChart', {
@@ -195,6 +195,9 @@ const fetchAssessmentsOverview = () => {
                 },
                 title: {
                     text: ''
+                },
+                credits: {
+                    enabled: false
                 },
                 accessibility: {
                     description: 'This is the Assessments overview chart. It displays your assessments that need to be submitted' +
