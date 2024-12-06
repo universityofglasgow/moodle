@@ -35,6 +35,14 @@ $string['cachedef_quizduequery'] = 'The cache holding the results for Quiz\'s th
 $string['cachedef_scormduequery'] = 'The cache holding the results for SCORM activities that are due.';
 $string['cachedef_workshopduequery'] = 'The cache holding the results for Workshop activities that are due.';
 
+$string['loading_text'] = 'Loading';
+$string['overview_aria_label_text'] = 'Assessments overview. A chart displaying assessments to be submitted, overdue, submitted and graded.';
+$string['overview_accessibility_description'] = 'This is the Assessments overview chart. It displays your assessments that need to be submitted, are overdue, have been submitted, or have been graded.';
+$string['overview_tooltip_preamble'] = 'Assessments ';
+$string['duesoon_aria_label_text'] = 'Assessments Due Soon. A chart displaying assessments that are due in the next 24 hours, 7 days, or month.';
+$string['duesoon_accessibility_description'] = 'This is the Assessments due soon chart. It displays information about your assessments that require to be submitted in the next 24 hours, 7 days, or 1 calendar month.';
+$string['duesoon_tooltip_preamble'] = 'Assessments due in the next ';
+
 $string['newgu_spdetails:addinstance'] = 'Add a new Your Assessment Details (New) block';
 $string['newgu_spdetails:myaddinstance'] = 'Add a new Your Assessment Details (New) to Dashboard';
 $string['assessment'] = 'Assessment';
