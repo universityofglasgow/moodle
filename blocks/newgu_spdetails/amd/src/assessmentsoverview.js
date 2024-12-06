@@ -30,6 +30,7 @@
 
 import * as Log from 'core/log';
 import * as ajax from 'core/ajax';
+import {getString} from 'core/str';
 import {getStrings} from 'core/str';
 import {exception as displayException} from 'core/notification';
 import Templates from 'core/templates';
@@ -46,10 +47,21 @@ const Selectors = {
  * @method fetchAssessmentsOverview
  */
 const fetchAssessmentsOverview = () => {
+    let loading_text = '';
+    const loadingString = [
+        {key: 'loading_text', component: 'block_newgu_spdetails'},
+    ];
+    getString(loadingString).then((result) => {
+        loading_text = result[0];
+        return;
+    }).catch((err) => {
+        Log.debug(err);
+        return;
+    });
     let tempPanel = document.querySelector(Selectors.SUMMARY_BLOCK);
 
     tempPanel.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
-        "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
+        "<div class='spinner-border' role='status'><span class='hidden'>" + loading_text + "...</span></div></div>");
 
     ajax.call([{
         methodname: 'block_newgu_spdetails_get_assessmentsummary',
@@ -60,9 +72,35 @@ const fetchAssessmentsOverview = () => {
         let overdue = response[0].overdue;
         let submitted = response[0].sub_assess;
         let graded = response[0].assess_marked;
+        // Get language specific strings
+        const requiredStrings = [
+            {key: 'status_text_tobesubmitted', component: 'block_newgu_spdetails'},
+            {key: 'status_text_overdue', component: 'block_newgu_spdetails'},
+            {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
+            {key: 'status_text_graded', component: 'block_newgu_spdetails'},
+            {key: 'overview_aria_label_text', component: 'block_newgu_spdetails'},
+            {key: 'overview_accessibility_description', component: 'block_newgu_spdetails'}
+        ];
+        let status_text_tobesubmitted = '';
+        let status_text_overdue = '';
+        let status_text_submitted = '';
+        let status_text_graded = '';
+        let aria_label_text = '';
+        let accessibility_description = '';
+        getStrings(requiredStrings).then((result) => {
+            status_text_tobesubmitted = result[0];
+            status_text_overdue = result[1];
+            status_text_submitted = result[2];
+            status_text_graded = result[3];
+            aria_label_text = result[4];
+            accessibility_description = result[5];
+            return;
+        }).catch((err) => {
+            Log.debug(err);
+            return;
+        });
         tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentSummaryChart' width='400' height='300'" +
-            " aria-live='assertive' aria-atomic='true' aria-label='Assessments overview. A chart displaying assessments to be" +
-            " submitted, overdue, submitted and graded.'></div></figure>");
+            " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
 
         // Set specific colours/fonts/weights etc for the Highcharts config object.
         let tmpFontColour = '#000';
@@ -71,26 +109,6 @@ const fetchAssessmentsOverview = () => {
         let tooltipFontColour = '';
         let labelFontSize = '0.7em';
         let labelDistance = -28;
-        const requiredStrings = [
-            {key: 'status_text_tobesubmitted', component: 'block_newgu_spdetails'},
-            {key: 'status_text_overdue', component: 'block_newgu_spdetails'},
-            {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
-            {key: 'status_text_graded', component: 'block_newgu_spdetails'}
-        ];
-        let status_text_tobesubmitted = '';
-        let status_text_overdue = '';
-        let status_text_submitted = '';
-        let status_text_graded = '';
-        getStrings(requiredStrings).then((result) => {
-            status_text_tobesubmitted = result[0];
-            status_text_overdue = result[1];
-            status_text_submitted = result[2];
-            status_text_graded = result[3];
-            return;
-        }).catch((err) => {
-            Log.debug(err);
-            return;
-        });
         // Check for the contrast setting
         if (document.querySelector('.hillhead40-night')) {
             tmpFontColour = '#95B7E6';
@@ -111,9 +129,26 @@ const fetchAssessmentsOverview = () => {
             tooltipFontColour = '#ee6';
         }
         if (document.querySelector('.hillhead40-contrast-by')) {
+            backgroundColour = '#ee6';
+            tooltipBackgroundColour = '#ee6';
         }
         if (document.querySelector('.hillhead40-contrast-wg')) {
             tmpFontColour = '#eee';
+            backgroundColour = '#666';
+            tooltipBackgroundColour = '#666';
+            tooltipFontColour = '#eee';
+        }
+        if (document.querySelector('.hillhead40-contrast-br')) {
+            backgroundColour = '#EEB9B9';
+            tooltipBackgroundColour = '#EEB9B9';
+        }
+        if (document.querySelector('.hillhead40-contrast-bb')) {
+            backgroundColour = '#B9D9EE';
+            tooltipBackgroundColour = '#B9D9EE';
+        }
+        if (document.querySelector('.hillhead40-contrast-bw')) {
+            backgroundColour = '#F6F6F6';
+            tooltipBackgroundColour = '#F6F6F6';
         }
         // Check for the font setting
         let tmpFontFamily = "'Hillhead', 'Ubuntu', 'Trebuchet MS', 'Arial', sans-serif";
@@ -200,8 +235,7 @@ const fetchAssessmentsOverview = () => {
                     enabled: false
                 },
                 accessibility: {
-                    description: 'This is the Assessments overview chart. It displays your assessments that need to be submitted' +
-                    ', are overdue, have been submitted, or have been graded.',
+                    description: accessibility_description,
                 },
                 legend: {
                     align: 'right',
@@ -289,8 +323,18 @@ const fetchAssessmentsOverview = () => {
 };
 
 const viewAssessmentsOverviewByChartType = function(index) {
-    window.console.log('viewAssessmentsOverviewByChartType called with:', index);
     const chartType = index;
+    const loadingString = [
+        {key: 'loading_text', component: 'block_newgu_spdetails'},
+    ];
+    let loading_text = '';
+    getString(loadingString).then((result) => {
+        loading_text = result[0];
+        return;
+    }).catch((err) => {
+        Log.debug(err);
+        return;
+    });
 
     let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
     if (containerBlock) {
@@ -309,7 +353,7 @@ const viewAssessmentsOverviewByChartType = function(index) {
     assessmentsDueBlock.classList.remove('hidden-container');
 
     assessmentsDueContents.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
-        "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
+        "<div class='spinner-border' role='status'><span class='hidden'>" + loading_text + "...</span></div></div>");
 
     ajax.call([{
         methodname: 'block_newgu_spdetails_get_assessmentsummarybytype',
