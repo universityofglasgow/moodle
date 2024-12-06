@@ -73,19 +73,22 @@ const fetchAssessmentsDueSoon = () => {
                 {key: 'chart_7days', component: 'block_newgu_spdetails'},
                 {key: 'chart_1mth', component: 'block_newgu_spdetails'},
                 {key: 'duesoon_aria_label_text', component: 'block_newgu_spdetails'},
-                {key: 'duesoon_accessibility_description', component: 'block_newgu_spdetails'}
+                {key: 'duesoon_accessibility_description', component: 'block_newgu_spdetails'},
+                {key: 'duesoon_tooltip_preamble', component: 'block_newgu_spdetails'}
             ];
             let chart_24hrs = '';
             let chart_7days = '';
             let chart_1mth = '';
             let aria_label_text = '';
             let accessibility_description = '';
+            let duesoon_tooltip_preamble = '';
             getStrings(requiredStrings).then((result) => {
                 chart_24hrs = result[0];
                 chart_7days = result[1];
                 chart_1mth = result[2];
                 aria_label_text = result[3];
                 accessibility_description = result[4];
+                duesoon_tooltip_preamble = result[5];
                 return;
             }).catch((err) => {
                 Log.debug(err);
@@ -270,7 +273,6 @@ const fetchAssessmentsDueSoon = () => {
                             events: {
                                 click: function (event) {
                                     // Prevent the column from greying out when clicked.
-                                    window.console.log('plotOptions.series.events:', event);
                                     let index = event.point.category;
                                     viewAssessmentsDueByChartType(index);
                                 }
@@ -308,7 +310,7 @@ const fetchAssessmentsDueSoon = () => {
                         style: {
                             color: tooltipFontColour
                         },
-                        format: '<span style="color:{color}">\u25CF</span>Due in the next {key}: <b>{y}</b><br/>',
+                        format: '<span style="color:{color}">\u25CF</span>' + duesoon_tooltip_preamble + '{key}: <b>{y}</b><br/>',
                         shared: true
                     },
                     series: [{

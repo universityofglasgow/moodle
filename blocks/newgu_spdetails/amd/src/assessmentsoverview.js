@@ -79,7 +79,8 @@ const fetchAssessmentsOverview = () => {
             {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
             {key: 'status_text_graded', component: 'block_newgu_spdetails'},
             {key: 'overview_aria_label_text', component: 'block_newgu_spdetails'},
-            {key: 'overview_accessibility_description', component: 'block_newgu_spdetails'}
+            {key: 'overview_accessibility_description', component: 'block_newgu_spdetails'},
+            {key: 'overview_tooltip_preamble', component: 'block_newgu_spdetails'}
         ];
         let status_text_tobesubmitted = '';
         let status_text_overdue = '';
@@ -87,6 +88,7 @@ const fetchAssessmentsOverview = () => {
         let status_text_graded = '';
         let aria_label_text = '';
         let accessibility_description = '';
+        let overview_tooltip_preamble = '';
         getStrings(requiredStrings).then((result) => {
             status_text_tobesubmitted = result[0];
             status_text_overdue = result[1];
@@ -94,6 +96,7 @@ const fetchAssessmentsOverview = () => {
             status_text_graded = result[3];
             aria_label_text = result[4];
             accessibility_description = result[5];
+            overview_tooltip_preamble = result[6];
             return;
         }).catch((err) => {
             Log.debug(err);
@@ -288,7 +291,7 @@ const fetchAssessmentsOverview = () => {
                     style: {
                         color: tooltipFontColour
                     },
-                    format: '<span style="color:{color}">\u25CF</span>{key}: <b>{y}</b><br/>',
+                    format: '<span style="color:{color}">\u25CF</span>' + overview_tooltip_preamble + '{key}: <b>{y}</b><br/>',
                     shared: true
                 },
                 series: [{
