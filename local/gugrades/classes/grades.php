@@ -1331,4 +1331,16 @@ class grades {
             }
         }
     }
+
+    /**
+     * Is gradeitemid a category
+     * Confirm that a gradeitemid really is a category
+     * @param int $gradeitemid
+     * @return boolean
+     */
+    public static function is_gradeitemid_category(int $gradeitemid) {
+        $item = self::get_gradeitem($gradeitemid);
+
+        return $item->itemtype == 'category';
+    }
 }

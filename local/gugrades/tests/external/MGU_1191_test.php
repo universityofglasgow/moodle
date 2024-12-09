@@ -205,7 +205,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             courseid:       $this->course->id,
             gradeitemid:    $subquestionid,
             userid:         $this->student->id,
-            reason:         'AGREED',
+            reason:         'CATEGORY',
             other:          '',
             admingrade:     'NS0',
             scale:          0,
@@ -225,7 +225,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('45', $fred['displaygrade']);
+        $this->assertEquals('42.5', $fred['displaygrade']);
 
         // Add NS0 to 'Question 2'.
         $question2id = $this->get_gradeitemid('Question 2');
@@ -271,7 +271,6 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        var_dump($fred); die;
         $this->assertEquals('NS', $fred['displaygrade']);
 }
 

@@ -1141,6 +1141,12 @@ class api {
         // If we're overriding a category then set the override bit
         $catoverride = $reason == 'CATEGORY';
 
+        // gradeitem must be a category if reason = category and must not be if not
+        $iscategory = \local_gugrades\grades::is_gradeitemid_category($gradeitemid);
+        if (($catoverride && !$iscategory) || (!$catoverride && $iscategory)) {
+            throw new \moodle_exception('Category reason / itemtype mismatch. gradeitemid = ' . $gradeitemid . ', reason = "' . $reason . '"');
+        }
+
         // If cateoverride and delete is true then
         // we are removing the cat override and aggregating a new grade.
         if ($catoverride && $delete) {
