@@ -133,6 +133,11 @@ class custom extends base {
             'description' => get_string('showstrategy', 'local_gugrades'),
             'category' => false,
         ];
+        $form[] = [
+            'identifier' => 'warnings',
+            'description' => get_string('showwarnings', 'local_gugrades'),
+            'category' => false,
+        ];
 
         // Stored preferences
         $preferences = get_user_preferences('local_gugrades_customaggregationexportselect');
@@ -250,6 +255,16 @@ class custom extends base {
                 $strategy = \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid);
                 $csvitems[$identifier . '_strategy'] = $strategy;
             }
+
+            // Warnings (only applies to category)
+            if ($isreleased && $options['warnings']) {
+                if ($category->displaygrade != $released->displaygrade) {
+                    $warning = get_string('mismatch', 'local_gugrades');
+                } else {
+                    $warning = '';
+                }
+                $csvitems[$identifier . '_warnings'] = $warning;
+            }
         } else {
 
             // Ordinary item.
@@ -263,6 +278,7 @@ class custom extends base {
 
             // If option for released grades
             if ($options['released'] && $isreleased) {
+                $released = \local_gugrades\grades::get_released_grade($courseid, $gradeitemid, $userid);
                 if ($provisional) {
                     $csvitems[$identifier . '_released'] = $released->displaygrade;
                 } else {
@@ -320,7 +336,7 @@ class custom extends base {
         $headings = [];
 
         foreach ($line as $ident => $value) {
-            if (str_ends_with($ident, '_weights') || str_ends_with($ident, '_strategy') || str_ends_with($ident, '_released')) {
+            if (str_ends_with($ident, '_weights') || str_ends_with($ident, '_strategy') || str_ends_with($ident, '_released') || str_ends_with($ident, '_warnings')) {
                 $parts = explode('_', $ident);
                 if (count($parts) !== 3) {
                     throw new \moodle_exception('Incorrectly formatted option identifier - "' . $ident . '"');
@@ -387,6 +403,7 @@ class custom extends base {
             'weights' => $this->identifier_enabled('weights', $form),
             'strategy' => $this->identifier_enabled('strategy', $form),
             'released' => $this->identifier_enabled('released', $form),
+            'warnings' => $this->identifier_enabled('warnings', $form),
         ];
 
         // Array holds CSV lines.
@@ -411,6 +428,9 @@ class custom extends base {
                     continue;
                 }
                 if ($ident == 'released') {
+                    continue;
+                }
+                if ($ident == 'warnings') {
                     continue;
                 }
 

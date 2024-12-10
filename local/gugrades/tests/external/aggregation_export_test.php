@@ -147,7 +147,7 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
 
         // Check user preferences have been set
         $preferences = unserialize(get_user_preferences('local_gugrades_customaggregationexportselect'));
-        $this->assertCount(24, $preferences);
+        $this->assertCount(25, $preferences);
         $this->assertTrue($preferences["idnumber"]);
 
         // Get form again, to check saved settings
