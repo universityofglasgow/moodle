@@ -258,7 +258,7 @@ class custom extends base {
 
             // Warnings (only applies to category)
             if ($isreleased && $options['warnings']) {
-                if ($category->displaygrade != $released->displaygrade) {
+                if ($category && $released && ($category->displaygrade != $released->displaygrade)) {
                     $warning = get_string('mismatch', 'local_gugrades');
                 } else {
                     $warning = '';
