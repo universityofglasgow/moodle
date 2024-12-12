@@ -100,8 +100,8 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         $this->assertEquals('07 - Deferred', $adminmenu[0]['label']);
         $this->assertEquals('NS', $adminmenu[1]['value']);
         $this->assertEquals('NS - No Submission', $adminmenu[1]['label']);
-        $this->assertEquals('MV', $adminmenu[2]['value']);
-        $this->assertEquals('MV - Good Cause', $adminmenu[2]['label']);
+        $this->assertEquals('MV0', $adminmenu[2]['value']);
+        $this->assertEquals('MV0 - Good cause (non replicable)', $adminmenu[2]['label']);
     }
 
     /**

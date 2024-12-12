@@ -52,10 +52,9 @@ class admingrades {
             $admingrades[$code] = "$code - $admingrade";
         }
 
-        // NS0 & MV0 is not available at Level 1
+        // NS0 is not available at Level 1
         if ($level == 1) {
             unset($admingrades['NS0']);
-            unset($admingrades['MV0']);
         }
 
         return $admingrades;

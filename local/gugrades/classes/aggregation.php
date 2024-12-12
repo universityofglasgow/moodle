@@ -892,8 +892,11 @@ class aggregation {
             }
         }
 
-        // Pre-process.
-        $items = $aggregation->pre_process_items($items);
+        // Pre-process. Can optionally return aggregated grade
+        [$admingrade, $items] = $aggregation->pre_process_items($items);
+        if ($admingrade) {
+            return [0, 0, $admingrade, $admingrade, $completion, ''];
+        }
 
         // "drop lowest" items.
         // NOTE: droplow is NOT supported for level 1

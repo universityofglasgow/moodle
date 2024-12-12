@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Test functions around MGU-1191 (Option to add NS0 grade)
+ * Test functions around MGU-1110 (Option to add MV0 grade)
  * @package    local_gugrades
  * @copyright  2024
  * @author     Howard Miller
@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/local/gugrades/tests/external/gugrades_aggregatio
 /**
  * More test(s) for get_aggregation_page webservice
  */
-final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_testcase {
+final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_testcase {
 
     /**
      * @var object $gradecatsummative
@@ -59,7 +59,35 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
     }
 
     /**
-     * Test that form shows NS0 (or not) at correct levels.
+     * Create conversion map
+     * @return int
+     */
+    protected function make_map() {
+
+        // Read map with id 0 (new map) for Schedule A.
+        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
+        $mapstuff = external_api::clean_returnvalue(
+            get_conversion_map::execute_returns(),
+            $mapstuff
+        );
+
+        // Write map back.
+        $name = 'Test conversion map';
+        $schedule = 'schedulea';
+        $maxgrade = 100.0;
+        $map = $mapstuff['map'];
+        $mapid = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
+        $mapid = external_api::clean_returnvalue(
+            write_conversion_map::execute_returns(),
+            $mapid
+        );
+        $mapid = $mapid['mapid'];
+
+        return $mapid;
+    }
+
+    /**
+     * Test that form shows MV0 (or not) at correct levels.
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
@@ -92,7 +120,8 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         }
 
         // Get add grade form for Item 1
-        // As this is on level 1, NS0 should not be available.
+        // As this is on level 1, MV0 SHOULD be available.
+        // (cf NS0)
         $item1id = $this->get_gradeitemid('Item 1');
         $form = get_add_grade_form::execute($this->course->id, $item1id, $this->student->id);
         $form = external_api::clean_returnvalue(
@@ -104,7 +133,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         $this->assertCount(4, $adminmenu);
 
         // Try category 'Summer exam'.
-        // Should still not work
+        // Should still work
         $summerexamitemid = $this->get_gradeitemid_for_category('Summer exam');
         $form = get_add_grade_form::execute($this->course->id, $summerexamitemid, $this->student->id);
         $form = external_api::clean_returnvalue(
@@ -116,7 +145,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         $this->assertCount(4, $adminmenu);
 
         // Try 'Question 1'.
-        // Should now be available in menu.
+        // Should still be available in menu (along with NS0).
         $question1id = $this->get_gradeitemid('Question 1');
         $form = get_add_grade_form::execute($this->course->id, $question1id, $this->student->id);
         $form = external_api::clean_returnvalue(
@@ -133,7 +162,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_ns0_aggregation(): void {
+    public function test_mv0_aggregation(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -171,7 +200,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         $fred = $page['users'][0];
         $this->assertEquals('66', $fred['displaygrade']);
 
-        // Add NS0 to 'Question 1'.
+        // Add MV0 to 'Question 1'.
         $question1id = $this->get_gradeitemid('Question 1');
         $nothing = write_additional_grade::execute(
             courseid:       $this->course->id,
@@ -179,7 +208,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'MV0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -189,7 +218,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             $nothing
         );
 
-        // Get aggregation page with single NS0
+        // Get aggregation page with single MV0
         $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
@@ -197,9 +226,9 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('45', $fred['displaygrade']);
+        $this->assertEquals('60', $fred['displaygrade']);
 
-        // Add NS0 to category 'Sub question'.
+        // Add MV0 to category 'Sub question'.
         $subquestionid = $this->get_gradeitemid_for_category('Sub question');
         $nothing = write_additional_grade::execute(
             courseid:       $this->course->id,
@@ -207,7 +236,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'CATEGORY',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'MV0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -217,7 +246,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             $nothing
         );
 
-        // Get aggregation page with two NS0
+        // Get aggregation page with two MV0
         $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
@@ -225,9 +254,9 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('42.5', $fred['displaygrade']);
+        $this->assertEquals('85', $fred['displaygrade']);
 
-        // Add NS0 to 'Question 2'.
+        // Add MV0 to 'Question 2'.
         $question2id = $this->get_gradeitemid('Question 2');
         $nothing = write_additional_grade::execute(
             courseid:       $this->course->id,
@@ -235,7 +264,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'MV0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -245,7 +274,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             $nothing
         );
 
-        // Add NS0 to 'Question 4'.
+        // Add MV0 to 'Question 4'.
         $question3id = $this->get_gradeitemid('Question 3');
         $nothing = write_additional_grade::execute(
             courseid:       $this->course->id,
@@ -253,7 +282,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'MV0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -263,7 +292,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             $nothing
         );
 
-        // Get aggregation page for all NS0
+        // Get aggregation page for all MV0. MGU-1110 CoS 8.
         $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, true);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
@@ -271,7 +300,157 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('NS', $fred['displaygrade']);
+        $this->assertEquals('MV0', $fred['displaygrade']);
+
+        // Get the grade category 'Summative'.
+        $gradecatsummative = $DB->get_record('grade_categories', ['fullname' => 'Summative'], '*', MUST_EXIST);
+
+        // Create conversion map
+        $mapid = $this->make_map();
+
+        // Add conversion map to summer exam category
+        $nothing = select_conversion::execute($this->course->id, 0, $gradecatsummer->id, $mapid);
+        $nothing = external_api::clean_returnvalue(
+            select_conversion::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation for Summative.
+        // It's MV0 plus 3 grades (all equal weight). So should be remaining 3 grades / 3.
+        // MGU-1110 CoS10.
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals(75, $fred['completed']);
+        $this->assertEquals('B3 (15)', $fred['displaygrade']);
+
+        // Add MV0 to Item 1 (pushing it down to 50%)
+        $item1id = $this->get_gradeitemid('Item 1');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $item1id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     'MV0',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation for Summative.
+        // It's two MV0 plus two grades (all equal weight). So under 75%.
+        // MGU-1110 Cos11 (MV0 for a component < 75% at level 1 == MV)
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('MV', $fred['displaygrade']);
+        $this->assertEquals(50, $fred['completed']);
+
+        // Add NS to Item 1.
+        // Generate MGU-1110 CoS 12.
+        $item1id = $this->get_gradeitemid('Item 1');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $item1id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     'NS',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation for Summative.
+        // It's mix of MV0 and NS under 75%.
+        // MGU-1110 Cos12 (MV0 and NS for a component < 75% at level 1 == GCW)
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('GCW', $fred['displaygrade']);
+        $this->assertEquals(50, $fred['completed']);
+
+        // Add MV to Item 1.
+        // Generate MGU-1110 CoS 15.
+        $item1id = $this->get_gradeitemid('Item 1');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $item1id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     'MV',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation for Summative.
+        // It's mix of MV0 and MV
+        // MGU-1110 Cos14
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummative->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('MV', $fred['displaygrade']);
+
+        // Back to level 2 summer exam.
+        // Add MV for Question 1. MGU-1110 CoS 15
+        $question1id = $this->get_gradeitemid('Question 1');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $question1id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     'MV',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page with mix of MV and MV0.
+        // Result should be MV
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('MV', $fred['displaygrade']);
 }
 
 }

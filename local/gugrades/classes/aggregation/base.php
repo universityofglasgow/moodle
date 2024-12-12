@@ -38,6 +38,14 @@ class base {
     private int $courseid;
 
     /**
+     * Note that MV0 grades were found (and dropped) in pre-process
+     * Their presence (even though dropped) effects the aggregated admin grade
+     * (see MGU-1110)
+     * @var bool $mv0found
+     */
+    private bool $mv0found = false;
+
+    /**
      * @var string $atype
      */
 
@@ -88,7 +96,25 @@ class base {
      */
     public function pre_process_items(array $items) {
 
-        return $items;
+        // Drop any MV0
+        $newitems = [];
+        foreach ($items as $item) {
+            if ($item->admingrade != 'MV0') {
+                $newitems[] = $item;
+            } else {
+                $this->mv0found = true;
+            }
+        }
+
+        // If this has resulted in ALL items being removed then the
+        // result is also MV0
+        if (count($newitems) == 0) {
+            $agrade = 'MV0';
+        } else {
+            $agrade = false;
+        }
+
+        return [$agrade, $newitems];
     }
 
     /**
@@ -228,7 +254,24 @@ class base {
     public function admin_grades_level1(array $items, int $completion) {
 
         // If completion is <75% then admingrade is CW
+        // ...unless one of the items is MV0, then it's MV
+        // MGU-1110 CoS11
+        // UNLESS there is any NS - CoS12
         if ($completion < 75) {
+
+            // Check for MV0
+            if ($this->mv0found) {
+
+                // If there is an NS, then it's GCW
+                foreach ($items as $item) {
+                    if ($item->admingrade == 'NS') {
+                        return 'GCW';
+                    }
+                }
+
+                return 'MV';
+            }
+
             return 'CW';
         }
 

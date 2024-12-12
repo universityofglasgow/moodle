@@ -245,7 +245,7 @@ class custom extends base {
                 if ($released) {
                     $csvitems[$identifier . '_released'] = $released->displaygrade;
                 } else {
-                    $csvitems[$identifier . '_released'] = $strnodata;
+                    $csvitems[$identifier . '_released'] = '';
                 }
             }
 
