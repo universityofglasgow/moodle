@@ -17,9 +17,11 @@
 /**
  * Version information
  *
- * @package   block_newgu_spdetails
- * @copyright Moodle Dev
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     block_newgu_spdetails
+ * @author      Shubhendra Diophode <shubhendra.doiphode@gmail.com>
+ * @author      Greg Pedder <greg.pedder@glasgow.ac.uk>
+ * @copyright   2023 University of Glasgow
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
