@@ -451,6 +451,129 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
 
         $fred = $page['users'][0];
         $this->assertEquals('MV', $fred['displaygrade']);
-}
+    }
+
+    /**
+     * Test aggregation results with ALL MV0
+     * MGU-1110 CoS 8
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     */
+    public function test_CoS8_aggregation(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data_mgu1191', $this->student->id);
+
+        // Get the grade category 'Summer exam'.
+        $gradecatsummer = $DB->get_record('grade_categories', ['fullname' => 'Summer exam'], '*', MUST_EXIST);
+
+        // Set to droplow=1
+        $gradecatsummer->droplow = 1;
+        $DB->update_record('grade_categories', $gradecatsummer);
+
+        // Set aggregation strategy.
+        $this->set_strategy($gradecatsummer->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
+
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Set Q1-3 and subquestion to MV0
+        // Add MV0 to category 'Sub question'.
+        $subquestionid = $this->get_gradeitemid_for_category('Sub question');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $subquestionid,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     'MV0',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Add grade to 'Question 1'. This is going to get dropped.
+        $question1id = $this->get_gradeitemid('Question 1');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $question1id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     '',
+            scale:          0,
+            grade:          10,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Add MV0 to 'Question 2'.
+        $question2id = $this->get_gradeitemid('Question 2');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $question2id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     'MV0',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Add MV0 to 'Question 3'.
+        $question3id = $this->get_gradeitemid('Question 3');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $question3id,
+            userid:         $this->student->id,
+            reason:         'AGREED',
+            other:          '',
+            admingrade:     'MV0',
+            scale:          0,
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page with all MV0.
+        // Result should be MV0
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('MV0', $fred['displaygrade']);
+    }
 
 }

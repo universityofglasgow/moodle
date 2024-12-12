@@ -907,8 +907,13 @@ class aggregation {
 
         // If we've got here and there are no grades to aggregate (possibly due to drop lowest)
         // then it's an error.
+        // UNLESS any MV0s already dumped.
         if (count($items) == 0) {
-            return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades')];
+            if ($aggregation->get_mv0found()) {
+                return [0, 0, 'MV0', 'MV0', $completion, ''];
+            } else {
+                return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades')];
+            }
         }
 
         // If >=level2 then check for admin grades (see MGU-726).

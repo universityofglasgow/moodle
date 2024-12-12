@@ -118,6 +118,14 @@ class base {
     }
 
     /**
+     * Getter for mv0found
+     * @return bool
+     */
+    public function get_mv0found() {
+        return $this->mv0found;
+    }
+
+    /**
      * Drop lowest n items from grades
      * @param array $items
      * @param int $n
