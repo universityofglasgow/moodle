@@ -145,6 +145,9 @@
                 </td>
                 <td></td>
                         {{/data.coursedata.hascourseitems}}
+                        {{^data.coursedata.hascourseitems}}
+                        <td colspan="2">-</td>
+                        {{/data.coursedata.hascourseitems}}
                     {{/mygradesenabled}}
                 {{/is_gradecategory}}
                 {{^is_gradecategory}}
