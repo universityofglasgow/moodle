@@ -27,10 +27,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_gustaffview';
-$plugin->release = '0.2 Beta';
-$plugin->version = 2024111401;
-$plugin->requires = 2016112900;
+$plugin->version = 2024121201;
+$plugin->requires = 2022041900; // Moodle 4.0.
 $plugin->maturity = MATURITY_STABLE;
+$plugin->release = '0.3 Beta';
 
 $plugin->dependencies = [
     'block_newgu_spdetails' => ANY_VERSION
