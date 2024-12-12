@@ -45,13 +45,13 @@ class mycampus extends base {
      */
     protected function sanitise_grade($user) {
 
-        $validadmin = ['CW', 'CR', 'CA', '07', 'AU', 'FC'];
-
         // First check if there is an admin grade.
         if ($user->admingrade) {
-            $grade = $admingrade;
-            if (!in_array($grade, $validadmin)) {
-                $grade = '';
+            $grade = $user->admingrade;
+
+            // Change MV0 to MV
+            if ($grade == 'MV0') {
+                $grade = 'MV';
             }
 
             return $grade;
@@ -60,7 +60,12 @@ class mycampus extends base {
         // Failing that, does it appear to be an actual grade?
         // Rawgrade must have some value.
         if ($user->rawgrade) {
-            return $user->displaygrade;
+            $grade = $user->displaygrade;
+
+            // Remove the bracketted value
+            $parts = explode(' ', $grade);
+
+            return $parts[0];
         }
 
         return '';
