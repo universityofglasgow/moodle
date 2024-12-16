@@ -183,7 +183,7 @@ class base {
         // If there is a mix of MV and NS then aggregation is GCW (Good Cause Withheld)
         // See MGU-1009
         // Level 1 only
-        if ($level = 1) {
+        if ($level == 1) {
             $nsfound = false;
             $mvfound = false;
             foreach ($items as $item) {
