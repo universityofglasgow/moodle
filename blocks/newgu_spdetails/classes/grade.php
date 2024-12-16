@@ -228,6 +228,7 @@ class grade {
 
     /**
      * MGU-1004 - For an Admin grade, we need to map the short code to the value. Otherwise just return the grade as is.
+     * MGU-1202/MGU-1203 - Additional MV/NS grades added - MV0 (Good cause further opportunity) and NS0 (No Submission 0 Grade).
      * @param string $admingrade
      * @param string $displaygrade
      * @return string
@@ -238,7 +239,9 @@ class grade {
             $admingrades = [
                 '07' => get_string('admin07', 'local_gugrades'),
                 'MV' => get_string('adminmv', 'local_gugrades'),
+                'MV0' => get_string('adminmv0', 'local_gugrades'),
                 'NS' => get_string('adminns', 'local_gugrades'),
+                'NS0' => get_string('adminns', 'local_gugrades'),
                 'CW' => get_string('admincw', 'local_gugrades'),
                 'UNS' => get_string('adminuns', 'local_gugrades'),
                 'SAT' => get_string('adminsat', 'local_gugrades'),
