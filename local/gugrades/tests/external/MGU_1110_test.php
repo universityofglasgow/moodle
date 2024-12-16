@@ -380,7 +380,8 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
 
         // Get aggregation for Summative.
         // It's mix of MV0 and NS under 75%.
-        // MGU-1110 Cos12 (MV0 and NS for a component < 75% at level 1 == GCW)
+        // MGU-1110 Cos12 (MV0 and NS for a component < 75% at level 1 == CW)
+        // Superceded by MGU-1213
         $page = get_aggregation_page::execute($this->course->id, $gradecatsummative->id, '', '', 0, true);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
@@ -388,7 +389,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('GCW', $fred['displaygrade']);
+        $this->assertEquals('CW', $fred['displaygrade']);
         $this->assertEquals(50, $fred['completed']);
 
         // Add MV to Item 1.

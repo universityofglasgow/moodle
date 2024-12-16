@@ -180,8 +180,9 @@ class base {
             }
         }
 
-        // If there is a mix of MV and NS then aggregation is GCW (Good Cause Withheld)
+        // If there is a mix of MV and NS then aggregation is MV (Good Cause Withheld)
         // See MGU-1009
+        // Replaced by: MGU-1210
         // Level 1 only
         if ($level == 1) {
             $nsfound = false;
@@ -195,7 +196,7 @@ class base {
                 }
             }
             if ($nsfound && $mvfound) {
-                return 'GCW';
+                return 'MV';
             }
         }
 
@@ -265,6 +266,7 @@ class base {
         // ...unless one of the items is MV0, then it's MV
         // MGU-1110 CoS11
         // UNLESS there is any NS - CoS12
+        // Superceded by MGU-1213
         if ($completion < 75) {
 
             // Check for MV0
@@ -273,7 +275,7 @@ class base {
                 // If there is an NS, then it's GCW
                 foreach ($items as $item) {
                     if ($item->admingrade == 'NS') {
-                        return 'GCW';
+                        return 'CW';
                     }
                 }
 
