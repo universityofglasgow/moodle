@@ -34,6 +34,7 @@ $string['adminca'] = 'Credit Awarded';
 $string['admincp'] = 'Complete';
 $string['admincr'] = 'Credit Refused';
 $string['admincw'] = 'Credit Withheld';
+$string['admingcw'] = 'Good Cause Credit Withheld';
 $string['admingrades'] = 'Admin grade';
 $string['adminis'] = 'Interruption of Studies';
 $string['adminmv'] = 'Good Cause (further opportunity)';

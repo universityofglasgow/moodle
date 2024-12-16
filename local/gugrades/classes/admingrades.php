@@ -65,6 +65,7 @@ class admingrades {
      */
     private static function define_level_one() {
         $admingrades = [
+            'GCW' => get_string('admingcw', 'local_gugrades'),
             '07' => get_string('admin07', 'local_gugrades'),
             'MV' => get_string('adminmv', 'local_gugrades'),
             'CW' => get_string('admincw', 'local_gugrades'),
