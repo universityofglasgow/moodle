@@ -541,7 +541,7 @@ class api {
                 courseid:       $courseid,
                 gradeitemid:    $gradeitemid,
                 userid:         $userid,
-                admingrade:     'NS',
+                admingrade:     $fillns,
                 rawgrade:       0,
                 convertedgrade: 0,
                 displaygrade:   $fillns,
