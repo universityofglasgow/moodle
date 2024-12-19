@@ -71,16 +71,16 @@ class base {
 
         $filtereditems = [];
         foreach ($items as $id => $item) {
-            $activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
-            $userids = $activity->get_user_ids();
-            if (empty($userids)) {
-                //$filtereditems[$id] = $item;
-                continue;
-            }
+            //$activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
+            //$userids = $activity->get_user_ids();
+            //if (empty($userids)) {
+            //    //$filtereditems[$id] = $item;
+            //    continue;
+            //}
 
-            // If selected user is not in the list of available users,
-            // remove the item from the list of items.
-            if (in_array($userid, $userids)) {
+            // Check user can 'see' this gradeitem.
+            $available = \local_gugrades\users::available_for_user($item->itemid, $userid);
+            if ($available) {
                 $filtereditems[$id] = $item;
             }
         }

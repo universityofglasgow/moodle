@@ -59,6 +59,9 @@ class api {
     public static function get_capture_page(int $courseid, int $gradeitemid,
         string $firstname, string $lastname, int $groupid, bool $viewfullnames) {
 
+        //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
+        
+
         // Sanity checks for selected grade item.
         if (!\local_gugrades\grades::is_grade_supported($gradeitemid)) {
             return [
@@ -103,6 +106,8 @@ class api {
         $converted = \local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid);
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
         $showcsvimport = \local_gugrades\users::showcsvimport($users);
+
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         return [
             'users' => $users,

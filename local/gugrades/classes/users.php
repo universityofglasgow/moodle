@@ -47,9 +47,40 @@ class users {
         }
 
         // Get course module.
-        $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $courseid, false, MUST_EXIST);
-        $modinfo = get_fast_modinfo($courseid);
-        return $modinfo->get_cm($cm->id);
+        //$cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $courseid, false, MUST_EXIST);
+
+        // "Set to -1 to avoid calculation of dynamic user-depended data".
+        $modinfo = get_fast_modinfo($courseid, -1);
+        if (!$cm = $modinfo->instances[$item->itemmodule][$item->iteminstance]) {
+            throw new \moodle_exception('Unable to find course module for gradeitemid = ' . $gradeitemid);
+        }
+        return $cm;
+    }
+
+    /**
+     * Get availability for user.
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return boolean
+     */
+    public static function available_for_user(int $gradeitemid, int $userid) {
+        global $DB;
+
+        $item = \local_gugrades\grades::get_gradeitem($gradeitemid);
+
+        // If the gradeitem is NOT is module then it's simply available.
+        if ($item->itemtype != 'mod') {
+            return true;
+        }
+
+        // Get course module.
+        $courseid = $item->courseid;
+        $modinfo = get_fast_modinfo($courseid, $userid);
+        if (!$cm = $modinfo->instances[$item->itemmodule][$item->iteminstance]) {
+            throw new \moodle_exception('Unable to find course module for gradeitemid = ' . $gradeitemid);
+        }
+
+        return $cm->visible;
     }
 
     /**
