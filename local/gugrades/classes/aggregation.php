@@ -313,7 +313,29 @@ class aggregation {
     private static function is_grade_hidden(int $gradeitemid, int $userid) {
         global $DB;
 
-        return $DB->record_exists('local_gugrades_hidden', ['gradeitemid' => $gradeitemid, 'userid' => $userid]);
+        if ($DB->get_record('local_gugrades_hidden', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get any hidden grades for user and re-organise by gradeitemid
+     * @param int $courseid
+     * @param int $userid
+     * @return array
+     */
+    private static function get_user_hidden(int $courseid, int $userid) {
+        global $DB;
+
+        $hiddengrades = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'userid' => $userid]);
+        $hiddenids = [];
+        foreach ($hiddengrades as $hidden) {
+            $hiddenids[] = $hidden->gradeitemid;
+        }
+
+        return $hiddenids;
     }
 
     /**
@@ -328,6 +350,9 @@ class aggregation {
         global $DB;
 
         // We're assuming that this user is fully aggregated and no further checks are required.
+
+        // Get any hidden gradeitems
+        $hiddenids = self::get_user_hidden($courseid, $user->id);
 
         // Get the grade item corresponding to this category.
         $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
@@ -352,7 +377,8 @@ class aggregation {
                 'isscale' => $column->isscale,
                 'dropped' => false,
                 'isadmin' => false,
-                'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
+                //'hidden' => self::is_grade_hidden($column->gradeitemid, $user->id),
+                'hidden' => in_array($column->gradeitemid, $hiddenids),
                 'overridden' => false,
                 'available' => true,
                 'normalisedweight' => null,
@@ -444,6 +470,8 @@ class aggregation {
     public static function add_aggregation_fields_to_users(int $courseid, int $gradecategoryid, array $users, array $columns) {
         global $DB;
 
+        //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
+
         $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
 
         // Get the grad eitem corresponding to this category.
@@ -469,6 +497,8 @@ class aggregation {
         // Debug stuff.
         $debug = [];
         $debug[]['line'] = "$userhelpercount User helper calls count.";
+
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         return [$users, $debug];
     }

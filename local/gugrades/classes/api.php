@@ -60,7 +60,6 @@ class api {
         string $firstname, string $lastname, int $groupid, bool $viewfullnames) {
 
         //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
-        
 
         // Sanity checks for selected grade item.
         if (!\local_gugrades\grades::is_grade_supported($gradeitemid)) {
@@ -1182,6 +1181,7 @@ class api {
 
         // Re-aggregate this user
         \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+
     }
 
     /**
