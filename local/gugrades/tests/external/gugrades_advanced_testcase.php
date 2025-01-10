@@ -116,10 +116,10 @@ class gugrades_advanced_testcase extends gugrades_base_testcase {
         $gradecatform = $this->getDataGenerator()->create_grade_category(['courseid' => $course->id, 'fullname' => 'Formative']);
 
         // Add some assignments.
-        $assign1 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
-        $assign2 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
-        $assign3 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
-        $assign4 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
+        $assign1 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
+        $assign2 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
+        $assign3 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
+        $assign4 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
 
         // Assign22 is graded out of 22 (which is a special case).
         $assign22 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'name' => 'Assign 22']);

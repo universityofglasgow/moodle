@@ -1544,7 +1544,6 @@ class api {
                 // Activity action.
                 $activity->unrelease_grades($user->id);
             } else {
-
                 self::release_user_grade($courseid, $gradeitemid, $user->id, $activity);
             }
         }
