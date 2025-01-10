@@ -1151,8 +1151,10 @@ class grades {
             $level1 = self::get_level_one_parent($categoryid);
 
             // Queue an adhoc-task
-            $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
-            \core\task\manager::queue_adhoc_task($task);
+            if ($level1) {
+                $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
+                \core\task\manager::queue_adhoc_task($task);
+            }
         }
     }
 
