@@ -194,12 +194,20 @@ class assign_activity extends base {
      * Modify assignment workflow state
      */
     private function set_marking_workflow($userid, $workflowstate) {
+        global $DB;
+
         $userflags = $this->assign->get_user_flags($userid, true);
         $userflags->workflowstate = $workflowstate;
         $this->assign->update_user_flags($userflags);
 
         // Update grade
         $grade = $this->assign->get_user_grade($userid, true);
+
+        // Is there any feedback comment for this grade?
+        if ($feedback = $DB->get_record('assignfeedback_comments', ['grade' => $grade->id])) {
+            $grade->feedbacktext = $feedback->commenttext;
+            $grade->feedbackformat = $feedback->commentformat;
+        }
         $this->assign->update_grade($grade);
     }
 

@@ -174,7 +174,7 @@ class gugrades_advanced_testcase extends gugrades_base_testcase {
         // Add assignment grades.
         $this->add_assignment_grade($assign1->id, $student->id, 95.5);
         $this->add_assignment_grade($assign1->id, $student2->id, 33);
-        $this->add_assignment_grade($assign2->id, $student->id, 21);
+        $this->add_assignment_grade($assign2->id, $student->id, 21, 'Your work is terrible');
         $this->add_assignment_grade($assign2->id, $student2->id, 11);
         $this->add_assignment_grade($assign3->id, $student->id, 0);
         $this->add_assignment_grade($assign3->id, $student2->id, 23.0);

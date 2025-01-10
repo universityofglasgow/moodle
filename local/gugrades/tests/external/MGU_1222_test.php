@@ -96,6 +96,7 @@ final class MGU_1222_test extends \local_gugrades\external\gugrades_advanced_tes
         // Grades should have been copied to the Gradebook
         $mgrades = array_values($DB->get_records('grade_grades', ['userid' => $this->student->id, 'itemid' => $this->gradeitemidassign2]));
         $this->assertEquals('21.00000', $mgrades[0]->finalgrade);
+        $this->assertEquals('Your work is terrible', $mgrades[0]->feedback);
 
         // (un)release grade for $assignment2
         $status = release_grades::execute($this->course->id, $this->gradeitemidassign2, 0, true);

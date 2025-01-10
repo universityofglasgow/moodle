@@ -133,8 +133,9 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
      * @param int $assignid
      * @param int $studentid
      * @param float $gradeval
+     * @param string $comment
      */
-    protected function add_assignment_grade(int $assignid, int $studentid, float $gradeval) {
+    protected function add_assignment_grade(int $assignid, int $studentid, float $gradeval, string $comment = '') {
         global $USER, $DB;
 
         $submission = new \stdClass();
@@ -156,7 +157,16 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
         $grade->grader = $USER->id;
         $grade->grade = $gradeval;
         $grade->attemptnumber = 0;
-        $DB->insert_record('assign_grades', $grade);
+        $gradeid = $DB->insert_record('assign_grades', $grade);
+
+        if ($comment) {
+            $cmt = new \stdClass();
+            $cmt->assignment = $assignid;
+            $cmt->grade = $gradeid;
+            $cmt->commenttext = $comment;
+            $cmt->commentformat = 1;
+            $DB->insert_record('assignfeedback_comments', $cmt);
+        }
     }
 
     /**
