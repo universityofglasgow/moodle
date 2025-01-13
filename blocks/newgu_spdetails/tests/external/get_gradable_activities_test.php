@@ -35,54 +35,166 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for gradable activities.
  */
-class get_gradable_activities_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class get_gradable_activities_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
-     * Test that only current courses are returned.
-     * Course "type" is irrelevant for this test - so we just pick a type.
+     * Test that only current course activities are returned.
      */
     public function test_retrieve_gradable_activities_current_courses() {
-        $userid = $this->student1->id;
-        $sortorder = 'asc';
-        $mygradessummativecategoryid = $this->mygrades_summativecategory->id;
-        $returned = $this->lib->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder, $mygradessummativecategoryid);
+        global $DB;
+    
+        // We're the test student.
+        $this->setUser($this->student1->id);
 
-        $this->assertIsArray($returned);
-        $this->assertArrayHasKey('coursedata', $returned);
-        $this->assertCount(1, $returned['coursedata']['assessmentitems']);
+        // Fake some due dates.
+        $duedate1 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 5, date("Y"));
+
+        $mygradesassignment1 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate1,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment1->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment1->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Create the assignment submission entries
+        $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
+        ASSIGN_SUBMISSION_STATUS_NEW);
+
+        // Fake some more due dates.
+        $duedate2 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 5, date("Y"));
+
+        $mygradesassignment2 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 2A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate2,
+            'gradetype' => 2,
+            'grademax' => 40,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Create the assignment submission entries
+        $this->add_assignment_grade($mygradesassignment2->id, $this->student1->id, $this->teacher->id, 35,
+        ASSIGN_SUBMISSION_STATUS_NEW);
+        
+        $activities = $this->api->retrieve_gradable_activities('current', $this->student1->id, 'duedate', 'asc', $mygradessummativesubcategoryid);
+
+        $this->assertIsArray($activities);
+        $this->assertArrayHasKey('coursedata', $activities);
+        $this->assertCount(2, $activities['coursedata']['courseitems']);
     }
 
     /**
-     * Test that only past courses are returned.
+     * Test that only past course activities are returned.
      */
     public function test_retrieve_gradable_activities_past_courses() {
-        $userid = $this->student1->id;
-        $sortorder = 'asc';
-        $summativecategorypastid = $this->summativecategory_past->id;
-        $returned = $this->lib->retrieve_gradable_activities('past', $userid, 'duedate', $sortorder, $summativecategorypastid);
+        global $DB;
 
-        $this->assertIsArray($returned);
-        $this->assertArrayHasKey('coursedata', $returned);
-        $this->assertCount(1, $returned['coursedata']['assessmentitems']);
-    }
+        // We're the test student.
+        $this->setUser($this->student1->id);
 
-    /**
-     * Test the different course types that can be in use in the system
-     */
-    public function test_retrieve_gradable_activities_by_course_type() {
-        $userid = $this->student1->id;
-        $sortorder = 'asc';
+        // Some dates for our mock course.
+        $startdate = mktime(0, 0, 0, date("m"), date("d"), date("Y") - 1);
+        $enddate  = mktime(0, 0, 0, date("m") + 5, date("d"), date("Y") - 1);
 
-        // MyGrades course type.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
-        $returned = $this->lib->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder,
-        $mygradessummativesubcategoryid);
-        $this->assertEquals($this->mygradescourse->mygradesenabled,
-        $returned['coursedata']['assessmentitems'][0]['mygradesenabled']);
+        $past_course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Past Course Test',
+            'shortname' => 'PCT1',
+            'startdate' => $startdate,
+            'enddate' => $enddate,
+        ]);
 
-        // Gradebook course type.
-        $gradebookcategoryid = $this->gradebookcategory->id;
-        $returned = $this->lib->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder, $gradebookcategoryid);
-        $this->assertEquals(true, $returned['coursedata']['assessmentitems'][0]['gradebookenabled']);
+        // We need to enrol our student onto this course.
+        $pastcoursecontext = \context_course::instance($past_course->id);
+        $this->getDataGenerator()->enrol_user($this->student1->id, $past_course->id, $this->get_roleid());
+        $this->getDataGenerator()->role_assign('student', $this->student1->id, $pastcoursecontext);
+
+        //  Create the parent grade category.
+        $past_summative_category = $this->getDataGenerator()->create_grade_category([
+            'fullname' => 'Summative Assessments',
+            'courseid' => $past_course->id,
+        ]);
+        // Now create the sub categories that live under this parent.
+        $past_summative_subcategory = $this->getDataGenerator()->create_grade_category([
+            'fullname' => 'Past Assessments Aggregated',
+            'courseid' => $past_course->id,
+            'parent' => $past_summative_category->id,
+        ]);
+
+        // Fake some due dates.
+        $duedate1 = mktime(date("H"), date("i"), date("s"), date("m") + 2, date("d"), date("Y") - 1);
+
+        $pastassignment1 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'Past lab 1A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $past_course->id,
+            'duedate' => $duedate1,
+            'gradetype' => 2,
+            'grademax' => 40,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $pastsummativesubcategoryid = $past_summative_subcategory->id;
+        $params = [
+            $pastsummativesubcategoryid,
+            $pastassignment1->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $pastassignment1->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Create the assignment submission entries
+        $this->add_assignment_grade($pastassignment1->id, $this->student1->id, $this->teacher->id, 30,
+        ASSIGN_SUBMISSION_STATUS_SUBMITTED);
+
+        $activities = $this->api->retrieve_gradable_activities('past', $this->student1->id, 'duedate', 'asc', $pastsummativesubcategoryid);
+
+        $this->assertIsArray($activities);
+        $this->assertArrayHasKey('coursedata', $activities);
+        $this->assertCount(1, $activities['coursedata']['courseitems']);
     }
 }

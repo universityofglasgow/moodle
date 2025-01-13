@@ -208,7 +208,8 @@ class activity {
                 $activitydata = [];
                 $activitydata = self::process_mygrades_items($gradeitems, $activityitems->items, $activetab, $ltiactivities,
                 $assessmenttype);
-                $data['courseitems'] = array_merge((array) $data['courseitems'], (array) $activitydata);
+                $data['courseitems'] = array_merge((array) ((!empty($data['courseitems'])) ? $data['courseitems'] : []), (array)
+                    $activitydata);
                 $data['hascourseitems'] = true;
             }
         } elseif (!$mygradesenabled) {
@@ -236,7 +237,8 @@ class activity {
                 $displayweights = self::get_display_activity_item_weights($weighttowardscourse, $activityitems->category);
                 $activitydata = self::process_default_items($activityitems->items, $activetab, $ltiactivities, $assessmenttype,
                 $displayweights);
-                $data['courseitems'] = array_merge((array) $data['courseitems'], (array) $activitydata);
+                $data['courseitems'] = array_merge((array) ((!empty($data['courseitems'])) ? $data['courseitems'] : []), (array)
+                    $activitydata);
                 $data['hascourseitems'] = true;
             }
         }
