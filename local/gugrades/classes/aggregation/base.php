@@ -244,7 +244,13 @@ class base {
             }
         }
         if ($allns) {
-            return 'NS';
+
+            // MGU-1216.
+            if ($level == 1) {
+                return 'CW';
+            } else {
+                return 'NS';
+            }
         }
 
         // No admin grade found
