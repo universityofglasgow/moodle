@@ -855,6 +855,22 @@ class aggregation {
     }
 
     /**
+     * Filter items list to remove non-available items
+     * @param array $items
+     * @return array
+     */
+    private static function filter_available(array $items) {
+        $filtered = [];
+        foreach ($items as $item) {
+            if ($item->available) {
+                $filtered[] = $item;
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
      * Use the array of items for a given gradecategory and produce
      * an aggregated grade (or not).
      * The category object is provided to identify aggregation settings
@@ -915,6 +931,9 @@ class aggregation {
             return [0, 0, $admingrade, $admingrade, $completion, ''];
         }
 
+        // Ignore unavailable weights for purposes of aggregation. MGU-1224.
+        //$items = self::filter_available($items);
+
         // Quick check - all items must have a grade.
         foreach ($items as $item) {
             if ($item->grademissing) {
@@ -964,6 +983,7 @@ class aggregation {
         self::record_weights($items, $userid);
 
         // Now call the appropriate aggregation function to do the sums.
+  
         $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
 
         // If this is a scale convert the numeric grade to the appropriate.

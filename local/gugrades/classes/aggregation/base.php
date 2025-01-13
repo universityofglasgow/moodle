@@ -38,6 +38,11 @@ class base {
     private int $courseid;
 
     /**
+     * @var array $validusers
+     */
+    private array $validusers = [];
+
+    /**
      * Note that MV0 grades were found (and dropped) in pre-process
      * Their presence (even though dropped) effects the aggregated admin grade
      * (see MGU-1110)
@@ -60,6 +65,23 @@ class base {
     }
 
     /**
+     * Get list of valid userids for gradeitemid
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @return array
+     */
+    private function get_valid_userids(int $courseid, int $gradeitemid) {
+        if (array_key_exists($gradeitemid, $this->validusers)) {
+            return $this->validusers[$gradeitemid];
+        } else {
+            $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);
+            $userids = $activity->get_user_ids();      
+            $this->validusers[$gradeitemid] = $userids;
+            return $userids;      
+        }
+    }
+
+    /**
      * Check availability
      * TODO: Need to cache (or something) getting the lists of users. Can't do that for every user :(
      * @param array $items
@@ -71,15 +93,15 @@ class base {
 
         $filtereditems = [];
         foreach ($items as $id => $item) {
-            //$activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
-            //$userids = $activity->get_user_ids();
-            //if (empty($userids)) {
-            //    //$filtereditems[$id] = $item;
-            //    continue;
-            //}
+            $activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
+            $userids = $this->get_valid_userids($this->courseid, $item->itemid);
+            if (empty($userids)) {
+                continue;
+            }
 
             // Check user can 'see' this gradeitem.
-            $available = \local_gugrades\users::available_for_user($item->itemid, $userid);
+            $available = in_array($userid, $userids);
+            //$available = \local_gugrades\users::available_for_user($item->itemid, $userid);
             if ($available) {
                 $filtereditems[$id] = $item;
             }

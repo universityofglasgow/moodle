@@ -204,6 +204,7 @@ class assign_activity extends base {
         $grade = $this->assign->get_user_grade($userid, true);
 
         // Is there any feedback comment for this grade?
+        // I got this from the process_save_quic_grades() function in mod_assign::locallib.php.
         if ($feedback = $DB->get_record('assignfeedback_comments', ['grade' => $grade->id])) {
             $grade->feedbacktext = $feedback->commenttext;
             $grade->feedbackformat = $feedback->commentformat;
