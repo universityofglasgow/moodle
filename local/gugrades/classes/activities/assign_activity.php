@@ -62,7 +62,7 @@ class assign_activity extends base {
     private function get_assign($cm) {
         global $DB;
 
-        $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
+        $course = get_course($this->courseid);
         $coursemodulecontext = \context_module::instance($cm->id);
         $assign = new \assign($coursemodulecontext, $cm, $course);
 
