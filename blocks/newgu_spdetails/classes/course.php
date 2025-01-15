@@ -694,7 +694,7 @@ class course {
 
                                                 $assessmenttype = self::return_assessmenttype($course->fullname,
                                                 $item->aggregationcoef);
-                                                $activityweight = self::get_activity_weight($activityitem);
+                                                $activityweight = self::get_activity_weight($item);
                                                 $status = $activityitem->get_status($USER->id);
                                                 $duedate = $activityitem->get_formattedduedate($assessment->duedate);
                                                 $rawduedate = $activityitem->get_rawduedate();
