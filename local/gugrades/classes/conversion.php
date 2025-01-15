@@ -479,17 +479,22 @@ class conversion {
             return end($values);
         }
 
+        // Convert rawgrade to a percentage.
+        // 5 decimal places to "match" rounding of map percentages
+        // (important for boundary cases).
+        $percentgrade = round(100 * $rawgrade / $maxgrade, 5);
+
         // Otherwise, loop over values.
         for ($i = 0; $i < count($values); $i++) {
-            $lower = $values[$i]->percentage * $maxgrade / 100;
+            $lower = $values[$i]->percentage;
 
             // There's no 100% in the array, so assume this if final item.
             if ($i == count($values) - 1) {
-                $upper = $maxgrade;
+                $upper = 100.0;
             } else {
-                $upper = $values[$i + 1]->percentage * $maxgrade / 100;
+                $upper = $values[$i + 1]->percentage;
             }
-            if (($rawgrade >= $lower) && ($rawgrade < $upper)) {
+            if (($percentgrade >= $lower) && ($percentgrade < $upper)) {
                 return $values[$i];
             }
         }
