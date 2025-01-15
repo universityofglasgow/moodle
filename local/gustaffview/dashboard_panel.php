@@ -82,8 +82,9 @@ if ($str_itemsnotvisibletouser != '') {
     }
     
     $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
-    . ' "game"))) AND gi.id NOT IN (' .
-    $str_itemsnotvisibletouser . ') AND gi.courseid = c.id AND gc.courseid = c.id GROUP BY gi.id';
+    . ' "game", "lti"))) AND gi.id NOT IN (' .
+    $str_itemsnotvisibletouser . ') AND gi.courseid = c.id AND gc.courseid = c.id AND gi.hidden = 0 AND cm.course = c.id AND '
+    . ' cm.visible = 1 AND cm.visibleoncoursepage = 1 AND gi.iteminstance = cm.instance GROUP BY gi.id';
 } else {
     $whereclause = 'gi.courseid = ' . $courseid;
 
@@ -93,14 +94,14 @@ if ($str_itemsnotvisibletouser != '') {
     }
 
     $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
-    . ' "game"))) AND gi.courseid = c.id AND '
-    . 'gc.courseid = c.id GROUP BY gi.id';
+    . ' "game", "lti"))) AND gi.courseid = c.id AND gc.courseid = c.id AND gi.hidden = 0 AND cm.course = c.id AND cm.visible = 1 AND '
+    . ' cm.visibleoncoursepage = 1 AND gi.iteminstance = cm.instance GROUP BY gi.id';
 }
 
 $whereclause .= ' ORDER BY gi.itemname ASC';
 
 $table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation',
-        '{grade_items} gi, {course} c, {grade_categories} gc', 
+        '{grade_items} gi, {course} c, {grade_categories} gc, mdl_course_modules cm', 
         $whereclause);
 
 $table->no_sorting('assessment');
