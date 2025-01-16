@@ -186,8 +186,8 @@ final class aggregation_schema5_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('P', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("36", $fred['displaygrade']);
-        $this->assertEquals(36.0, $fred['rawgrade']);
+        $this->assertEquals("35", $fred['displaygrade']);
+        $this->assertEquals(35.0, $fred['rawgrade']);
     }
 
     /**

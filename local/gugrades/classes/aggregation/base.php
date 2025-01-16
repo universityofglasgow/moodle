@@ -380,7 +380,9 @@ class base {
      * @return float
      */
     public function round_float(float $value) {
-        return round($value, 5);
+
+        // MGU-1236
+        return round($value, 5, PHP_ROUND_HALF_DOWN);
     }
 
     /**
@@ -547,7 +549,7 @@ class base {
 
         // If odd number of grades it's just the middle value.
         $medianindex = count($grades) / 2;
-        $roundindex = round($medianindex);
+        $roundindex = round($medianindex, PHP_ROUND_HALF_UP);
         if ($roundindex != $medianindex) {
             return $this->round_float($grades[$medianindex]);
         } else {
@@ -571,7 +573,7 @@ class base {
         $grades = [];
         $maxgrade = $this->get_max_grade();
         foreach ($items as $item) {
-            $norm = round($maxgrade * $item->grade / $item->grademax);
+            $norm = round($maxgrade * $item->grade / $item->grademax, PHP_ROUND_HALF_DOWN);
             $grades[] = (int)$norm;
         }
 

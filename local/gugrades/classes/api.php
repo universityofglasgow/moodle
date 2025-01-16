@@ -440,7 +440,7 @@ class api {
             'isscale' => $gradesupported ? $mapping->is_scale() : false,
             'scalename' => $scalename,
             'grademax' => $item->itemtype == 'category' ? $enhancedcat->grademax : $item->grademax,
-            'weight' => round($item->aggregationcoef * 100),
+            'weight' => round($item->aggregationcoef * 100, PHP_ROUND_HALF_DOWN),
             'categoryerror' => $categoryerror,
             'link' => $link,
         ];
