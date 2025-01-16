@@ -369,7 +369,8 @@ class base {
             $raw = $totalcompleted * 100 / $totalweights;
         }
 
-        return round($raw, 0, PHP_ROUND_HALF_UP);
+        // MGU-1236.
+        return round($raw, 0, PHP_ROUND_HALF_DOWN);
     }
 
     /**
