@@ -539,4 +539,87 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         $this->assertArrayHasKey('assess_marked', $stats[0]);
         $this->assertEquals(1, $stats[0]['assess_marked']);
     }
+
+    /**
+     * Test the method returns activities due, by type, e.g. due in 1 week
+     */
+    public function test_get_assessment_overview_by_type() {
+        global $DB;
+        
+        // We're the test student.
+        $this->setUser($this->student1->id);
+
+        // Fake some due dates.
+        $duedate = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 5, date("Y"));
+
+        $mygradesassignment = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Fake some more due dates.
+        $duedate2 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 3, date("Y"));
+
+        $mygradesassignment2 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate2,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Check that our stats values for the given type are returned as expected.
+        $type = 0; // To be submitted
+        $stats = get_assessmentsummarybytype::execute($type);
+        $stats = external_api::clean_returnvalue(
+            get_assessmentsummarybytype::execute_returns(),
+            $stats
+        );
+
+        $stat = json_decode($stats['result']);
+        $result = count($stat->assessmentitems);
+        $this->assertIsArray($stat->assessmentitems);
+        $this->assertEquals(2, $result);
+    }
 }

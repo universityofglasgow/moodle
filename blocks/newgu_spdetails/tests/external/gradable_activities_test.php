@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for gradable activities.
  */
-final class get_gradable_activities_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class gradable_activities_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * Test that only current course activities are returned.
