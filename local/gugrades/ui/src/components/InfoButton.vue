@@ -122,7 +122,6 @@
             weight.value = result.weight;
             categoryerror.value = result.categoryerror;
             link.value = result.link;
-            window.console.log(link.value);
         })
         .catch((error) => {
             window.console.error(error);

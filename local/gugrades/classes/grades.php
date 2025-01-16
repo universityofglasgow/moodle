@@ -615,11 +615,12 @@ class grades {
      * @param int $courseid
      * @param int $gradeitemid
      * @param array $users
+     * @param bool $gradehidden
      * @return array
      */
-    public static function add_grades_to_user_records(int $courseid, int $gradeitemid, array $users) {
+    public static function add_grades_to_user_records(int $courseid, int $gradeitemid, array $users, bool $gradehidden) {
         foreach ($users as $id => $user) {
-            $users[$id] = self::add_grades_for_user($courseid, $gradeitemid, $user);
+            $users[$id] = self::add_grades_for_user($courseid, $gradeitemid, $user, $gradehidden);
         }
 
         return $users;
@@ -630,13 +631,22 @@ class grades {
      * @param int $courseid
      * @param int $gradeitemid
      * @param object $user
+     * @param bool $gradehidden
      * @return array
      */
-    public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user) {
+    public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user, bool $gradehidden) {
         $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
         $user->grades = $usercapture->get_grades();
         $user->alert = $usercapture->alert();
-        $user->gradebookhidden = $usercapture->is_gradebookhidden();
+
+        // If the parent grade is hidden, then the individual items are assumed to be.
+        // This is (I hope) what Moodle does (hidden flag is on and greyed out).
+        // MGU-1233
+        if ($gradehidden) {
+            $user->gradebookhidden = true;
+        } else {
+            $user->gradebookhidden = $usercapture->is_gradebookhidden();
+        }
 
         return $user;
     }

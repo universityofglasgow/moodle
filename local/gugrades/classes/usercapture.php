@@ -166,6 +166,7 @@ class usercapture {
         global $DB;
 
         if ($grade = $DB->get_record('grade_grades', ['itemid' => $this->gradeitemid, 'userid' => $this->userid])) {
+            
             return $grade->hidden != 0;
         }
 
