@@ -143,8 +143,11 @@ class api {
         $activity->set_viewfullnames($viewfullnames);
         $user = $activity->get_user($userid);
 
+        // Hidden or locked in gradebook?
+        [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
+
         // Add/update the grades.
-        $user = \local_gugrades\grades::add_grades_for_user($courseid, $gradeitemid, $user);
+        $user = \local_gugrades\grades::add_grades_for_user($courseid, $gradeitemid, $user, $gradehidden);
 
         // Add/update picture
         $user = \local_gugrades\users::add_picture_and_profile_to_user_record($courseid, $user);

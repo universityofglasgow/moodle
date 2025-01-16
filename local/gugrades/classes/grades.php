@@ -634,7 +634,7 @@ class grades {
      * @param bool $gradehidden
      * @return array
      */
-    public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user, bool $gradehidden) {
+    public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user, bool $gradehidden = false) {
         $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
         $user->grades = $usercapture->get_grades();
         $user->alert = $usercapture->alert();
