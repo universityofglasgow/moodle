@@ -1345,4 +1345,22 @@ class grades {
 
         return $item->itemtype == 'category';
     }
+
+    /**
+     * Get cm from gradeitemid
+     * @param int $gradeitemid
+     * @return object
+     */
+    public static function get_cm_from_gradeitemid(int $gradeitemid) {
+        $item = self::get_gradeitem($gradeitemid);
+
+        // This (obviously) has to be a module.
+        if ($item->itemtype != 'mod') {
+            return false;
+        }
+
+        $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $item->courseid, false, MUST_EXIST);
+
+        return $cm;
+    }
 }

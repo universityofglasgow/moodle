@@ -84,6 +84,7 @@ class get_grade_item extends external_api {
             'grademax' => new external_value(PARAM_FLOAT, 'Maximum grade'),
             'weight' => new external_value(PARAM_INT, 'Weight%'),
             'categoryerror' => new external_value(PARAM_BOOL, 'Category config may not match'),
+            'link' => new external_value(PARAM_URL, 'Link to activity (if it is one) or empty'),
         ]);
     }
 

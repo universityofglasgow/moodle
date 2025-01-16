@@ -14,7 +14,8 @@
             <tbody>
                 <tr>
                     <th>{{ mstrings.name }}</th>
-                    <td>{{ itemname }}</td>
+                    <td v-if="link == ''">{{ itemname }}</td>
+                    <td v-else><a :href="link" target="_blank">{{ itemname }}</a></td>
                 </tr>
                 <tr>
                     <th>{{ mstrings.type }}</th>
@@ -66,6 +67,7 @@
     const grademax = ref(0);
     const weight = ref(0);
     const categoryerror = ref(false);
+    const link = ref('');
     const debug = ref({});
     const mstrings = inject('mstrings');
 
@@ -119,6 +121,8 @@
             grademax.value = result.grademax;
             weight.value = result.weight;
             categoryerror.value = result.categoryerror;
+            link.value = result.link;
+            window.console.log(link.value);
         })
         .catch((error) => {
             window.console.error(error);

@@ -418,6 +418,14 @@ class api {
             }
         }
 
+        // Get module details if it is a module.
+        if (($item->itemtype == 'mod') && ($cm = \local_gugrades\grades::get_cm_from_gradeitemid($itemid))) {
+            $linkobj = new \moodle_url('/mod/' . $item->itemmodule . '/view.php', ['id' => $cm->id]);
+            $link = $linkobj->out();
+        } else {
+            $link = '';
+        }
+
         return [
             'id' => $item->id,
             'courseid' => $item->courseid,
@@ -431,6 +439,7 @@ class api {
             'grademax' => $item->itemtype == 'category' ? $enhancedcat->grademax : $item->grademax,
             'weight' => round($item->aggregationcoef * 100),
             'categoryerror' => $categoryerror,
+            'link' => $link,
         ];
     }
 
