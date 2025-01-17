@@ -298,14 +298,24 @@ class activity {
                         $itemicon = '';
                         $iconalt = '';
                         $iconrestricted = false;
+                        $iconhidden = false;
                         $assessmenturl = '';
                         if ($cm) {
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
+                                // MGU-1230 - However, if for whatever reason, the activity has been set to hidden in Common Module
+                                // Settings, we don't want a link to the activity as this leads to an error page effectively.
                                 $assessmenturl = $cm->url->out();
                                 if ($activityicon = self::get_activity_icon($cm, $tmpgradeitems[$index]->itemmodule)) {
                                     $itemicon = $activityicon->iconurl;
                                     $iconalt = $activityicon->iconalt;
+                                }
+                                if (!$cm->uservisible) {
+                                    if ($cm->visibleoncoursepage) {
+                                        $assessmenturl = '';
+                                        $iconalt = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
+                                        $iconhidden = true;
+                                    }
                                 }
                             }
                         }
@@ -351,6 +361,7 @@ class activity {
                         $mygradesactivityitem->item_icon = $itemicon;
                         $mygradesactivityitem->icon_alt = $iconalt;
                         $mygradesactivityitem->icon_restricted = $iconrestricted;
+                        $mygradesactivityitem->icon_hidden = $iconhidden;
                         $mygradesactivityitem->item_name = $tmpgradeitems[$index]->itemname;
                         $mygradesactivityitem->assessment_type = $assessmenttype;
                         $mygradesactivityitem->assessment_weight = $assessmentweight;
@@ -381,10 +392,16 @@ class activity {
                                     $mygradesactivityitem->status_class = get_string('status_class_graded',
                                         'block_newgu_spdetails');
                                     $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
-                                    $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
-                                        'block_newgu_spdetails');
-                                    $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
-                                        $tmpgradeitems[$index]->courseid;
+
+                                    // @see MGU-1230.
+                                    if ($cm->uservisible) {
+                                        if ($cm->visibleoncoursepage) {
+                                        $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
+                                            'block_newgu_spdetails');
+                                        $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
+                                            $tmpgradeitems[$index]->courseid;
+                                        }
+                                    }
                                 }
                             }
                         }

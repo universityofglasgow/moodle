@@ -126,6 +126,7 @@ $string['back_to'] = 'Back to assessment details';
 $string['feedback_tobeconfirmed'] = 'To be confirmed';
 $string['event_view_dashboard'] = 'View student dashboard';
 $string['icon_alt_text'] = 'Link to {$a->modulename} activity {$a->activityname}';
+$string['hidden_icon_alt_text'] = 'This activity is currently hidden on the course page.';
 
 $string['chart_24hrs'] = '24 hours';
 $string['chart_7days'] = '7 days';
