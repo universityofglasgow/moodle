@@ -87,7 +87,7 @@ class import_grades_users extends external_api {
 
         $userids = $userlist;
         $importcount = 0;
-        xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
+        //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
         foreach ($userids as $userid) {
 
             // If additional selected then skip users who already have data.
@@ -107,7 +107,7 @@ class import_grades_users extends external_api {
             }
         }
 
-        file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         // Log.
         $event = \local_gugrades\event\import_grades_users::create([
