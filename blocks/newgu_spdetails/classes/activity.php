@@ -74,7 +74,6 @@ class activity {
         'imscp',
         'kalvidres',
         'label',
-        'lti',
         'oublog',
         'page',
         'pdfannotator',
