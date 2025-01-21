@@ -71,13 +71,22 @@ class base {
      * @return array
      */
     private function get_valid_userids(int $courseid, int $gradeitemid) {
-        if (array_key_exists($gradeitemid, $this->validusers)) {
-            return $this->validusers[$gradeitemid];
+
+        // Putting lists of valid users into global space.
+        // Not ideal, but better than looking them up millions of times.
+        global $GUGRADES_VALIDUSERS;
+
+        if (!is_array($GUGRADES_VALIDUSERS)) {
+            $GUGRADES_VALIDUSERS = [];
+        }
+
+        if (array_key_exists($gradeitemid, $GUGRADES_VALIDUSERS)) {
+            return $GUGRADES_VALIDUSERS[$gradeitemid];
         } else {
             $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);
-            $userids = $activity->get_user_ids();      
-            $this->validusers[$gradeitemid] = $userids;
-            return $userids;      
+            $userids = $activity->get_user_ids();
+            $GUGRADES_VALIDUSERS[$gradeitemid] = $userids;
+            return $userids;
         }
     }
 
@@ -89,11 +98,12 @@ class base {
      * @return array
      */
     public function availability(array $items, int $userid) {
-        $this->availableuserids = [];
+        //return $items;
+        //$this->availableuserids = [];
 
         $filtereditems = [];
         foreach ($items as $id => $item) {
-            $activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
+            //$activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
             $userids = $this->get_valid_userids($this->courseid, $item->itemid);
             if (empty($userids)) {
                 continue;
@@ -101,7 +111,6 @@ class base {
 
             // Check user can 'see' this gradeitem.
             $available = in_array($userid, $userids);
-            //$available = \local_gugrades\users::available_for_user($item->itemid, $userid);
             if ($available) {
                 $filtereditems[$id] = $item;
             }

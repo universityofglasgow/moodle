@@ -73,6 +73,8 @@ class import_grades_users extends external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
+        set_time_limit(0);
+
         // If already converted then import is not permitted.
         if (\local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid)) {
             throw new \moodle_exception('Import is not permitted after conversion applied.');
@@ -85,6 +87,7 @@ class import_grades_users extends external_api {
 
         $userids = $userlist;
         $importcount = 0;
+        xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
         foreach ($userids as $userid) {
 
             // If additional selected then skip users who already have data.
@@ -103,6 +106,8 @@ class import_grades_users extends external_api {
                 $importcount++;
             }
         }
+
+        file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         // Log.
         $event = \local_gugrades\event\import_grades_users::create([
