@@ -28,9 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 
 $footerlinks = [
     'University Website' => 'https://www.gla.ac.uk',
-    'Moodle Mobile App' => tool_mobile_create_app_download_url(),
     'Accessibility' => 'https://www.gla.ac.uk/legal/accessibility/statements/moodle',
     'Privacy and Cookies' => 'https://www.gla.ac.uk/legal/privacy/',
+    'Opt-Out' => 'javascript:gaOptout()',
 ];
 
 $footerlinktext = '';
