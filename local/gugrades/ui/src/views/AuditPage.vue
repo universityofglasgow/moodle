@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div>
         <EasyDataTable :headers="headers" :items="items"></EasyDataTable>
     </div>
@@ -11,10 +13,12 @@
     import {ref, onMounted, inject} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import { saveAs } from 'file-saver';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const items = ref([]);
     const headers = ref([]);
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -67,7 +71,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         })
     });
 </script>

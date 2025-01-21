@@ -64,7 +64,6 @@
                 <th id="sortby_shortname" data-sortby="shortname" class="td{{^data.hasstartdate}}15{{/data.hasstartdate}}{{#data.hasstartdate}}10{{/data.hasstartdate}} th-sortable">{{#str}} header_course, block_newgu_spdetails {{/str}}</th>
                 <th id="sortby_fullname" data-sortby="fullname" class="td60 th-sortable">{{#str}} header_category, block_newgu_spdetails {{/str}}</th>
                 <th id="sortby_assessmenttype" data-sortby="assessmenttype" class="td15 th-sortable">{{#str}} header_type, block_newgu_spdetails {{/str}}</th>
-                <th id="sortby_weight" data-sortby="weight" class="td{{^data.hasstartdate}}15{{/data.hasstartdate}}{{#data.hasstartdate}}05{{/data.hasstartdate}} th-sortable">{{#str}} header_weight, block_newgu_spdetails {{/str}}</th>
                 {{#data.hasstartdate}}
                 <th id="sortby_startdate" data-sortby="startdate" class="td15 th-sortable">{{#str}} header_coursestartdate, block_newgu_spdetails {{/str}}</th>
                 {{/data.hasstartdate}}
@@ -80,7 +79,6 @@
                 <td class="td{{^startdate}}15{{/startdate}}{{#startdate}}10{{/startdate}}"><a href="{{courseurl}}">{{coursename}}</a></td>
                 <td class="td60 subcategory-row"><a href="#"><i class="icon fa fa-fw  fa-sharp fa-solid fa-folder"></i><strong>{{name}}</strong></a></td>
                 <td class="td15">{{assessmenttype}}</td>
-                <td class="td{{^startdate}}15{{/startdate}}{{#startdate}}05{{/startdate}}" data-rawcategoryweight="{{raw_category_weight}}">{{subcatweight}}</td>
                 {{#startdate}}
                 <td class="td15" data-rawstartdate="{{raw_startdate}}">{{startdate}}</td>
                 {{/startdate}}

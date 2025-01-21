@@ -81,14 +81,19 @@ class get_aggregation_user extends external_api {
         return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'User ID'),
             'displayname' => new external_value(PARAM_TEXT, 'Name to display for this user'),
+            'itemname' => new external_value(PARAM_TEXT, 'Name of grade item'),
             'pictureurl' => new external_value(PARAM_URL, 'URL of user avatar'),
             'profileurl' => new external_value(PARAM_URL, 'Like to user profile page'),
             'idnumber' => new external_value(PARAM_TEXT, 'User ID number'),
             'resitrequired' => new external_value(PARAM_BOOL, 'Is resit required?'),
             'completed' => new external_value(PARAM_INT, '%age of course completed'),
             'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
+            'releasegrade' => new external_value(PARAM_TEXT, 'Grade to show in the released column (if any)'),
+            'mismatch' => new external_value(PARAM_BOOL, 'Released and display grades do not match'),
             'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
             'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
+            'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
+            'alteredweight' => new external_value(PARAM_BOOL, 'Have the weights been altered for this user?'),
             'error' => new external_value(PARAM_TEXT, 'Error condition'),
             'fields' => new external_multiple_structure(
                 new external_single_structure([
@@ -99,6 +104,7 @@ class get_aggregation_user extends external_api {
                     'isadmin' => new external_value(PARAM_BOOL, 'Is this an admin grade (for styling purposes)?'),
                     'hidden' => new external_value(PARAM_BOOL, 'Is grade hidden?'),
                     'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
+                    'available' => new external_value(PARAM_BOOL, 'Is grade item available to this user?'),
                 ])
             ),
         ]);

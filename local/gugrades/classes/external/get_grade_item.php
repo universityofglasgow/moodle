@@ -82,8 +82,9 @@ class get_grade_item extends external_api {
             'isscale' => new external_value(PARAM_BOOL, 'True if grade item is a scale'),
             'scalename' => new external_value(PARAM_TEXT, 'Name of scale (if it is a scale'),
             'grademax' => new external_value(PARAM_FLOAT, 'Maximum grade'),
-            'weight' => new external_value(PARAM_INT, 'Weight%'),
+            'weight' => new external_value(PARAM_FLOAT, 'Weight%'),
             'categoryerror' => new external_value(PARAM_BOOL, 'Category config may not match'),
+            'link' => new external_value(PARAM_URL, 'Link to activity (if it is one) or empty'),
         ]);
     }
 

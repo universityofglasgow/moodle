@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/gugrades/db" VERSION="20240828" COMMENT="XMLDB file for Moodle local/gugrades"
+<XMLDB PATH="local/gugrades/db" VERSION="20241112" COMMENT="XMLDB file for Moodle local/gugrades"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -64,6 +64,7 @@
         <FIELD NAME="auditcomment" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Any additional auditing information/comments"/>
         <FIELD NAME="dropped" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Dropped in aggregation"/>
         <FIELD NAME="catoverride" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Indicates an overridden category."/>
+        <FIELD NAME="normalisedweight" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="The weight used in the final calculation"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -72,7 +73,8 @@
         <INDEX NAME="locguggra_cogrus" UNIQUE="false" FIELDS="courseid, gradeitemid, userid"/>
         <INDEX NAME="logugradesgigtuiic" UNIQUE="false" FIELDS="gradeitemid, gradetype, userid, iscurrent"/>
         <INDEX NAME="localgugrade_cigiuici" UNIQUE="false" FIELDS="courseid, gradeitemid, userid, columnid"/>
-        <INDEX NAME="local_gugrades_giuiic" UNIQUE="false" FIELDS="gradeitemid, userid, iscurrent"/>
+        <INDEX NAME="local_gugrades_giuiic" UNIQUE="false" FIELDS="id, gradeitemid, userid, iscurrent"/>
+        <INDEX NAME="local_gugrades_prov" UNIQUE="false" FIELDS="gradeitemid, userid, iscurrent"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_gugrades_audit" COMMENT="Contains audit trail of errors, warnings and info">
@@ -145,6 +147,9 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="gugrades_giid" UNIQUE="false" FIELDS="gradeitemid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="local_gugrades_map_value" COMMENT="The map percentage points">
       <FIELDS>
@@ -200,6 +205,23 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="logu_gugid" UNIQUE="true" FIELDS="gradecategoryid" COMMENT="Index gradecategoryid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_altered_weight" COMMENT="Altered individual weights">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="weight" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="5"/>
+        <FIELD NAME="timealtered" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="gradeitemid-userid" UNIQUE="true" FIELDS="gradeitemid, userid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

@@ -92,6 +92,20 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Get gradeitemid from grade category name
+     * @param string $catname
+     * @return int
+     */
+    public function get_gradeitemid_from_grade_category(string $catname) {
+        global $DB;
+
+        $catid = $this->get_grade_category($catname);
+        $item = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $catid], '*', MUST_EXIST);
+
+        return $item->id;
+    }
+
+    /**
      * Fill local_gugrades_scalevalue table
      * @param array $scale
      * @param int $scaleid
@@ -119,8 +133,9 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
      * @param int $assignid
      * @param int $studentid
      * @param float $gradeval
+     * @param string $comment
      */
-    protected function add_assignment_grade(int $assignid, int $studentid, float $gradeval) {
+    protected function add_assignment_grade(int $assignid, int $studentid, float $gradeval, string $comment = '') {
         global $USER, $DB;
 
         $submission = new \stdClass();
@@ -142,7 +157,16 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
         $grade->grader = $USER->id;
         $grade->grade = $gradeval;
         $grade->attemptnumber = 0;
-        $DB->insert_record('assign_grades', $grade);
+        $gradeid = $DB->insert_record('assign_grades', $grade);
+
+        if ($comment) {
+            $cmt = new \stdClass();
+            $cmt->assignment = $assignid;
+            $cmt->grade = $gradeid;
+            $cmt->commenttext = $comment;
+            $cmt->commentformat = 1;
+            $DB->insert_record('assignfeedback_comments', $cmt);
+        }
     }
 
     /**
@@ -287,5 +311,24 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
         $this->teacher = $teacher;
         $this->student = $student;
         $this->student2 = $student2;
+    }
+
+    /**
+     * Set activity restriction
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param string $restriction
+     */
+    public function restrict_activity(int $courseid, int $gradeitemid, string $restriction) {
+        global $DB;
+
+        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        if ($gradeitem->itemtype != 'mod') {
+            throw new \moodle_exception('Only works with modules: ' . $gradeitem->itemtype);
+        }
+
+        $cm = get_coursemodule_from_instance($gradeitem->itemmodule, $gradeitem->iteminstance, $courseid, false, MUST_EXIST);
+
+        $DB->set_field('course_modules', $restriction, ['id' => $cm->id]);
     }
 }

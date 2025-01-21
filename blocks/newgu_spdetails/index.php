@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script renders the Student Dashboard view effectively.
+ * Prepare and display the Student MyGrades view.
  *
  * @package    block_newgu_spdetails
  * @author     Greg Pedder <greg.pedder@glasgow.ac.uk>
@@ -24,7 +24,6 @@
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
-require_once(dirname(__FILE__) . '/locallib.php');
 
 require_login();
 $PAGE->set_context(context_system::instance());

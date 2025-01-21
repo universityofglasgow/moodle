@@ -264,6 +264,20 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
     }
 
     /**
+     * Get gradeitemid for a category name
+     * @param string $categoryname
+     * @return int
+     */
+    public function get_gradeitemid_for_category(string $categoryname) {
+        global $DB;
+
+        $categoryid = $this->get_grade_category($categoryname);
+        $item = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $categoryid], '*', MUST_EXIST);
+
+        return $item->id;
+    }
+
+    /**
      * Import json data
      * Data refers to item names already uploaded in the schema,
      * so make sure the data matches the schema!
@@ -290,16 +304,17 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
 
     /**
      * Apply admingrade - grade needs to be imported / exist first
-     * @param int $courseid
-     * @param int $gradecategoryid
-     * @param int $gradeitemid
+     * @param string $gradeitemname
      * @param int $userid
      * @param string $admingrade
      */
-    public function apply_admingrade(int $courseid, int $gradecategoryid, int $gradeitemid, int $userid, string $admingrade): void {
+    public function apply_admingrade(string $itemname, int $userid, string $admingrade): void {
+        global $DB;
+
+        $gradeitem = $item = $DB->get_record('grade_items', ['itemname' => $itemname], '*', MUST_EXIST);
         $nothing = write_additional_grade::execute(
-            courseid:       $courseid,
-            gradeitemid:    $gradeitemid,
+            courseid:       $gradeitem->courseid,
+            gradeitemid:    $gradeitem->id,
             userid:         $userid,
             reason:         'AGREED',
             other:          '',
@@ -312,6 +327,34 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
             write_additional_grade::execute_returns(),
             $nothing
         );
+    }
+
+    /**
+     * Create default conversion map
+     * @return int
+     */
+    protected function make_conversion_map() {
+
+        // Read map with id 0 (new map) for Schedule A.
+        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
+        $mapstuff = external_api::clean_returnvalue(
+            get_conversion_map::execute_returns(),
+            $mapstuff
+        );
+
+        // Write map back.
+        $name = 'Test conversion map';
+        $schedule = 'schedulea';
+        $maxgrade = 100.0;
+        $map = $mapstuff['map'];
+        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
+        $mapida = external_api::clean_returnvalue(
+            write_conversion_map::execute_returns(),
+            $mapida
+        );
+        $mapida = $mapida['mapid'];
+
+        return $mapida;
     }
 
     /**

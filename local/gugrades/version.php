@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2024090400;
+$plugin->version      = 2024122300;
 $plugin->requires     = 2022041900; // Moodle 4.0.
 $plugin->component    = 'local_gugrades';
 
 $plugin->maturity     = MATURITY_BETA;
 
-$plugin->release      = '0.1 Beta';
+$plugin->release      = '0.2 Beta';
 

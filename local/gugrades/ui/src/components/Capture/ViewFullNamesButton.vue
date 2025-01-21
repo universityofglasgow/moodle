@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button v-if="hascapability" type="button" class="btn btn-outline-primary  mr-1" @click="toggle_view()">
         <span v-if="!togglereveal">{{ mstrings.viewfullnames }}</span>
         <span v-if="togglereveal">{{ mstrings.hidefullnames }}</span>
@@ -8,10 +10,12 @@
 <script setup>
     import {ref, onMounted, inject, defineEmits} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const hascapability = ref(false);
     const togglereveal = ref(false);
     const mstrings = inject('mstrings');
+    const debug = ref({});
 
     const emit = defineEmits(['viewfullnames']);
 
@@ -45,7 +49,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
 
     });

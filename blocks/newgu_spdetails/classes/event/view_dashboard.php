@@ -36,7 +36,7 @@ class view_dashboard extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'course';
+        $this->data['objecttable'] = 'user';
     }
 
     /**

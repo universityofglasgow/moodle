@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div class="mt-2 border border-dark p-3 rounded" v-if="loaded">
         <div v-if="collapsed" @click="open_selection" class="cursor-pointer row">
             <div class="col-10">
@@ -18,6 +20,7 @@
 <script setup>
     import {ref, onMounted, defineProps, defineEmits, watch, inject} from 'vue';
     import ActivityTree from '@/components/ActivityTree.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const props = defineProps({
         categoryid: Number,
@@ -31,6 +34,7 @@
     const selectedactivity = ref({});
     const loaded = ref(false);
     const collapsed = ref(false);
+    const debug = ref({});
     const mstrings = inject('mstrings');
 
     // Get the sub-category / activity
@@ -56,6 +60,7 @@
         })
         .catch((error) => {
             window.console.error(error);
+            debug.value = error;
         })
     }
 
@@ -75,6 +80,7 @@
         })
         .catch((error) => {
             window.console.error(error);
+            debug.value = error;
         });
 
         // Emit id as well

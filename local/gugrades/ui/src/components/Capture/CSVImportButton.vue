@@ -1,7 +1,11 @@
 <template>
-    <button type="button" class="btn btn-outline-primary  mr-1" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
+    <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <VueModal v-model="showcsvmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
+    <button type="button" class="btn btn-outline-primary  mr-1" :disabled="!props.show" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
+
+    <VueModal v-model="showcsvmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
+
+        <PleaseWait v-if="waiting"></PleaseWait>
 
         <!-- Initial download/upload page -->
         <div v-if="pagestate == 'showuploadpage'">
@@ -87,7 +91,9 @@
 <script setup>
     import {ref, defineProps, defineEmits, inject, onMounted, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
     import { saveAs } from 'file-saver';
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const showcsvmodal = ref(false);
     const pagestate = ref('showuploadpage');
@@ -100,6 +106,8 @@
     const gradetypes = ref([]);
     const reason = ref('');
     const other = ref('');
+    const debug = ref({});
+    const waiting = ref(false);
     const lines10 = computed(() =>{
         return lines.value.slice(0, 10);
     });
@@ -111,6 +119,7 @@
         itemid: Number,
         groupid: Number,
         itemname: String,
+        show: Boolean,
     });
 
     const emits = defineEmits(['uploaded']);
@@ -122,6 +131,8 @@
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
+
+        waiting.value = true;
 
         fetchMany([{
             methodname: 'local_gugrades_get_csv_download',
@@ -137,10 +148,12 @@
             const filename = props.itemname + '_' + d.toLocaleString() + '.csv';
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
             saveAs(blob, filename);
+            waiting.value = false;
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showcsvmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -152,6 +165,8 @@
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
+
+        waiting.value = true;
 
         fetchMany([{
             methodname: 'local_gugrades_upload_csv',
@@ -171,6 +186,7 @@
             addcount.value = result.addcount;
             errorlist.value = result.errorlist;
             pagestate.value = 'showtestrun';
+            waiting.value = false;
             if (!testrun) {
                 toast.success(mstrings.csvgradesadded + ' (' + addcount.value + ')');
                 emits('uploaded');
@@ -179,7 +195,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showcsvmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -203,7 +220,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showcsvmodal.value = false;
+            debug.value = error;
         });
     }
 

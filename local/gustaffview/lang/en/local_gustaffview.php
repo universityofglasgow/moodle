@@ -28,10 +28,12 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Staff View';
 $string['gustaffview:staffview'] = 'View the Student Dashboard';
-$string['staffview'] = 'MyGrades Dashboard Staff View';
+$string['staffview'] = 'Student MyGrades Staff View';
 $string['staffview_summary'] = 'Use this page to select and view the assignments that have been submitted, and which are outstanding for an individual student.';
 $string['grade'] = 'Grade';
 $string['readytosubmit'] = 'To be submitted';
 $string['privacy:metadata'] = 'The Staff View Student Dashboard plugin does not store any personal data.';
 $string['mygradesenabled'] = 'MyGrades';
 $string['regulargradebook'] = 'Gradebook';
+$string['selectuser'] = 'Select user';
+$string['manualitem'] = 'Manual item';

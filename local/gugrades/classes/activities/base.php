@@ -48,6 +48,11 @@ abstract class base {
     protected int $gradeitemid;
 
     /**
+     * @var object $cm
+     */
+    protected $cm;
+
+    /**
      * @var object $gradeitem
      */
     protected object $gradeitem;
@@ -94,6 +99,9 @@ abstract class base {
         $this->itemtype = $this->gradeitem->itemtype;
 
         $this->viewfullnames = false;
+
+        // Get the course module (or false it it isn't one).
+        $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
     }
 
     /**
@@ -110,16 +118,51 @@ abstract class base {
      * Implement get_users()
      */
     public function get_users() {
-        $context = \context_course::instance($this->courseid);
-        $users = \local_gugrades\users::get_gradeable_users($context, $this->firstnamefilter,
-            $this->lastnamefilter, $this->groupid);
+
+        $context = \core\context\course::instance($this->courseid);
+
+        // If cm is defined then we'll get the available users for
+        // whatever module it is. Failing that, just get everybody in the course.
+        if ($this->cm) {
+            $users = \local_gugrades\users::get_available_users_from_cm(
+                $this->cm, $context, $this->firstnamefilter, $this->lastnamefilter, $this->groupid);
+        } else {
+            $users = \local_gugrades\users::get_gradeable_users($context, $this->firstnamefilter,
+                $this->lastnamefilter, $this->groupid);
+        }
 
         // Displayname.
+        // This may get updated.
         foreach ($users as $user) {
             $user->displayname = fullname($user);
         }
 
         return array_values($users);
+    }
+
+    /**
+     * Get user IDs
+     * This data is cached
+     * @return array
+     */
+    public function get_user_ids() {
+        $cache = \cache::make('local_gugrades', 'availableusers');
+
+        // Unique cache tag for course and gradeitem.
+        $cachetag = 'AVAILABLE_' . $this->courseid . '_' . $this->gradeitemid;
+
+        // README: Disable cache for now as may be causing problems - MGU-1171
+        /*
+        if (!$userids = $cache->get($cachetag)) {
+            $users = $this->get_users();
+            $userids = array_column($users, 'id');
+            $cache->set($cachetag, $userids);
+        }*/
+
+        $users = $this->get_users();
+        $userids = array_column($users, 'id');
+
+        return $userids;
     }
 
     /**
@@ -131,7 +174,7 @@ abstract class base {
         $context = \context_course::instance($this->courseid);
         $user = \local_gugrades\users::get_gradeable_user($context, $userid);
 
-        // Add displayname
+        // Add displayname.
         $user->displayname = fullname($user);
 
         return $user;

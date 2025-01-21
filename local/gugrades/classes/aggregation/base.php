@@ -38,6 +38,19 @@ class base {
     private int $courseid;
 
     /**
+     * @var array $validusers
+     */
+    private array $validusers = [];
+
+    /**
+     * Note that MV0 grades were found (and dropped) in pre-process
+     * Their presence (even though dropped) effects the aggregated admin grade
+     * (see MGU-1110)
+     * @var bool $mv0found
+     */
+    private bool $mv0found = false;
+
+    /**
      * @var string $atype
      */
 
@@ -52,6 +65,61 @@ class base {
     }
 
     /**
+     * Get list of valid userids for gradeitemid
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @return array
+     */
+    private function get_valid_userids(int $courseid, int $gradeitemid) {
+
+        // Putting lists of valid users into global space.
+        // Not ideal, but better than looking them up millions of times.
+        global $GUGRADES_VALIDUSERS;
+
+        if (!is_array($GUGRADES_VALIDUSERS)) {
+            $GUGRADES_VALIDUSERS = [];
+        }
+
+        if (array_key_exists($gradeitemid, $GUGRADES_VALIDUSERS)) {
+            return $GUGRADES_VALIDUSERS[$gradeitemid];
+        } else {
+            $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);
+            $userids = $activity->get_user_ids();
+            $GUGRADES_VALIDUSERS[$gradeitemid] = $userids;
+            return $userids;
+        }
+    }
+
+    /**
+     * Check availability
+     * TODO: Need to cache (or something) getting the lists of users. Can't do that for every user :(
+     * @param array $items
+     * @param int $userid
+     * @return array
+     */
+    public function availability(array $items, int $userid) {
+        //return $items;
+        //$this->availableuserids = [];
+
+        $filtereditems = [];
+        foreach ($items as $id => $item) {
+            //$activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
+            $userids = $this->get_valid_userids($this->courseid, $item->itemid);
+            if (empty($userids)) {
+                continue;
+            }
+
+            // Check user can 'see' this gradeitem.
+            $available = in_array($userid, $userids);
+            if ($available) {
+                $filtereditems[$id] = $item;
+            }
+        }
+
+        return $filtereditems;
+    }
+
+    /**
      * Pre-process grades for aggregation.
      * Allows grades to be 'normalised' prior to aggregation.
      * @param array $items
@@ -59,7 +127,33 @@ class base {
      */
     public function pre_process_items(array $items) {
 
-        return $items;
+        // Drop any MV0
+        $newitems = [];
+        foreach ($items as $item) {
+            if ($item->admingrade != 'MV0') {
+                $newitems[] = $item;
+            } else {
+                $this->mv0found = true;
+            }
+        }
+
+        // If this has resulted in ALL items being removed then the
+        // result is also MV0
+        if (count($newitems) == 0) {
+            $agrade = 'MV0';
+        } else {
+            $agrade = false;
+        }
+
+        return [$agrade, $newitems];
+    }
+
+    /**
+     * Getter for mv0found
+     * @return bool
+     */
+    public function get_mv0found() {
+        return $this->mv0found;
     }
 
     /**
@@ -72,7 +166,7 @@ class base {
 
         // If we're not going to return anything, anyway...
         if ($n >= count($items)) {
-            return [[], []];
+            return [[], $items];
         }
 
         // Sort items by grade (ascending).
@@ -81,6 +175,12 @@ class base {
             // Usort only likes integers, so the 100* is required.
             $normalised1 = 100 * $g1->grade / $g1->grademax;
             $normalised2 = 100 * $g2->grade / $g2->grademax;
+
+            // If either are admingrades, then just make them -1
+            // Such that they are sorted below zero. MGU-1116.
+            $normalised1 = empty($g1->admingrade) ? $normalised1 : -1;
+            $normalised2 = empty($g2->admingrade) ? $normalised2 : -1;
+
             return $normalised1 - $normalised2;
         });
 
@@ -94,64 +194,94 @@ class base {
     }
 
     /**
+     * Admingrade check done BEFORE we check that all grades are
+     * available
+     * NOTE: Order is critical (see spec)
+     * (Please excuse inefficient coding)
+     * @param int $level
+     * @param array $items
+     * @return string
+     */
+    public function admin_grade_precheck(int $level, array $items) {
+
+        // Any '07' admin grades means aggregation is 07
+        foreach ($items as $item) {
+            if ($item->admingrade == '07') {
+                return '07';
+            }
+        }
+
+        // If there is a mix of MV and NS then aggregation is MV (Good Cause Withheld)
+        // See MGU-1009
+        // Replaced by: MGU-1210
+        // Level 1 only
+        if ($level == 1) {
+            $nsfound = false;
+            $mvfound = false;
+            foreach ($items as $item) {
+                if ($item->admingrade == 'MV') {
+                    $mvfound = true;
+                }
+                if ($item->admingrade == 'NS') {
+                    $nsfound = true;
+                }
+            }
+            if ($nsfound && $mvfound) {
+                return 'MV';
+            }
+        }
+
+        // Any 'IS' admin grades means aggregation is IS
+        foreach ($items as $item) {
+            if ($item->admingrade == 'IS') {
+                return 'IS';
+            }
+        }
+
+        // Any 'MV' admin grades means aggregation is MV
+        foreach ($items as $item) {
+            if ($item->admingrade == 'MV') {
+                return 'MV';
+            }
+        }
+
+        // If ALL grades are NS/NS0, then return NS (MGU-1191)
+        $allns = true;
+        foreach ($items as $item) {
+            if (($item->admingrade != 'NS') && ($item->admingrade != 'NS0')) {
+                $allns = false;
+            }
+        }
+        if ($allns) {
+
+            // MGU-1216.
+            if ($level == 1) {
+                return 'CW';
+            } else {
+                return 'NS';
+            }
+        }
+
+        // No admin grade found
+        return '';
+    }
+
+    /**
      * Logic for admingrades in >= level2, see MGU-726
      * Works out if aggregated grade is some admin grade
      * Returns this or empty string if not.
      *
-     * NOTE:  MV/IS - both treated as MV
-     *        NS/CW - both treated as NS
-     *        07 - any return 07
      * @param array $items
      * @return string
      */
     public function admin_grades_level2(array $items) {
 
-        // Condition 1: are there 1 or more NS/CW? If so, result is NS.
-        // Condition 2: all admin grades are MV, result is MV.
-        // Condition 3: all admin grades are IS, result is IS.
-        // Condition 4: mix of IS/MV. Don't know. Going to say MV (TODO).
-        $countnscw = 0;
-        $countmv = 0;
-        $countis = 0;
-        $count07 = 0;
+        // Condition 1: are there 1 or more NS? If so, result is NS.
         foreach ($items as $item) {
             $grade = $item->admingrade;
-            if (($grade == 'NS') || ($grade == 'CW')) {
-                $countnscw++;
-            } else if ($grade == 'MV') {
-                $countmv++;
-            } else if ($grade == 'IS') {
-                $countis++;
-            } else if (strcmp($grade, '07') == 0) {
-                $count07++;
+            if ($grade == 'NS') {
+                return 'NS';
             }
-        }
-
-        // Any 07 means result is 07
-        if ($count07) {
-            return '07';
-        }
-
-        // Check about conditions.
-        // And NS/CW at all means an NS result.
-        if ($countnscw) {
-            return 'NS';
-        }
-
-        // All MV and no IS means MV.
-        if ($countmv && !$countis) {
-            return 'MV';
-        }
-
-        // All IS and no MV means IS.
-        if ($countis && !$countmv) {
-            return 'IS';
-        }
-
-        // TODO: mix of MV and IS - not sure about this
-        // currently returning MV.
-        if ($countis && $countmv) {
-            return 'MV';
         }
 
         // No admin grade.
@@ -164,34 +294,34 @@ class base {
      * Returns this or empty string if not.
      *
      * @param array $items
+     * @param int $completion
      * @return string
      */
-    public function admin_grades_level1(array $items) {
+    public function admin_grades_level1(array $items, int $completion) {
 
-        // Condition 1: Any 07 - result is 07
-        $countnscw = 0;
-        $countmv = 0;
-        $countis = 0;
-        $count07 = 0;
-        foreach ($items as $item) {
-            $grade = $item->admingrade;
-            if (($grade == 'NS') || ($grade == 'CW')) {
-                $countnscw++;
-            } else if ($grade == 'MV') {
-                $countmv++;
-            } else if ($grade == 'IS') {
-                $countis++;
-            } else if (strcmp($grade, '07') == 0) {
-                $count07++;
+        // If completion is <75% then admingrade is CW
+        // ...unless one of the items is MV0, then it's MV
+        // MGU-1110 CoS11
+        // UNLESS there is any NS - CoS12
+        // Superceded by MGU-1213
+        if ($completion < 75) {
+
+            // Check for MV0
+            if ($this->mv0found) {
+
+                // If there is an NS, then it's GCW
+                foreach ($items as $item) {
+                    if ($item->admingrade == 'NS') {
+                        return 'CW';
+                    }
+                }
+
+                return 'MV';
             }
+
+            return 'CW';
         }
 
-        // Any 07 means result is 07
-        if ($count07) {
-            return '07';
-        }
-
-        // No admin grade.
         return '';
     }
 
@@ -219,6 +349,11 @@ class base {
         $countcompleted = 0;
 
         foreach ($items as $item) {
+
+            // If item is not available, then just ignore it.
+            if (isset($item->available) && !$item->available) {
+                continue;
+            }
             $weight = $weighted ? $item->weight : 1;
             $totalweights += $weight;
             $countall++;
@@ -243,7 +378,8 @@ class base {
             $raw = $totalcompleted * 100 / $totalweights;
         }
 
-        return round($raw, 0, PHP_ROUND_HALF_UP);
+        // MGU-1236.
+        return round($raw, 0, PHP_ROUND_HALF_DOWN);
     }
 
     /**
@@ -253,7 +389,9 @@ class base {
      * @return float
      */
     public function round_float(float $value) {
-        return round($value, 5);
+
+        // MGU-1236
+        return round($value, 5, PHP_ROUND_HALF_DOWN);
     }
 
     /**
@@ -293,10 +431,8 @@ class base {
         if (array_key_exists($aggregationid, $lookup)) {
             $agf = $lookup[$aggregationid];
         } else {
-            throw new \moodle_exception('Unknown or unsupported aggregation strategy');
+            throw new \moodle_exception('Unknown or unsupported aggregation strategy. Aggregation ID ' . $aggregationid);
         }
-
-        // TODO - force everything to me mean for testing, for now.
 
         return "strategy_" .$agf;
     }
@@ -422,7 +558,7 @@ class base {
 
         // If odd number of grades it's just the middle value.
         $medianindex = count($grades) / 2;
-        $roundindex = round($medianindex);
+        $roundindex = round($medianindex, PHP_ROUND_HALF_UP);
         if ($roundindex != $medianindex) {
             return $this->round_float($grades[$medianindex]);
         } else {
@@ -446,7 +582,7 @@ class base {
         $grades = [];
         $maxgrade = $this->get_max_grade();
         foreach ($items as $item) {
-            $norm = round($maxgrade * $item->grade / $item->grademax);
+            $norm = round($maxgrade * $item->grade / $item->grademax, PHP_ROUND_HALF_DOWN);
             $grades[] = (int)$norm;
         }
 
@@ -522,6 +658,7 @@ class base {
     /**
      * Format displaygrade for Schedule A / B
      * Depends on completion (<75% or not)
+     * MGU-1000: return 'CW' if <75%
      * @param string $convertedgrade
      * @param float $rawgrade
      * @param float $gradepoint
@@ -537,7 +674,7 @@ class base {
         }
 
         // Must be level 1, so grade displayed depends on completion %age.
-        if ($completion > 75) {
+        if ($completion >= 75) {
             return $convertedgrade . " ($rawgrade)";
         } else {
             return "$rawgrade";

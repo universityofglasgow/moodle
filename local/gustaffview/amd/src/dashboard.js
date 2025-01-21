@@ -60,14 +60,6 @@ const UpdateDashboard = (event) => {
 
         params = '?courseid=' + courseid + '&studentid=' + studentid;
 
-        if (event.target.dataset.ts) {
-            params += '&ts=' + event.target.dataset.ts;
-        }
-
-        if (event.target.dataset.tdr) {
-            params += '&tdr=' + event.target.dataset.tdr;
-        }
-
         if (event.target.dataset.page) {
             params += '&page=' + event.target.dataset.page;
         }
@@ -99,44 +91,23 @@ const UpdateDashboard = (event) => {
             let tempContainer = document.querySelector(Selectors.DASHBOARD_BLOCK);
             tempContainer.innerHTML = html;
 
-            // Search for the sortable headings, bind a change event which
-            // calls UpdateDashboard again, passing in the thing to sort.
-            // Create a temp store for anything that's been sorted. This will
-            // be used when iterating through the pagination nodes and adding
-            // the thing to be sorted to that also.
-            let sort_item = '';
-            let sort_direction;
-            let tmpHeaders = document.querySelectorAll(".header>a");
-            tmpHeaders.forEach(header => {
-                header.addEventListener('click', UpdateDashboard);
-                if (header.children.length > 0) {
-                    sort_item = header.children[0].dataset.ts;
-                    sort_direction = header.children[0].dataset.tdr;
-                }
-            });
-
-            // Same again, this time for the pagination...
+            // To allow us to reload just the panel, bind click handlers to the page
+            // numbers and call UpdateDashboard passing in the relevant details.
             let tmpPagination = document.querySelectorAll(".pagination>li>a:not([aria-current='page'])");
             tmpPagination.forEach(pageLink => {
                 pageLink.href = "#";
-                let pageNumber = (pageLink.parentElement.dataset.pageNumber > 0) ? pageLink.parentElement.dataset.pageNumber-1 : 0;
+                let pageNumber = (pageLink.parentElement.dataset.pageNumber > 0) ?
+                pageLink.parentElement.dataset.pageNumber-1 : 0;
                 pageLink.setAttribute('data-page', pageNumber);
                 pageLink.addEventListener('click', function(event){
                     event.target.dataset.page = pageNumber;
-                    if (sort_item !== '') {
-                        event.target.dataset.ts = sort_item;
-                        // We need to reverse this here, as it screws up and sorts everything
-                        // in the opposite direction otherwise. The approach taken for this is
-                        // only suitable for 1 page of results - it's not been coded (well)
-                        // to work over multiple pages :-(
-                        event.target.dataset.tdr = ((sort_direction === "3") ? "4" : "3");
-                    }
                     UpdateDashboard(event);
                 });
             });
         }).catch((error) => {
             document.querySelector(Selectors.DASHBOARD_BLOCK).innerHTML = '<div class="alert alert-danger" ' +
-            'role="alert">Something went wrong.</div>';
+            'role="alert">There was an issue retrieving the data for this user.<br />The error returned from the server was: ' +
+            `${error.message}` + '<br />Please raise a ticket via the IT helpdesk if you continue to receive this message.</div>';
             Log.debug(`Error: ${error.message}`);
         });
     }
@@ -144,10 +115,10 @@ const UpdateDashboard = (event) => {
 
 const registerEventListeners = () => {
     document.querySelector('#selectstudent').addEventListener('change', UpdateDashboard);
-   // If the page is refreshed, trigger the change handler again...
-   if (document.querySelector('#selectstudent').selectedOptions[0].value > 0) {
-       document.querySelector('#selectstudent').dispatchEvent(new Event("change"));
-   }
+    // If the page is refreshed, trigger the change handler again...
+    if (document.querySelector('#selectstudent').selectedOptions[0].value > 0) {
+        document.querySelector('#selectstudent').dispatchEvent(new Event("change"));
+    }
 };
 
 export const init = () => {

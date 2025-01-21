@@ -76,7 +76,7 @@ final class get_capture_user_test extends \local_gugrades\external\gugrades_adva
         ];
 
         // Assign2 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, false, $userlist);
+        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, 'none', $userlist);
         $status = external_api::clean_returnvalue(
             import_grades_users::execute_returns(),
             $status

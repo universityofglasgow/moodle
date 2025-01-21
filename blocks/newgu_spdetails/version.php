@@ -17,14 +17,17 @@
 /**
  * Version information
  *
- * @package   block_newgu_spdetails
- * @copyright Moodle Dev
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     block_newgu_spdetails
+ * @author      Shubhendra Diophode <shubhendra.doiphode@gmail.com>
+ * @author      Greg Pedder <greg.pedder@glasgow.ac.uk>
+ * @copyright   2023 University of Glasgow
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->component = 'block_newgu_spdetails';
-$plugin->version = 2022110827;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '0.1 Beta';
+$plugin->version = 2024121201;
+$plugin->requires = 2022041900; // Moodle 4.0.
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release  = '0.3 Beta';

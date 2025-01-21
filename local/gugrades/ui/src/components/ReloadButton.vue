@@ -1,6 +1,6 @@
 <template>
     <!-- Refresh button -->
-    <a href="#" id="refresh_button" class="ml-3" data-toggle="tooltip" data-placement="bottom" :title="mstrings.refreshpage" @click="refresh_clicked">
+    <a href="#" id="refresh_button" class="ml-3" data-toggle="tooltip" :title="mstrings.refreshpage" @click="refresh_clicked">
         <i class="fa fa-refresh fa-Xl align-middle" :class="[fasizeclass]" aria-hidden="true"></i>
     </a>
 </template>

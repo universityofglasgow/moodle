@@ -35,11 +35,10 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG, $USER, $DB;
 
-require_once $CFG->dirroot . '/blocks/newgu_spdetails/locallib.php';
-require_once "sduserdetails_table.php";
+require_once 'sduserdetails_table.php';
 
-$courseid = optional_param('courseid', "", PARAM_INT);
-$studentid = optional_param('studentid', "", PARAM_INT);
+$courseid = optional_param('courseid', '', PARAM_INT);
+$studentid = optional_param('studentid', '', PARAM_INT);
 
 $url = new moodle_url('/local/gustaffview/dashboard_panel.php', [
     'courseid' => $courseid,
@@ -54,67 +53,56 @@ if (!$course = $DB->get_record('course', ['id' => $courseid])) {
 // As this is a separate 'panel' script, prevent any inadvertent access
 require_login($course);
 
+// Make sure the student is indeed enrolled on this course.
+if (!\block_newgu_spdetails\api::return_isstudent($courseid, $studentid)) {
+    throw new \moodle_exception('notenroled');
+}
+
 $context = context_course::instance($courseid);
 $PAGE->set_context($context);
 
-$currentcourses = \block_newgu_spdetails\course::return_enrolledcourses($studentid, "current", "student");
-$str_currentcourses = implode(",", $currentcourses);
+// Don't include activities that are essentially LTI configured.
+$ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
+$str_ltiinstancenottoinclude = implode(',',$ltiactivities);
 
-// FETCH LTI IDs TO BE INCLUDED
-$str_ltiinstancenottoinclude = get_ltiinstancenottoinclude();
-
-$ts = optional_param('ts', "", PARAM_ALPHA);
-$tdr = optional_param('tdr', 1, PARAM_INT);
-
-$addsort = "";
-$assessmenttypeorder = "";
-if ($ts == "assessmenttype") {
-    $assessmenttypeorder = get_assessmenttypeorder("current", $tdr, $studentid);
-    if ($assessmenttypeorder != "") {
-        $addsort = " ORDER BY FIELD(gi.id, $assessmenttypeorder)";
-    }
-}
-
-// This saves us having to hook into the other plugin's code, as the
-// above and below code needs to do.
-if ($ts == 'itemmodule') {
-    $sortdirection = (($tdr == 3) ? "ASC" : "DESC");
-    $addsort = " ORDER BY gi.itemmodule " . $sortdirection;
-}
-
-$duedateorder = "";
-if ($ts == "duedate") {
-    $duedateorder = get_duedateorder($tdr, $studentid);
-
-    if ($duedateorder != "") {
-        $addsort = " ORDER BY FIELD(gi.id, $duedateorder)";
-    }
-}
-
-// Looks like when using the Staff View of the Student Dashboard,
-// the generated objects were the same, table headings became un-sortable
-// and broke things, hence...
+// Looks like when using the Student MyGrades Staff View, generated objects 
+// were the same, table headings became un-sortable and broke things, hence...
 $bytes = random_bytes(5);
 $tableid = bin2hex($bytes);
 $table = new sduserdetailscurrent_table($tableid);
 
-$str_itemsnotvisibletouser = \block_newgu_spdetails\api::fetch_itemsnotvisibletouser($studentid, $courseid);
+$str_itemsnotvisibletouser = \block_newgu_spdetails\api::fetch_itemsnotvisibletouser($courseid);
 
-if ($str_currentcourses == "") {
-    $str_currentcourses = "0";
-}
-
-if ($str_itemsnotvisibletouser != "") {
-    $table->set_sql('gi.*, c.shortname as coursename,' . $studentid . ' as userid', "{grade_items} gi, {course} c", "gi.courseid in ("
-        . $str_currentcourses . ") && gi.courseid=" . $courseid . " && ((gi.iteminstance IN ("
-        . $str_ltiinstancenottoinclude . ") && gi.itemmodule='lti') OR gi.itemmodule!='lti') && gi.itemtype='mod' && gi.id not in ("
-        . $str_itemsnotvisibletouser . ") && gi.courseid=c.id $addsort");
+if ($str_itemsnotvisibletouser != '') {
+    $whereclause = 'gi.courseid = ' . $courseid;
+    
+    if ($str_ltiinstancenottoinclude != '') {
+        $whereclause .= ' AND ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') AND gi.itemmodule = "lti")'
+        . ' OR gi.itemmodule != "lti")';
+    }
+    
+    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
+    . ' "game", "lti"))) AND gi.id NOT IN (' .
+    $str_itemsnotvisibletouser . ') AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND '
+    . ' cm.visible = 1 AND cm.visibleoncoursepage = 1 AND gi.iteminstance = cm.instance GROUP BY gi.id';
 } else {
-    $table->set_sql('gi.*, c.shortname as coursename,' . $studentid . ' as userid', "{grade_items} gi, {course} c", "gi.courseid in ("
-        . $str_currentcourses . ") && gi.courseid=" . $courseid . " && ((gi.iteminstance IN ("
-        . $str_ltiinstancenottoinclude . ") && gi.itemmodule='lti') OR gi.itemmodule!='lti') && gi.itemtype='mod' && gi.courseid=c.id"
-        . $addsort);
+    $whereclause = 'gi.courseid = ' . $courseid;
+
+    if ($str_ltiinstancenottoinclude != '') {
+        $whereclause .= ' AND ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') AND gi.itemmodule = "lti")'
+        . ' OR gi.itemmodule != "lti")';
+    }
+
+    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
+    . ' "game", "lti"))) AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND cm.visible = 1 AND '
+    . ' cm.visibleoncoursepage = 1 AND gi.iteminstance = cm.instance GROUP BY gi.id';
 }
+
+$whereclause .= ' ORDER BY gi.itemname ASC';
+
+$table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation',
+        '{grade_items} gi, {course} c, {grade_categories} gc, mdl_course_modules cm', 
+        $whereclause);
 
 $table->no_sorting('assessment');
 $table->no_sorting('assessmenttype');
@@ -123,9 +111,9 @@ $table->no_sorting('itemmodule');
 $table->no_sorting('duedate');
 $table->no_sorting('source');
 $table->no_sorting('status');
-$table->no_sorting('includedingcat');
+$table->no_sorting('source');
 $table->no_sorting('grade');
 $table->no_sorting('feedback');
 
-$table->define_baseurl("$CFG->wwwroot/local/gustaffview/sduserdetails.php?courseid=" . $courseid);
+$table->define_baseurl($CFG->wwwroot . '/local/gustaffview/sduserdetails.php?courseid=' . $courseid);
 $table->out(20, true);

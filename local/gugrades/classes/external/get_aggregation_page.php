@@ -90,9 +90,14 @@ class get_aggregation_page extends external_api {
         return new external_single_structure([
             'toplevel' => new external_value(PARAM_BOOL, 'Is this the topmost level?'),
             'atype' => new external_value(PARAM_TEXT, 'Aggregated grade type (A, B, P, E - if mixed'),
+            'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID of aggregated category'),
             'strategy' => new external_value(PARAM_TEXT, 'Aggregation strategy formatted for display'),
             'conversion' => new external_value(PARAM_TEXT, 'Name of conversion map, or empty'),
             'allowconversion' => new external_value(PARAM_BOOL, 'Should conversion controls be shown?'),
+            'allowrelease' => new external_value(PARAM_BOOL, 'Can the aggregated grades been released?'),
+            'released' => new external_value(PARAM_BOOL, 'Has the aggregated category been released?'),
+            'showweights' => new external_value(PARAM_BOOL, 'Should weights be shown in headers?'),
+            'excludeempty' => new external_value(PARAM_BOOL, 'True when exclude empty grades checked, effects NS interpretation.'),
             'debug' => new external_multiple_structure(
                 new external_single_structure([
                     'line' => new external_value(PARAM_RAW, 'Line of debug info, available when DEBUG_DEVELOPER is enabled'),
@@ -107,15 +112,19 @@ class get_aggregation_page extends external_api {
                 new external_single_structure([
                     'id' => new external_value(PARAM_INT, 'User ID'),
                     'displayname' => new external_value(PARAM_TEXT, 'Name to display for this user'),
+                    'itemname' => new external_value(PARAM_TEXT, 'Name of grade item'),
                     'pictureurl' => new external_value(PARAM_URL, 'URL of user avatar'),
                     'profileurl' => new external_value(PARAM_URL, 'Like to user profile page'),
                     'idnumber' => new external_value(PARAM_TEXT, 'User ID number'),
                     'resitrequired' => new external_value(PARAM_BOOL, 'Is resit required?'),
                     'completed' => new external_value(PARAM_INT, '%age of course completed'),
                     'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
+                    'releasegrade' => new external_value(PARAM_TEXT, 'Grade to show in the released column (if any)'),
+                    'mismatch' => new external_value(PARAM_BOOL, 'Released and display grades do not match'),
                     'rawgrade' => new external_value(PARAM_FLOAT, 'Aggregated grade before any conversion'),
                     'total' => new external_value(PARAM_FLOAT, 'Total grade used for ongoing aggregation'),
                     'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
+                    'alteredweight' => new external_value(PARAM_BOOL, 'Have the weights been altered for this user?'),
                     'error' => new external_value(PARAM_TEXT, 'Error condition'),
                     'fields' => new external_multiple_structure(
                         new external_single_structure([
@@ -126,6 +135,7 @@ class get_aggregation_page extends external_api {
                             'isadmin' => new external_value(PARAM_BOOL, 'Is this an admin grade (for styling purposes)?'),
                             'hidden' => new external_value(PARAM_BOOL, 'Is grade hidden?'),
                             'overridden' => new external_value(PARAM_BOOL, 'Has grade been overridden?'),
+                            'available' => new external_value(PARAM_BOOL, 'Is grade item available to this user?'),
                         ])
                     ),
                 ])
@@ -137,12 +147,14 @@ class get_aggregation_page extends external_api {
                     'categoryid' => new external_value(PARAM_INT, 'Category ID, or 0'),
                     'shortname' => new external_value(PARAM_TEXT, 'Short name'),
                     'fullname' => new external_value(PARAM_TEXT, 'Full name'),
-                    'weight' => new external_value(PARAM_INT, 'Weighting as percentage'),
+                    'weight' => new external_value(PARAM_FLOAT, 'Weighting as percentage'),
                     'gradetype' => new external_value(PARAM_TEXT, 'Name of scale or points'),
                     'grademax' => new external_value(PARAM_INT, 'Maximum grade'),
                     'isscale' => new external_value(PARAM_BOOL, 'True if a scale, otherwise points'),
                     'schedule' => new external_value(PARAM_TEXT, 'A, B or empty string'),
                     'strategy' => new external_value(PARAM_TEXT, 'If a category, then aggregation strategy formatted for display'),
+                    'showweights' => new external_value(PARAM_BOOL, 'Should weights be shown in sub-cat?'),
+                    'released' => new external_value(PARAM_BOOL, 'Has this grade item been released?'),
                 ])
             ),
             'breadcrumb' => new external_multiple_structure(

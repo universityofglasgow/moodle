@@ -1,9 +1,13 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="conversion_clicked()">
         {{ mstrings.convertgrades }}
     </button>
 
-    <VueModal v-model="showselectmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
+    <VueModal v-model="showselectmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
+
+        <PleaseWait v-if="waiting"></PleaseWait>
 
         <!-- Show the selected map name (if there is one)-->
         <p v-if="mapname" class="mb-2">
@@ -56,7 +60,9 @@
 
 <script setup>
     import {ref, inject, defineProps, defineEmits} from '@vue/runtime-core';
+    import PleaseWait from '@/components/PleaseWait.vue';
     import { useToast } from "vue-toastification";
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const maps = ref([]);
@@ -67,6 +73,8 @@
     const showselectmodal = ref(false);
     const anygrades = ref(false);
     const mapname = ref('');
+    const debug = ref({});
+    const waiting = ref(false);
 
     const toast = useToast();
 
@@ -103,7 +111,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -132,7 +141,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
     }
 
@@ -153,6 +163,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_select_conversion',
             args: {
@@ -163,15 +175,17 @@
             }
         }])[0]
         .then(() => {
+            waiting.value = false;
             toast.success('Map selection saved');
+            showselectmodal.value = false;
             emits('converted');
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
 
-        showselectmodal.value = false;
     }
 
     /**
@@ -183,6 +197,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        waiting.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_select_conversion',
             args: {
@@ -193,14 +209,15 @@
             }
         }])[0]
         .then(() => {
+            waiting.value = false;
             toast.success('Map selection removed');
+            showselectmodal.value = false;
             emits('converted');
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showselectmodal.value = false;
+            debug.value = error;
         });
-
-        showselectmodal.value = false;
     }
 </script>

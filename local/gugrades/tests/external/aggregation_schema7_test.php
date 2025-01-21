@@ -193,8 +193,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $DB->update_record('grade_categories', $category);
 
         // Set NS for question 3.
-        $q3itemid = $this->get_gradeitemid('Question 3');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummer->id, $q3itemid, $this->student->id, 'NS');
+        $this->apply_admingrade('Question 3', $this->student->id, 'NS');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, true);
@@ -209,9 +208,8 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals("NS", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
 
-        // Set MV for question 4. Should still be NS.
-        $q3itemid = $this->get_gradeitemid('Question 4');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummer->id, $q3itemid, $this->student->id, 'MV');
+        // Set MV for question 4. Total should be MV.
+        $this->apply_admingrade('Question 4', $this->student->id, 'MV');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, true);
@@ -223,7 +221,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("NS", $fred['displaygrade']);
+        $this->assertEquals("MV", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
     }
 
@@ -238,7 +236,6 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
 
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
-
         // Import grades only for one student (so far).
         $userlist = [
             $this->student->id,
@@ -264,12 +261,10 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $DB->update_record('grade_categories', $category);
 
         // Set MV for question 3.
-        $q3itemid = $this->get_gradeitemid('Question 3');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummer->id, $q3itemid, $this->student->id, 'MV');
+        $this->apply_admingrade('Question 3', $this->student->id, 'MV');
 
         // Set MV for question 4.
-        $q3itemid = $this->get_gradeitemid('Question 4');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummer->id, $q3itemid, $this->student->id, 'MV');
+        $this->apply_admingrade('Question 4', $this->student->id, 'MV');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);
@@ -281,12 +276,11 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("B3", $fred['displaygrade']);
-        $this->assertEquals(15.4, $fred['rawgrade']);
+        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals(0.0, $fred['rawgrade']);
 
-        // Set IS for question 7. Should still be MV.
-        $q3itemid = $this->get_gradeitemid('Question 7');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummer->id, $q3itemid, $this->student->id, 'IS');
+        // Set IS for question 7. Should now be IS.
+        $this->apply_admingrade('Question 7', $this->student->id, 'IS');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, true);
@@ -298,9 +292,76 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals("IS", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
     }
 
+    /**
+     * Test for MGU-1184
+     * Reason text is appearing in sub-category total column when grade is overridden
+     */
+    public function test_mgu_1184() {
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data7a', $this->student->id);
+
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Set aggregation strategy.
+        $this->set_strategy($this->gradecatsummer->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
+
+        // Check we have a valid total.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('B2', $fred['displaygrade']);
+        $this->assertEquals('', $fred['error']);
+
+        // Override the summer category total.
+        $summeritemid = $this->get_gradeitemid_from_grade_category('Summer exam');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $summeritemid,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          13, // C2.
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Check the overriden total.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, true);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals('C2', $fred['displaygrade']);
+        $this->assertEquals('', $fred['error']);
+    }
 
 }

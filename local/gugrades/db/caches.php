@@ -31,4 +31,9 @@ $definitions = [
         'simplekeys' => true,
         'staticacceleration' => true,
     ],
+    'availableusers' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+    ],
 ];

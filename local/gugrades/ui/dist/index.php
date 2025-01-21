@@ -44,6 +44,11 @@ require_login($course);
 $context = context_course::instance($courseid);
 require_capability('local/gugrades:view', $context);
 
+// Navigation
+$coursenode = $PAGE->navigation->find($courseid, navigation_node::TYPE_COURSE);
+$mygradesnode = $coursenode->add(get_string('staffmygrades', 'local_gugrades'));
+$mygradesnode->make_active();
+
 // Log.
 $event = \local_gugrades\event\view_gugrades::create([
     'objectid' => $courseid,
@@ -65,4 +70,10 @@ echo '<img id="mygradeslogo" src="' . $logo . '" alt="MyGrades logo"></img>';
 echo '</div>';
 
 echo "<div id=\"app\"></div>";
+
+// LISU Link
+$lisuurl = "https://gla.sharepoint.com/sites/learning-innovation/SitePages/LISU-Guides-MyGrades.aspx";
+echo '<div class="text-center my-3">
+          <a class="btn btn-info px-5" href="' . $lisuurl . '" target="_blank">LISU MyGrades help and support</a>
+      </div>';
 echo $OUTPUT->footer();

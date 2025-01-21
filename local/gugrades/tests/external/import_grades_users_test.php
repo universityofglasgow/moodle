@@ -52,7 +52,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         ];
 
         // Assign2 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, false, $userlist);
+        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, 'none', $userlist);
         $status = external_api::clean_returnvalue(
             import_grades_users::execute_returns(),
             $status
@@ -68,7 +68,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(10, $grades[1]->convertedgrade);
 
         // Assign1 (which is useing points).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, false, $userlist);
+        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, 'none', $userlist);
         $status = external_api::clean_returnvalue(
             import_grades_users::execute_returns(),
             $status
@@ -98,7 +98,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         ];
 
         // Assign4 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign4, false, true, $userlist);
+        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign4, false, 'fillns', $userlist);
         $status = external_api::clean_returnvalue(
             import_grades_users::execute_returns(),
             $status
@@ -129,7 +129,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         ];
 
         // Assign4 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassignb1, false, true, $userlist);
+        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassignb1, false, 'fillns', $userlist);
         $status = external_api::clean_returnvalue(
             import_grades_users::execute_returns(),
             $status

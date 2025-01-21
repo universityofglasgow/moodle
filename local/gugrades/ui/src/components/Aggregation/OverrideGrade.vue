@@ -4,7 +4,7 @@
             <i class="fa fa-ellipsis-v fa-lg ml-1" aria-hidden="true" ></i>
         </a>
         <div v-if="props.categoryid == 0" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <AddGradeButton :itemid="props.itemid" :userid="props.userid" :name="props.name" :itemname="props.itemname" @gradeadded = "grade_added()"></AddGradeButton>
+            <AddGradeButton :itemid="props.itemid" :userid="props.userid" :name="props.name" :itemname="props.itemname" :released="props.released" @gradeadded = "grade_added()"></AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
             <HideShowButton :gradehidden="props.gradehidden" :itemid="props.itemid" :userid="props.userid" @changed="grade_added()"></HideShowButton>
         </div>
@@ -15,9 +15,11 @@
                 :userid="props.userid"
                 :name="props.name"
                 :itemname="props.itemname"
+                :released="props.released"
                 @gradeadded = "grade_added()">
             </AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
+            <AlterButton v-if="props.showweights && !props.overridden" :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightsaltered="grade_added()"></AlterButton>
         </div>
     </span>
 </template>
@@ -27,6 +29,7 @@
     import HistoryButton from '@/components/Capture/HistoryButton.vue';
     import AddGradeButton from '@/components/Capture/AddGradeButton.vue';
     import HideShowButton from '@/components/Capture/HideShowButton.vue';
+    import AlterButton from '@/components/Aggregation/AlterButton.vue';
 
     const props = defineProps({
         userid: Number,
@@ -38,6 +41,9 @@
         awaitingcapture: Boolean,
         gradehidden: Boolean,
         converted: Boolean,
+        overridden: Boolean,
+        showweights: Boolean,
+        released: Boolean,
     });
 
     const emit = defineEmits([

@@ -108,8 +108,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
 
         // Set NS for question 3.
         // This will.
-        $q3itemid = $this->get_gradeitemid('Question 3');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $q3itemid, $this->student->id, 'NS');
+        $this->apply_admingrade('Question 3', $this->student->id, 'NS');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
@@ -121,12 +120,28 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $this->assertTrue($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("9.33333", $fred['displaygrade']);
-        $this->assertEquals(9.33333, $fred['rawgrade']);
+        $this->assertEquals("CW", $fred['displaygrade']);
+        $this->assertEquals(0.0, $fred['rawgrade']);
         $this->assertEquals(67, $fred['completed']);
 
+        // Change item 1 to an MV
+        $this->apply_admingrade('Item 1', $this->student->id, 'MV');
+
+        // This should result in a GCW (MGU-1009)
+        // Superceded by MGU-1210
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals(0.0, $fred['rawgrade']);
+        $this->assertEquals(33, $fred['completed']);
+
         // Change question 3 to 07 admingrade
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $q3itemid, $this->student->id, '07');
+        $this->apply_admingrade('Question 3', $this->student->id, '07');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);
@@ -134,7 +149,53 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
             get_aggregation_page::execute_returns(),
             $page
         );
+    }
 
+    /**
+     * Test completion with 0 grades
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     */
+    public function test_completion_with_h0(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data8c', $this->student->id);
+
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Set aggregation strategy.
+        $this->set_strategy($this->gradecatsummer->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
+
+        // Update droplow.
+        // This won't update aggregation.
+        $category = $DB->get_record('grade_categories', ['id' => $this->gradecatsummer->id], '*', MUST_EXIST);
+        $category->droplow = 0;
+        $DB->update_record('grade_categories', $category);
+
+        // Get aggregation page for above.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $this->assertEquals(100, $fred['completed']);
     }
 
 }

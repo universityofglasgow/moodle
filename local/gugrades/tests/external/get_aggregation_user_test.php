@@ -77,40 +77,12 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
     }
 
     /**
-     * Create default conversion map
-     * @return int
-     */
-    protected function make_conversion_map() {
-
-        // Read map with id 0 (new map) for Schedule A.
-        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
-        $mapstuff = external_api::clean_returnvalue(
-            get_conversion_map::execute_returns(),
-            $mapstuff
-        );
-
-        // Write map back.
-        $name = 'Test conversion map';
-        $schedule = 'schedulea';
-        $maxgrade = 100.0;
-        $map = $mapstuff['map'];
-        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
-        $mapida = external_api::clean_returnvalue(
-            write_conversion_map::execute_returns(),
-            $mapida
-        );
-        $mapida = $mapida['mapid'];
-
-        return $mapida;
-    }
-
-    /**
      * Checking basic (good) get page
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function test_basic_aggregation_page(): void {
+    public function test_basic_aggregation_user(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -144,6 +116,49 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
         $this->assertEquals(29, $user['completed']);
         $fields = $user['fields'];
         $this->assertEquals('47.23333', $fields[0]['display']);
+    }
+
+    /**
+     * Checking direct call to API, used by Student MyGrades
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     * @return void
+     */
+    public function test_direct_aggregation_user(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1a', $this->student->id);
+
+
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Find 'Schedule B exam'.
+        $schedulebexam = $DB->get_record('grade_categories', ['fullname' => 'Schedule B exam'], '*', MUST_EXIST);
+
+        // Set aggregation strategy.
+        $this->set_strategy($schedulebexam->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
+
+        $user = \local_gugrades\api::get_aggregation_dashboard_user($this->course->id, $schedulebexam->id, $this->student->id);
+
+        $this->assertEquals(12.82051, $user->parent->normalisedweight);
+        $this->assertEquals(44.11765, $user->fields[0]['normalisedweight']);
     }
 
 }

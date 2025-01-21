@@ -6,6 +6,8 @@
             <DismissableAlert v-if="props.gradehidden" alertstyle="warning" :message="mstrings.gradehidden"></DismissableAlert>
 
             <DismissableAlert v-if="props.gradelocked" alertstyle="warning" :message="mstrings.gradelocked"></DismissableAlert>
+
+            <DismissableAlert v-if="props.noids" alertstyle="warning" :message="mstrings.noids"></DismissableAlert>
         </small>
     </div>
 </template>
@@ -20,5 +22,6 @@
         gradesupported: Boolean,
         gradehidden: Boolean,
         gradelocked: Boolean,
+        noids: Boolean,
     });
 </script>

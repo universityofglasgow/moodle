@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div v-if="showgroupselect" class="mt-2">
         <select class="form-control border-dark" @change="group_change($event)">
             <option value="0">{{ mstrings.allparticipants }}</option>
@@ -10,10 +12,12 @@
 
 <script setup>
     import {ref, onMounted, defineEmits, inject} from '@vue/runtime-core';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const groups = ref([]);
     const mstrings = inject('mstrings');
     const showgroupselect = ref(false);
+    const debug = ref({});
 
     const emit = defineEmits(['groupselected']);
 
@@ -37,6 +41,7 @@
         })
         .catch((error) => {
             window.console.error(error);
+            debug.value = error;
         })
     }
 

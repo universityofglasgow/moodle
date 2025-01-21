@@ -59,6 +59,8 @@ class api {
     public static function get_capture_page(int $courseid, int $gradeitemid,
         string $firstname, string $lastname, int $groupid, bool $viewfullnames) {
 
+        //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
+
         // Sanity checks for selected grade item.
         if (!\local_gugrades\grades::is_grade_supported($gradeitemid)) {
             return [
@@ -78,6 +80,9 @@ class api {
             ];
         }
 
+        // Cleanup unused columns for grade item.
+        //\local_gugrades\grades::cleanup_empty_columns($gradeitemid);
+
         // Hidden or locked in gradebook?
         [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
 
@@ -92,7 +97,7 @@ class api {
         // Get list of users.
         // Will be everybody for 'manual' grades or filtered list for modules.
         $users = $activity->get_users();
-        $users = \local_gugrades\grades::add_grades_to_user_records($courseid, $gradeitemid, $users);
+        $users = \local_gugrades\grades::add_grades_to_user_records($courseid, $gradeitemid, $users, $gradehidden);
         $users = \local_gugrades\users::add_pictures_and_profiles_to_user_records($courseid, $users);
         $users = \local_gugrades\users::add_gradehidden_to_user_records($users, $gradeitemid);
         $columns = \local_gugrades\grades::get_grade_capture_columns($courseid, $gradeitemid);
@@ -100,6 +105,8 @@ class api {
         $converted = \local_gugrades\conversion::is_conversion_applied($courseid, $gradeitemid);
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
         $showcsvimport = \local_gugrades\users::showcsvimport($users);
+
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
 
         return [
             'users' => $users,
@@ -136,8 +143,11 @@ class api {
         $activity->set_viewfullnames($viewfullnames);
         $user = $activity->get_user($userid);
 
+        // Hidden or locked in gradebook?
+        [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
+
         // Add/update the grades.
-        $user = \local_gugrades\grades::add_grades_for_user($courseid, $gradeitemid, $user);
+        $user = \local_gugrades\grades::add_grades_for_user($courseid, $gradeitemid, $user, $gradehidden);
 
         // Add/update picture
         $user = \local_gugrades\users::add_picture_and_profile_to_user_record($courseid, $user);
@@ -219,6 +229,13 @@ class api {
         $lines = self::unpack_csv($csv);
         array_shift($lines);
 
+        // If existing "other" then reason will look like OTHER_xxx,
+        // where xxx is the columnid
+        if (str_starts_with($reason, 'OTHER_')) {
+            $other = \local_gugrades\grades::unpack_other($courseid, $reason);
+            $reason = 'OTHER';
+        };
+
         // Get the possible users for this grade item. And re-key by idnumber.
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, $groupid);
         $users = $activity->get_users();
@@ -245,6 +262,9 @@ class api {
             'csvidinvalid' => 0,
             'csvgradeinvalid' => 0,
         ];
+
+        // Because it can take a while.
+        set_time_limit(0);
 
         // Iterate over CSV lines, checking and (optionally) adding new grade.
         foreach ($lines as $line) {
@@ -308,8 +328,6 @@ class api {
 
             $testrunlines[] = $testrunline;
 
-
-
             // If we get to here and not a testrun, we can actually save the data.
             if (!$testrun) {
                 \local_gugrades\grades::write_grade(
@@ -357,12 +375,17 @@ class api {
     public static function get_grade_item(int $itemid) {
         global $DB;
 
+        // Is grade supported at all?
+        $gradesupported = \local_gugrades\grades::is_grade_supported($itemid);
+
         // Get item.
-        $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);
+        $item = \local_gugrades\grades::get_gradeitem($itemid);
         $courseid = $item->courseid;
 
         // Get the mapping class.
-        $mapping = \local_gugrades\grades::mapping_factory($courseid, $itemid);
+        if ($gradesupported) {
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $itemid);
+        }
 
         // If the type is a category, get that as well.
         if ($item->itemtype == 'category') {
@@ -379,7 +402,7 @@ class api {
         }
 
         // Get the scale name.
-        $scalename = $mapping->name();
+        $scalename = $gradesupported ? $mapping->name() : 'Unsupported';
 
         // Get module name.
         if ($item->itemtype == 'mod') {
@@ -398,6 +421,14 @@ class api {
             }
         }
 
+        // Get module details if it is a module.
+        if (($item->itemtype == 'mod') && ($cm = \local_gugrades\grades::get_cm_from_gradeitemid($itemid))) {
+            $linkobj = new \moodle_url('/mod/' . $item->itemmodule . '/view.php', ['id' => $cm->id]);
+            $link = $linkobj->out();
+        } else {
+            $link = '';
+        }
+
         return [
             'id' => $item->id,
             'courseid' => $item->courseid,
@@ -406,11 +437,12 @@ class api {
             'itemtype' => get_string($item->itemtype, 'local_gugrades'),
             'itemmodule' => $modname,
             'iteminstance' => $item->iteminstance,
-            'isscale' => $mapping->is_scale(),
+            'isscale' => $gradesupported ? $mapping->is_scale() : false,
             'scalename' => $scalename,
             'grademax' => $item->itemtype == 'category' ? $enhancedcat->grademax : $item->grademax,
-            'weight' => round($item->aggregationcoef * 100),
+            'weight' => round($item->aggregationcoef * 100, PHP_ROUND_HALF_DOWN),
             'categoryerror' => $categoryerror,
+            'link' => $link,
         ];
     }
 
@@ -433,6 +465,26 @@ class api {
     }
 
     /**
+     * Check/convert fillns
+     * (empty is permitted to save having to change a million tests)
+     * @param string $fillns
+     * @return string
+     */
+    protected static function check_fillns(string $fillns) {
+        if (empty($fillns)) {
+            return '';
+        } else if ($fillns == 'none') {
+            return '';
+        } else if ($fillns == 'fillns') {
+            return 'NS';
+        } else if ($fillns == 'fillns0') {
+            return 'NS0';
+        } else {
+            throw new \moodle_exception('Fillns can only be none, fillns or fillns0. We found - "' . $fillns . '"');
+        }
+    }
+
+    /**
      * Import grade
      * @param int $courseid
      * @param int $gradeitemid
@@ -440,7 +492,7 @@ class api {
      * @param \local_gugrades\activities\base $activity
      * @param int $userid
      * @param bool $additional
-     * @param bool $fillns
+     * @param string $fillns
      * @return bool - was a grade imported
      */
     public static function import_grade(
@@ -450,7 +502,9 @@ class api {
         \local_gugrades\activities\base $activity,
         int $userid,
         bool $additional,
-        bool $fillns) {
+        string $fillns) {
+
+        $fillns = self::check_fillns($fillns);
 
         // If additional selected then skip users who already have data.
         if ($additional && \local_gugrades\grades::user_has_grades($gradeitemid, $userid)) {
@@ -494,7 +548,7 @@ class api {
 
                 return true;
             }
-        } else if ($fillns) {
+        } else if (!empty($fillns)) {
 
             // If there's no grade and fillns is enabled, write
             // an NS grade, instead.
@@ -503,10 +557,10 @@ class api {
                 courseid:       $courseid,
                 gradeitemid:    $gradeitemid,
                 userid:         $userid,
-                admingrade:     'NS',
+                admingrade:     $fillns,
                 rawgrade:       0,
                 convertedgrade: 0,
-                displaygrade:   'NS',
+                displaygrade:   $fillns,
                 weightedgrade:  0,
                 gradetype:      'FIRST',
                 other:          '',
@@ -597,11 +651,12 @@ class api {
     public static function get_history(int $gradeitemid, int $userid) {
         global $DB;
 
+        // Order by ID rather than time. As a second is quite a long time.
         $sql = "SELECT gg.*, gc.other FROM {local_gugrades_grade} gg
             JOIN {local_gugrades_column} gc ON gc.id = gg.columnid
             WHERE gg.userid = :userid
             AND gg.gradeitemid = :gradeitemid
-            ORDER BY audittimecreated DESC";
+            ORDER BY gg.id DESC";
         if (!$grades = $DB->get_records_sql($sql, ['userid' => $userid, 'gradeitemid' => $gradeitemid])) {
             return [];
         }
@@ -657,12 +712,14 @@ class api {
     public static function is_grades_imported(int $courseid, int $gradeitemid, $groupid) {
         $imported = \local_gugrades\grades::is_grades_imported($courseid, $gradeitemid, $groupid);
         list($recursiveavailable, $recursivematch, $allgradesvalid) = \local_gugrades\grades::recursive_import_match($gradeitemid);
+        $level = \local_gugrades\grades::get_gradeitem_level($gradeitemid);
 
         return [
             'imported' => $imported,
             'recursiveavailable' => $recursiveavailable,
             'recursivematch' => $recursivematch,
             'allgradesvalid' => $allgradesvalid,
+            'level' => $level,
         ];
     }
 
@@ -673,11 +730,14 @@ class api {
      * @param int $gradeitemid
      * @param int $groupid
      * @param bool $additional
-     * @param bool $fillns
+     * @param string $fillns
      * @return array [itemcount, gradecount]
      */
-    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, bool $additional, bool $fillns) {
+    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, bool $additional, string $fillns) {
         global $DB;
+
+        // This could legitimately take forever
+        set_time_limit(0);
 
         // Check!
         list($recursiveavailable, $recursivematch, $allgradesvalid) = \local_gugrades\grades::recursive_import_match($gradeitemid);
@@ -686,7 +746,7 @@ class api {
         }
 
         // Get parent grade category.
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
         $categoryid = $gradeitem->categoryid;
         $gradecategory = $DB->get_record('grade_categories', ['id' => $categoryid], '*', MUST_EXIST);
 
@@ -775,7 +835,7 @@ class api {
 
         // Scale.
         if ($converted) {
-            $scale = \local_gugrades\mapping::get_conversion_scale($courseid, $gradeitemid);
+            $scale = \local_gugrades\conversion::get_conversion_scale($courseid, $gradeitemid);
             $scalemenu = self::formkit_menu($scale, true);
         } else if ($gradeitem->gradetype == GRADE_TYPE_SCALE) {
             $scale = \local_gugrades\grades::get_scale($gradeitem->scaleid);
@@ -785,7 +845,7 @@ class api {
         }
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Is it a scale?
@@ -823,18 +883,27 @@ class api {
         $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradeitem->iteminstance);
 
         // Is this scale or points?
-        $isscale = !($category->atype == 'P');
+        $isscale = !($category->atype == \local_gugrades\GRADETYPE_POINTS);
+
+        // Conditions for overriding categories.
+        // See MGU-997.  If this is Level 1 (i.e. we are trying to override a level 2 category)
+        // then the grade MUST be a scale (including converted). We cannot override points.
+        $level = \local_gugrades\grades::get_gradecategory_level($category->categoryid);
+        $available = !(($level == 2) && ($category->atype == \local_gugrades\GRADETYPE_POINTS));
 
         // Get various menu items.
         $gradetypes = \local_gugrades\gradetype::get_menu($gradeitemid, LOCAL_GUGRADES_FORMENU);
         $wsgradetypes = self::formkit_menu($gradetypes);
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
+        // If atype=E then we have an error condition
+        $error = $category->atype == \local_gugrades\GRADETYPE_ERROR;
+
         // Get scalemenu
-        if ($category->atype == 'A') {
+        if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEA) {
             $scale = \local_gugrades\grades::get_scale(0, 'schedulea');
             $scalemenu = self::formkit_menu($scale, true);
-        } else if ($category->atype == 'B') {
+        } else if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEB) {
             $scale = \local_gugrades\grades::get_scale(0, 'scheduleb');
             $scalemenu = self::formkit_menu($scale, true);
         } else {
@@ -842,7 +911,12 @@ class api {
         }
 
         // Admin grades menu
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        // Different for level == 1
+        if ($level == 1) {
+            $admingrades = \local_gugrades\admingrades::get_menu_level_one();
+        } else {
+            $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
+        }
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Is this already overridden in grade table
@@ -858,6 +932,8 @@ class api {
             'usescale' => $isscale,
             'iscategory' => true,
             'overridden' => $overridden,
+            'available' => $available,
+            'error' => $error,
             'grademax' => $category->grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -914,7 +990,7 @@ class api {
         $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         $adminmenu = self::formkit_menu($admingrades, true);
 
         // Gradeitem.
@@ -948,6 +1024,8 @@ class api {
             'usescale' => $mapping->is_scale() || $converted,
             'iscategory' => false,
             'overridden' => false,
+            'available' => true,
+            'error' => false,
             'grademax' => $grademax,
             'scalemenu' => $scalemenu,
             'adminmenu' => $adminmenu,
@@ -980,7 +1058,7 @@ class api {
         $wsgradetypes = self::formkit_menu($gradetypes);
 
         // Administrative grades.
-        $admingrades = \local_gugrades\admin_grades::get_menu();
+        $admingrades = \local_gugrades\admingrades::get_menu($gradeitemid);
         $adminmenu = self::formkit_menu($admingrades, true);
 
         return [$wsgradetypes, $adminmenu];
@@ -997,6 +1075,7 @@ class api {
      * @param int $scale
      * @param float $grade
      * @param string $notes
+     * @param bool $delete
      */
     public static function write_additional_grade(
         int $courseid,
@@ -1007,7 +1086,8 @@ class api {
         string $admingrade,
         int $scale,
         float $grade,
-        string $notes
+        string $notes,
+        bool $delete = false
         ) {
 
         global $DB;
@@ -1017,6 +1097,11 @@ class api {
 
         // Get the stuff we used to build the form for validation.
         $form = self::get_add_grade_form($courseid, $gradeitemid, $userid);
+
+        // If form says that add/convert is not available then it's an exception.
+        if (!$form['available']) {
+            throw new \moodle_exception('Cannot override grade at this level');
+        }
 
         // Check 'reason' is valid.
         // Pseudo-reason of CATEGORY is permitted.
@@ -1069,27 +1154,18 @@ class api {
             $convertedgrade = $grade;
         }
 
-        /*
-        } else if ($conversion->is_conversion()) {
-            [$convertedgrade, $displaygrade] = $conversion->import($scale);
-            $rawgrade = $scale;
-        } else if ($usescale) {
-
-            // TODO: Check! +1 because internal values are 1 - based, our form is 0 - based.
-            [$convertedgrade, $displaygrade] = $conversion->import($scale + 1);
-            $rawgrade = $scale + 1;
-        } else {
-            [$convertedgrade, $displaygrade] = $conversion->import($grade);
-            $rawgrade = $grade;
-        }
-        */
-
         // If we're overriding a category then set the override bit
         $catoverride = $reason == 'CATEGORY';
 
-        // If cateoverride and both scale and grade are zero then
+        // gradeitem must be a category if reason = category and must not be if not
+        $iscategory = \local_gugrades\grades::is_gradeitemid_category($gradeitemid);
+        if (($catoverride && !$iscategory) || (!$catoverride && $iscategory)) {
+            throw new \moodle_exception('Category reason / itemtype mismatch. gradeitemid = ' . $gradeitemid . ', reason = "' . $reason . '"');
+        }
+
+        // If cateoverride and delete is true then
         // we are removing the cat override and aggregating a new grade.
-        if ($catoverride && !$scale && !$grade && !$admingrade) {
+        if ($catoverride && $delete) {
             \local_gugrades\grades::remove_catoverride($gradeitemid, $userid);
         } else {
 
@@ -1117,6 +1193,7 @@ class api {
 
         // Re-aggregate this user
         \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+
     }
 
     /**
@@ -1372,11 +1449,13 @@ class api {
         $context = \context_course::instance($courseid, true);
 
         // If this isn't current user, do they have the rights to look at other users.
+        /*
         if ($USER->id != $userid) {
             require_capability('local/gugrades:readotherdashboard', $context);
         } else {
             require_capability('local/gugrades:readdashboard', $context);
         }
+            */
 
         // TODO: Get grades.
         $grades = \local_gugrades\grades::get_dashboard_grades($userid, $gradecategoryid);
@@ -1388,6 +1467,60 @@ class api {
             'grades' => $grades,
             'childcategories' => $childcategories,
         ];
+    }
+
+    /**
+     * Release grade for single user.
+     * In practice, this would/should only be used to re-release the updated
+     * grade where the overall item has already been released.
+     * If valid activity factory passed it will be used. If null it is looked up.
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @param object $activity
+     */
+    public static function release_user_grade(int $courseid, int $gradeitemid, int $userid, object $activity = null) {
+        global $DB;
+
+        // Look up actvity object if we need to
+        if (!$activity) {
+            $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);
+        }
+
+        // Is it an aggregated category
+        if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $userid)) {
+
+            // Nope. So get 'normal' grade.
+            $usercapture = new usercapture($courseid, $gradeitemid, $userid);
+            $released = $usercapture->get_released();
+        }
+
+        // Don't bother if grade is in error.
+        if ($released && !$released->iserror) {
+            \local_gugrades\grades::write_grade(
+                courseid: $courseid,
+                gradeitemid: $gradeitemid,
+                userid: $userid,
+                admingrade: $released->admingrade,
+                rawgrade: $released->rawgrade,
+                convertedgrade: $released->convertedgrade,
+                displaygrade: $released->displaygrade,
+                weightedgrade: $released->weightedgrade,
+                gradetype: 'RELEASED',
+                other: '',
+                iscurrent: true,
+                iserror: false,
+                auditcomment: 'Release grades',
+                ispoints: $released->points,
+            );
+
+            // Re-aggregate this user
+            $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
+            \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+        }
+
+        // Activity action .
+        $activity->release_grades($userid);
     }
 
     /**
@@ -1423,30 +1556,7 @@ class api {
                 // Activity action.
                 $activity->unrelease_grades($user->id);
             } else {
-                $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
-                $released = $usercapture->get_released();
-
-                if ($released) {
-                    \local_gugrades\grades::write_grade(
-                        courseid: $courseid,
-                        gradeitemid: $gradeitemid,
-                        userid: $user->id,
-                        admingrade: $released->admingrade,
-                        rawgrade: $released->rawgrade,
-                        convertedgrade: $released->convertedgrade,
-                        displaygrade: $released->displaygrade,
-                        weightedgrade: $released->weightedgrade,
-                        gradetype: $released->gradetype,
-                        other: '',
-                        iscurrent: true,
-                        iserror: false,
-                        auditcomment: 'Release grades',
-                        ispoints: $released->points,
-                    );
-                }
-
-                // Activity action .
-                $activity->release_grades($user->id);
+                self::release_user_grade($courseid, $gradeitemid, $user->id, $activity);
             }
         }
     }
@@ -1456,7 +1566,7 @@ class api {
      * @param int $courseid
      */
     public static function reset(int $courseid) {
-        global $DB;
+        global $DB, $GRADEITEMS;
 
         // Delete grades.
         $DB->delete_records('local_gugrades_grade', ['courseid' => $courseid]);
@@ -1477,6 +1587,12 @@ class api {
 
         // Delete hidden.
         $DB->delete_records('local_gugrades_hidden', ['courseid' => $courseid]);
+
+        // Delete altered weight.
+        $DB->delete_records('local_gugrades_altered_weight', ['courseid' => $courseid]);
+
+        // "Cached" gradeitems.
+        $GRADEITEMS = [];
 
         // Clear cache items for this course.
         \local_gugrades\aggregation::invalidate_cache($courseid);
@@ -1672,6 +1788,13 @@ class api {
 
         global $CFG;
 
+        // I know :(
+        set_time_limit(0);
+
+        // Cleanup any empty capture page columns.
+        // (It's hard to do over on the capture page - trust me).
+        \local_gugrades\grades::cleanup_unused_columns_course($courseid);
+
         // Are we collecting debug information
         $debugon = $CFG->debug >= DEBUG_DEVELOPER;
         $timestart = microtime(true);
@@ -1692,7 +1815,7 @@ class api {
         $warnings = array_intersect_key($warnings, array_unique(array_map('serialize', $warnings)));
 
         // Get all the students.
-        $users = \local_gugrades\aggregation::get_users($courseid, $firstname, $lastname, $groupid);
+        $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, $firstname, $lastname, $groupid);
         $timeusers = microtime(true);
 
         // Recalculate?
@@ -1707,9 +1830,6 @@ class api {
         [$users, $addaggdebug] = \local_gugrades\aggregation::add_aggregation_fields_to_users($courseid, $gradecategoryid, $users, $columns);
         $timeaddfields = microtime(true);
 
-        // Add pictures to user fields.
-        //$users = \local_gugrades\users::add_pictures_and_profiles_to_user_records($users);
-
         // Get breadcrumb trail.
         $breadcrumb = \local_gugrades\aggregation::get_breadcrumb($gradecategoryid);
 
@@ -1723,20 +1843,42 @@ class api {
             $debug = array_merge($debug, $addaggdebug);
         }
 
-        // Can we show the conversion controls for this category?
+        // Can we show the conversion controls for this category?d
+        // Only available for level 2 categories - MGU-997
+        $level = \local_gugrades\grades::get_category_level($gradecategoryid);
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
-        $allowconversion = !$istoplevel && (!empty($mapname) || ($atype == 'P'));
+        $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
+
+        // Corresponding gradeitemid for category.
+        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+
+        // Allow release. At the moment, this is just going to be "Not points" and "not error".
+        $allowrelease = ($atype != \local_gugrades\GRADETYPE_POINTS) && ($atype != \local_gugrades\GRADETYPE_ERROR);
+
+        // Has the aggregated grade been released?
+        $released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
+
+        // Do we show the weights?
+        $showweights = \local_gugrades\aggregation::show_weights($gradecategoryid);
+
+        // Is 'exclude empty grades' ticked?
+        $excludeempty = \local_gugrades\grades::is_exclude_empty_grades($gradecategoryid);
 
         return [
             'toplevel' => $istoplevel,
             'atype' => $atype,
+            'gradeitemid' => $gradeitemid,
             'strategy' => \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid),
             'conversion' => $mapname,
             'allowconversion' => $allowconversion,
+            'allowrelease' => $allowrelease,
+            'released' => $released,
+            'showweights' => $showweights,
             'warnings' => $warnings,
             'columns' => $columns,
             'users' => $users,
             'breadcrumb' => $breadcrumb,
+            'excludeempty' => $excludeempty,
             'debug' => $debug,
         ];
     }
@@ -1746,7 +1888,7 @@ class api {
      * @param int $courseid
      * @param int $gradecategoryid
      * @param int $userid
-     * @return array
+     * @return object
      */
     public static function get_aggregation_user(int $courseid, int $gradecategoryid, int $userid) {
         global $DB;
@@ -1765,8 +1907,44 @@ class api {
 
         // Get user aggregation data
         $context = \context_course::instance($courseid);
-        $user = \local_gugrades\aggregation::get_user($courseid, $userid);
+        $user = \local_gugrades\aggregation::get_user($courseid, $gradecategoryid, $userid);
         $user = \local_gugrades\aggregation::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
+
+        return $user;
+    }
+
+    /**
+     * Get user data for dashboard
+     * It's basically get_aggregation_user with some extras added
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_aggregation_dashboard_user(int $courseid, int $gradecategoryid, int $userid) {
+
+        // Get basic user field data
+        $user = self::get_aggregation_user($courseid, $gradecategoryid, $userid);
+
+        // Run over the fields and add released status.
+        foreach ($user->fields as $id => $field) {
+            $released = \local_gugrades\grades::is_grades_released($courseid, $field['gradeitemid']);
+            $releasegrade = \local_gugrades\grades::get_released_grade($courseid, $field['gradeitemid'], $userid);
+            $user->fields[$id]['released'] = $released;
+            $user->fields[$id]['releasegrade'] = $releasegrade;
+        }
+
+        // Get the category
+        $category = \local_gugrades\aggregation::get_enhanced_grade_category($courseid, $gradecategoryid);
+        $gradeitemid = $category->itemid;
+
+        // Get provisional grade for the actual category
+        $provisional = \local_gugrades\grades::get_provisional_from_id($gradeitemid, $userid);
+        $provisional->itemid = $gradeitemid;
+        $provisional->released = \local_gugrades\grades::is_grades_released($courseid, $gradeitemid);
+
+        // add the 'parent' grade item to the record
+        $user->parent = $provisional;
 
         return $user;
     }
@@ -1838,7 +2016,7 @@ class api {
     public static function get_capture_export_options(int $courseid, int $gradeitemid, int $groupid) {
 
         // Get preferences (if any).
-        $pref = get_user_preferences('local_gugrades_exportselect');
+        $pref = get_user_preferences('local_gugrades_captureexportselect');
         if ($pref) {
             $savedoptions = unserialize($pref);
         } else {
@@ -1901,7 +2079,7 @@ class api {
         int $courseid, int $gradeitemid, int $groupid, bool $viewfullnames, array $options) {
 
         // Save user's selection.
-        set_user_preference('local_gugrades_exportselect', serialize($options));
+        set_user_preference('local_gugrades_captureexportselect', serialize($options));
 
         // Convet options into a simple array of those selected.
         $selected = [];
@@ -2014,13 +2192,126 @@ class api {
      */
     public static function recalculate(int $courseid, int $gradecategoryid) {
 
+        // Clear cache items for this course.
+        \local_gugrades\aggregation::invalidate_cache($courseid);
+
         // Get all the students.
-        $users = \local_gugrades\aggregation::get_users($courseid, '', '', 0);
+        $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, '', '', 0);
 
         // Get the level 1 parent category.
         $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
         // Run over users running aggregation
         \local_gugrades\aggregation::aggregate($courseid, $level1id, $users);
+    }
+
+    /**
+     * Get the form for altering weights
+     * @param int $courseid
+     * @param int $categoryid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_alter_weight_form(int $courseid, int $categoryid, int $userid) {
+        global $DB;
+
+        // Check gradecategory exists.
+        // (courseid forces proper check).
+        $category = $DB->get_record('grade_categories', ['id' => $categoryid, 'courseid' => $courseid], '*', MUST_EXIST);
+
+        // Get gradeitemid
+        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($categoryid);
+
+        // Get the columns for this grade category
+        $columns = \local_gugrades\aggregation::get_columns($courseid, $categoryid);
+
+        // Ensure aggregation data for this user is current.
+        $user = self::get_aggregation_user($courseid, $categoryid, $userid);
+
+        // Combine required user fields and column data.
+        $items = [];
+        $userfields = $user->fields;
+        foreach ($columns[0] as $id => $column) {
+            $field = $userfields[$id];
+            [$originalweight, $alteredweight, $isaltered] = \local_gugrades\grades::get_altered_weight($column->gradeitemid, $userid);
+            $item = new \stdClass;
+            $item->fullname = $column->fullname;
+            $item->gradeitemid = $column->gradeitemid;
+            $item->gradetype = $column->gradetype;
+            $item->display = $field['display'];
+            $item->originalweight = $originalweight;
+            $item->alteredweight = $alteredweight;
+            $item->isaltered = $isaltered;
+            $items[$id] = $item;
+        }
+
+        return [
+            'categoryname' => $category->fullname,
+            'userfullname' => fullname($user),
+            'idnumber' => $user->idnumber,
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * Save altered weights
+     * @param int $courseid
+     * @param int $categoryid
+     * @param int $userid
+     * @param bool $revert
+     * @param string $reason
+     * @param array $settings
+     * @return array
+     */
+    public static function save_altered_weights(int $courseid, int $categoryid, int $userid, bool $revert, string $reason, array $items) {
+
+        // If revert == true then delete the altered grades
+        if ($revert) {
+            \local_gugrades\grades::revert_altered_weights($courseid, $categoryid, $userid);
+        } else {
+            foreach ($items as $item) {
+                \local_gugrades\grades::update_altered_weight($courseid, $categoryid, $item['gradeitemid'], $userid, $item['weight']);
+            }
+        }
+
+        // Re-aggregate this user
+        \local_gugrades\aggregation::aggregate_user_helper($courseid, $categoryid, $userid);
+    }
+
+    /**
+     * Get list of aggregation export plugins
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return array
+     */
+    public static function get_aggregation_export_plugins(int $courseid, int $gradecategoryid) {
+
+        return \local_gugrades\export::get_aggregation_export_plugins($courseid, $gradecategoryid);
+    }
+
+    /**
+     * Get aggregation export form
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param string $plugin
+     * @return array
+     */
+    public static function get_aggregation_export_form(int $courseid, int $gradecategoryid, string $plugin) {
+
+        return \local_gugrades\export::get_aggregation_export_form($courseid, $gradecategoryid, $plugin);
+    }
+
+    /**
+     * Get aggregation export data
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $groupid
+     * @param string $plugin
+     * @param array $form
+     * @return array
+     */
+    public static function get_aggregation_export_data(int $courseid, int $gradecategoryid, int $groupid, string $plugin, array $form) {
+
+        return \local_gugrades\export::get_aggregation_export_data($courseid, $gradecategoryid, $groupid, $plugin, $form);
     }
 }

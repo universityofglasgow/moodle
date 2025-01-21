@@ -73,6 +73,11 @@ class select_conversion extends external_api {
 
         \local_gugrades\api::select_conversion($courseid, $gradeitemid, $gradecategoryid, $mapid);
 
+        // If gradecategoryid was given, we need to get the corresponding gradeitemid.
+        if ($gradecategoryid) {
+            $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+        }
+
         // Log.
         // TODO: Improve for gradecategoryid
         $event = \local_gugrades\event\select_conversion::create([

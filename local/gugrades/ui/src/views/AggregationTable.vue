@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="serverdebug"></DebugDisplay>
+
     <div class="border rounded p-2 mt-2">
         <div class="col-12 col-lg-6">
             <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
@@ -21,9 +23,13 @@
         <AggregationButtons
             v-if="level1category"
             :categoryid="categoryid"
+            :gradeitemid="gradeitemid"
+            :groupid="groupid"
             :toplevel="toplevel"
             :atype="atype"
             :allowconversion="allowconversion"
+            :allowrelease="allowrelease"
+            :released="released"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>
@@ -74,11 +80,11 @@
                             <InfoButton v-if="header.gradeitemid" :itemid="header.gradeitemid" :text="header.text" size="lg" color="text-warning"></InfoButton>
                             <span v-else>{{ header.text }}</span>
                         </div>
-                        <div v-if="!header.infocol">{{ header.weight }}%</div>
+                        <div v-if="!header.infocol && showweights">{{ header.weight }}%</div>
                         <div v-if="header.gradetype">{{ header.gradetype }} <span v-if="!header.isscale">({{ header.grademax }})</span></div>
                     </div>
                     <div class="py-1" v-if="header.strategy">
-                        <i>{{ header.strategy }}</i>
+                        <i>{{ header.strategy }}</i> <i v-if="excludeempty" class="ml-1 fa fa-check-square" aria-hidden="true" title="Exclude empty grades checked"></i>
                     </div>
                     <div v-if="header.categoryid">
                         <a href="#" @click="expand_clicked(header.categoryid)">
@@ -115,12 +121,16 @@
 
                 <!-- add/override grade -->
                 <OverrideGrade
+                    v-if="item[header.value].available"
                     :itemid = "header.gradeitemid"
                     :categoryid = "header.categoryid"
                     :userid = "item.id"
                     :gradehidden = "item[header.value].hidden"
+                    :overridden = "item[header.value].overridden"
                     :itemname = "header.fullname"
                     :name = "item.displayname"
+                    :showweights = "header.showweights"
+                    :released = "header.released"
                     @gradeadded = "grade_changed(item.id)"
                 ></OverrideGrade>
             </template>
@@ -145,10 +155,45 @@
                 {{ item.completed }}%
             </template>
 
+            <!-- Releasegrade -->
+            <template #item-releasegrade="item">
+                <div v-if="!toplevel">
+                    {{ item.releasegrade }}
+                    <span v-if="item.mismatch">
+                        <br />
+                        <span class="badge badge-danger mt-1">MISMATCH</span>
+                    </span>
+                </div>
+            </template>
+
             <!-- Total -->
             <template #item-total="item">
-                <span v-if="item.error">{{ item.error }}</span>
-                <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
+                <div class="d-flex justify-content-center align-items-center">
+                    <div>
+                        <span v-if="item.error">{{ item.error }}</span>
+                        <span :class="itemclasses(item)" v-else>{{ item.displaygrade }}</span>
+                        <span v-if="item.alteredweight">
+                            <br />
+                            <span class="badge badge-warning mt-1">ALTERED</span>
+                         </span>
+                    </div>
+                    <div>
+                        <!-- add/override for total grade -->
+                        <OverrideGrade
+                            :toplevel="toplevel"
+                            :itemid = "gradeitemid"
+                            :categoryid = "categoryid"
+                            :userid = "item.id"
+                            :gradehidden = "false"
+                            :overridden = "item.overridden"
+                            :itemname = "item.itemname"
+                            :name = "item.displayname"
+                            :showweights = "showweights"
+                            :released = "false"
+                            @gradeadded = "grade_changed(item.id)"
+                        ></OverrideGrade>
+                    </div>
+                </div>
             </template>
 
         </EasyDataTable>
@@ -174,6 +219,7 @@
     import PleaseWait from '@/components/PleaseWait.vue';
     import AggregationButtons from '@/components/Aggregation/AggregationButtons.vue';
     import OverrideGrade from '@/components/Aggregation/OverrideGrade.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const toast = useToast();
 
@@ -182,6 +228,7 @@
     const level1category = ref(0);
     const loading = ref(true);
     const categoryid = ref(0);
+    const gradeitemid = ref(0);
     const groupid = ref(0);
     const items = ref([]);
     const users = ref([]);
@@ -198,6 +245,11 @@
     const debug = ref([]);
     const conversion = ref('');
     const allowconversion = ref(false);
+    const serverdebug = ref({});
+    const allowrelease = ref(false);
+    const released = ref(false);
+    const showweights = ref(false);
+    const excludeempty = ref(false);
 
     let firstname = '';
     let lastname = '';
@@ -264,7 +316,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            serverdebug.value = error;
         });
     }
 
@@ -282,11 +334,13 @@
         users.forEach(user => {
             user.fields.forEach(field => {
                 user[field.fieldname] = {
+                    userid: user.id,
                     data: field.display,
                     dropped: field.dropped,
                     isadmin: field.isadmin,
                     hidden: field.hidden,
                     overridden: field.overridden,
+                    available: field.available,
                 };
             })
         });
@@ -300,11 +354,13 @@
     function process_user(user) {
         user.fields.forEach(field => {
                 user[field.fieldname] = {
+                    userid: user.id,
                     data: field.display,
                     dropped: field.dropped,
                     isadmin: field.isadmin,
                     hidden: field.hidden,
                     overridden: field.overridden,
+                    available: field.available,
                 };
         });
 
@@ -364,6 +420,8 @@
                 grademax: column.grademax,
                 isscale: column.isscale,
                 strategy: column.strategy,
+                showweights: column.showweights,
+                released: column.released,
             });
         });
 
@@ -390,6 +448,7 @@
                 value: "total",
                 infocol: true,
                 strategy: strategy.value,
+                excludeempty: excludeempty.value,
             });
         } else {
 
@@ -408,6 +467,16 @@
                 strategy: headerstrategy,
             });
         }
+
+        // Released grade (not shown for grand total)
+        if (released.value && !toplevel.value) {
+            heads.push({
+                text: mstrings.released,
+                value: 'releasegrade',
+                infocol: true,
+            });
+        }
+
         return heads;
     });
 
@@ -457,7 +526,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            serverdebug.value = error;
         });
     }
 
@@ -496,10 +565,15 @@
             breadcrumb.value = result.breadcrumb;
             toplevel.value = result.toplevel;
             atype.value = result.atype;
+            gradeitemid.value = result.gradeitemid;
             strategy.value = result.strategy;
             debug.value = result.debug;
             conversion.value = result.conversion;
             allowconversion.value = result.allowconversion;
+            allowrelease.value = result.allowrelease;
+            released.value = result.released;
+            showweights.value = result.showweights;
+            excludeempty.value = result.excludeempty;
 
             // Get id of one back from breadcrumb
             backid.value = breadcrumb.value.slice(-2)[0].id;
@@ -510,7 +584,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            serverdebug.value = error;
         });
     }
 
@@ -553,5 +627,9 @@
 
     .border-lg {
         border-width: thick !important;
+    }
+
+    .buttons-pagination .item.button.active {
+        color: black !important;
     }
 </style>

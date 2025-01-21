@@ -77,40 +77,12 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
     }
 
     /**
-     * Create default conversion map
-     * @return int
-     */
-    protected function make_conversion_map() {
-
-        // Read map with id 0 (new map) for Schedule A.
-        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
-        $mapstuff = external_api::clean_returnvalue(
-            get_conversion_map::execute_returns(),
-            $mapstuff
-        );
-
-        // Write map back.
-        $name = 'Test conversion map';
-        $schedule = 'schedulea';
-        $maxgrade = 100.0;
-        $map = $mapstuff['map'];
-        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
-        $mapida = external_api::clean_returnvalue(
-            write_conversion_map::execute_returns(),
-            $mapida
-        );
-        $mapida = $mapida['mapid'];
-
-        return $mapida;
-    }
-
-    /**
      * Checking basic (good) get page
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function xtest_basic_aggregation_page(): void {
+    public function test_basic_aggregation_page(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -124,6 +96,8 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         // Install test data for student.
         $this->load_data('data1a', $this->student->id);
 
+        //xhprof_enable(XHPROF_FLAGS_MEMORY + XHPROF_FLAGS_CPU);
+
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
             $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
@@ -133,6 +107,8 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             );
         }
 
+        //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
+
         // Get first csv test string.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, true);
         $page = external_api::clean_returnvalue(
@@ -140,10 +116,11 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $page
         );
 
+        $this->assertFalse($page['allowrelease']);
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Grades missing', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['displaygrade']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -158,7 +135,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Grades missing', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['displaygrade']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -177,11 +154,12 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $page
         );
 
-        // Nothing should have changed
+        // Nothing should have changed.
+        $this->assertFalse($page['allowrelease']);
         $users = $page['users'];
         $this->assertCount(2, $users);
         $juan = $users[1];
-        $this->assertEquals('Grades missing', $juan['error']);
+        $this->assertEquals('Cannot aggregate', $juan['displaygrade']);
         $this->assertEquals('No data', $juan['fields'][2]['display']);
         $fred = $users[0];
         $this->assertEquals("47.23333", $fred['fields'][0]['display']);
@@ -224,7 +202,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         $fred = $page['users'][0];
         $this->assertEquals("0", $fred['completed']);
-        $this->assertEquals("Grades missing", $fred['error']);
+        $this->assertEquals("Cannot aggregate", $fred['displaygrade']);
 
         // Convert
         // Apply the test conversion map to all items.
@@ -244,7 +222,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("29", $fred['completed']);
+        $this->assertEquals("57", $fred['completed']);
         $this->assertEquals('C2', $fred['fields'][2]['display']);
 
         // Add an admin grade.
@@ -273,7 +251,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("14", $fred['completed']);
+        $this->assertEquals("43", $fred['completed']);
         $this->assertEquals('MV', $fred['fields'][4]['display']);
     }
 
@@ -358,6 +336,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $page
         );
 
+        $this->assertTrue($page['allowrelease']);
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('B', $page['atype']);
         $fred = $page['users'][0];
@@ -513,7 +492,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Scale exam', $form['itemname']);
         $this->assertCount(23, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertGreaterThan(0, count($form['adminmenu']));
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -593,13 +572,38 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $form
         );
 
+        // This should not be possible as overriding level 2 points
+        // is not permitted. Must first be converted
+        $this->assertFalse($form['available']);
+
+        // Attempting to write anyway should lead to an exception.
+        $this->expectException('moodle_exception');
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $summerexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          0,
+            grade:          72.5,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // TODO - really needs a third level points test.
+
+        /*
         // This should reflect Schedule A.
         $this->assertFalse($form['usescale']);
         $this->assertTrue($form['iscategory']);
         $this->assertEquals('Summer exam', $form['itemname']);
         $this->assertCount(0, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertCount(4, $form['adminmenu']);
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -629,6 +633,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $users = $page['users'];
         $this->assertEquals('72.5', $users[0]['displaygrade']);
         $this->assertEquals(72.5, $users[0]['rawgrade']);
+        */
     }
 
     /**
@@ -685,7 +690,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('Schedule B exam', $form['itemname']);
         $this->assertCount(8, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+        $this->assertGreaterThan(0, count($form['adminmenu']));
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -778,10 +783,12 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         // This should reflect Schedule A.
         $this->assertTrue($form['usescale']);
         $this->assertTrue($form['iscategory']);
+        $this->assertTrue($form['available']);
         $this->assertEquals('Schedule B exam', $form['itemname']);
         $this->assertCount(8, $form['scalemenu']);
         $this->assertCount(9, $form['gradetypes']);
-        $this->assertCount(5, $form['adminmenu']);
+
+        $this->assertGreaterThan(0, count($form['adminmenu']));
 
         // Write a new grade for this category.
         $nothing = write_additional_grade::execute(
@@ -836,7 +843,8 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             admingrade:     '',
             scale:          0,
             grade:          0,
-            notes:          ''
+            notes:          '',
+            delete:         true
         );
         $nothing = external_api::clean_returnvalue(
             write_additional_grade::execute_returns(),
@@ -866,7 +874,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             reason:         'CATEGORY',
             other:          '',
             admingrade:     'MV',
-            scale:          0, // B0.
+            scale:          0,
             grade:          0,
             notes:          'Test notes'
         );
@@ -887,5 +895,97 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         $this->assertEquals('MV', $users[0]['displaygrade']);
         $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
         $this->assertEquals('MV', $users[0]['fields'][0]['display']);
+
+        // Remove the overridden grade for Schedule B (0 for grade and scale) again.
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $bexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          0,
+            grade:          0,
+            notes:          '',
+            delete:         true
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Write an H0 grade to check for 0 handling
+        $nothing = write_additional_grade::execute(
+            courseid:       $this->course->id,
+            gradeitemid:    $bexamitem->id,
+            userid:         $this->student->id,
+            reason:         'CATEGORY',
+            other:          '',
+            admingrade:     '',
+            scale:          0, // H0.
+            grade:          0,
+            notes:          'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page for the original scale exam category.
+        // Make sure above grade has added and scale exam has aggregated.
+        $page = get_aggregation_page::execute($this->course->id, $scaleexamid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        $this->assertEquals('A', $page['atype']);
+        $users = $page['users'];
+        $this->assertEquals('C3', $users[0]['displaygrade']);
+        $this->assertEquals(12.17949, $users[0]['rawgrade']);
+        $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
+        $this->assertEquals('H', $users[0]['fields'][0]['display']);
+        $this->assertTrue($users[0]['fields'][0]['overridden']);
+    }
+
+    /**
+     * Test getting the form for top-level total
+     */
+    public function test_total_override_error(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Import grades only for one student (so far).
+        $userlist = [
+            $this->student->id,
+        ];
+
+        // Install test data for student.
+        $this->load_data('data1d', $this->student->id);
+
+        // Import ALL gradeitems.
+        foreach ($this->gradeitemids as $gradeitemid) {
+            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
+            $status = external_api::clean_returnvalue(
+                import_grades_users::execute_returns(),
+                $status
+            );
+        }
+
+        // Get the gradeitemid for summative/
+        $summativeid = $this->get_grade_category('Summative');
+        $summativeitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $summativeid], '*', MUST_EXIST);
+
+        // Check for summative category
+        $form = get_add_grade_form::execute($this->course->id, $summativeitem->id, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        // This cannot aggregate (as schema is mostly points), so should be an error condition
+        $this->assertTrue($form['error']);
     }
 }

@@ -166,7 +166,7 @@ class h5pactivity_activity extends base {
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         $statusobj->grade_class = false;
         $statusobj->due_date = 'N/A';
-        $statusobj->raw_due_date = '';
+        $statusobj->raw_due_date = 0;
         $statusobj->grade_date = '';
 
         $h5psubmission = $DB->get_record('h5pactivity_attempts', [

@@ -41,10 +41,46 @@ class users {
 
         $item = $DB->get_record('grade_items', ['id' => $itemid], '*', MUST_EXIST);
 
+        // This only works when itemtype is mod (not surprisingly)
+        if ($item->itemtype != 'mod') {
+            return false;
+        }
+
         // Get course module.
-        $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $courseid, false, MUST_EXIST);
-        $modinfo = get_fast_modinfo($courseid);
-        return $modinfo->get_cm($cm->id);
+        //$cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $courseid, false, MUST_EXIST);
+
+        // "Set to -1 to avoid calculation of dynamic user-depended data".
+        $modinfo = get_fast_modinfo($courseid, -1);
+        if (!$cm = $modinfo->instances[$item->itemmodule][$item->iteminstance]) {
+            throw new \moodle_exception('Unable to find course module for gradeitemid = ' . $gradeitemid);
+        }
+        return $cm;
+    }
+
+    /**
+     * Get availability for user.
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return boolean
+     */
+    public static function available_for_user(int $gradeitemid, int $userid) {
+        global $DB;
+
+        $item = \local_gugrades\grades::get_gradeitem($gradeitemid);
+
+        // If the gradeitem is NOT is module then it's simply available.
+        if ($item->itemtype != 'mod') {
+            return true;
+        }
+
+        // Get course module.
+        $courseid = $item->courseid;
+        $modinfo = get_fast_modinfo($courseid, $userid);
+        if (!$cm = $modinfo->instances[$item->itemmodule][$item->iteminstance]) {
+            throw new \moodle_exception('Unable to find course module for gradeitemid = ' . $gradeitemid);
+        }
+
+        return $cm->visible;
     }
 
     /**
@@ -66,7 +102,7 @@ class users {
             return new \local_gugrades\activities\manual($gradeitemid, $courseid, $groupid);
         } else {
             $classname = '\\local_gugrades\\activities\\' . $module . '_activity';
-            if (class_exists($classname)) {
+            if (class_exists($classname, true)) {
                 return new $classname($gradeitemid, $courseid, $groupid);
             } else {
                 return new \local_gugrades\activities\default_activity($gradeitemid, $courseid, $groupid);
@@ -144,6 +180,19 @@ class users {
 
         return array_values($filteredusers);
     }
+
+    /**
+     * Check if individual user can access activity
+     * @param object $cm
+     * @param int $userid
+     */
+    /*
+    public static function is_user_visible(object $cm, int $userid) {
+        $info = new \core_availability\info_module($cm);
+
+        return $info->is_user_visible($cm, $userid, false);
+    }
+    */
 
     /**
      * Add pictures to user records
@@ -251,5 +300,18 @@ class users {
         }
 
         return false;
+    }
+
+    /**
+     * Clear availability cache.
+     * @param int $courseid
+     */
+    public static function clear_availability_cache(int $courseid) {
+        global $DB;
+
+        $items = $DB->get_records('grade_items', ['courseid' => $courseid]);
+        foreach ($items as $item) {
+            $cachetag = 'AVAILABLE_' . $courseid . '_' . $item->id;
+        }
     }
 }

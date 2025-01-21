@@ -34,11 +34,6 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 class assign_activity extends base {
 
     /**
-     * @var object $cm
-     */
-    private $cm;
-
-    /**
      * @var object $assign
      */
     private $assign;
@@ -53,7 +48,9 @@ class assign_activity extends base {
         parent::__construct($gradeitemid, $courseid, $groupid);
 
         // Get the assignment object.
-        $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
+        if (!$this->cm) {
+            throw new \moodle_exception('Course module object not defined');
+        }
         $this->assign = $this->get_assign($this->cm);
     }
 
@@ -65,7 +62,7 @@ class assign_activity extends base {
     private function get_assign($cm) {
         global $DB;
 
-        $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
+        $course = get_course($this->courseid);
         $coursemodulecontext = \context_module::instance($cm->id);
         $assign = new \assign($coursemodulecontext, $cm, $course);
 
@@ -99,9 +96,8 @@ class assign_activity extends base {
      * Implement get_users()
      */
     public function get_users() {
-        $context = \context_course::instance($this->courseid);
-        $users = \local_gugrades\users::get_available_users_from_cm(
-            $this->cm, $context, $this->firstnamefilter, $this->lastnamefilter, $this->groupid);
+
+        $users = parent::get_users();
 
         $assigninstance = $this->assign->get_instance();
 
@@ -195,21 +191,35 @@ class assign_activity extends base {
     }
 
     /**
+     * Modify assignment workflow state
+     */
+    private function set_marking_workflow($userid, $workflowstate) {
+        global $DB;
+
+        $userflags = $this->assign->get_user_flags($userid, true);
+        $userflags->workflowstate = $workflowstate;
+        $this->assign->update_user_flags($userflags);
+
+        // Update grade
+        $grade = $this->assign->get_user_grade($userid, true);
+
+        // Is there any feedback comment for this grade?
+        // I got this from the process_save_quic_grades() function in mod_assign::locallib.php.
+        if ($feedback = $DB->get_record('assignfeedback_comments', ['grade' => $grade->id])) {
+            $grade->feedbacktext = $feedback->commenttext;
+            $grade->feedbackformat = $feedback->commentformat;
+        }
+        $this->assign->update_grade($grade);
+    }
+
+    /**
      * Action to take when releasing grades
      * For Assignment, update workflow
      * @param int $userid
      */
     public function release_grades(int $userid) {
-        $data = (object) [
-            'attemptnumber' => 0,
-            'workflowstate' => 'released',
-            'feedbackformat' => 0,
-            'assignfeedbackcomments_editor' => [
-                'text' => '',
-                'format' => 0,
-            ],
-        ];
-        $this->assign->save_grade($userid, $data);
+
+        $this->set_marking_workflow($userid, ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
 
         return;
     }
@@ -220,16 +230,8 @@ class assign_activity extends base {
      * @param int $userid
      */
     public function unrelease_grades(int $userid) {
-        $data = (object) [
-            'attemptnumber' => 0,
-            'workflowstate' => 'readyforrelease',
-            'feedbackformat' => 0,
-            'assignfeedbackcomments_editor' => [
-                'text' => '',
-                'format' => 0,
-            ],
-        ];
-        $this->assign->save_grade($userid, $data);
+
+        $this->set_marking_workflow($userid, ASSIGN_MARKING_WORKFLOW_STATE_READYFORRELEASE);
 
         return;
     }

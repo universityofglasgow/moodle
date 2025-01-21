@@ -64,7 +64,7 @@ class gradeitem {
 
         $this->courseid = $courseid;
         $this->gradeitemid = $gradeitemid;
-        $this->gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $this->$gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
         $this->course = get_course($courseid);
     }
 

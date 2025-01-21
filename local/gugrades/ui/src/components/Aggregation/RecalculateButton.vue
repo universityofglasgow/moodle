@@ -1,9 +1,11 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="recalculate_clicked()">
         {{ mstrings.recalculate }}
     </button>
 
-    <VueModal v-model="showrecalculatemodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.recalculate">
+    <VueModal v-model="showrecalculatemodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.recalculate">
         <div v-if="loading">
             <PleaseWait></PleaseWait>
         </div>
@@ -21,10 +23,12 @@
     import {ref, inject, defineProps, defineEmits} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import PleaseWait from '@/components/PleaseWait.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const mstrings = inject('mstrings');
     const showrecalculatemodal = ref(false);
     const loading = ref(false);
+    const debug = ref({});
 
     const props = defineProps({
         categoryid: Number,
@@ -68,7 +72,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            showrecalculatemodal.value = false;
+            debug.value = error;
         });
     }
 </script>

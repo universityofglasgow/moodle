@@ -1,4 +1,6 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <div>
         <div class="border rounded p-2 mt-2">
             <div class="col-12 mb-2">
@@ -16,6 +18,7 @@
                         :gradesupported="gradesupported"
                         :gradehidden="gradehidden"
                         :gradelocked="gradelocked"
+                        :noids="!showcsvimport"
                         >
                     </CaptureAlerts>
 
@@ -81,7 +84,7 @@
                     <!-- User picture column -->
                     <template #item-slotuserpicture="item">
                         <a :href="item.profileurl">
-                            <img :src="item.pictureurl" alt="" class="userpicture defaultuserpic" width="35" height="35"/>
+                            <img :src="item.pictureurl" :alt="item.displayname" class="userpicture defaultuserpic" width="35" height="35"/>
                         </a>
                     </template>
 
@@ -168,6 +171,7 @@
     import EditCaptureCell from '@/components/Capture/EditCaptureCell.vue';
     import { useWindowScroll, watchDebounced } from '@vueuse/core';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const users = ref([]);
     const userids = ref([]);
@@ -207,6 +211,7 @@
     const provisionalslot = ref('');
     const provisionalid = ref('');
     const showcsvimport = ref(true);
+    const debug = ref({});
 
     const toast = useToast();
 
@@ -542,7 +547,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -606,7 +611,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
         });
     }
 
@@ -676,5 +681,9 @@
 
     .capture-warning {
         font-size: 125%;
+    }
+
+    .buttons-pagination .item.button.active {
+        color: black !important;
     }
 </style>

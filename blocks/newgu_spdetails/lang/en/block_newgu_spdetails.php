@@ -35,6 +35,14 @@ $string['cachedef_quizduequery'] = 'The cache holding the results for Quiz\'s th
 $string['cachedef_scormduequery'] = 'The cache holding the results for SCORM activities that are due.';
 $string['cachedef_workshopduequery'] = 'The cache holding the results for Workshop activities that are due.';
 
+$string['loading_text'] = 'Loading';
+$string['overview_aria_label_text'] = 'Assessments overview. A chart displaying assessments to be submitted, overdue, submitted and graded.';
+$string['overview_accessibility_description'] = 'This is the Assessments overview chart. It displays your assessments that need to be submitted, are overdue, have been submitted, or have been graded.';
+$string['overview_tooltip_preamble'] = 'Assessments ';
+$string['duesoon_aria_label_text'] = 'Assessments Due Soon. A chart displaying assessments that are due in the next 24 hours, 7 days, or month.';
+$string['duesoon_accessibility_description'] = 'This is the Assessments due soon chart. It displays information about your assessments that require to be submitted in the next 24 hours, 7 days, or 1 calendar month.';
+$string['duesoon_tooltip_preamble'] = 'Assessments due in the next ';
+
 $string['newgu_spdetails:addinstance'] = 'Add a new Your Assessment Details (New) block';
 $string['newgu_spdetails:myaddinstance'] = 'Add a new Your Assessment Details (New) to Dashboard';
 $string['assessment'] = 'Assessment';
@@ -107,24 +115,29 @@ $string['header_feedback'] = 'Feedback';
 $string['header_submission'] = 'Submission';
 $string['header_coursestartdate'] = 'Course Start Date';
 $string['header_courseenddate'] = 'Course End Date';
+$string['header_gradecategory'] = 'Grade Category Grade';
 $string['label_course'] = 'Course: ';
 $string['label_componentname'] = 'Component: ';
 $string['label_weight'] = 'Weight towards course: ';
+$string['label_coursecategorygrade'] = 'Category grade: ';
 $string['label_grade'] = 'Overall grade: ';
 $string['previous'] = 'Previous';
 $string['back_to'] = 'Back to assessment details';
 $string['feedback_tobeconfirmed'] = 'To be confirmed';
 $string['event_view_dashboard'] = 'View student dashboard';
 $string['icon_alt_text'] = 'Link to {$a->modulename} activity {$a->activityname}';
+$string['hidden_icon_alt_text'] = 'This activity is currently hidden on the course page.';
 
 $string['chart_24hrs'] = '24 hours';
 $string['chart_7days'] = '7 days';
 $string['chart_1mth'] = 'month';
 
+$string['status_restricted'] = 'restricted';
 $string['status_new'] = 'new';
 $string['status_tobeconfirmed'] = 'To be confirmed';
 $string['status_notopen'] = 'notopen';
 $string['status_submissionnotopen'] = 'submissionnotopen';
+$string['status_submissionunavailable'] = 'submissionunavailable';
 $string['status_draft'] = 'draft';
 $string['status_submit'] = 'submit';
 $string['status_submitted'] = 'submitted';
@@ -134,6 +147,7 @@ $string['status_unavailable'] = 'unavailable';
 $string['status_provisional'] = 'provisional';
 $string['status_graded'] = 'graded';
 
+$string['status_class_restricted'] = 'status-restricted';
 $string['status_class_draft'] = 'status-draft';
 $string['status_class_submit'] = 'status-submit';
 $string['status_class_submitted'] = 'status-submitted';
@@ -143,8 +157,9 @@ $string['status_class_provisional'] = 'status-provisional';
 $string['status_class_graded'] = 'status-graded';
 
 $string['status_text_hidden'] = 'Hidden';
+$string['status_text_restricted'] = 'Restricted';
 $string['status_text_submissionnotopen'] = 'Submission not open';
-$string['status_text_submissionunavailable'] = 'Submission unavailable';
+$string['status_text_submissionunavailable'] = 'Not available';
 $string['status_text_tosubmit'] = 'To submit';
 $string['status_text_tobesubmitted'] = 'To be submitted';
 $string['status_text_submit'] = 'Submit';

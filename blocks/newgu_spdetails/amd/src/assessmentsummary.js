@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Javascript to initialise the Assessment Summary section
+ * Javascript to initialise the Assessment Summary section.
  *
  * @module     block_newgu_spdetails/assessmentsummary
  * @author     Greg Pedder <greg.pedder@glasgow.ac.uk>
@@ -39,76 +39,73 @@ const Selectors = {
 };
 
 const viewAssessmentSummaryByChartType = function(event, legendItem, legend) {
-    Log.debug('viewAssessmentSummaryByChartType called');
     // We don't want this firing from the main Dashboard page.
-    if (!document.querySelector('#student_dashboard')) {
-        const chartType = ((legendItem) ? legendItem.index : legend);
+    const chartType = ((legendItem) ? legendItem.index : legend);
 
-        let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
-        if (containerBlock) {
-            if (containerBlock.checkVisibility()) {
-                containerBlock.classList.add('hidden-container');
-            }
+    let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
+    if (containerBlock) {
+        if (containerBlock.checkVisibility()) {
+            containerBlock.classList.add('hidden-container');
         }
-
-        let assessmentsDueBlock = document.querySelector(Selectors.ASSESSMENTSDUE_BLOCK);
-        let assessmentsDueContents = document.querySelector(Selectors.ASSESSMENTSDUE_CONTENTS);
-
-        if (assessmentsDueBlock.children.length > 0) {
-            assessmentsDueContents.innerHTML = '';
-        }
-
-        assessmentsDueBlock.classList.remove('hidden-container');
-
-        assessmentsDueContents.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
-            "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
-
-        ajax.call([{
-            methodname: 'block_newgu_spdetails_get_assessmentsummarybytype',
-            args: {
-                charttype: chartType
-            },
-        }])[0].done(function(response) {
-            document.querySelector('.loader').remove();
-            let assessmentdata = JSON.parse(response.result);
-            Templates.renderForPromise('block_newgu_spdetails/assessmentsdue', {data: assessmentdata})
-            .then(({html, js}) => {
-                Templates.appendNodeContents(assessmentsDueContents, html, js);
-                returnToAssessmentsHandler();
-                let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
-                sortingEventHandler(sortColumns);
-                return true;
-            }).catch((error) => displayException(error));
-        }).fail(function(response) {
-            if (response) {
-                document.querySelector('.loader').remove();
-                let errorContainer = document.createElement('div');
-                errorContainer.classList.add('alert', 'alert-danger');
-
-                if (response.hasOwnProperty('message')) {
-                    let errorMsg = document.createElement('p');
-
-                    errorMsg.innerHTML = response.message;
-                    errorContainer.appendChild(errorMsg);
-                    errorMsg.classList.add('errormessage');
-                }
-
-                if (response.hasOwnProperty('moreinfourl')) {
-                    let errorLinkContainer = document.createElement('p');
-                    let errorLink = document.createElement('a');
-
-                    errorLink.setAttribute('href', response.moreinfourl);
-                    errorLink.setAttribute('target', '_blank');
-                    errorLink.innerHTML = 'More information about this error';
-                    errorContainer.appendChild(errorLinkContainer);
-                    errorLinkContainer.appendChild(errorLink);
-                    errorLinkContainer.classList.add('errorcode');
-                }
-
-                assessmentsDueContents.prepend(errorContainer);
-            }
-        });
     }
+
+    let assessmentsDueBlock = document.querySelector(Selectors.ASSESSMENTSDUE_BLOCK);
+    let assessmentsDueContents = document.querySelector(Selectors.ASSESSMENTSDUE_CONTENTS);
+
+    if (assessmentsDueBlock.children.length > 0) {
+        assessmentsDueContents.innerHTML = '';
+    }
+
+    assessmentsDueBlock.classList.remove('hidden-container');
+
+    assessmentsDueContents.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
+        "<div class='spinner-border' role='status'><span class='hidden'>Loading...</span></div></div>");
+
+    ajax.call([{
+        methodname: 'block_newgu_spdetails_get_assessmentsummarybytype',
+        args: {
+            charttype: chartType
+        },
+    }])[0].done(function(response) {
+        document.querySelector('.loader').remove();
+        let assessmentdata = JSON.parse(response.result);
+        Templates.renderForPromise('block_newgu_spdetails/assessmentsdue', {data: assessmentdata})
+        .then(({html, js}) => {
+            Templates.appendNodeContents(assessmentsDueContents, html, js);
+            returnToAssessmentsHandler();
+            let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
+            sortingEventHandler(sortColumns);
+            return true;
+        }).catch((error) => displayException(error));
+    }).fail(function(response) {
+        if (response) {
+            document.querySelector('.loader').remove();
+            let errorContainer = document.createElement('div');
+            errorContainer.classList.add('alert', 'alert-danger');
+
+            if (response.hasOwnProperty('message')) {
+                let errorMsg = document.createElement('p');
+
+                errorMsg.innerHTML = response.message;
+                errorContainer.appendChild(errorMsg);
+                errorMsg.classList.add('errormessage');
+            }
+
+            if (response.hasOwnProperty('moreinfourl')) {
+                let errorLinkContainer = document.createElement('p');
+                let errorLink = document.createElement('a');
+
+                errorLink.setAttribute('href', response.moreinfourl);
+                errorLink.setAttribute('target', '_blank');
+                errorLink.innerHTML = 'More information about this error';
+                errorContainer.appendChild(errorLinkContainer);
+                errorLinkContainer.appendChild(errorLink);
+                errorLinkContainer.classList.add('errorcode');
+            }
+
+            assessmentsDueContents.prepend(errorContainer);
+        }
+    });
 };
 
 /**
@@ -150,6 +147,7 @@ const returnToAssessmentsHandler = () => {
  * @method fetchAssessmentSummary
  */
 const fetchAssessmentSummary = () => {
+    // As we're using Moodle's AMD/CommonJS bundler, we need to register the controller.
     Chart.register(DoughnutController);
     let tempPanel = document.querySelector(Selectors.SUMMARY_BLOCK);
 
@@ -245,11 +243,11 @@ const fetchAssessmentSummary = () => {
         }
 
         tempPanel.insertAdjacentHTML("afterbegin", "<canvas id='assessmentSummaryChart'\n" +
-            " width='400' height='300' aria-label='Assessments overview. A chart displaying" +
-            " assessments to be submitted, overdue, submitted and graded.' role='img' tabindex='0'>\n" +
+            " width='400' height='300' aria-live='assertive' aria-atomic='true' aria-label='Assessments overview. A chart " +
+            "displaying assessments to be submitted, overdue, submitted and graded.' role='img' tabindex='0'>\n" +
             "<p>The 'Assessments Overview' chart displays information relating to assessments that are" +
             " to be submitted, are overdue, have been submitted, and those that have been graded. Links to" +
-            " further information about these assessments also form part of this chart.</p>\n" +
+            " further information about these assessments also form part of this chart.</p>" +
             "</canvas>");
 
         const data = [
@@ -272,31 +270,25 @@ const fetchAssessmentSummary = () => {
         ];
 
 
-        const ctw = document.getElementById('assessmentSummaryChart');
+        const canvas = document.getElementById('assessmentSummaryChart');
         const chart = new Chart(
-            ctw,
+            canvas,
             {
                 type: 'doughnut',
                 options: {
                     responsive: true,
                     onHover: (event, chartElement) => {
-                        if (!document.querySelector('#student_dashboard')) {
-                            event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
-                        }
+                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                     },
                     plugins: {
                         legend: {
                             display: true,
                             position: legendPosition,
                             onClick: (event, legendItem, legend) => {
-                                if (!document.querySelector('#student_dashboard')) {
-                                    viewAssessmentSummaryByChartType(event, legendItem, legend);
-                                }
+                                viewAssessmentSummaryByChartType(event, legendItem, legend);
                             },
                             onHover: (event) => {
-                                if (!document.querySelector('#student_dashboard')) {
-                                    event.native.target.style.cursor = 'pointer';
-                                }
+                                event.native.target.style.cursor = 'pointer';
                             },
                             onLeave: (event) => {
                                 event.native.target.style.cursor = 'default';
@@ -351,7 +343,6 @@ const fetchAssessmentSummary = () => {
             }
         );
 
-        const canvas = document.getElementById('assessmentSummaryChart');
         canvas.onclick = (evt) => {
             const points = chart.getElementsAtEventForMode(evt, 'nearest', {intersect: true}, true);
 
@@ -359,7 +350,7 @@ const fetchAssessmentSummary = () => {
                 const firstPoint = points[0];
                 viewAssessmentSummaryByChartType(evt, null, firstPoint.index);
             }
-          };
+        };
 
     }).fail(function(err) {
         document.querySelector('.loader').remove();

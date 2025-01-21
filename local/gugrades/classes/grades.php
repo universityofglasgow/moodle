@@ -35,6 +35,35 @@ require_once($CFG->dirroot . '/grade/lib.php');
 class grades {
 
     /**
+     * Get a grade item.
+     * As we can constantly look up the same grade item over and over
+     * @param int $gradeitemid
+     * @return object
+     */
+    public static function get_gradeitem(int $gradeitemid) {
+        global $DB, $GRADEITEMS;
+
+        // Just bypassign this, for the moment, as it seems to cause
+        // issues in tests.
+        // (presumably, data is changing)
+
+        return $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+
+        if (empty($GRADEITEMS)) {
+            $GRADEITEMS = [];
+        }
+
+        if (array_key_exists($gradeitemid, $GRADEITEMS)) {
+            return $GRADEITEMS[$gradeitemid];
+        }
+
+        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $GRADEITEMS[$gradeitemid] = $gradeitem;
+
+        return $gradeitem;
+    }
+
+    /**
      * Get item name from gradeitemid
      * @param int $gradeitemid
      * @return string
@@ -50,7 +79,23 @@ class grades {
     }
 
     /**
-     * Recursively search child categories for one or more grad items
+     * Get gradecategoryid from gradeitemid
+     * @param int $gradeitemid
+     * @return int
+     */
+    public static function get_gradecategoryid_from_gradeitemid(int $gradeitemid) {
+        global $DB;
+
+        $gradeitem = self::get_gradeitem($gradeitemid);
+        if ($gradeitem->itemtype == 'category') {
+            return $gradeitem->iteminstance;
+        } else {
+            throw new \moodle_exception('Grade item does not relate to a grade category. Itemid = ' . $gradeitemid);
+        }
+    }
+
+    /**
+     * Recursively search child categories for one or more grade items
      * We just care that one exists
      * @param int $categoryid
      * @return boolean
@@ -119,6 +164,33 @@ class grades {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Get level for grade category
+     * @param int $gradecategoryid
+     * @return int
+     */
+    public static function get_category_level(int $gradecategoryid) {
+        global $DB;
+
+        $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+
+        // OUR level is one less than the level in the grade_categories table.
+        return $gradecategory->depth - 1;
+    }
+
+    /**
+     * Get the gradeitemid given the gradecategoryid
+     * @param int $gradecategoryid
+     * @return int
+     */
+    public static function get_gradeitemid_from_gradecategoryid(int $gradecategoryid) {
+        global $DB;
+
+        $gradeitem = $DB->get_record('grade_items', ['itemtype' => 'category', 'iteminstance' => $gradecategoryid], '*', MUST_EXIST);
+
+        return $gradeitem->id;
     }
 
     /**
@@ -217,7 +289,7 @@ class grades {
     public static function recursive_import_match(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $courseid = $gradeitem->courseid;
         $categoryid = $gradeitem->categoryid;
 
@@ -320,6 +392,31 @@ class grades {
         $column->id = $DB->insert_record('local_gugrades_column', $column);
 
         return $column;
+    }
+
+    /**
+     * Unpack OTHER
+     * Where we have OTHER_xxx
+     * @param int $courseid
+     * @param string $other
+     * @return $string
+     */
+    public static function unpack_other(int $courseid, string $other) {
+        global $DB;
+
+        $parts = explode('_', $other);
+        if (count($parts) != 2) {
+            throw new \moodle_exception('Invalid OTHER_ code - "' . $other . '"');
+        }
+        $columnid = $parts[1];
+        if (!$column = $DB->get_record('local_gugrades_column', ['courseid' => $courseid, 'id' => $columnid])) {
+            throw new \moodle_exception('Column not found (or not valid for course) - ' . $columnid);
+        }
+        if ($column->gradetype != 'OTHER') {
+            throw new \moodle_exception('Column is not an OTHER column - ' . $columnid);
+        }
+
+        return $column->other;
     }
 
     /**
@@ -499,20 +596,18 @@ class grades {
         // ...id is a proxy for time added.
         // Cannot use the timestamp as the unit tests write the test grades all in the
         // same second (potentially).
-        $grades = $DB->get_records('local_gugrades_grade', [
+        $sql = 'SELECT * FROM {local_gugrades_grade}
+            WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
+                WHERE gradeitemid = :gradeitemid
+                AND userid = :userid
+                AND gradetype<>"RELEASED"
+                AND iscurrent = 1)';
+        $grade = $DB->get_record_sql($sql, [
             'gradeitemid' => $gradeitemid,
             'userid' => $userid,
-            'iscurrent' => 1,
-        ], 'id ASC');
+        ]);
 
-        // Work out / add provisional grade.
-        if ($grades) {
-            $lastgrade = end($grades);
-
-            return $lastgrade;
-        } else {
-            return false;
-        }
+        return $grade;
     }
 
     /**
@@ -520,11 +615,12 @@ class grades {
      * @param int $courseid
      * @param int $gradeitemid
      * @param array $users
+     * @param bool $gradehidden
      * @return array
      */
-    public static function add_grades_to_user_records(int $courseid, int $gradeitemid, array $users) {
+    public static function add_grades_to_user_records(int $courseid, int $gradeitemid, array $users, bool $gradehidden) {
         foreach ($users as $id => $user) {
-            $users[$id] = self::add_grades_for_user($courseid, $gradeitemid, $user);
+            $users[$id] = self::add_grades_for_user($courseid, $gradeitemid, $user, $gradehidden);
         }
 
         return $users;
@@ -535,13 +631,22 @@ class grades {
      * @param int $courseid
      * @param int $gradeitemid
      * @param object $user
+     * @param bool $gradehidden
      * @return array
      */
-    public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user) {
+    public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user, bool $gradehidden = false) {
         $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
         $user->grades = $usercapture->get_grades();
         $user->alert = $usercapture->alert();
-        $user->gradebookhidden = $usercapture->is_gradebookhidden();
+
+        // If the parent grade is hidden, then the individual items are assumed to be.
+        // This is (I hope) what Moodle does (hidden flag is on and greyed out).
+        // MGU-1233
+        if ($gradehidden) {
+            $user->gradebookhidden = true;
+        } else {
+            $user->gradebookhidden = $usercapture->is_gradebookhidden();
+        }
 
         return $user;
     }
@@ -554,7 +659,7 @@ class grades {
     public static function is_grade_supported(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
         if (($gradetype == GRADE_TYPE_NONE) || ($gradetype == GRADE_TYPE_TEXT)) {
             return false;
@@ -564,6 +669,15 @@ class grades {
             if (!$DB->record_exists_sql('select * from {local_gugrades_scalevalue} where scaleid=:scaleid',
                 ['scaleid' => $scaleid])) {
                 return false;
+            }
+
+            // If it's a valid scale, is it configured to work with MyGrades?
+            if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $scaleid])) {
+                return false;
+            } else {
+                if (($scaletype->type != 'schedulea') && ($scaletype->type != 'scheduleb')) {
+                    return false;
+                }
             }
         }
 
@@ -578,11 +692,13 @@ class grades {
     public static function is_grade_hidden_locked(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        // Hidden and locked fields either hold 0/1 or a date.
+        // To save madness, ignore the date. May not survive.
+        $gradeitem = self::get_gradeitem($gradeitemid);
 
         return [
-            $gradeitem->hidden,
-            $gradeitem->locked,
+            $gradeitem->hidden == 1 ? true : false,
+            $gradeitem->locked == 1 ? true : false,
         ];
     }
 
@@ -608,7 +724,7 @@ class grades {
             return [false, false];
         }
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
 
         // Could be an (aggregated) category.
         // In this case, the grade details are determined by aggregation.
@@ -766,7 +882,7 @@ class grades {
     public static function mapping_factory(int $courseid, int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
 
         // Is it a category?
@@ -799,7 +915,7 @@ class grades {
 
             $classname = 'local_gugrades\\mapping\\' . $map->scale;
             if (!class_exists($classname, true)) {
-                throw new \moodle_exception('Unknown conversion class - "' . $map->scale . '"');
+                throw new \moodle_exception('Unknown conversion class - "' . $classname . '"');
             }
 
             return new $classname($courseid, $gradeitemid, $converted);
@@ -808,13 +924,13 @@ class grades {
 
             // See if scale is in our scaletype table.
             if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $gradeitem->scaleid])) {
-                throw new \moodle_exception('Unsupported scale in mapping_factory. ID = ' . $gradeitem->scaleid);
+                throw new \moodle_exception('Scale not found in gugrades_scaletype table. ID = ' . $gradeitem->scaleid);
             }
 
             // Get the name of the class and see if it exists.
             $classname = 'local_gugrades\\mapping\\' . $scaletype->type;
             if (!class_exists($classname, true)) {
-                throw new \moodle_exception('Unknown conversion class - "' . $scaletype->scale . '"');
+                throw new \moodle_exception('Unknown conversion class - "' . $classname . '"');
             }
 
             return new $classname($courseid, $gradeitemid, $converted);
@@ -890,15 +1006,18 @@ class grades {
     /**
      * Delete all data for gradeitemid
      * TODO: Don't forget to add anything new that we add in db.
+     * @param int $courseid
      * @param int $gradeitemid
      */
-    public static function delete_grade_item(int $gradeitemid) {
+    public static function delete_grade_item(int $courseid, int $gradeitemid) {
         global $DB;
 
         $DB->delete_records('local_gugrades_grade', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_audit', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_column', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_hidden', ['gradeitemid' => $gradeitemid]);
+
+        \local_gugrades\aggregation::invalidate_cache($courseid);
     }
 
     /**
@@ -919,7 +1038,7 @@ class grades {
             $DB->delete_records('local_gugrades_map_value', ['mapid' => $map->id]);
         }
         $DB->delete_records('local_gugrades_map', ['courseid' => $courseid]);
-        $DB->delete_records('local_gugrades_resit_required', ['courseid' => $courseid]);
+        $DB->delete_records('local_gugrades_resitrequired', ['courseid' => $courseid]);
     }
 
     /**
@@ -932,7 +1051,7 @@ class grades {
     public static function showconversion(int $gradeitemid) {
         global $DB;
 
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
 
         // Ropey check for exact 22.
@@ -957,7 +1076,24 @@ class grades {
     }
 
     /**
-     * Get gradeitem level
+     * Get released grade for user
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return object | false
+     */
+    public static function get_released_grade(int $courseid, int $gradeitemid, int $userid) {
+        global $DB;
+
+        if ($grade = $DB->get_record('local_gugrades_grade', ['courseid' => $courseid, 'gradeitemid' => $gradeitemid, 'userid' => $userid, 'gradetype' => 'RELEASED', 'iscurrent' => 1])) {
+            return $grade;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get grade category level
      * Our level 1 is 'depth' in the table minus 1 (in core, depth 1 is the course)
      * @param int $gradecategoryid
      * @return int
@@ -968,6 +1104,26 @@ class grades {
         $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
 
         return $gradecategory->depth - 1;
+    }
+
+    /**
+     * Get grade item level
+     * (of the grade category it lives in)
+     * Effectively the depth of the parent category
+     * @param int $gradeitemid
+     * @return int
+     */
+    public static function get_gradeitem_level(int $gradeitemid) {
+        global $DB;
+
+        $item = self::get_gradeitem($gradeitemid);
+        if ($item->itemtype == 'category') {
+            $category = $DB->get_record('grade_categories', ['id' => $item->iteminstance], '*', MUST_EXIST);
+
+            return self::get_gradecategory_level($category->parent);
+        } else {
+            return self::get_gradecategory_level($item->categoryid);
+        }
     }
 
     /**
@@ -1005,8 +1161,10 @@ class grades {
             $level1 = self::get_level_one_parent($categoryid);
 
             // Queue an adhoc-task
-            $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
-            \core\task\manager::queue_adhoc_task($task);
+            if ($level1) {
+                $task = \local_gugrades\task\recalculate::instance($courseid, $level1);
+                \core\task\manager::queue_adhoc_task($task);
+            }
         }
     }
 
@@ -1031,5 +1189,188 @@ class grades {
             $grade->iscurrent = false;
             $DB->update_record('local_gugrades_grade', $grade);
         }
+    }
+
+    /**
+     * Get aggregated grade from gradeitemid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return object | false
+     */
+    public static function get_aggregated_from_gradeitemid(int $gradeitemid, int $userid) {
+        global $DB;
+
+        // Is this definitely a category
+        $item = self::get_gradeitem($gradeitemid);
+        if ($item->itemtype != 'category') {
+            return false;
+        }
+
+        // Get current corresponding gugrades_grade
+        if ($grade = $DB->get_record('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid, 'gradetype' => 'CATEGORY', 'iscurrent' => 1])) {
+            return $grade;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Determine if 'exclude empty grades' is checked.
+     * @param int $gradecategoryid
+     * @return bool
+     */
+    public static function is_exclude_empty_grades(int $gradecategoryid) {
+        global $DB;
+
+        $gradecategory = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+
+        return $gradecategory->aggregateonlygraded;
+    }
+
+    /**
+     * Get weight of gradeitem. Taking into consideration possibility of
+     * it being altered for a user.
+     * Return the value and boolean true = altered
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return array [float, float, boolean]
+     */
+    public static function get_altered_weight(int $gradeitemid, int $userid) {
+        global $DB;
+
+        // Get original weight
+        $gradeitem = self::get_gradeitem($gradeitemid);
+        $originalweight = $gradeitem->aggregationcoef;
+        $alteredweight = $originalweight;
+        $isaltered = false;
+
+        // Is there an altered weight?
+        if ($altered = $DB->get_record('local_gugrades_altered_weight', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            $isaltered = true;
+            $alteredweight = $altered->weight;
+        }
+
+        return [$originalweight, $alteredweight, $isaltered];
+    }
+
+    /**
+     * Update / insert altered weight
+     * @param int $courseid
+     * @param int $categoryid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @param float $weight
+     */
+    public static function update_altered_weight(int $courseid, int $categoryid, int $gradeitemid, int $userid, float $weight) {
+        global $DB;
+
+        if ($altered = $DB->get_record('local_gugrades_altered_weight', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            $altered->weight = $weight;
+            $altered->timealtered = time();
+            $DB->update_record('local_gugrades_altered_weight', $altered);
+        } else {
+            $altered = new \stdClass;
+            $altered->courseid = $courseid;
+            $altered->categoryid = $categoryid;
+            $altered->gradeitemid = $gradeitemid;
+            $altered->userid = $userid;
+            $altered->weight = $weight;
+            $altered->timealtered = time();
+            $DB->insert_record('local_gugrades_altered_weight', $altered);
+        }
+    }
+
+    /**
+     * Revert altered weights
+     * @param int $courseid
+     * @param int $categoryid
+     * @param int $userid
+     */
+    public static function revert_altered_weights(int $courseid, int $categoryid, int $userid) {
+        global $DB;
+
+        $DB->delete_records('local_gugrades_altered_weight', ['courseid' => $courseid, 'categoryid' => $categoryid]);
+    }
+
+    /**
+     * Get category provisional and released grade
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_category_grades(int $gradeitemid, int $userid) {
+        global $DB;
+
+        // Category.
+        $sql = 'SELECT * FROM {local_gugrades_grade}
+        WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
+            WHERE gradeitemid = :gradeitemid
+            AND userid = :userid
+            AND gradetype = "CATEGORY"
+            AND iscurrent = 1)';
+        $category = $DB->get_record_sql($sql, [
+            'gradeitemid' => $gradeitemid,
+            'userid' => $userid,
+        ]);
+
+        // Released
+        $sql = 'SELECT * FROM {local_gugrades_grade}
+        WHERE id = (SELECT max(id) FROM {local_gugrades_grade}
+            WHERE gradeitemid = :gradeitemid
+            AND userid = :userid
+            AND gradetype = "RELEASED"
+            AND iscurrent = 1)';
+        $released = $DB->get_record_sql($sql, [
+            'gradeitemid' => $gradeitemid,
+            'userid' => $userid,
+        ]);
+
+        return [$category, $released];
+    }
+
+    /**
+     * Cleanup unused columns
+     * If a column has no grades, it will be removed
+     * @param int $courseid
+     */
+    public static function cleanup_unused_columns_course(int $courseid) {
+        global $DB;
+
+        $columns = $DB->get_records('local_gugrades_column', ['courseid' => $courseid]);
+        foreach ($columns as $column) {
+            if (!$DB->record_exists('local_gugrades_grade', ['columnid' => $column->id])) {
+                $DB->delete_records('local_gugrades_column', ['id' => $column->id]);
+            }
+        }
+    }
+
+    /**
+     * Is gradeitemid a category
+     * Confirm that a gradeitemid really is a category
+     * @param int $gradeitemid
+     * @return boolean
+     */
+    public static function is_gradeitemid_category(int $gradeitemid) {
+        $item = self::get_gradeitem($gradeitemid);
+
+        return $item->itemtype == 'category';
+    }
+
+    /**
+     * Get cm from gradeitemid
+     * @param int $gradeitemid
+     * @return object
+     */
+    public static function get_cm_from_gradeitemid(int $gradeitemid) {
+        $item = self::get_gradeitem($gradeitemid);
+
+        // This (obviously) has to be a module.
+        if ($item->itemtype != 'mod') {
+            return false;
+        }
+
+        $cm = get_coursemodule_from_instance($item->itemmodule, $item->iteminstance, $item->courseid, false, MUST_EXIST);
+
+        return $cm;
     }
 }

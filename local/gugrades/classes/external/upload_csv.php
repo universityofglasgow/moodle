@@ -45,7 +45,7 @@ class upload_csv extends external_api {
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID'),
             'groupid' => new external_value(PARAM_INT, 'Group ID'),
             'testrun' => new external_value(PARAM_BOOL, 'If true, only test data and return. Do not write'),
-            'reason' => new external_value(PARAM_ALPHA, 'Reason (SECOND, THIRD and so on)'),
+            'reason' => new external_value(PARAM_TEXT, 'Reason (SECOND, THIRD and so on)'),
             'other' => new external_value(PARAM_TEXT, '...if Other reason'),
             'csv' => new external_value(PARAM_TEXT, 'Raw CSV file data'),
         ]);

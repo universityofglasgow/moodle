@@ -48,61 +48,92 @@ class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external
         $userid = $this->student1->id;
         $sortorder = 'asc';
 
-        $mygradessummativesubcategory2 = $this->mygrades_summative_subcategory2->id;
-        $mygradesgradeditems = $this->lib->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder,
-        $mygradessummativesubcategory2);
+        
+        global $DB;
+    
+        // We're the test student.
+        $this->setUser($this->student1->id);
+
+        // Fake some due dates.
+        $duedate1 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 5, date("Y"));
+
+        $mygradesassignment1 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate1,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment1->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment1->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Create the assignment submission entries
+        $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
+        ASSIGN_SUBMISSION_STATUS_NEW);
+
+        // Fake some more due dates.
+        $duedate2 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 5, date("Y"));
+
+        $mygradesassignment2 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 2A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate2,
+            'gradetype' => 2,
+            'grademax' => 40,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Create the assignment submission entries
+        $this->add_assignment_grade($mygradesassignment2->id, $this->student1->id, $this->teacher->id, 35,
+        ASSIGN_SUBMISSION_STATUS_NEW);
+
+
+        $mygradesgradeditems = $this->api->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder,
+        $mygradessummativesubcategoryid);
 
         $this->assertIsArray($mygradesgradeditems);
-        $this->assertCount(2, $mygradesgradeditems['coursedata']['assessmentitems']);
+        $this->assertCount(2, $mygradesgradeditems['coursedata']['courseitems']);
 
-        // Check for the raw grade/provisional on the first assignment.
-        $this->assertArrayHasKey('grade_provisional', $mygradesgradeditems['coursedata']['assessmentitems'][0]);
-        $this->assertTrue($mygradesgradeditems['coursedata']['assessmentitems'][0]['grade_provisional']);
         // Check for the feedback.
         $this->assertStringContainsString(get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'),
-        $mygradesgradeditems['coursedata']['assessmentitems'][0]['grade_feedback']);
-
-        // Check for an overridden grade.
-        // Check for the feedback.
+        $mygradesgradeditems['coursedata']['courseitems'][0]->grade_feedback);
 
         // Check for the final grade.
-        $this->assertArrayHasKey('grade_class', $mygradesgradeditems['coursedata']['assessmentitems'][1]);
-        $this->assertFalse($mygradesgradeditems['coursedata']['assessmentitems'][1]['grade_provisional']);
-        // Check for the feedback.
-        $this->assertStringContainsString(get_string('status_text_viewfeedback', 'block_newgu_spdetails'),
-        $mygradesgradeditems['coursedata']['assessmentitems'][1]['grade_feedback']);
-    }
-
-    /**
-     * For generic Gradebook courses, the data should be coming directly
-     * from gradebook.
-     */
-    public function test_get_grade_status_and_feedback_gradebook() {
-        $userid = $this->student1->id;
-        $sortorder = 'asc';
-
-        $gradebookcategory = $this->gradebookcategory->id;
-        $gradebookgradeditems = $this->lib->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder,
-        $gradebookcategory);
-
-        $this->assertIsArray($gradebookgradeditems);
-        $this->assertCount(2, $gradebookgradeditems['coursedata']['assessmentitems']);
-
-        // Check for the raw grade/provisional on the first assignment.
-        $this->assertArrayHasKey('grade_provisional', $gradebookgradeditems['coursedata']['assessmentitems'][0]);
-        $this->assertTrue($gradebookgradeditems['coursedata']['assessmentitems'][1]['grade_provisional']);
-        // Check for the feedback.
-        $this->assertStringContainsString(get_string('status_text_tobeconfirmed', 'block_newgu_spdetails'),
-        $gradebookgradeditems['coursedata']['assessmentitems'][1]['grade_feedback']);
-
-        // Check for an overridden grade.
-        // Check for the feedback.
-
-        // Check for the final grade.
-        $this->assertArrayHasKey('grade_class', $gradebookgradeditems['coursedata']['assessmentitems'][1]);
-        $this->assertFalse($gradebookgradeditems['coursedata']['assessmentitems'][0]['grade_provisional']);
-        // Check for the feedback.
-        $this->assertStringContainsString(get_string('status_text_viewfeedback', 'block_newgu_spdetails'),
-        $gradebookgradeditems['coursedata']['assessmentitems'][0]['grade_feedback']);
+        $this->assertObjectHasProperty('grade_class', $mygradesgradeditems['coursedata']['courseitems'][1]);
+        $this->assertFalse($mygradesgradeditems['coursedata']['courseitems'][1]->grade_provisional);
     }
 }

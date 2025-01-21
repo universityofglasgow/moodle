@@ -121,8 +121,7 @@ class api extends external_api {
             $sortorder);
             return \block_newgu_spdetails\course::get_course_structure($courses, $currentcourses);
         } else {
-            $gradableactivities = \block_newgu_spdetails\activity::get_activityitems($subcategory, $userid, $activetab, $sortby,
-            $sortorder);
+            $gradableactivities = \block_newgu_spdetails\activity::get_activityitems($subcategory, $userid, $activetab);
         }
 
         return $gradableactivities;
@@ -229,46 +228,47 @@ class api extends external_api {
 
     /**
      * This method does something.
+     * Having never understood what this method is trying to achieve, sending back an array
+     * with only 1 element whose value is 0 seems to break the SQL that depends on this containing
+     * an id that isn't 0 - which doesn't seem right. Changing this slightly to now remove this first
+     * entry in the array if we ^are^ going to be sending something back. 
      *
-     * @param int $userid
-     * @param string $strcourses
+     * @param int $courseid
      * @return string
      */
-    public static function fetch_itemsnotvisibletouser(int $userid, string $strcourses) {
+    public static function fetch_itemsnotvisibletouser(int $courseid) {
 
         global $DB;
 
-        $courses = explode(",", $strcourses);
         $itemsnotvisibletouser = [];
         $itemsnotvisibletouser[] = 0;
         $stritemsnotvisibletouser = "";
+        $modinfo = get_fast_modinfo($courseid);
+        $cms = $modinfo->get_cms();
 
-        if ($strcourses != "") {
-            foreach ($courses as $courseid) {
+        foreach ($cms as $cm) {
+            // Check if course module is visible to the user.
+            $iscmvisible = $cm->uservisible;
 
-                $modinfo = get_fast_modinfo($courseid);
-                $cms = $modinfo->get_cms();
+            if (!$iscmvisible) {
+                $sqlmodinstance = 'SELECT cm.id, cm.instance, cm.module, m.name FROM {modules} m, {course_modules} cm
+                WHERE cm.id=' . $cm->id . ' AND cm.module=m.id';
+                $arrmodinstance = $DB->get_record_sql($sqlmodinstance);
+                $instance = $arrmodinstance->instance;
+                $modname = $arrmodinstance->name;
 
-                foreach ($cms as $cm) {
-                    // Check if course module is visible to the user.
-                    $iscmvisible = $cm->uservisible;
-
-                    if (!$iscmvisible) {
-                        $sqlmodinstance = 'SELECT cm.id, cm.instance, cm.module, m.name FROM {modules} m, {course_modules} cm
-                        WHERE cm.id=' . $cm->id . ' AND cm.module=m.id';
-                        $arrmodinstance = $DB->get_record_sql($sqlmodinstance);
-                        $instance = $arrmodinstance->instance;
-                        $modname = $arrmodinstance->name;
-
-                        $sqlgradeitemtoexclude = "SELECT id FROM {grade_items} WHERE courseid = " . $courseid . " AND itemmodule =
-                        '" . $modname . "' AND iteminstance=" . $instance;
-                        $arrgradeitemtoexclude = $DB->get_record_sql($sqlgradeitemtoexclude);
-                        if (!empty($arrgradeitemtoexclude)) {
-                            $itemsnotvisibletouser[] = $arrgradeitemtoexclude->id;
-                        }
-                    }
+                $sqlgradeitemtoexclude = "SELECT id FROM {grade_items} WHERE courseid = " . $courseid . " AND itemmodule =
+                '" . $modname . "' AND iteminstance=" . $instance;
+                $arrgradeitemtoexclude = $DB->get_record_sql($sqlgradeitemtoexclude);
+                if (!empty($arrgradeitemtoexclude)) {
+                    $itemsnotvisibletouser[] = $arrgradeitemtoexclude->id;
                 }
             }
+        }
+
+        if (count($itemsnotvisibletouser) > 1) {
+            // Get rid of the first element as [0] = 0 breaks the SQL.
+            $dud = array_shift($itemsnotvisibletouser);
             $stritemsnotvisibletouser = implode(",", $itemsnotvisibletouser);
         }
 
@@ -326,7 +326,7 @@ class api extends external_api {
     }
 
     /**
-     * Method to return the value the notional 'due' date column of the activity.
+     * Method to return the value of the notional 'due' date column of the activity.
      *
      * The customdata property is an array of keys that we need to search and match.
      * Gak - I thought there might have been an easier way to match and return said

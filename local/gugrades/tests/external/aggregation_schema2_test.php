@@ -70,34 +70,6 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
     }
 
     /**
-     * Create default conversion map
-     * @return int
-     */
-    protected function make_conversion_map() {
-
-        // Read map with id 0 (new map) for Schedule A.
-        $mapstuff = get_conversion_map::execute($this->course->id, 0, 'schedulea');
-        $mapstuff = external_api::clean_returnvalue(
-            get_conversion_map::execute_returns(),
-            $mapstuff
-        );
-
-        // Write map back.
-        $name = 'Test conversion map';
-        $schedule = 'schedulea';
-        $maxgrade = 100.0;
-        $map = $mapstuff['map'];
-        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
-        $mapida = external_api::clean_returnvalue(
-            write_conversion_map::execute_returns(),
-            $mapida
-        );
-        $mapida = $mapida['mapid'];
-
-        return $mapida;
-    }
-
-    /**
      * Test top-level aggregation, Schedule A/B mix.
      * Test no data
      *
@@ -159,10 +131,8 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
         $this->set_strategy($this->gradecatsummative->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
         // Add admin grades to 'Item 2' and 'Item 4'.
-        $item2id = $this->get_gradeitemid('Item 2');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $item2id, $this->student->id, 'MV');
-        $item4id = $this->get_gradeitemid('Item 4');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $item4id, $this->student->id, 'MV');
+        $this->apply_admingrade('Item 2', $this->student->id, 'MV');
+        $this->apply_admingrade('Item 4', $this->student->id, 'MV');
 
         $grades = $DB->get_records('local_gugrades_grade', ['userid' => $this->student->id]);
 
@@ -177,7 +147,7 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
         $this->assertEquals(55, $fred['completed']);
-        $this->assertEquals("7.8", $fred['displaygrade']);
+        $this->assertEquals("MV", $fred['displaygrade']);
     }
 
     /**
@@ -209,8 +179,7 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
         }
 
         // Add admin grades to 'Item 4'.
-        $item4id = $this->get_gradeitemid('Item 4');
-        $this->apply_admingrade($this->course->id, $this->gradecatsummative->id, $item4id, $this->student->id, 'MV');
+        $this->apply_admingrade('Item 4', $this->student->id, 'MV');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
@@ -223,8 +192,8 @@ final class aggregation_schema2_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
         $this->assertEquals(80, $fred['completed']);
-        $this->assertEquals("D2 (9.8)", $fred['displaygrade']);
-        $this->assertEquals(9.8, $fred['rawgrade']);
+        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals(0.0, $fred['rawgrade']);
     }
 
     /**

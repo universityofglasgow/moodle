@@ -1,9 +1,11 @@
 <template>
+    <DebugDisplay :debug="debug"></DebugDisplay>
+
     <button type="button" class="btn btn-outline-primary  mr-1" @click="conversion_clicked()">
         {{ mstrings.convertgrades }}
     </button>
 
-    <VueModal v-model="showselectmodal" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
+    <VueModal v-model="showselectmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
         <PleaseWait v-if="waiting"></PleaseWait>
 
@@ -50,6 +52,7 @@
 <script setup>
     import {ref, inject, defineProps, defineEmits} from '@vue/runtime-core';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import DebugDisplay from '@/components/DebugDisplay.vue';
     import { useToast } from "vue-toastification";
 
     const mstrings = inject('mstrings');
@@ -60,6 +63,7 @@
     const mapid = ref(0);
     const showselectmodal = ref(false);
     const mapname = ref('');
+    const debug = ref({});
     const waiting = ref(false);
 
     const toast = useToast();
@@ -97,7 +101,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
+            showselectmodal.value = false;
         });
     }
 
@@ -125,7 +130,8 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
+            showselectmodal.value = false;
         });
     }
 
@@ -165,7 +171,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
             showselectmodal.value = false;
         });
     }
@@ -198,7 +204,7 @@
         })
         .catch((error) => {
             window.console.error(error);
-            toast.error('Error communicating with server (see console)');
+            debug.value = error;
             showselectmodal.value = false;
         });
     }

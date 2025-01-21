@@ -38,8 +38,11 @@ function scale_setting_updated($name) {
     foreach ($scales as $scale) {
         $name = "scalevalue_" . $scale->id;
         $value = get_config('local_gugrades', $name);
-        if (!$value) {
+        $typename = "scaletype_" . $scale->id;
+        $type = get_config('local_gugrades', $typename);
+        if (!$value || !$type) {
             $DB->delete_records('local_gugrades_scalevalue', ['scaleid' => $scale->id]);
+            $DB->delete_records('local_gugrades_scaletype', ['scaleid' => $scale->id]);
             continue;
         }
         $lines = explode(PHP_EOL, $value);
@@ -66,9 +69,7 @@ function scale_setting_updated($name) {
             }
         }
 
-        // Get add type.
-        $typename = "scaletype_" . $scale->id;
-        $type = get_config('local_gugrades', $typename);
+        // Add type record.
         if ($scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $scale->id])) {
             $scaletype->type = $type;
             $DB->update_record('local_gugrades_scaletype', $scaletype);
@@ -102,6 +103,14 @@ function custom_course_field() {
         $categoryid = $DB->insert_record('customfield_category', $category);
     } else {
         $categoryid = $category->id;
+    }
+
+    // Check if the customfield exists in some other category
+    $allfields = $DB->get_records('customfield_field', ['shortname' => 'studentmygrades']);
+    foreach ($allfields as $allfield) {
+        if ($allfield->categoryid != $categoryid) {
+            $DB->delete_records('customfield_field', ['id' => $allfield->id]);
+        }
     }
 
     // Check if the customfield exists

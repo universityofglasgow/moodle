@@ -240,8 +240,7 @@ class quiz_activity extends base {
         }
 
         if ($rawdate > 0) {
-            $dateobj = \DateTime::createFromFormat('U', $rawdate);
-            $duedate = $dateobj->format('jS F Y');
+            $duedate = userdate($rawdate, get_string('strftimedate', 'core_langconfig'));
         } else {
             $duedate = 'N/A';
         }
@@ -279,29 +278,9 @@ class quiz_activity extends base {
         // This is measured in seconds.
         $graceperiod = $quizinstance->graceperiod;
 
-        // Check if any individual overrides have been set up first of all...
-        $overrides = $DB->get_record('quiz_overrides', ['quiz' => $quizinstance->id, 'userid' => $userid]);
-        if (!empty($overrides)) {
-            // If any of these fields are NULL, the override is using the default activity settings.
-            if ($overrides->timeopen != null) {
-                $allowsubmissionsfromdate = $overrides->timeopen;
-            }
-            if ($overrides->timeclose != null) {
-                $statusobj->due_date = $this->get_formattedduedate($overrides->timeclose);
-                $statusobj->raw_due_date = $overrides->timeclose;
-                $quizcloses = $overrides->timeclose;
-            }
-            if ($overrides->attempts != null) {
-                $attemptsallowed = $overrides->attempts;
-            }
-        }
-
-        // We also need to check if any group overrides exist for this quiz.
-        $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $groupselect = 'quiz = :quiz AND groupid IS NOT NULL AND userid IS NULL AND timeopen BETWEEN :lastmonth AND :now AND
-        timeclose > :tnow';
-        $groupparams = ['quiz' => $quizinstance->id, 'lastmonth' => $lastmonth, 'now' => $now, 'tnow' => $now];
+        // We first check if any group overrides have been created for this quiz.
+        $groupselect = 'quiz = :quiz AND groupid IS NOT NULL AND userid IS NULL';
+        $groupparams = ['quiz' => $quizinstance->id];
         $groupoverrides = $DB->get_records_select('quiz_overrides', $groupselect, $groupparams, '',
         'groupid, timeopen, timeclose');
         if (!empty($groupoverrides)) {
@@ -325,6 +304,24 @@ class quiz_activity extends base {
             }
         }
 
+        // Individual overrides however, take precedence - based on how Moodle does things.
+        $overrides = $DB->get_record('quiz_overrides', ['quiz' => $quizinstance->id, 'userid' => $userid]);
+        if (!empty($overrides)) {
+            // If any of these fields are NULL, the override is using the default activity settings.
+            if ($overrides->timeopen != null) {
+                $allowsubmissionsfromdate = $overrides->timeopen;
+            }
+            if ($overrides->timeclose != null) {
+                $statusobj->due_date = $this->get_formattedduedate($overrides->timeclose);
+                $statusobj->raw_due_date = $overrides->timeclose;
+                $quizcloses = $overrides->timeclose;
+            }
+            if ($overrides->attempts != null) {
+                $attemptsallowed = $overrides->attempts;
+            }
+        }
+
+        $now = usertime(time());
         // To begin with - check if the quiz is open.
         if ($allowsubmissionsfromdate > $now) {
             $statusobj->grade_status = get_string('status_submissionnotopen', 'block_newgu_spdetails');
@@ -490,9 +487,9 @@ class quiz_activity extends base {
 
         // Cache this query as it's going to get called for each assessment in the course otherwise.
         $cache = cache::make('block_newgu_spdetails', 'quizduequery');
-        $now = mktime(date('H'), date('i'), date('s'), date('m'), date('d'), date('Y'));
-        $lastmonth = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
-        $currenttime = time();
+        $now = usertime(time());
+        $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
+        $currenttime = usertime(time());
         $fiveminutes = $currenttime - 300;
         $cachekey = self::CACHE_KEY . $USER->id;
         $cachedata = $cache->get_many([$cachekey]);
@@ -506,7 +503,7 @@ class quiz_activity extends base {
             $quizattempts = $DB->get_records_select('quiz_attempts', $select, $params, '', 'quiz, state, attempt, timecheckstate');
 
             $submissionsdata = [
-                'updated' => time(),
+                'updated' => $currenttime,
                 'quizattempts' => $quizattempts,
             ];
 

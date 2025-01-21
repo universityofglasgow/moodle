@@ -53,7 +53,7 @@ class release_grades extends external_api {
      * @param int $courseid
      * @param int $gradeitemid
      * @param int $groupid
-     * @param int $revert
+     * @param bool $revert
      */
     public static function execute($courseid, $gradeitemid, $groupid, $revert) {
 

@@ -327,10 +327,12 @@ class conversion {
         global $DB, $USER;
 
         // Appropriate params for item or category.
+        $category = false;
         if ($gradeitemid) {
             $params = ['gradeitemid' => $gradeitemid];
         } else if ($gradecategoryid) {
             $params = ['gradecategoryid' => $gradecategoryid];
+            $category = true;
         } else {
             throw new \moodle_exception('One of gradeitemid or gradecategoryid must be specified');
         }
@@ -341,6 +343,15 @@ class conversion {
         if ($mapid == 0) {
             $DB->delete_records('local_gugrades_map_item', $params);
 
+            // If category, remove any overridden grades
+            if ($gradecategoryid) {
+                $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+                $sql = "DELETE FROM {local_gugrades_grade}
+                    WHERE gradeitemid = :gradeitemid
+                    AND catoverride = 1";
+                $DB->execute($sql, ['gradeitemid' => $gradeitemid]);
+            }
+
             // Un-current all grades if a gradeitem (i.e. capture page)
             if ($gradeitemid) {
                 $sql = 'UPDATE {local_gugrades_grade}
@@ -349,10 +360,16 @@ class conversion {
                     AND gradeitemid = :gradeitemid';
                 $DB->execute($sql, ['gradeitemid' => $gradeitemid]);
                 \local_gugrades\grades::cleanup_empty_columns($gradeitemid);
-            } else {
+            }
 
-                // Recalculate everything :(
+            // Get the containing gradecategory for aggregation recalc.
+            if ($gradecategoryid) {
                 \local_gugrades\api::recalculate($courseid, $gradecategoryid);
+            } else if ($gradeitemid){
+                $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+                if ($gradeitem->categoryid) {
+                    \local_gugrades\api::recalculate($courseid, $gradeitem->categoryid);
+                }
             }
 
             return;
@@ -364,7 +381,7 @@ class conversion {
         }
 
         // Set link to this map.
-        if (!$mapitem = $DB->get_record('local_gugrades_map_item', ['gradeitemid' => $gradeitemid])) {
+        if (!$mapitem = $DB->get_record('local_gugrades_map_item', $params)) {
             $mapitem = new \stdClass();
             $mapitem->courseid = $courseid;
             $mapitem->mapid = $mapid;
@@ -376,7 +393,8 @@ class conversion {
             $DB->insert_record('local_gugrades_map_item', $mapitem);
         } else {
             if ($courseid != $mapitem->courseid) {
-                throw new \moodle_exception('courseid does not match ' . $courseid);
+                throw new \moodle_exception('courseid does not match ' . $courseid . ' (courseid in record is ' . $mapitem->courseid .
+                    ', mapitem id is ' . $mapitem->id . ')');
             }
             $mapitem->mapid = $mapid;
             $mapitem->userid = $USER->id;
@@ -386,6 +404,10 @@ class conversion {
 
         if ($gradeitemid) {
             self::apply_capture_conversion($courseid, $gradeitemid, $mapinfo);
+
+            // Get the containing gradecategory for aggregation recalc.
+            $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
+            \local_gugrades\api::recalculate($courseid, $gradeitem->categoryid);
         } else {
 
             // Recalculate everything :(
@@ -457,17 +479,22 @@ class conversion {
             return end($values);
         }
 
+        // Convert rawgrade to a percentage.
+        // 5 decimal places to "match" rounding of map percentages
+        // (important for boundary cases).
+        $percentgrade = round(100 * $rawgrade / $maxgrade, 5, PHP_ROUND_HALF_DOWN);
+
         // Otherwise, loop over values.
         for ($i = 0; $i < count($values); $i++) {
-            $lower = $values[$i]->percentage * $maxgrade / 100;
+            $lower = $values[$i]->percentage;
 
             // There's no 100% in the array, so assume this if final item.
             if ($i == count($values) - 1) {
-                $upper = $maxgrade;
+                $upper = 100.0;
             } else {
-                $upper = $values[$i + 1]->percentage * $maxgrade / 100;
+                $upper = $values[$i + 1]->percentage;
             }
-            if (($rawgrade >= $lower) && ($rawgrade < $upper)) {
+            if (($percentgrade >= $lower) && ($percentgrade < $upper)) {
                 return $values[$i];
             }
         }
@@ -515,7 +542,7 @@ class conversion {
         $mapvalues = $DB->get_records('local_gugrades_map_value', ['mapid' => $mapinfo->id], 'percentage ASC');
 
         // Get the grade item.
-        $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
+        $gradeitem = \local_gugrades\grades::get_gradeitem($gradeitemid);
 
         // Iterate over users converting grades.
         foreach ($users as $user) {
@@ -590,6 +617,26 @@ class conversion {
         global $DB;
 
         if ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradeitemid' => $gradeitemid])) {
+            if ($courseid != $mapitem->courseid) {
+                throw new \moodle_exception('courseid does not match ' . $courseid);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Has a gradeitem had a conversion applied?
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return bool
+     */
+    public static function is_category_conversion_applied(int $courseid, int $gradecategoryid) {
+        global $DB;
+
+        if ($mapitem = $DB->get_record('local_gugrades_map_item', ['gradecategoryid' => $gradecategoryid])) {
             if ($courseid != $mapitem->courseid) {
                 throw new \moodle_exception('courseid does not match ' . $courseid);
             }
