@@ -296,25 +296,10 @@ class assign_activity extends base {
                 $cansubmitassessment = true;
                 $checkanyteammembersubmission = false;
                 $checkallteammembersubmissions = false;
-                // If this activity can only be submitted by a student who is in a group, check this first...
-                if ($assigninstance->preventsubmissionnotingroup) {
-                    $cansubmitassessment = false;
-                    // So this doesn't come back to bite us in the proverbial, the Moodle tooltip in the settings page states that
-                    // if the user is "not members of a group", then they won't be able to submit this assessment. Pay close
-                    // attention to the wording "not members of ^a^ group" - which, to me says "any group" and not one specific to
-                    // this activity.
-                    if (!$isgroupmember = $DB->get_record('groups_members', ['userid' => $userid])) {
-                        $statusobj->grade_status = get_string('status_submissionunavailable', 'block_newgu_spdetails');
-                        $statusobj->status_text = get_string('status_text_submissionunavailable', 'block_newgu_spdetails');
-                        $assignsubmission = new stdClass();
-                        $assignsubmission->status = get_string('status_submissionunavailable', 'block_newgu_spdetails');
-                    } else {
-                        $cansubmitassessment = true;
-                    } 
-                }
 
-                if (!$assigninstance->preventsubmissionnotingroup) {
-                    $cansubmitassessment = true;
+                // MGU-1239 - Group submissions by any students were still displaying as overdue, even if a submission was made.
+                if (!$assigninstance->submissiondrafts) {
+                    $checkanyteammembersubmission = true;
                 }
 
                 // The submission as part of a group is determined by a combination of the 'Require student to click...' option
@@ -336,6 +321,27 @@ class assign_activity extends base {
                     if (!$assigninstance->requireallteammemberssubmit) {
                         $checkanyteammembersubmission = true;
                     }
+                }
+
+                // If this activity can only be submitted by a student who is in a group, check this first...
+                if ($assigninstance->preventsubmissionnotingroup) {
+                    $cansubmitassessment = false;
+                    // So this doesn't come back to bite us in the proverbial, the Moodle tooltip in the settings page states that
+                    // if the user is "not members of a group", then they won't be able to submit this assessment. Pay close
+                    // attention to the wording "not members of ^a^ group" - which, to me says "any group" and not one specific to
+                    // this activity.
+                    if (!$isgroupmember = $DB->get_record('groups_members', ['userid' => $userid])) {
+                        $statusobj->grade_status = get_string('status_submissionunavailable', 'block_newgu_spdetails');
+                        $statusobj->status_text = get_string('status_text_submissionunavailable', 'block_newgu_spdetails');
+                        $assignsubmission = new stdClass();
+                        $assignsubmission->status = get_string('status_submissionunavailable', 'block_newgu_spdetails');
+                    } else {
+                        $cansubmitassessment = true;
+                    } 
+                }
+
+                if (!$assigninstance->preventsubmissionnotingroup) {
+                    $cansubmitassessment = true;
                 }
 
                 if ($cansubmitassessment) {
