@@ -302,6 +302,7 @@ class sduserdetailscurrent_table extends table_sql
      * @return string
      */
     function col_status($values){
+        global $DB;
         $userid = $values->userid;
         $courseid = $values->courseid;
         $itemid = $values->id;
@@ -315,13 +316,23 @@ class sduserdetailscurrent_table extends table_sql
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
-                $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                if ($releasedgrade) {
-                    $statustodisplay = "<span class='status-item status-graded'>" . get_string('status_text_graded',
-                        'block_newgu_spdetails') . "</span>";
+                // MGU-1241 - Shamelessly query the gugrades_hidden table as we can't get this any other way.
+                $tbc = false;
+                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid])) {
+                    $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
+                    if ($releasedgrade) {
+                        $statustodisplay = "<span class='status-item status-graded'>" . get_string('status_text_graded',
+                            'block_newgu_spdetails') . "</span>";
+                    } else {
+                        $tbc = true;
+                    }
                 } else {
-                    // Fallback to whatever is in gradebook.
-                    $fallbacktogradebook = true;
+                    $tbc = true;
+                }
+
+                if ($tbc) {
+                    $statustodisplay = "<span class='status-item'>" . get_string('status_text_tobeconfirmed',
+                        'block_newgu_spdetails') . "</span>";
                 }
             } else {
                 // Fallback to whatever is in gradebook.
@@ -358,6 +369,7 @@ class sduserdetailscurrent_table extends table_sql
      * @return mixed
      */
     function col_grade($values){
+        global $DB;
         $userid = $values->userid;
         $courseid = $values->courseid;
         $itemid = $values->id;
@@ -368,8 +380,9 @@ class sduserdetailscurrent_table extends table_sql
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
-                $hidden_or_locked = \local_gugrades\grades::is_grade_hidden_locked($itemid);
-                if ($hidden_or_locked[0] != 1 && $hidden_or_locked[1] != 1) {
+                // MGU-1241 - Shamelessly query the gugrades_hidden table as we can't get this any other way.
+                $tbc = false;
+                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid])) {
                     $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
                     if ($releasedgrade) {
                         $gradetodisplay = "<span class='status-graded'><strong>";
@@ -377,10 +390,14 @@ class sduserdetailscurrent_table extends table_sql
                             $releasedgrade->displaygrade);
                         $gradetodisplay .= "<strong></span>";
                     } else {
-                        $fallbacktogradebook = true;
+                        $tbc = true;
                     }
                 } else {
-                    $fallbacktogradebook = true;
+                    $tbc = true;
+                }
+
+                if ($tbc) {
+                    $gradetodisplay = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
                 }
             } elseif (!$gradesreleased) {
                 $fallbacktogradebook = true;
@@ -423,6 +440,7 @@ class sduserdetailscurrent_table extends table_sql
      * @return mixed
      */
     function col_feedback($values){
+        global $DB;
         $userid = $values->userid;
         $courseid = $values->courseid;
         $itemid = $values->id;
@@ -436,13 +454,23 @@ class sduserdetailscurrent_table extends table_sql
         if ($mygradesenabled) {
             $gradesreleased = \local_gugrades\grades::is_grades_released($courseid, $itemid);
             if ($gradesreleased) {
-                $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                if ($releasedgrade) {
-                    // Not sure what needs to be displayed here as the spec doesn't define things clearly enough.
-                    $feedback = $releasedgrade->auditcomment;
+                // MGU-1241 - Shamelessly query the gugrades_hidden table as we can't get this any other way.
+                $tbc = false;
+                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid])) {
+                    $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
+                    if ($releasedgrade) {
+                        // Not sure what needs to be displayed here as the spec doesn't define things clearly enough.
+                        $feedback = $releasedgrade->auditcomment;
+                    } else {
+                        // Fallback to whatever is in gradebook.
+                        $fallbacktogradebook = true;
+                    }
                 } else {
-                    // Fallback to whatever is in gradebook.
-                    $fallbacktogradebook = true;
+                    $tbc = true;
+                }
+
+                if ($tbc) {
+                    $feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
                 }
             } else {
                 // Fallback to whatever is in gradebook.
