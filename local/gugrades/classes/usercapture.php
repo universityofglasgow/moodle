@@ -70,12 +70,27 @@ class usercapture {
     protected bool $alert;
 
     /**
+     * Static function to create this class.
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return \local_gugrades\usercapture
+     */
+    public static function create(int $courseid, int $gradeitemid, int $userid) {
+
+        $usercapture = new usercapture($courseid, $gradeitemid, $userid);
+        
+        return $usercapture;
+    }
+
+    /**
      * Constructor
      * @param int $courseid
      * @param int $gradeitemid
      * @param int $userid
      */
-    public function __construct(int $courseid, int $gradeitemid, int $userid) {
+    private function __construct(int $courseid, int $gradeitemid, int $userid) {
+
         $this->courseid = $courseid;
         $this->gradeitemid = $gradeitemid;
         $this->userid = $userid;

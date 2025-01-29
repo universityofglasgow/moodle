@@ -611,6 +611,10 @@ class grades {
     }
 
     /**
+     * Create (global/cached) array of provisional grades for 
+     */
+
+    /**
      * Add grades to user records for capture page
      * @param int $courseid
      * @param int $gradeitemid
@@ -635,7 +639,8 @@ class grades {
      * @return array
      */
     public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user, bool $gradehidden = false) {
-        $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+        //$usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+        $usercapture = \local_gugrades\usercapture::create($courseid, $gradeitemid, $user->id);
         $user->grades = $usercapture->get_grades();
         $user->alert = $usercapture->alert();
 

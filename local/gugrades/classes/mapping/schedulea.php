@@ -41,6 +41,8 @@ class schedulea extends base {
      */
     protected bool $exactgrade22;
 
+
+
     /**
      * Constructor. Get grade info
      * @param int $courseid
@@ -108,6 +110,31 @@ class schedulea extends base {
      */
     public function is_exactgrade22() {
         return $this->exactgrade22;
+    }
+
+    /**
+     * Validate the grade
+     * It should be within grademin and grademax otherwise we'll reject it
+     * This is because (I think) the old GCAT can write an invalid 0 into assign_grade / grade_grade
+     * @param float $grade
+     * @return bool
+     */
+    public function validate(float $grade) {
+
+        // The (messy) difference is how we handle exactgrade22, as it's not an Assignment scale
+        // (the scale would be 1 - 23, exactgrade22 is 0 - 22)
+        if ($this->exactgrade22) {
+            $grademin = 0;
+            $grademax = 22;
+        } else {
+
+            // Need to offset grademin and grademax by one, as Moodle stores scales 1 - based
+            // (most of the time, will still end up as 0-22!).
+            $grademin = $this->gradeitem->grademin - 1;
+            $grademax = $this->gradeitem->grademax - 1;
+        }
+
+        return ($grade >= $grademin) && ($grade <= $grademax);
     }
 
     /**

@@ -169,7 +169,11 @@ abstract class base {
      * @return bool
      */
     public function validate(float $grade) {
-        return ($grade >= $this->gradeitem->grademin) && ($grade <= $this->gradeitem->grademax);
+
+        // Need to offset grademin and grademax by one, as Moodle stores scales 1 - based
+        $grademin = $this->gradeitem->grademin - 1;
+        $grademax = $this->gradeitem->grademax - 1;
+        return ($grade >= $grademin) && ($grade <= $grademax);
     }
 
     /**

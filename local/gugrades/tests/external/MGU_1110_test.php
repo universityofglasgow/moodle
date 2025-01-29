@@ -219,7 +219,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         // Get aggregation page with single MV0
-        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, true);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page

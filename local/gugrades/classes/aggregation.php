@@ -1071,7 +1071,16 @@ class aggregation {
         ]);
     }
 
+    /**
+     * Clear ALL droplow for course 
+     * Used if gradebook has no drop low settings for this course
+     * @param int $courseid
+     */
+    private static function clear_course_droplow(int $courseid) {
+        global $DB;
 
+        $DB->set_field('local_gugrades_grade', 'dropped', 0, ['courseid' => $courseid]);
+    }
 
     /**
      * Get overidden category (or not)
@@ -1113,6 +1122,32 @@ class aggregation {
     }
 
     /**
+     * Are there *any* altered weights in this course?
+     * If not, we can skip making repeated checks. 
+     * @param int $courseid
+     * @return bool
+     */
+    protected static function any_altered_weights(int $courseid) {
+        global $DB;
+
+        return $DB->record_exists('local_gugrades_altered_weight', ['courseid' => $courseid]);
+    }
+
+    /**
+     * Is droplow set for any items in this course?
+     * If not, we can ignore checks for it
+     */
+    protected static function any_droplow(int $courseid) {
+        global $DB;
+
+        $select = '
+            courseid = :courseid
+            AND droplow <> 0
+        ';
+        return $DB->record_exists_select('grade_categories', $select, ['courseid' => $courseid]);
+    }
+
+    /**
      * Aggregate user data recursively
      * (starting with current category)
      * Returning array of category totals for that user
@@ -1122,14 +1157,20 @@ class aggregation {
      * @param object $category
      * @param int $userid
      * @param int $level
+     * @param bool $skipdroplow 
      * @return array [total, $rawgrade, $displaygrade, completion, error]
      */
     protected static function aggregate_user(
         int $courseid,
         object $category,
         int $userid,
-        int $level
+        int $level,
+        bool $skipdroplow = false,
         ) {
+
+        // Are there any altered weights at all for this course?
+        // This avoids a load of relatively expensive checks.
+        $anyalteredweights = self::any_altered_weights($courseid);
 
         // Information about the category is in the param
         // The field 'children' holds all the sub-items and sub-categories that
@@ -1141,11 +1182,16 @@ class aggregation {
         foreach ($children as $child) {
 
             // Clear droplow flag. We'll put it back later if required
-            self::clear_droplow($child->itemid, $userid);
+            if (!$skipdroplow) {
+                self::clear_droplow($child->itemid, $userid);
+            }
 
             // Get correct weight.
             // *exactly* false means no altered grade
-            $alteredweight = self::get_altered_weight($child->itemid, $userid);
+            $alteredweight = false;
+            if ($anyalteredweights) {
+                $alteredweight = self::get_altered_weight($child->itemid, $userid);
+            }
             $weight = $alteredweight === false ? $child->weight : $alteredweight;
 
             // If this is itself a grade category then we need to recurse to get the aggregated total
@@ -1157,7 +1203,7 @@ class aggregation {
                     [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = $overriddencategory;
                 } else {
                     [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = self::aggregate_user(
-                        $courseid, $child, $userid, $level + 1
+                        $courseid, $child, $userid, $level + 1, $skipdroplow
                     );
                 }
                 $item = (object)[
@@ -1178,7 +1224,8 @@ class aggregation {
 
                 // Is there a grade (in MyGrades) for this user?
                 // Provisional will be null if nothing has been imported.
-                $usercapture = new \local_gugrades\usercapture($courseid, $child->itemid, $userid);
+                //$usercapture = new \local_gugrades\usercapture($courseid, $child->itemid, $userid);
+                $usercapture = \local_gugrades\usercapture::create($courseid, $child->itemid, $userid);
                 $provisional = $usercapture->get_provisional();
                 if ($provisional) {
                     $item = (object)[
@@ -1258,8 +1305,13 @@ class aggregation {
         // Basic user object.
         $user = self::get_user($courseid, $gradecategoryid, $userid);
 
+        // Is there any need to do droplow checks?
+        if (!$skipdroplow = !self::any_droplow($courseid)) {
+            self::clear_course_droplow($courseid);
+        }
+
         // Aggregate this user.
-        self::aggregate_user($courseid, $toplevel, $userid, 1);
+        self::aggregate_user($courseid, $toplevel, $userid, 1, $skipdroplow);
     }
 
     /**
@@ -1278,12 +1330,17 @@ class aggregation {
         // We need the recursed category tree for this categoryid. Hopefully, this should be cached.
         $toplevel = self::recurse_tree($courseid, $level1categoryid, true);
 
+        // Is there any need to do droplow checks?
+        if (!$skipdroplow = !self::any_droplow($courseid)) {
+            self::clear_course_droplow($courseid);
+        }
+
         // Run through each user and aggregate their grades.
         foreach ($users as $user) {
 
             // 1 = level 1 (we need to know what level we're at). Level is incremented
             // as call recurses.
-            self::aggregate_user($courseid, $toplevel, $user->id, 1);
+            self::aggregate_user($courseid, $toplevel, $user->id, 1, $skipdroplow);
         }
     }
 

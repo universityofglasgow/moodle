@@ -102,6 +102,27 @@ final class csv_capture_test extends \local_gugrades\external\gugrades_advanced_
     ];
 
     /**
+     * @var array $uploaddatah
+     */
+    private $uploaddatah = [
+        [
+            "Name",
+            "ID number",
+            "Grade",
+        ],
+        [
+            "Fred Bloggs",
+            "1234567",
+            "F2:4",
+        ],
+        [
+            "Juan Perez",
+            "1234560",
+            "H:0",
+        ],
+    ];
+
+    /**
      * Create csv from array
      * @param array $lines
      * @return string
@@ -232,5 +253,24 @@ final class csv_capture_test extends \local_gugrades\external\gugrades_advanced_
         $this->assertEquals(1, $lines[0]['state']);
         $this->assertEquals(11, $lines[1]['gradevalue']);
         $this->assertEquals(1, $lines[1]['state']);
+    }
+
+    /**
+     * MGU-1247
+     * Check that H grades are accepted
+     */
+    public function test_mgu_1247(): void {
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Get first csv test string.
+        $csv = $this->make_csv($this->uploaddatah);
+        $data = upload_csv::execute($this->course->id, $this->gradeitemidassign1, 0, true, 'SECOND', '', $csv);
+        $data = external_api::clean_returnvalue(
+            upload_csv::execute_returns(),
+            $data
+        );
+
     }
 }
