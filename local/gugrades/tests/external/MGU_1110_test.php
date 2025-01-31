@@ -327,6 +327,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         $fred = $page['users'][0];
         $this->assertEquals(75, $fred['completed']);
         $this->assertEquals('B3 (15)', $fred['displaygrade']);
+        //$this->assertEquals('B2 (16)', $fred['displaygrade']);
 
         // Add MV0 to Item 1 (pushing it down to 50%)
         $item1id = $this->get_gradeitemid('Item 1');

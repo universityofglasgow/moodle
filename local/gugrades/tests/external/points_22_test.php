@@ -57,7 +57,7 @@ final class points_22_test extends \local_gugrades\external\gugrades_advanced_te
         );
 
         $this->assertEquals('Assignment', $item['itemmodule']);
-        $this->assertEquals('Schedule A', $item['scalename']);
+        $this->assertEquals('Points 22', $item['scalename']);
         $this->assertTrue($item['isscale']);
     }
 

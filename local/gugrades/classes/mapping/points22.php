@@ -15,10 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Conversion class for Schedule A
+ * Conversion class for exactly out of 22. 
+ * This is a proxy for Schedule A when a maximum points grade of exactly
+ * 22 is specified.
  *
  * @package    local_gugrades
- * @copyright  2023
+ * @copyright  2025
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,14 +28,9 @@
 namespace local_gugrades\mapping;
 
 /**
- * Handle 22-point scale / Schedule A
+ * Note that this extends ScheduleA, instead of base
  */
-class schedulea extends base {
-
-    /**
-     * @var array $scaleitems
-     */
-    protected array $scaleitems = [];
+class points22 extends schedulea {
 
     /**
      * Constructor. Get grade info
@@ -46,26 +43,9 @@ class schedulea extends base {
 
         parent::__construct($courseid, $gradeitemid, $converted);
 
-         if (!$converted) {
-            // If converted, use the built-in grade.
-
-            // Get scale. If it doesn't exist, use the internal map
-            if (!$scale = $DB->get_record('scale', ['id' => $this->gradeitem->scaleid])) {
-                $map = $this->get_map();
-                $this->items = array_flip($map);
-            } else {
-                $this->scaleitems = array_map('trim', explode(',', $scale->scale));
-
-                // Get scale conversion.
-                $items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $this->gradeitem->scaleid]);
-                foreach ($items as $item) {
-                    $this->items[$item->item] = $item->value;
-                }
-            }
-        } else {
-            $map = $this->get_map();
-            $this->items = array_flip($map);
-        }
+        // As maxgrade = 22, use the build in map.
+        $map = $this->get_map();
+        $this->items = array_flip($map);
     }
 
     /**
@@ -73,22 +53,7 @@ class schedulea extends base {
      * @return string
      */
     public function name() {
-        return 'Schedule A';
-    }
-
-    /**
-     * Get maximum grade
-     */
-    public function get_grademax() {
-        return 22;
-    }
-
-    /**
-     * Is the conversion a scale (as opposed to points)?
-     * @return bool
-     */
-    public function is_scale() {
-        return true;
+        return 'Points 22';
     }
 
     /**
@@ -96,7 +61,7 @@ class schedulea extends base {
      * @return bool
      */
     public function is_exactgrade22() {
-        return false;
+        return true;
     }
 
     /**
@@ -107,9 +72,8 @@ class schedulea extends base {
      * @return bool
      */
     public function validate(float $grade) {
-
-        $grademin = $this->gradeitem->grademin;
-        $grademax = $this->gradeitem->grademax;
+        $grademin = 0;
+        $grademax = 22;
 
         return ($grade >= $grademin) && ($grade <= $grademax);
     }
@@ -120,38 +84,6 @@ class schedulea extends base {
      */
     public function get_schedule() {
         return \local_gugrades\GRADETYPE_SCHEDULEA;
-    }
-
-    /**
-     * Define scale mapping
-     * @return array
-     */
-    public static function get_map() {
-        return [
-            0 => 'H',
-            1 => 'G2',
-            2 => 'G1',
-            3 => 'F3',
-            4 => 'F2',
-            5 => 'F1',
-            6 => 'E3',
-            7 => 'E2',
-            8 => 'E1',
-            9 => 'D3',
-            10 => 'D2',
-            11 => 'D1',
-            12 => 'C3',
-            13 => 'C2',
-            14 => 'C1',
-            15 => 'B3',
-            16 => 'B2',
-            17 => 'B1',
-            18 => 'A5',
-            19 => 'A4',
-            20 => 'A3',
-            21 => 'A2',
-            22 => 'A1',
-        ];
     }
 
     /**
@@ -166,19 +98,15 @@ class schedulea extends base {
         // It's a scale, so it can't be a decimal.
         $grade = round($floatgrade);
 
-        // If converted.
-        if ($this->converted || !$this->scaleitems) {
-            $map = $this->get_map();
-            if (!array_key_exists($grade, $map)) {
-                throw new \moodle_exception('Grade ' . $grade . 'is not in Schedule A');
-            } else {
-                return [$grade, $map[$grade]];
-            }
+        $map = $this->get_map();
+        if (!array_key_exists($grade, $map)) {
+            throw new \moodle_exception('Grade ' . $grade . 'is not in Schedule A');
+        } else {
+            return [$grade, $map[$grade]];
         }
 
-        // Get scale (scales start at 1 not 0).
-        if (isset($this->scaleitems[$grade - 1])) {
-            $scaleitem = $this->scaleitems[$grade - 1];
+        if (isset($this->scaleitems[$grade])) {
+            $scaleitem = $this->scaleitems[$grade];
         } else {
             throw new \moodle_exception('Scale item does not exist. Scale id = ' .
                 $this->gradeitem->scaleid . ', value = ' . $grade);

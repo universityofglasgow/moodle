@@ -944,7 +944,7 @@ class grades {
             // It's points. BUT... *special case*
             // Grading out of 0 to 22 is a proxy for Schedule A.
             if (($gradeitem->grademin == 0) && ($gradeitem->grademax == 22)) {
-                return new \local_gugrades\mapping\schedulea($courseid, $gradeitemid, false, true);
+                return new \local_gugrades\mapping\points22($courseid, $gradeitemid, false);
             }
 
             // We're assuming it's a points scale (already checked for weird, unsupported types).
