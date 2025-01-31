@@ -88,6 +88,11 @@ class sduserdetailscurrent_table extends table_sql
     }
 
     /**
+     * Because of the limitations of TableSQL, we're having to jam lots of logic into both the SQL and when processing records
+     * that have been returned. For example, manual grade items - which have a global setting, and an individual student setting.
+     * The tables queried only give us a general answer - we can't make use of Moodle's Availability API for example, which gets
+     * us around a lot of issues with items that are hidden or visible. @see MGU-1241 and MGU-1242 for an example of things are
+     * being done this way here. It's probably going to end up better rewriting this whole plugin tbh.
      * @param $values
      * @return void
      */
@@ -96,9 +101,11 @@ class sduserdetailscurrent_table extends table_sql
         $link = '';
         if ($values->itemtype == 'manual') {
             $userid = $values->userid;
-            $manualitem = \block_newgu_spdetails\activity::process_manual_grade_item($values, 'current', '', $userid);
-            $link = true;
-            $itemname = $manualitem->item_name;
+            $manualgradeitem = \block_newgu_spdetails\activity::process_manual_grade_item($values, 'current', '', $userid);
+            if ($manualgradeitem != null) {
+                $link = true;
+                $itemname = $manualgradeitem->item_name;
+            }
         } else {
             $itemname = $values->itemname;
             $modulename = $values->itemmodule;
@@ -318,7 +325,8 @@ class sduserdetailscurrent_table extends table_sql
             if ($gradesreleased) {
                 // MGU-1241 - Shamelessly query the gugrades_hidden table as we can't get this any other way.
                 $tbc = false;
-                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid])) {
+                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid,
+                    'userid' => $userid])) {
                     $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
                     if ($releasedgrade) {
                         $statustodisplay = "<span class='status-item status-graded'>" . get_string('status_text_graded',
@@ -382,7 +390,8 @@ class sduserdetailscurrent_table extends table_sql
             if ($gradesreleased) {
                 // MGU-1241 - Shamelessly query the gugrades_hidden table as we can't get this any other way.
                 $tbc = false;
-                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid])) {
+                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid,
+                    'userid' => $userid])) {
                     $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
                     if ($releasedgrade) {
                         $gradetodisplay = "<span class='status-graded'><strong>";
@@ -410,7 +419,10 @@ class sduserdetailscurrent_table extends table_sql
         if ($fallbacktogradebook) {
             $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
             if ($values->itemtype == 'manual') {
-                $activitydata[] = \block_newgu_spdetails\activity::process_manual_grade_item($values, 'current', '', $userid);
+                $manualgradeitem = \block_newgu_spdetails\activity::process_manual_grade_item($values, 'current', '', $userid);
+                if ($manualgradeitem != null) {
+                    $activitydata[] = $manualgradeitem;
+                }
             } else {
                 $activitydata = \block_newgu_spdetails\activity::process_default_items([$values], 'current', $ltiactivities, '',
                 false, $userid);
@@ -445,7 +457,7 @@ class sduserdetailscurrent_table extends table_sql
         $courseid = $values->courseid;
         $itemid = $values->id;
         $gradetype = $values->gradetype;
-        $scaleid = $values->scaleid;
+            $scaleid = $values->scaleid;
         $grademax = $values->grademax;
         $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($courseid);
         $fallbacktogradebook = false;
@@ -456,11 +468,12 @@ class sduserdetailscurrent_table extends table_sql
             if ($gradesreleased) {
                 // MGU-1241 - Shamelessly query the gugrades_hidden table as we can't get this any other way.
                 $tbc = false;
-                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid])) {
+                if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid,
+                    'userid' => $userid])) {
                     $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
                     if ($releasedgrade) {
-                        // Not sure what needs to be displayed here as the spec doesn't define things clearly enough.
-                        $feedback = $releasedgrade->auditcomment;
+                        // MGU-1249 - nothing needed in the feedback column now.
+                        $feedback = '-';
                     } else {
                         // Fallback to whatever is in gradebook.
                         $fallbacktogradebook = true;
@@ -491,11 +504,8 @@ class sduserdetailscurrent_table extends table_sql
                     $grademax
                 );
                 if ($manualgradefeedback) {
-                    $feedback = $manualgradefeedback->grade_feedback;
-                    $manualgradefeedbacklink = $manualgradefeedback->grade_feedback_link;
-                    if ($manualgradefeedbacklink) {
-                        $feedback = '<a href="' . $manualgradefeedbacklink . '">' . $manualgradefeedback->grade_feedback . '</a>';
-                    }
+                    // MGU-1249 - No longer need to display a link to the Grader report.\
+                    $feedback = '-';
                 }
             } else {
                 $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
