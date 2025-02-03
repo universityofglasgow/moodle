@@ -39,7 +39,7 @@
     <!-- Modal for delete confirm -->
     <ConfirmModal :show="showconfirm" :message="mstrings.deletemapconfirm" @confirm="confirmdelete"></ConfirmModal>
 
-    <!-- Model for map upload -->
+    <!-- Modal for map upload -->
     <VueModal v-model="showimportmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.importconversionmap">
         <div class="p-4 mb-3 border rounded">
             <button class="btn btn-primary mr-1" type="button" @click="open()">
@@ -87,7 +87,7 @@
         accept: 'text/json', // Set to accept only json files
         multiple: false,
         directory: false, // Select directories instead of files if set true
-    })
+    });
 
     /**
      * Get/update the maps

@@ -282,7 +282,7 @@ class api {
             // We just need the idnumber, so must have at least two entries.
             if (count($line) < 2) {
                 $testrunline['error'] = get_string('csvtoofewitems', 'local_gugrades');
-                $errors['cvstoofewitems']++;
+                $errors['csvtoofewitems']++;
                 $testrunline['state'] = -1;
                 $testrunlines[] = $testrunline;
                 $errorcount++;

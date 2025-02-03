@@ -15,22 +15,27 @@
                 <button class="btn btn-primary" type="button" @click="csv_download()">{{  mstrings.csvdownload }}</button>
             </div>
 
-            <form>
-                <FormKit class="border rounded" type="form" @submit="submit_csv_form">
-                    <FormKit
-                        type="file"
-                        name="csvupload"
-                        label="CSV Upload"
-                        accept=".csv"
-                        :help="mstrings.csvuploadhelp"
-                        multiple="false"
-                        inner-class="form-group"
-                        input-class="form-control-file"
-                        fileList-class="d-none"
-                        nFiles-class="d-none"
-                        />
-                </FormKit>
-            </form>
+            <!-- select file / upload bit -->
+            <div class="mt-3 p-4 mb-3 border rounded">
+                <p><b>{{ mstrings.csvuploadhelp }}</b></p>
+                <div>
+                    <button class="btn btn-primary mr-1" type="button" @click="open()">
+                        Choose files
+                    </button>
+                    <button class="btn btn-warning" type="button" :disabled="!files" @click="reset()">
+                        Reset
+                    </button>
+                    <div class="mt-2" v-if="files">
+                        <p>You have selected: <b>{{ `${files.length} ${files.length === 1 ? 'file' : 'files'}` }}</b></p>
+                        <li v-for="file of files" :key="file.name">
+                            {{ file.name }}
+                        </li>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
+                </div>
+            </div>
         </div>
 
         <!-- Test-run / confirm page -->
@@ -94,6 +99,7 @@
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import { saveAs } from 'file-saver';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import { useFileDialog } from '@vueuse/core';
 
     const showcsvmodal = ref(false);
     const pagestate = ref('showuploadpage');
@@ -114,6 +120,12 @@
     const mstrings = inject('mstrings');
 
     const toast = useToast();
+
+    const { files, open, reset } = useFileDialog({
+        accept: 'text/json', // Set to accept only json files
+        multiple: false,
+        directory: false, // Select directories instead of files if set true
+    });
 
     const props = defineProps({
         itemid: Number,
@@ -239,6 +251,27 @@
             get_gradetypes();
         });
         reader.readAsText(data.csvupload[0].file);
+    }
+
+    /**
+     * Button clicked to upload CSV
+     * Process selected file.
+     */
+     function process_selected() {
+        if (!files.value) {
+            toast.warning('No file to import');
+            return;
+        }
+
+        const file = files.value[0];
+        const reader = new FileReader();
+        reader.addEventListener('load', (event) => {
+            csvcontent.value = event.target.result;
+
+            process_uploaded(true);
+            get_gradetypes();
+        });
+        reader.readAsText(file);
     }
 
     /**

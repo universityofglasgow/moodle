@@ -348,6 +348,7 @@ $string['sumofweights'] = 'Sum of weights';
 $string['time'] = 'Time';
 $string['toplevelpoints'] = 'All grades must be converted to Schedule A/B before aggregation can occur';
 $string['type'] = 'Type';
+$string['upload'] = 'Upload';
 $string['unreleasegrades'] = '(Un)release grades';
 $string['unreleasegradesgroup'] = '(Un)release grades for group';
 $string['unsupportedweight'] = 'Unsupported weight strategy';
