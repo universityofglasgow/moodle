@@ -319,8 +319,29 @@ class activity {
                             }
                         }
 
+                        // Looks like manual items can be processed via MyGrades also.
                         if ($tmpgradeitems[$index]->itemtype == 'manual') {
                             $iconalt = get_string('manualitem', 'grades');
+                            // The hidden parameter here refers to the global setting.
+                            if ($tmpgradeitems[$index]->hidden == 1) {
+                                $assessmenturl = '';
+                                $iconalt = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
+                                $iconhidden = true;
+                            }
+
+                            // We also need to check if the item has been hidden for the student.
+                            // Given that the grade item record is the global record, grade_grades 
+                            // gives us the setting we need for the student. The userid we need is
+                            // helpfully in the $mygradesitem['releasegrade'] object. See MGU-1241,
+                            // MGU-1242 and MGU-1249 for further context.
+                            $tmpuserid = $mygradesitem['releasegrade']->userid;
+                            if ($item = \grade_grade::fetch(['itemid' => $tmpgradeitems[$index]->id, 'userid' => $tmpuserid])) {
+                                if ($item->hidden == 1) {
+                                    $assessmenturl = '';
+                                    $iconalt = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
+                                    $iconhidden = true;
+                                }
+                            }
                         }
 
                         // MGU-631 - Honour hidden grades and hidden activities.
@@ -393,12 +414,14 @@ class activity {
                                     $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
 
                                     // @see MGU-1230.
-                                    if ($cm->uservisible) {
-                                        if ($cm->visibleoncoursepage) {
-                                        $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
-                                            'block_newgu_spdetails');
-                                        $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
-                                            $tmpgradeitems[$index]->courseid;
+                                    if ($cm) {
+                                        if ($cm->uservisible) {
+                                            if ($cm->visibleoncoursepage) {
+                                            $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
+                                                'block_newgu_spdetails');
+                                            $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
+                                                $tmpgradeitems[$index]->courseid;
+                                            }
                                         }
                                     }
                                 }
@@ -424,8 +447,11 @@ class activity {
                     $tmpgradeitem = $tmpgradeitems[$index];
 
                     if ($tmpgradeitem->itemtype == 'manual') {
-                        $mygradesdata[] = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype,
-                            'mygradesenabled');
+                        $manualgradeitem = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype,
+                        'mygradesenabled');
+                        if ($manualgradeitem != null) {
+                            $mygradesdata[] = $manualgradeitem;
+                        }
                     } else {
                         // MGU-1065 - We need to get a reference to this category first,
                         // we don't have access to it when processing "mygrades" items.
@@ -491,8 +517,11 @@ class activity {
                 if (!in_array($defaultitem->itemmodule, self::$excludedactivities)) {
                     // Cater for manual grade items that may have been added.
                     if ($defaultitem->itemtype == 'manual') {
-                        $defaultdata[] = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled',
-                            $whichuser);
+                        $manualgradeitem = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled',
+                        $whichuser);
+                        if ($manualgradeitem != null) {
+                            $defaultdata[] = $manualgradeitem;
+                        }
                     } else {
                         $cm = get_coursemodule_from_instance($defaultitem->itemmodule, $defaultitem->iteminstance,
                         $defaultitem->courseid);
@@ -629,11 +658,11 @@ class activity {
      * @param object $manualgradeitem
      * @param string $assessmenttype
      * @param string $coursetype - this is more to satisfy the unit tests - for now at least.
-     * @param int $userid - this is being passed in by Student MyGrades Staff View - $USER would actually be the teacher here.
-     * @return object
+     * @param int $userid - when this is being passed in by Student MyGrades Staff View - $USER would actually be the teacher here.
+     * @return object or null
      */
     public static function process_manual_grade_item(object $manualgradeitem, string $assessmenttype, string $coursetype,
-    int $userid = null): object {
+    int $userid = null): object|null {
 
         global $USER;
         $whichuser = null;
@@ -643,9 +672,12 @@ class activity {
         } else {
             $whichuser = $USER->id;
         }
-        $processedmanualgradeitem = new \stdClass();
+        
         $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
+        // This hidden property is the global setting for the item and applies to all students.
+        // It can also include a restriction on the item also.
         if ($manualgradeitem->hidden == 0 || ($manualgradeitem->hidden > 1 && $manualgradeitem->hidden < $now)) {
+            $processedmanualgradeitem = new \stdClass();
             $rawassessmentweight = course::return_weight($manualgradeitem->aggregationcoef);
             $assessmentweight = (($rawassessmentweight > 0) ? $rawassessmentweight . "%" : "-");
             $grade = '';
@@ -667,6 +699,7 @@ class activity {
             );
 
             // The manual item can be hidden both via Gradebook Setup and from within the Grader report.
+            // This hidden property essentially applies to the student.
             if ($gradestatobj->hidden == 0) {
                 $assessmenturl = $gradestatobj->assessment_url;
                 $duedate = 'N/A';
@@ -703,10 +736,41 @@ class activity {
                 $processedmanualgradeitem->grade_feedback = $gradefeedback;
                 $processedmanualgradeitem->grade_feedback_link = $gradefeedbacklink;
                 $processedmanualgradeitem->$coursetype = true;
+
+                return $processedmanualgradeitem;
             }
+
+            // To get us around the problem of not having a hidden manual item appear for the student in Student MyGrades,
+            // but, have this appear in Student MyGrades Staff View, we need to carry out the following trick shot.
+            if ($gradestatobj->hidden == 1 && $userid != null) {
+                $processedmanualgradeitem = new \stdClass();
+                $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
+                $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
+                . "' aria-hidden='true' role='img' aria-label='" . $icon_text . "'></i>";
+                $processedmanualgradeitem->item_name = $icon_alt . $manualgradeitem->itemname;
+                $processedmanualgradeitem->grade = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+                $processedmanualgradeitem->grade_feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+
+                return $processedmanualgradeitem;
+            }
+
+            return null;
         }
 
-        return $processedmanualgradeitem;
+        // To get us around the problem of not having a hidden manual item appear for the student in Student MyGrades,
+        // but, have this appear in Student MyGrades Staff View, we need to carry out the following hack.
+        if ($manualgradeitem->hidden == 1 && $userid != null) {
+            $processedmanualgradeitem = new \stdClass();
+            $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
+            $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
+                . "' aria-hidden='true' role='img' aria-label='" . $icon_text . "'></i>";
+            $processedmanualgradeitem->item_name = $icon_alt . $manualgradeitem->itemname;
+            $processedmanualgradeitem->grade = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+
+            return $processedmanualgradeitem;
+        }
+
+        return null;
     }
 
     /**
