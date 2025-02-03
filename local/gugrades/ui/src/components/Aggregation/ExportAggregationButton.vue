@@ -237,7 +237,7 @@
             const csv = result['csv'];
             const d = new Date();
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
-            saveAs(blob, filename.value);
+            saveAs(blob, filename.value + '.csv');
 
             showexportmodal.value = false;
         })
