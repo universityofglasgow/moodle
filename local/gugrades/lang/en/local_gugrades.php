@@ -133,6 +133,7 @@ $string['export'] = 'Export';
 $string['exportaggregation'] = 'Export aggregation';
 $string['exportcapture'] = 'Export capture';
 $string['exportcapturehelp'] = 'Select the fields you need in the CSV export and then click Submit.';
+$string['exportfilename'] = 'Export filename (.csv)';
 $string['exportworksheet'] = 'Export worksheet';
 $string['fillns'] = 'Import as NS - No submission';
 $string['fillns0'] = 'Import as NS0 - No submission (0 grade)';

@@ -52,6 +52,42 @@ class export {
     }
 
     /**
+     * Get filename
+     * We need to get the code(s) for this course, discovered by enrol_gudatabase
+     * There can be only 1. Failing that, we just use a default filename.
+     * @param int $courseid
+     * @return string
+     */
+    protected static function get_filename(int $courseid) {
+        global $DB;
+
+        $course = get_course($courseid);
+
+        // Get the year from the course start date.
+        $year = date('Y', $course->startdate);
+
+        // Get any records for this course from gudatabase
+        $codes = array_values($DB->get_records('enrol_gudatabase_codes', ['courseid' => $courseid]));
+
+        // Create standard "MyCampus" format ONLY if there is a single code
+        if (count($codes) == 1) {
+            $code = $codes[0]->code;
+
+            // Split the code into the alpha and numeric parts
+            // e.g. BIOL1001 is BIOL and 1001
+            preg_match('#([A-Z]+)(\d+)([A-Z]*)#', $code, $match);
+            $subject = $match[1];
+            $catnumber = $match[2];
+
+            return $subject . '_' . $catnumber . '_' . $year;
+        } else {
+
+             // Make up some name
+             return 'MyGrades_' . $course->shortname . '_' . $year;
+        }
+    }
+
+    /**
      * Get list of aggregation export plugins
      * @param int $courseid
      * @param int $gradecategoryid
@@ -90,7 +126,13 @@ class export {
             }
         }
 
-        return $plugins;
+        // Get proposed filename
+        $filename = self::get_filename($courseid);
+
+        return [
+            'plugins' => $plugins,
+            'filename' => $filename,
+        ];
     }
 
     /**
