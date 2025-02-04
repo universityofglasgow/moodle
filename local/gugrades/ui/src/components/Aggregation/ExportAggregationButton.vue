@@ -7,7 +7,7 @@
 
         <PleaseWait v-if="pleasewait"></PleaseWait>
 
-        <!-- step to select plugin -->
+        <!-- step to select plugin and filename -->
         <div v-if="step == 'selectplugin'" class="mb-5">
             <FormKit
                 type="form"
@@ -19,6 +19,15 @@
                     :label="mstrings.selectexport"
                     :options="plugins"
                     v-model="selectedplugin"
+                ></FormKit>
+
+                <FormKit
+                    class="mt-2"
+                    type="text"
+                    :label="mstrings.exportfilename"
+                    validation="required"
+                    validation-visibility="live"
+                    v-model="filename"
                 ></FormKit>
             </FormKit>
         </div>
@@ -84,6 +93,7 @@
     const hasform = ref(false);
     const form = ref([]);
     const selected = ref({});
+    const filename = ref('');
 
     const toast = useToast();
 
@@ -112,7 +122,7 @@
             }
         }])[0]
         .then((result) => {
-            const options = result;
+            const options = result.plugins;
             plugins.value = [];
             options.forEach(option => {
                 plugins.value.push({
@@ -120,6 +130,7 @@
                     value: option.name,
                 });
             });
+            filename.value = result.filename;
             pleasewait.value = false;
         })
         .catch((error) => {
@@ -223,12 +234,10 @@
             }
         }])[0]
         .then(result => {
-            const filename = result['filename'];
             const csv = result['csv'];
             const d = new Date();
-            //const filename = 'MyGrades_' + d.toLocaleString() + '.csv';
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
-            saveAs(blob, filename);
+            saveAs(blob, filename.value + '.csv');
 
             showexportmodal.value = false;
         })

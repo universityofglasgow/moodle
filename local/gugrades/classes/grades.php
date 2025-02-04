@@ -611,6 +611,10 @@ class grades {
     }
 
     /**
+     * Create (global/cached) array of provisional grades for 
+     */
+
+    /**
      * Add grades to user records for capture page
      * @param int $courseid
      * @param int $gradeitemid
@@ -635,7 +639,8 @@ class grades {
      * @return array
      */
     public static function add_grades_for_user(int $courseid, int $gradeitemid, object $user, bool $gradehidden = false) {
-        $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+        //$usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+        $usercapture = \local_gugrades\usercapture::create($courseid, $gradeitemid, $user->id);
         $user->grades = $usercapture->get_grades();
         $user->alert = $usercapture->alert();
 
@@ -939,7 +944,7 @@ class grades {
             // It's points. BUT... *special case*
             // Grading out of 0 to 22 is a proxy for Schedule A.
             if (($gradeitem->grademin == 0) && ($gradeitem->grademax == 22)) {
-                return new \local_gugrades\mapping\schedulea($courseid, $gradeitemid, false, true);
+                return new \local_gugrades\mapping\points22($courseid, $gradeitemid, false);
             }
 
             // We're assuming it's a points scale (already checked for weird, unsupported types).

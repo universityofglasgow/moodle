@@ -84,7 +84,7 @@ if ($str_itemsnotvisibletouser != '') {
     $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
     . ' "game", "lti"))) AND gi.id NOT IN (' .
     $str_itemsnotvisibletouser . ') AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND '
-    . ' cm.visible = 1 AND cm.visibleoncoursepage = 1 AND gi.iteminstance = cm.instance GROUP BY gi.id';
+    . ' AND (gi.iteminstance = cm.instance OR gi.iteminstance IS NULL) GROUP BY gi.id';
 } else {
     $whereclause = 'gi.courseid = ' . $courseid;
 
@@ -94,15 +94,20 @@ if ($str_itemsnotvisibletouser != '') {
     }
 
     $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
-    . ' "game", "lti"))) AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND cm.visible = 1 AND '
-    . ' cm.visibleoncoursepage = 1 AND gi.iteminstance = cm.instance GROUP BY gi.id';
+    . ' "game", "lti"))) AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND '
+    . '(gi.iteminstance = cm.instance OR gi.iteminstance IS NULL) GROUP BY gi.id';
 }
 
 $whereclause .= ' ORDER BY gi.itemname ASC';
 
-$table->set_sql('gi.*, c.shortname as coursename, ' . $studentid . ' as userid, gc.aggregation',
-        '{grade_items} gi, {course} c, {grade_categories} gc, mdl_course_modules cm', 
-        $whereclause);
+$table->set_sql('gi.id,gi.courseid,gi.categoryid,CASE WHEN cm.visible = 0 THEN CONCAT("<i class=\'icon fa '
+    . 'fa-eye-slash fa-fw\' title=\'This activity is currently hidden on the course page.\' alt=\'This activity is currently '
+    . 'hidden on the course page.\' aria-hidden=\'true\' role=\'img\' aria-label=\'This activity is currently hidden on the '
+    . 'course page.\'></i>", gi.itemname) ELSE gi.itemname END AS itemname, gi.itemtype, gi.itemmodule, gi.iteminstance, '
+    . 'gi.gradetype, gi.grademax, gi.scaleid, gi.aggregationcoef, gi.display, gi.hidden, gi.locked, '
+    . 'c.shortname as coursename, cm.visible, cm.visibleoncoursepage, ' . $studentid . ' AS '
+    . 'userid, gc.aggregation', '{grade_items} gi, {course} c, '
+    . '{grade_categories} gc, mdl_course_modules cm', $whereclause);
 
 $table->no_sorting('assessment');
 $table->no_sorting('assessmenttype');

@@ -546,7 +546,8 @@ class conversion {
 
         // Iterate over users converting grades.
         foreach ($users as $user) {
-            $usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+            //$usercapture = new usercapture($courseid, $gradeitemid, $user->id);
+            $usercapture = \local_gugrades\usercapture::create($courseid, $gradeitemid, $user->id);
             $provisional = $usercapture->get_provisional();
 
             // If there's no provision grade, then there's nothing to convert.

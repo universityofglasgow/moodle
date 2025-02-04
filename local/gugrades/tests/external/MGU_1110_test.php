@@ -219,7 +219,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         // Get aggregation page with single MV0
-        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, false);
+        $page = get_aggregation_page::execute($this->course->id, $gradecatsummer->id, '', '', 0, true);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
@@ -327,6 +327,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         $fred = $page['users'][0];
         $this->assertEquals(75, $fred['completed']);
         $this->assertEquals('B3 (15)', $fred['displaygrade']);
+        //$this->assertEquals('B2 (16)', $fred['displaygrade']);
 
         // Add MV0 to Item 1 (pushing it down to 50%)
         $item1id = $this->get_gradeitemid('Item 1');

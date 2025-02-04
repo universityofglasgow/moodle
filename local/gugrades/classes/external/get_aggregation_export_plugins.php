@@ -72,11 +72,14 @@ class get_aggregation_export_plugins extends external_api {
      * @return external_single_structure
      */
     public static function execute_returns() {
-        return new external_multiple_structure(
-            new external_single_structure([
-                'name' => new external_value(PARAM_ALPHA, 'Plugin class name'),
-                'description' => new external_value(PARAM_TEXT, 'Description of plugin'),
-            ])
-        );
+        return new external_single_structure([
+            'plugins' => new external_multiple_structure(
+                new external_single_structure([
+                    'name' => new external_value(PARAM_ALPHA, 'Plugin class name'),
+                    'description' => new external_value(PARAM_TEXT, 'Description of plugin'),
+                ])
+            ),
+            'filename' => new external_value(PARAM_TEXT, 'Proposed filename'),
+        ]);
     }
 }

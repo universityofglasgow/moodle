@@ -282,7 +282,7 @@ class api {
             // We just need the idnumber, so must have at least two entries.
             if (count($line) < 2) {
                 $testrunline['error'] = get_string('csvtoofewitems', 'local_gugrades');
-                $errors['cvstoofewitems']++;
+                $errors['csvtoofewitems']++;
                 $testrunline['state'] = -1;
                 $testrunlines[] = $testrunline;
                 $errorcount++;
@@ -309,7 +309,7 @@ class api {
             $user = $idusers[$idnumber];
 
             // Check if valid grade.
-            if ($grade) {
+            if ($grade != '') {
                 list($gradevalid, $gradevalue) = $mapping->csv_value($grade);
                 if (!$gradevalid) {
                     $testrunline['error'] = get_string('csvgradeinvalid', 'local_gugrades');
@@ -547,6 +547,9 @@ class api {
                 \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
 
                 return true;
+            } else {
+
+                throw new \moodle_exception("Cannot validate grade to be imported - " . $rawgrade);
             }
         } else if (!empty($fillns)) {
 
@@ -1491,7 +1494,8 @@ class api {
         if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $userid)) {
 
             // Nope. So get 'normal' grade.
-            $usercapture = new usercapture($courseid, $gradeitemid, $userid);
+            //$usercapture = new usercapture($courseid, $gradeitemid, $userid);
+            $usercapture = \local_gugrades\usercapture::create($courseid, $gradeitemid, $userid);
             $released = $usercapture->get_released();
         }
 
