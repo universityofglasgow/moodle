@@ -29,8 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 $footerlinks = [
     'University Website' => 'https://www.gla.ac.uk',
     'Accessibility' => 'https://www.gla.ac.uk/legal/accessibility/statements/moodle',
-    'Privacy' => '/local/guprivacy/privacy.php',
-    'Cookies' => '/local/guprivacy/cookies.php',
+    'Privacy' => '/moodle/local/guprivacy/privacy.php',
+    'Cookies' => '/moodle/local/guprivacy/cookies.php',
 ];
 
 $footerlinktext = '';
