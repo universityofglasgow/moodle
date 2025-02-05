@@ -179,7 +179,10 @@ class course {
                 // Fallback to processing this as a regular Gradebook grade category if nothing has been released.
                 $tmpgradecategory = $tmpgradecategories[$index];
                 $tmp = self::process_default_subcategories($courseid, [$tmpgradecategory], $assessmenttype);
-                $gradessubcatdata[] = array_shift($tmp);
+                // MGU-1244 - Looks like the previous method might not return anything.
+                if ($tmp) {
+                    $gradessubcatdata[] = array_shift($tmp);
+                }
             }
             $index++;
         }
@@ -243,8 +246,10 @@ class course {
     }
 
     /**
-     * MGU-973 - Don't display the category if it doesn't contain any grade items.
-     * However, the category may still contain only further sub categories.
+     * This method checks if a grade category contains any grade items - that aren't hidden.
+     * However, the category may still contain further sub categories.
+     * 
+     * @see MGU-973/MGU-1244 for further details around requirments/issues.
      * @param int $courseid
      * @param string $field
      * @param int $categoryid
@@ -252,10 +257,21 @@ class course {
      */
     public static function has_items_or_categories(int $courseid, string $field, int $id) {
 
-        $items = \grade_item::fetch_all(['courseid' => $courseid, $field => $id,
-        'hidden' => 0]);
+        $items = \grade_item::fetch_all(['courseid' => $courseid, $field => $id]);
+        $categoryitems = 0;
+        if ($items) {
+            // Here we need to examine any grade item records. Sure, we only want those that aren't hidden, but the 'hidden' column
+            // seems to be used to also store a date when items can be hidden from/to. Going by the issue raised in MGU-1244, the
+            // grade item 'hidden' value was a quiz end time - but the item appeared in the Gradebook Setup with no restrictions.
+            // I could be wrong, but I'll take that to mean the item is therefore not hidden.
+            foreach ($items as $item) {
+                if ($item->hidden == 0 || $item->hidden > 1) {
+                    $categoryitems++; 
+                }
+            }
+        }
         $subcategories = \grade_category::fetch_all(['parent' => $id, 'hidden' => 0]);
-        if ($items || $subcategories) {
+        if ($categoryitems > 0 || $subcategories) {
             return true;
         }
 
