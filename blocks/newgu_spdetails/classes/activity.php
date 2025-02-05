@@ -424,6 +424,12 @@ class activity {
                                             }
                                         }
                                     }
+
+                                    // See @MGU-1249 The Feedback column for manual grade items no longer needs to display a link
+                                    if ($tmpgradeitems[$index]->itemtype == 'manual') {
+                                        $mygradesactivityitem->grade_feedback = '-';
+                                        $mygradesactivityitem->grade_feedback_link = '';
+                                    }
                                 }
                             }
                         }
@@ -742,7 +748,7 @@ class activity {
 
             // To get us around the problem of not having a hidden manual item appear for the student in Student MyGrades,
             // but, have this appear in Student MyGrades Staff View, we need to carry out the following trick shot.
-            if ($gradestatobj->hidden == 1 && $userid != null) {
+            if ($gradestatobj->hidden == 1 && ($userid != null && $userid != $USER->id)) {
                 $processedmanualgradeitem = new \stdClass();
                 $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
                 $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
@@ -759,7 +765,7 @@ class activity {
 
         // To get us around the problem of not having a hidden manual item appear for the student in Student MyGrades,
         // but, have this appear in Student MyGrades Staff View, we need to carry out the following hack.
-        if ($manualgradeitem->hidden == 1 && $userid != null) {
+        if ($manualgradeitem->hidden == 1 && ($userid != null && $userid != $USER->id)) {
             $processedmanualgradeitem = new \stdClass();
             $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
             $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
