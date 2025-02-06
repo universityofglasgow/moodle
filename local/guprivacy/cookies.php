@@ -40,6 +40,6 @@
  echo $OUTPUT->header();
  
  echo $sitecontent;
- echo '<p>To opt-out of Third-party tracking cookies <a href="javascript:gaOptout()"> Click here</a></p>';
+ echo '<button class="btn btn-primary" onclick="gaOptout()">Opt-out of third party cookies.</button>';
  
  echo $OUTPUT->footer();
