@@ -71,34 +71,9 @@ $bytes = random_bytes(5);
 $tableid = bin2hex($bytes);
 $table = new sduserdetailscurrent_table($tableid);
 
-$str_itemsnotvisibletouser = \block_newgu_spdetails\api::fetch_itemsnotvisibletouser($courseid);
-
-if ($str_itemsnotvisibletouser != '') {
-    $whereclause = 'gi.courseid = ' . $courseid;
-    
-    if ($str_ltiinstancenottoinclude != '') {
-        $whereclause .= ' AND ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') AND gi.itemmodule = "lti")'
-        . ' OR gi.itemmodule != "lti")';
-    }
-    
-    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
-    . ' "game", "lti"))) AND gi.id NOT IN (' .
-    $str_itemsnotvisibletouser . ') AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND '
-    . ' AND (gi.iteminstance = cm.instance OR gi.iteminstance IS NULL) GROUP BY gi.id';
-} else {
-    $whereclause = 'gi.courseid = ' . $courseid;
-
-    if ($str_ltiinstancenottoinclude != '') {
-        $whereclause .= ' AND ((gi.iteminstance IN (' . $str_ltiinstancenottoinclude . ') AND gi.itemmodule = "lti")'
-        . ' OR gi.itemmodule != "lti")';
-    }
-
-    $whereclause .= ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR gi.itemmodule NOT IN ("attendance",'
-    . ' "game", "lti"))) AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND cm.course = c.id AND '
-    . '(gi.iteminstance = cm.instance OR gi.iteminstance IS NULL) GROUP BY gi.id';
-}
-
-$whereclause .= ' ORDER BY gi.itemname ASC';
+$whereclause = 'gi.courseid = ' . $courseid . ' AND (gi.itemtype IN ("mod", "manual") AND (gi.itemmodule IS NULL OR '
+. 'gi.itemmodule NOT IN ("attendance","game", "lti"))) AND gi.courseid = c.id AND gc.courseid = c.id AND gi.display = 0 AND '
+. 'cm.course = c.id AND (gi.iteminstance = cm.instance OR gi.iteminstance IS NULL) GROUP BY gi.id ORDER BY gi.itemname ASC';
 
 $table->set_sql('gi.id,gi.courseid,gi.categoryid,CASE WHEN cm.visible = 0 THEN CONCAT("<i class=\'icon fa '
     . 'fa-eye-slash fa-fw\' title=\'This activity is currently hidden on the course page.\' alt=\'This activity is currently '

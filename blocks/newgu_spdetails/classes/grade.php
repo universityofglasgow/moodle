@@ -162,7 +162,7 @@ class grade {
         $gradestatus->grade_feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
         $gradestatus->grade_feedback_link = '';
         $grade = $DB->get_record_sql('
-            SELECT finalgrade, hidden FROM {grade_grades} WHERE itemid = :itemid AND userid = :userid',
+            SELECT finalgrade, hidden, feedback FROM {grade_grades} WHERE itemid = :itemid AND userid = :userid',
             [
                 'itemid' => $itemid,
                 'userid' => $userid,
@@ -174,11 +174,17 @@ class grade {
                 if ($grade->finalgrade != null && $grade->finalgrade > 0) {
                     $manualgrade = self::get_formatted_grade_from_grade_type($grade->finalgrade, $gradetype, $scaleid, $grademax);
                     $gradestatus->grade_to_display = $manualgrade;
+                    $gradestatus->grade_class = true;
                     $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
                     $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
                     $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
-                    $gradestatus->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
-                    $gradestatus->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' . $courseid;
+                    // @see MGU-1249 - It seems prudent however that if feedback ^has^ been added, then we provide a link to it.
+                    if ($grade->feedback != '') {
+                        $gradestatus->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
+                        $gradestatus->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' . $courseid;
+                    } else {
+                        $gradestatus->grade_feedback = '-';
+                    }
                 }
             }
 

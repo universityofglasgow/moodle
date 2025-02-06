@@ -470,12 +470,9 @@ class sduserdetailscurrent_table extends table_sql
                 $tbc = false;
                 if (!$hidden = $DB->get_records('local_gugrades_hidden', ['courseid' => $courseid, 'gradeitemid' => $itemid,
                     'userid' => $userid])) {
-                    $releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid);
-                    if ($releasedgrade) {
-                        // MGU-1249 - nothing needed in the feedback column now.
-                        $feedback = '-';
-                    } else {
+                    if (!$releasedgrade = \local_gugrades\grades::get_released_grade($courseid, $itemid, $userid)) {
                         // Fallback to whatever is in gradebook.
+                        // MGU-1249 - nothing is needed in the Feedback column now.
                         $fallbacktogradebook = true;
                     }
                 } else {
@@ -504,8 +501,10 @@ class sduserdetailscurrent_table extends table_sql
                     $grademax
                 );
                 if ($manualgradefeedback) {
-                    // MGU-1249 - No longer need to display a link to the Grader report.\
-                    $feedback = '-';
+                    $feedback = $manualgradefeedback->grade_feedback;
+                    if ($manualgradefeedback->grade_feedback_link) {
+                        $feedback = '<a href="' . $manualgradefeedback->grade_feedback_link . '">' . $manualgradefeedback->grade_feedback . '</a>';
+                    }
                 }
             } else {
                 $gradefeedback = \block_newgu_spdetails\grade::get_grade_status_and_feedback($courseid, $itemid, $userid, $gradetype,
