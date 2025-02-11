@@ -462,8 +462,8 @@ class activity {
                         // MGU-1065 - We need to get a reference to this category first,
                         // we don't have access to it when processing "mygrades" items.
                         $gradecategoryweight = 0;
-                        if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'iteminstance' =>
-                            $tmpgradeitem->iteminstance, 'itemtype' => 'mod'])) {
+                        if ($item = \grade_item::fetch(['courseid' => $tmpgradeitem->courseid, 'itemtype' => 'mod',
+                            'itemmodule' => $tmpgradeitem->itemmodule, 'iteminstance' => $tmpgradeitem->iteminstance])) {
                             $gradecategoryweight = course::get_grade_category_weight($item, $tmpgradeitem);
                         }
 
