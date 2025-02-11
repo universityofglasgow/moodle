@@ -47,7 +47,7 @@ $spdetailspdf = get_string('nocoursesfound', 'block_newgu_spdetails');
 
 // Quick and dirty way of getting all of the mygrades grade category items in the format we need.
 function get_aggregation_items(int $courseid, int $gradeitemid, int $userid, array $items): array {
-    $items = $items;                        
+    $items = $items;
     if ($gradecat = \grade_item::fetch(['id' => $gradeitemid])) {
         $gradecatid = $gradecat->iteminstance;
         $tmp = \local_gugrades\api::get_aggregation_dashboard_user($courseid, $gradecatid, $userid);
@@ -146,6 +146,13 @@ if ($coursestype) {
                         }
                     }
                 }
+                // MGU-1243 - only keep an item in $mygradeitem if there is a corresponding item in $activities
+                foreach ($mygradeitems as $mygradeitem) {
+					$tempgradeitem = $mygradeitem['gradeitemid'];
+					if (!array_key_exists($tempgradeitem, $activities)){
+						unset($mygradeitems[$tempgradeitem]);
+					}
+				}
                 // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
                 // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
                 // be/not able to access the arrays using the item id as an index.
