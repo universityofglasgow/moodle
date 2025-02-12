@@ -67,8 +67,8 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
             $plugins
         );
 
-        $this->assertEquals('mycampus', $plugins[1]['name']);
-        $this->assertEquals('MyCampus export', $plugins[1]['description']);
+        $this->assertEquals('mycampus', $plugins['plugins'][1]['name']);
+        $this->assertEquals('MyCampus export', $plugins['plugins'][1]['description']);
     }
 
     /**
