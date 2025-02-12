@@ -193,7 +193,8 @@ class aggregation {
                 'strategyid' => $gradecategory->aggregation,
                 'showweights' => self::show_weights($gradecategory->categoryid),
                 'userids' => [],
-                'weight' => round($gradecategory->weight * 100, 1, PHP_ROUND_HALF_DOWN),
+                'weight' => round($gradecategory->weight * 100, self::get_decimal_places_from_aggregation_strategy(
+                    $gradecategory->aggregation), PHP_ROUND_HALF_DOWN),
                 'released' => \local_gugrades\grades::is_grades_released($courseid, $gradecategory->itemid),
             ];
         }
@@ -218,7 +219,8 @@ class aggregation {
                 'strategyid' => 0,
                 'showweights' => false,
                 'userids' => $userids,
-                'weight' => round($gradeitem->weight * 100, 1, PHP_ROUND_HALF_DOWN),
+                'weight' => round($gradeitem->weight * 100, self::get_decimal_places_from_aggregation_strategy(
+                    $gradecategory->aggregation), PHP_ROUND_HALF_DOWN),
                 'released' => \local_gugrades\grades::is_grades_released($courseid, $gradeitem->gradeitemid),
             ];
         }
@@ -1341,6 +1343,30 @@ class aggregation {
             // 1 = level 1 (we need to know what level we're at). Level is incremented
             // as call recurses.
             self::aggregate_user($courseid, $toplevel, $user->id, 1, $skipdroplow);
+        }
+    }
+
+    /**
+     * Utility function that returns decimal places for a weight, based on the strategy being used.
+     * Aggregation strategy no's lifted directly from Moodle's Grade category settings page.
+     *
+     * @see MGU-1226 for a further description.
+     * @param int $aggregation - the strategy being used.
+     * @return int
+     */
+    public static function get_decimal_places_from_aggregation_strategy(int $aggregation): int {
+        switch ($aggregation) {
+            case 10:
+                return 3;
+            break;
+            case 2:
+            case 6:
+            case 8:
+            case 11:
+            case 12:
+            default:
+                return 1;
+            break;
         }
     }
 
