@@ -61,14 +61,18 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
         $categoryid = $this->get_grade_category('Summative');
 
         // Get plugins.
-        $plugins = get_aggregation_export_plugins::execute($courseid, $categoryid);
-        $plugins = external_api::clean_returnvalue(
+        $exportplugins = get_aggregation_export_plugins::execute($courseid, $categoryid);
+        $exportplugins = external_api::clean_returnvalue(
             get_aggregation_export_plugins::execute_returns(),
-            $plugins
+            $exportplugins
         );
 
-        $this->assertEquals('mycampus', $plugins['plugins'][1]['name']);
-        $this->assertEquals('MyCampus export', $plugins['plugins'][1]['description']);
+        $plugins = $exportplugins['plugins'];
+        $filename = $exportplugins['filename'];
+
+        $this->assertEquals('mycampus', $plugins[1]['name']);
+        $this->assertEquals('MyCampus export', $plugins[1]['description']);
+        $this->assertEquals('MyGrades_tc_1_2025', $filename);
     }
 
     /**
