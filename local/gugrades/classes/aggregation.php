@@ -219,8 +219,7 @@ class aggregation {
                 'strategyid' => 0,
                 'showweights' => false,
                 'userids' => $userids,
-                'weight' => round($gradeitem->weight * 100, self::get_decimal_places_from_aggregation_strategy(
-                    $gradecategory->aggregation), PHP_ROUND_HALF_DOWN),
+                'weight' => round($gradeitem->weight * 100, 1, PHP_ROUND_HALF_DOWN),
                 'released' => \local_gugrades\grades::is_grades_released($courseid, $gradeitem->gradeitemid),
             ];
         }
@@ -1354,20 +1353,24 @@ class aggregation {
      * @param int $aggregation - the strategy being used.
      * @return int
      */
-    public static function get_decimal_places_from_aggregation_strategy(int $aggregation): int {
-        switch ($aggregation) {
-            case 10:
-                return 3;
-            break;
-            case 2:
-            case 6:
-            case 8:
-            case 11:
-            case 12:
-            default:
-                return 1;
-            break;
+    public static function get_decimal_places_from_aggregation_strategy(int $aggregation = null): int {
+        if ($aggregation) {
+            switch ($aggregation) {
+                case 10:
+                    return 3;
+                break;
+                case 2:
+                case 6:
+                case 8:
+                case 11:
+                case 12:
+                default:
+                    return 1;
+                break;
+            }
         }
+
+        return 1;
     }
 
 }
