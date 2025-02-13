@@ -140,18 +140,19 @@ class custom extends base {
         ];
 
         // Stored preferences
-        $preferences = get_user_preferences('local_gugrades_customaggregationexportselect');
+        $preferencename = 'local_gugrades_customaggregationexportselect_' . $gradecategoryid;
+        $preferences = get_user_preferences($preferencename);
         if ($preferences) {
-            $selected = unserialize($preferences);
+            $selected = explode(',', $preferences);
         } else {
             $selected = [];
         }
 
-        // Add 'selected' field
+        // Add 'selected' fields.
         foreach ($form as $key => $record) {
             $identifier = $record['identifier'];
-            if (array_key_exists($identifier, $selected)) {
-                $form[$key]['selected'] = $selected[$identifier];
+            if (in_array($identifier, $selected)) {
+                $form[$key]['selected'] = true;
             } else {
                 $form[$key]['selected'] = false;
             }
@@ -363,17 +364,29 @@ class custom extends base {
 
     /**
      * Save the user selections in user preferences
+     * @param int $gradecategoryid
      * @param array $form
      */
-    protected function save_preferences(array $form) {
+    protected function save_preferences(int $gradecategoryid, array $form) {
 
         // Convert form to a simple array
         $preferences = [];
         foreach ($form as $record) {
-            $preferences[$record['identifier']] = $record['selected'];
+            if ($record['selected']) {
+                $preferences[] = $record['identifier'];
+            }
         }
 
-        set_user_preference('local_gugrades_customaggregationexportselect', serialize($preferences));
+        // Convert to comma separated list of selected fields.
+        $selected = implode(',', $preferences);
+        $preferencename = 'local_gugrades_customaggregationexportselect_' . $gradecategoryid;
+
+        // User preferences have some weird limit of 1333 characters.
+        if (\core_text::strlen($selected) > 1333) {
+            $selected = null;
+        }
+
+        set_user_preference($preferencename, $selected);
     }
 
     /**
@@ -388,7 +401,7 @@ class custom extends base {
 
         set_time_limit(0);
 
-        $this->save_preferences($form);
+        $this->save_preferences($gradecategoryid, $form);
 
         // Get list of students.
         $users = \local_gugrades\aggregation::get_users($courseid, $gradecategoryid, '', '', $groupid);

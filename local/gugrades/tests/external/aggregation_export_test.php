@@ -150,9 +150,9 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
         $this->assertEquals($expected, $data['csv']);
 
         // Check user preferences have been set
-        $preferences = unserialize(get_user_preferences('local_gugrades_customaggregationexportselect'));
+        $preferences = explode(',', get_user_preferences('local_gugrades_customaggregationexportselect_' . $categoryid));
         $this->assertCount(25, $preferences);
-        $this->assertTrue($preferences["idnumber"]);
+        $this->assertEquals('idnumber', $preferences[1]);
 
         // Get form again, to check saved settings
         $form = get_aggregation_export_form::execute($courseid, $categoryid, 'custom');
