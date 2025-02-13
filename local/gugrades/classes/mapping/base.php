@@ -162,13 +162,13 @@ abstract class base {
     }
 
     /**
-     * Validate the grade
+     * Validate the CSV grade
      * It should be within grademin and grademax otherwise we'll reject it
      * This is because (I think) the old GCAT can write an invalid 0 into assign_grade / grade_grade
      * @param float $grade
      * @return bool
      */
-    public function validate(float $grade) {
+    public function validate_csv(float $grade) {
 
         // Need to offset grademin and grademax by one, as Moodle stores scales 1 - based
         $grademin = $this->gradeitem->grademin - 1;
@@ -214,7 +214,7 @@ abstract class base {
         } else {
             $grade = floatval(trim($csvgrade));
         }
-        if (!$this->validate($grade)) {
+        if (!$this->validate_csv($grade)) {
             return [false, 0];
         }
 

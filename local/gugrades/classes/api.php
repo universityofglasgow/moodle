@@ -520,7 +520,7 @@ class api {
             // Can (sometimes) come back as string, for some reason.
             $rawgrade = floatval($rawgrade);
 
-            if ($mapping->validate($rawgrade)) {
+            //if ($mapping->validate($rawgrade)) {
                 [$convertedgrade, $displaygrade] = $mapping->import($rawgrade);
 
                 // TODO: Is rawgrade correct? For scheduleB this will be completely
@@ -547,10 +547,10 @@ class api {
                 \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
 
                 return true;
-            } else {
-
-                throw new \moodle_exception("Cannot validate grade to be imported - " . $rawgrade);
-            }
+            //} else {
+            //
+            //    throw new \moodle_exception("Cannot validate grade to be imported - " . $rawgrade);
+            //}
         } else if (!empty($fillns)) {
 
             // If there's no grade and fillns is enabled, write

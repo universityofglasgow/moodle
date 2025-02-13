@@ -65,13 +65,13 @@ class points22 extends schedulea {
     }
 
     /**
-     * Validate the grade
+     * Validate the CSV grade
      * It should be within grademin and grademax otherwise we'll reject it
      * This is because (I think) the old GCAT can write an invalid 0 into assign_grade / grade_grade
      * @param float $grade
      * @return bool
      */
-    public function validate(float $grade) {
+    public function validate_csv(float $grade) {
         $grademin = 0;
         $grademax = 22;
 
