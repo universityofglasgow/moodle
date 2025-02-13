@@ -1377,12 +1377,6 @@ class api {
         foreach ($courses as $id => $course) {
             $context = \context_course::instance($id, true);
 
-            // Skip courses with showgrades == 0.
-            if (!$course->showgrades) {
-                unset($courses[$id]);
-                continue;
-            }
-
             // Skip courses which don't have enabled in the customfield.
             if (!self::is_mygrades_customfield_enabled($id)) {
                 unset($courses[$id]);
