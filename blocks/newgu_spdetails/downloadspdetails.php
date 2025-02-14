@@ -153,6 +153,14 @@ if ($coursestype) {
 						unset($mygradeitems[$tempgradeitem]);
 					}
 				}
+                // MGU-1254 - do the same the other way around
+                // only keep items in $activities if they have equivalent in $mygradeitems
+                foreach ($activities as $activity) {
+					$tempactivityitem = $activity->id;
+					if (!array_key_exists($tempactivityitem, $mygradeitems)){
+						unset($activities[$tempactivityitem]);
+					}
+				}
                 // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
                 // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
                 // be/not able to access the arrays using the item id as an index.
