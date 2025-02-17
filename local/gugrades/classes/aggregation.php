@@ -218,7 +218,7 @@ class aggregation {
                 'strategyid' => 0,
                 'showweights' => false,
                 'userids' => $userids,
-                'weight' => round($gradeitem->weight * 100, 1, PHP_ROUND_HALF_DOWN),
+                'weight' => round($gradeitem->weight * 100, 3, PHP_ROUND_HALF_DOWN),
                 'released' => \local_gugrades\grades::is_grades_released($courseid, $gradeitem->gradeitemid),
             ];
         }
