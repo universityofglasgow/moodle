@@ -324,6 +324,9 @@ class users {
         $first = empty($user->firstname) ? '' : \core_text::substr($user->firstname, 0, 1);
         $last = empty($user->lastname) ? '' : \core_text::substr($user->lastname, 0, 1);
 
+        $first = \core_text::strtoupper($first);
+        $last = \core_text::strtoupper($last);
+
         return [$first, $last];
     }
 }
