@@ -72,6 +72,8 @@
                     header-text-direction="center"
                     :body-row-class-name="table_row_class"
                     :body-item-class-name="table_item_class"
+                    :header-item-class-name="header_item_class"
+                    :filter-options="table_filter"
                     >
 
                     <!-- add header text and edit cog next to cell if required -->
@@ -212,11 +214,35 @@
     const provisionalid = ref('');
     const showcsvimport = ref(true);
     const debug = ref({});
+    const firstname = ref('');
+    const lastname = ref('');
 
     const toast = useToast();
 
-    let firstname = '';
-    let lastname = '';
+    /**
+     * Table name filter
+     */
+    const table_filter = computed(() => {
+        const options = [];
+
+        if (firstname.value != '') {
+            options.push({
+                field: 'firstinitial',
+                comparison: '=',
+                criteria: firstname.value,
+            });
+        }
+
+        if (lastname.value != '') {
+            options.push({
+                field: 'lastinitial',
+                comparison: '=',
+                criteria: lastname.value,
+            });
+        }
+
+        return options;
+    });
 
     /**
      * A watch for the itemid changing
@@ -269,10 +295,25 @@
      * Get class name for table items
      */
     function table_item_class(column) {
+
+        // Hide name initial columns
+        if ((column == 'firstinitial') || (column == 'lastinitial')) {
+            return 'd-none';
+        }
         if (column != 'displayname') {
             return 'text-center';
         }
     }
+
+    /**
+     * Get class name for header items
+     */
+     function header_item_class(header) {
+        if ((header.value == 'firstinitial') || (header.value == 'lastinitial')) {
+            return 'd-none';
+        }
+    }
+
 
     /**
      * Collapse selection area
@@ -387,6 +428,8 @@
     const headers = computed(() => {
         let heads = [];
         if (!usershidden.value) {
+            heads.push({text: 'firstinitial', value: 'firstinitial'}),
+            heads.push({text: 'lastinitial', value: 'firstinitial'}),
             heads.push({text: mstrings.userpicture, value: "slotuserpicture"});
             heads.push({text: mstrings.firstnamelastname, value: "displayname", sortable: true})
         } else {
@@ -496,7 +539,7 @@
      * (We have to do this in lots of places)
      */
     function reload_page() {
-        get_page_data(itemid.value, firstname, lastname, groupid.value);
+        get_page_data(itemid.value, groupid.value);
     }
 
     /**
@@ -506,7 +549,7 @@
      * @param char last
      * @param int gid (group id)
      */
-     function get_page_data(itemid, first, last, gid) {
+     function get_page_data(itemid, gid) {
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
@@ -518,8 +561,8 @@
             args: {
                 courseid: courseid,
                 gradeitemid: itemid,
-                firstname: first,
-                lastname: last,
+                firstname: '',
+                lastname: '',
                 groupid: gid,
                 viewfullnames: revealnames.value,
             }
@@ -627,19 +670,19 @@
         if (last == 'all') {
             last = '';
         }
-        firstname = first;
-        lastname = last;
+        firstname.value = first;
+        lastname.value = last;
 
         // Reset page
-        currentpage.value = 1;
-        get_page_data(itemid.value, first, last, groupid.value);
+        //currentpage.value = 1;
+        //get_page_data(itemid.value, groupid.value);
     }
 
     /**
      * Refresh the data table
      */
     function refresh() {
-        get_page_data(itemid.value, firstname, lastname, groupid.value);
+        get_page_data(itemid.value, groupid.value);
     }
 
     /**

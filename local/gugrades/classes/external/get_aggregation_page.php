@@ -116,6 +116,8 @@ class get_aggregation_page extends external_api {
                 new external_single_structure([
                     'id' => new external_value(PARAM_INT, 'User ID'),
                     'displayname' => new external_value(PARAM_TEXT, 'Name to display for this user'),
+                    'firstinitial' => new external_value(PARAM_TEXT, 'First initial for filtering'),
+                    'lastinitial' => new external_value(PARAM_TEXT, 'Last initial for filtering'),
                     'itemname' => new external_value(PARAM_TEXT, 'Name of grade item'),
                     'pictureurl' => new external_value(PARAM_URL, 'URL of user avatar'),
                     'profileurl' => new external_value(PARAM_URL, 'Like to user profile page'),

@@ -135,6 +135,9 @@ abstract class base {
         // This may get updated.
         foreach ($users as $user) {
             $user->displayname = fullname($user);
+
+            // Initials
+            [$user->firstinitial, $user->lastinitial] = \local_gugrades\users::get_initials($user);
         }
 
         return array_values($users);
@@ -167,7 +170,7 @@ abstract class base {
 
     /**
      * Get (and check) single user
-     * @param int $user
+     * @param int $userid
      * @return object
      */
     public function get_user(int $userid) {
@@ -175,7 +178,10 @@ abstract class base {
         $user = \local_gugrades\users::get_gradeable_user($context, $userid);
 
         // Add displayname.
-        $user->displayname = fullname($user);
+        $user->displayname = \core_user::get_fullname($user);
+
+        // Initials
+        [$user->firstinitial, $user->lastinitial] = \local_gugrades\users::get_initials($user);
 
         return $user;
     }

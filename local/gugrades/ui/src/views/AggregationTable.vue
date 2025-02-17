@@ -61,8 +61,10 @@
             table-class-name="aggregation-table"
             header-text-direction="center"
             :body-item-class-name="table_item_class"
+            :header-item-class-name="header_item_class"
             :items="users"
             :headers="headers"
+            :filter-options="table_filter"
         >
 
             <!-- additional information in header cells -->
@@ -250,9 +252,33 @@
     const released = ref(false);
     const showweights = ref(false);
     const excludeempty = ref(false);
+    const firstname = ref('');
+    const lastname = ref('');
 
-    let firstname = '';
-    let lastname = '';
+    /**
+     * Table name filter
+     */
+     const table_filter = computed(() => {
+        const options = [];
+
+        if (firstname.value != '') {
+            options.push({
+                field: 'firstinitial',
+                comparison: '=',
+                criteria: firstname.value,
+            });
+        }
+
+        if (lastname.value != '') {
+            options.push({
+                field: 'lastinitial',
+                comparison: '=',
+                criteria: lastname.value,
+            });
+        }
+
+        return options;
+    });
 
     /**
      * Work out border classes for item
@@ -289,8 +315,22 @@
      * Get class name for table items
      */
      function table_item_class(column) {
+
+        // Hide name initial columns
+        if ((column == 'firstinitial') || (column == 'lastinitial')) {
+            return 'd-none';
+        }
         if (column != 'displayname') {
             return 'text-center';
+        }
+    }
+
+    /**
+     * Get class name for header items
+     */
+     function header_item_class(header) {
+        if ((header.value == 'firstinitial') || (header.value == 'lastinitial')) {
+            return 'd-none';
         }
     }
 
@@ -394,6 +434,8 @@
         let heads = [];
 
         // User identification.
+        heads.push({text: 'firstinitial', value: 'firstinitial'});
+        heads.push({text: 'lastinitial', value: 'firstinitial'});
         heads.push({text: mstrings.userpicture, value: "slotuserpicture", infocol: true});
         heads.push({text: mstrings.firstnamelastname, value: "displayname", sortable: true, infocol: true})
         heads.push({text: mstrings.idnumber, value: "idnumber", sortable: true, infocol: true});
@@ -492,12 +534,12 @@
         if (last == 'all') {
             last = '';
         }
-        firstname = first;
-        lastname = last;
+        firstname.value = first;
+        lastname.value = last;
 
         // Reset page
         //currentpage.value = 1;
-        table_update();
+        //table_update();
     }
 
     /**
@@ -550,8 +592,8 @@
             args: {
                 courseid: courseid,
                 gradecategoryid: categoryid.value,
-                firstname: firstname,
-                lastname: lastname,
+                firstname: '',
+                lastname: '',
                 groupid: groupid.value,
                 aggregate: false,
             }

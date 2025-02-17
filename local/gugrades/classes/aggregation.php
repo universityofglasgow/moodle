@@ -269,6 +269,9 @@ class aggregation {
 
         $user = \local_gugrades\users::add_picture_and_profile_to_user_record($courseid, $user);
 
+        // Initials
+        [$user->firstinitial, $user->lastinitial] = \local_gugrades\users::get_initials($user);
+
         return $user;
     }
 
@@ -297,6 +300,9 @@ class aggregation {
             $user->total = get_string('gradesmissing', 'local_gugrades');
             $user->completed = 0;
             $user->error = get_string('gradesmissing', 'local_gugrades');
+
+            // Initials
+            [$user->firstinitial, $user->lastinitial] = \local_gugrades\users::get_initials($user);
         }
 
         // Pictures.

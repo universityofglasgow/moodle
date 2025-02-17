@@ -314,4 +314,16 @@ class users {
             $cachetag = 'AVAILABLE_' . $courseid . '_' . $item->id;
         }
     }
+
+    /**
+     * Get firstname and lastname initials
+     * @param object $user
+     * @return [string, string]
+     */
+    public static function get_initials(object $user) {
+        $first = empty($user->firstname) ? '' : \core_text::substr($user->firstname, 0, 1);
+        $last = empty($user->lastname) ? '' : \core_text::substr($user->lastname, 0, 1);
+
+        return [$first, $last];
+    }
 }
