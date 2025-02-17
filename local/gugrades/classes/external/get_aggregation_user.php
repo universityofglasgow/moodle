@@ -86,7 +86,7 @@ class get_aggregation_user extends external_api {
             'profileurl' => new external_value(PARAM_URL, 'Like to user profile page'),
             'idnumber' => new external_value(PARAM_TEXT, 'User ID number'),
             'resitrequired' => new external_value(PARAM_BOOL, 'Is resit required?'),
-            'completed' => new external_value(PARAM_INT, '%age of course completed'),
+            'completed' => new external_value(PARAM_FLOAT, '%age of course completed'),
             'displaygrade' => new external_value(PARAM_TEXT, 'Content for total column'),
             'releasegrade' => new external_value(PARAM_TEXT, 'Grade to show in the released column (if any)'),
             'mismatch' => new external_value(PARAM_BOOL, 'Released and display grades do not match'),

@@ -222,7 +222,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("57", $fred['completed']);
+        $this->assertEquals("57.143", $fred['completed']);
         $this->assertEquals('C2', $fred['fields'][2]['display']);
 
         // Add an admin grade.
@@ -251,7 +251,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("43", $fred['completed']);
+        $this->assertEquals("42.857", $fred['completed']);
         $this->assertEquals('MV', $fred['fields'][4]['display']);
     }
 

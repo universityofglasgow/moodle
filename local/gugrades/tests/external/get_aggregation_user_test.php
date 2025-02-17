@@ -113,7 +113,7 @@ final class get_aggregation_user_test extends \local_gugrades\external\gugrades_
         );
 
         $this->assertEquals('Fred Bloggs', $user['displayname']);
-        $this->assertEquals(29, $user['completed']);
+        $this->assertEquals(28.571, $user['completed']);
         $fields = $user['fields'];
         $this->assertEquals('47.23333', $fields[0]['display']);
     }

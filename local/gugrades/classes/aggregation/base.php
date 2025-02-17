@@ -294,17 +294,17 @@ class base {
      * Returns this or empty string if not.
      *
      * @param array $items
-     * @param int $completion
+     * @param float $completion
      * @return string
      */
-    public function admin_grades_level1(array $items, int $completion) {
+    public function admin_grades_level1(array $items, float $completion) {
 
         // If completion is <75% then admingrade is CW
         // ...unless one of the items is MV0, then it's MV
         // MGU-1110 CoS11
         // UNLESS there is any NS - CoS12
         // Superceded by MGU-1213
-        if ($completion < 75) {
+        if ($completion < 75.0) {
 
             // Check for MV0
             if ($this->mv0found) {
@@ -379,7 +379,7 @@ class base {
         }
 
         // MGU-1236.
-        return round($raw, 0, PHP_ROUND_HALF_DOWN);
+        return round($raw, 3, PHP_ROUND_HALF_DOWN);
     }
 
     /**

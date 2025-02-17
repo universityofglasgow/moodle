@@ -122,7 +122,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $fred = $page['users'][0];
         $this->assertEquals("CW", $fred['displaygrade']);
         $this->assertEquals(0.0, $fred['rawgrade']);
-        $this->assertEquals(67, $fred['completed']);
+        $this->assertEquals(66.667, $fred['completed']);
 
         // Change item 1 to an MV
         $this->apply_admingrade('Item 1', $this->student->id, 'MV');
@@ -138,7 +138,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $fred = $page['users'][0];
         $this->assertEquals("MV", $fred['displaygrade']);
         $this->assertEquals(0.0, $fred['rawgrade']);
-        $this->assertEquals(33, $fred['completed']);
+        $this->assertEquals(33.333, $fred['completed']);
 
         // Change question 3 to 07 admingrade
         $this->apply_admingrade('Question 3', $this->student->id, '07');
