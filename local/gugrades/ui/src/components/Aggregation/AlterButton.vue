@@ -7,68 +7,76 @@
 
     <VueModal v-model="showaltermodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.altertitle">
 
-        <!-- basic details of category -->
-        <ul class="list-unstyled">
-            <li><b>{{ mstrings.category }}:</b> {{ categoryname }}</li>
-            <li><b>{{ mstrings.username }}:</b> {{ userfullname }}</li>
-            <li><b>{{ mstrings.idnumber }}:</b> {{ idnumber }}</li>
-        </ul>
-
-        <!-- grade items therein -->
-        <div class="border rounded mt-3 p-2">
-            <div class="row mt-1 mb-2 font-weight-bolder">
-                <div class="col">{{ mstrings.gradeitem }}</div>
-                <div class="col">{{ mstrings.gradetype }}</div>
-                <div class="col">{{ mstrings.grade }}</div>
-                <div class="col">{{ mstrings.defaultweights }}</div>
-                <div class="col">{{ mstrings.alteredweights }}</div>
-            </div>
-            <div v-for="item in items" class="row mt-1">
-                <div class="col"><b>{{ item.fullname }}</b></div>
-                <div class="col">{{ item.gradetype }}</div>
-                <div class="col">{{ item.display }}</div>
-                <div class="col">
-                    {{ item.originalweight }}
-                </div>
-                <div class="col">
-                    <FormKit
-                        type="number"
-                        number="float"
-                        outer-class="mb-3"
-                        placeholder="new weight"
-                        name="weight"
-                        step="0.05"
-                        validation="between:0,1"
-                        validation-visibility="live"
-                        v-model="item.alteredweight"
-                    />
-                </div>
-            </div>
-            <div class="row mt-1">
-                <div class="col font-weight-bold">{{ mstrings.sumofweights }}</div>
-                <div class="col">&nbsp;</div>
-                <div class="col">&nbsp;</div>
-                <div class="col">{{ defaulttotal.toFixed(5) }}</div>
-                <div class="col">{{ alteredtotal.toFixed(5) }}</div>
-            </div>
-            <div v-if="!closeenough" class="mt-2 text-danger">{{ mstrings.donotaddto1 }}</div>
+        <div v-if="loading" class="alert alert-info">
+            {{ mstrings.pleasewait }}
         </div>
 
-        <!-- reason -->
-         <div class="border rounded mt-2 px-3">
-            <FormKit
-                type="textarea"
-                outer-class="mb-3"
-                :label="mstrings.reasonforammendment"
-                name="reason"
-                v-model="reason"
-            />
-         </div>
+        <div v-if="!loading">
 
-        <div class="mt-2">
-            <button class="btn btn-primary mr-1" type="button" @click="save_altered_weights">{{  mstrings.save }}</button>
-            <button class="btn btn-info mr-1" type="button" @click="revert_altered_weights">{{  mstrings.revert }}</button>
-            <button class="btn btn-warning" type="button" @click="showaltermodal = false">{{  mstrings.cancel }}</button>
+            <!-- basic details of category -->
+            <ul class="list-unstyled">
+                <li><b>{{ mstrings.category }}:</b> {{ categoryname }}</li>
+                <li><b>{{ mstrings.username }}:</b> {{ userfullname }}</li>
+                <li><b>{{ mstrings.idnumber }}:</b> {{ idnumber }}</li>
+            </ul>
+
+            <!-- grade items therein -->
+            <div class="border rounded mt-3 p-2">
+                <div class="row mt-1 mb-2 font-weight-bolder">
+                    <div class="col">{{ mstrings.gradeitem }}</div>
+                    <div class="col">{{ mstrings.gradetype }}</div>
+                    <div class="col">{{ mstrings.grade }}</div>
+                    <div class="col">{{ mstrings.defaultweights }}</div>
+                    <div class="col">{{ mstrings.alteredweights }}</div>
+                </div>
+                <div v-for="item in items" class="row mt-1">
+                    <div class="col"><b>{{ item.fullname }}</b></div>
+                    <div class="col">{{ item.gradetype }}</div>
+                    <div class="col">{{ item.display }}</div>
+                    <div class="col">
+                        {{ item.originalweight }}
+                    </div>
+                    <div class="col">
+                        <FormKit
+                            type="number"
+                            number="float"
+                            outer-class="mb-3"
+                            placeholder="new weight"
+                            name="weight"
+                            step="0.05"
+                            validation="between:0,1"
+                            validation-visibility="live"
+                            v-model="item.alteredweight"
+                        />
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <div class="col font-weight-bold">{{ mstrings.sumofweights }}</div>
+                    <div class="col">&nbsp;</div>
+                    <div class="col">&nbsp;</div>
+                    <div class="col">{{ defaulttotal.toFixed(5) }}</div>
+                    <div class="col">{{ alteredtotal.toFixed(5) }}</div>
+                </div>
+                <div v-if="!closeenough" class="mt-2 text-danger">{{ mstrings.donotaddto1 }}</div>
+            </div>
+
+            <!-- reason -->
+            <div class="border rounded mt-2 px-3">
+                <FormKit
+                    type="textarea"
+                    outer-class="mb-3"
+                    :label="mstrings.reasonforammendment"
+                    name="reason"
+                    v-model="reason"
+                />
+            </div>
+
+            <div class="mt-2">
+                <button class="btn btn-primary mr-1" type="button" @click="save_altered_weights">{{  mstrings.save }}</button>
+                <button class="btn btn-info mr-1" type="button" @click="revert_altered_weights">{{  mstrings.revert }}</button>
+                <button class="btn btn-warning" type="button" @click="showaltermodal = false">{{  mstrings.cancel }}</button>
+            </div>
+
         </div>
     </VueModal>
 </template>
@@ -87,6 +95,7 @@
     const idnumber = ref('');
     const items = ref([]);
     const reason = ref('');
+    const loading = ref(true);
 
     const props = defineProps({
         userid: Number,
@@ -160,6 +169,7 @@
             userfullname.value = result.userfullname;
             idnumber.value = result.idnumber;
             items.value = result.items;
+            loading.value = false;
         })
         .catch((error) => {
             window.console.error(error);
