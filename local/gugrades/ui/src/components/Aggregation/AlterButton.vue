@@ -5,13 +5,13 @@
         {{ mstrings.altertitle }}
     </a>
 
-    <VueModal v-model="showaltermodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.altertitle">
+    <VueModal v-model="showaltermodal" enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.altertitle">
 
         <div v-if="loading" class="alert alert-info">
             {{ mstrings.pleasewait }}
         </div>
 
-        <div v-if="!loading">
+        <div v-if="!loading" class="scrollable-content">
 
             <!-- basic details of category -->
             <ul class="list-unstyled">
@@ -247,3 +247,34 @@
         });
     }
 </script>
+
+<style>
+    .scrollable-modal {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 150px);
+    }
+    .scrollable-modal .vm-titlebar {
+    flex-shrink: 0;
+    }
+    .scrollable-modal .vm-content {
+    padding: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    }
+    .scrollable-modal .vm-content .scrollable-content {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 15px 10px 15px;
+    flex-grow: 1;
+    }
+    .scrollable-modal .scrollable-modal-footer {
+    padding: 15px 0px 15px 0px;
+    border-top: 1px solid #e5e5e5;
+    margin-left: 0;
+    margin-right: 0;
+    }
+</style>
