@@ -192,6 +192,7 @@ final class aggregation_schema4_test extends \local_gugrades\external\gugrades_a
         $this->assertTrue($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $users = $page['users'];
+        var_dump($users[0]); die;
         $this->assertEquals('A5 (17.8)', $users[0]['displaygrade']);
         $this->assertEquals(17.8, $users[0]['rawgrade']);
         $this->assertEquals(18, $users[0]['total']);

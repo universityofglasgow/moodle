@@ -325,6 +325,10 @@ class conversion {
      */
     public static function select_conversion(int $courseid, int $gradeitemid, int $gradecategoryid, int $mapid) {
         global $DB, $USER;
+        global $GUGRADES_FIELDS_CACHE;
+
+        // Clear any cached data before conversion.
+        $GUGRADES_FIELDS_CACHE = [];
 
         // Appropriate params for item or category.
         $category = false;
@@ -533,6 +537,10 @@ class conversion {
      */
     public static function apply_capture_conversion(int $courseid, int $gradeitemid, object $mapinfo) {
         global $DB;
+        global $GUGRADES_FIELDS_CACHE;
+
+        // Clear any cached data before conversion.
+        $GUGRADES_FIELDS_CACHE = [];
 
         // Get list of users.
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);

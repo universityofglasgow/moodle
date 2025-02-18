@@ -354,6 +354,15 @@ class aggregation {
      */
     public static function add_aggregation_fields_to_user(int $courseid, int $gradecategoryid, object $user, array $columns) {
         global $DB;
+        global $GUGRADES_FIELDS_CACHE;
+
+        // Check if we already have the data for this user.
+        if (!is_array($GUGRADES_FIELDS_CACHE)) {
+            $GUGRADES_FIELDS_CACHE = [];
+        }
+        if (array_key_exists($user->id, $GUGRADES_FIELDS_CACHE)) {
+            return $GUGRADES_FIELDS_CACHE[$user->id];
+        }
 
         // We're assuming that this user is fully aggregated and no further checks are required.
 
@@ -459,6 +468,9 @@ class aggregation {
 
         // Mismatch (can possibly do better).
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradecatitem->id);
+
+        // Cache result
+        $GUGRADES_FIELDS_CACHE[$user->id] = $user;
 
         return $user;
     }
@@ -989,7 +1001,7 @@ class aggregation {
         self::record_weights($items, $userid);
 
         // Now call the appropriate aggregation function to do the sums.
-  
+
         $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
 
         // If this is a scale convert the numeric grade to the appropriate.
@@ -1078,7 +1090,7 @@ class aggregation {
     }
 
     /**
-     * Clear ALL droplow for course 
+     * Clear ALL droplow for course
      * Used if gradebook has no drop low settings for this course
      * @param int $courseid
      */
@@ -1129,7 +1141,7 @@ class aggregation {
 
     /**
      * Are there *any* altered weights in this course?
-     * If not, we can skip making repeated checks. 
+     * If not, we can skip making repeated checks.
      * @param int $courseid
      * @return bool
      */
@@ -1163,7 +1175,7 @@ class aggregation {
      * @param object $category
      * @param int $userid
      * @param int $level
-     * @param bool $skipdroplow 
+     * @param bool $skipdroplow
      * @return array [total, $rawgrade, $displaygrade, completion, error]
      */
     protected static function aggregate_user(
@@ -1300,6 +1312,15 @@ class aggregation {
      * @param bool $force
      */
     public static function aggregate_user_helper(int $courseid, int $gradecategoryid, int $userid, bool $force = false) {
+        global $GUGRADES_FIELDS_CACHE;
+
+        // Make sure the aggregation is not stored for this user.
+        if (!is_array($GUGRADES_FIELDS_CACHE)) {
+            $GUGRADES_FIELDS_CACHE = [];
+        }
+        if (array_key_exists($userid, $GUGRADES_FIELDS_CACHE)) {
+            unset($GUGRADES_FIELDS_CACHE[$userid]);
+        }
 
         // As $gradecategoryid could be second level + then we first need to find the 1st level
         // categoryid (as we're aggregating everything).
