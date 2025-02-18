@@ -40,6 +40,6 @@
  echo $OUTPUT->header();
  
  echo $sitecontent;
- echo '<button class="btn btn-primary" onclick="gaOptout()">Opt-out of third party cookies.</button>';
+ echo '<button class="btn btn-primary" onclick="gaOptin()">Opt-In to third party cookies</button>&nbsp;<button class="btn btn-primary" onclick="gaOptout()">Opt-out of third party cookies.</button>';
  
  echo $OUTPUT->footer();
