@@ -21,7 +21,7 @@
 
         <!-- Buttons line -->
         <AggregationButtons
-            v-if="level1category"
+            v-if="level1category && aggregationsupported"
             :categoryid="categoryid"
             :gradeitemid="gradeitemid"
             :groupid="groupid"
@@ -34,7 +34,12 @@
             ></AggregationButtons>
     </div>
 
-    <div v-if="level1category" class="mt-2">
+    <!-- Aggregation is not possible -->
+    <div v-if="!aggregationsupported" class="alert alert-danger my-5">
+        {{  mstrings.aggregationnotsupported }}
+    </div>
+
+    <div v-if="level1category && aggregationsupported" class="mt-2">
 
         <!-- Filter on initials -->
         <NameFilter @selected="filter_selected" ref="namefilterref"></NameFilter>
@@ -221,6 +226,7 @@
     import PleaseWait from '@/components/PleaseWait.vue';
     import AggregationButtons from '@/components/Aggregation/AggregationButtons.vue';
     import OverrideGrade from '@/components/Aggregation/OverrideGrade.vue';
+    import DismissableAlert from '@/components/DismissableAlert.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
 
     const toast = useToast();
@@ -229,6 +235,7 @@
 
     const level1category = ref(0);
     const loading = ref(true);
+    const aggregationsupported = ref(true);
     const categoryid = ref(0);
     const gradeitemid = ref(0);
     const groupid = ref(0);
@@ -601,6 +608,7 @@
         .then((result) => {
             //items.value = result.items;
             //categories.value = result.categories;
+            aggregationsupported.value = result.aggregationsupported;
             users.value = result.users;
             warnings.value = result.warnings;
             columns.value = result.columns;
@@ -617,11 +625,15 @@
             showweights.value = result.showweights;
             excludeempty.value = result.excludeempty;
 
-            // Get id of one back from breadcrumb
-            backid.value = breadcrumb.value.slice(-2)[0].id;
+            if (aggregationsupported.value) {
 
-            users.value = process_users(users.value);
-            formattedatype.value = get_formattedatype();
+                // Get id of one back from breadcrumb
+                backid.value = breadcrumb.value.slice(-2)[0].id;
+
+                users.value = process_users(users.value);
+                formattedatype.value = get_formattedatype();
+            }
+
             loading.value = false;
         })
         .catch((error) => {

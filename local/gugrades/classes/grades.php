@@ -90,7 +90,7 @@ class grades {
         if ($gradeitem->itemtype == 'category') {
             return $gradeitem->iteminstance;
         } else {
-            throw new \moodle_exception('Grade item does not relate to a grade category. Itemid = ' . $gradeitemid);
+            return $gradeitem->categoryid;
         }
     }
 
@@ -162,7 +162,7 @@ class grades {
         if (isset($cats[1])) {
             return $cats[1];
         } else {
-            return false;
+            throw new \moodle_exception('Top level category not found. Grade Category ID = ' . $gradecategoryid);
         }
     }
 
@@ -950,6 +950,33 @@ class grades {
             // We're assuming it's a points scale (already checked for weird, unsupported types).
             return new \local_gugrades\mapping\points($courseid, $gradeitemid);
         }
+    }
+
+    /**
+     * Are all grades / scales supported in the current category tree?
+     * e.g. if a scale, is it one we support?
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @return boolean
+     */
+    public static function are_all_grades_supported(int $courseid, int $gradeitemid) {
+        global $DB;
+
+        // Get 'top level' for this category.
+        $level1 = self::get_level_one_parent(self::get_gradecategoryid_from_gradeitemid($gradeitemid));
+
+        // Get all the items.
+        $level1category = $DB->get_record('grade_categories', ['id' => $level1], '*', MUST_EXIST);
+        $items = self::get_gradeitems_recursive($level1category);
+
+        // check all are supported
+        foreach ($items as $item) {
+            if (!self::is_grade_supported($item->id)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

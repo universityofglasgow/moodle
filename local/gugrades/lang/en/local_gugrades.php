@@ -46,6 +46,7 @@ $string['adminns0'] = 'No submission (0 grade)';
 $string['adminp'] = 'Passed';
 $string['adminsat'] = 'Satisfactory';
 $string['adminuns'] = 'Unsatisfactory';
+$string['aggregationnotsupported'] = 'Aggregation is not possible for this grade category as at least one grade type is not supported.';
 $string['all'] = 'All';
 $string['allnone'] = 'All/none';
 $string['allparticipants'] = 'All participants';

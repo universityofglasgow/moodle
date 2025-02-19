@@ -3,6 +3,8 @@
         <small>
             <DismissableAlert v-if="!props.gradesupported" alertstyle="danger" :message="mstrings.gradenotsupported"></DismissableAlert>
 
+            <DismissableAlert v-if="!props.aggregationsupported" alertstyle="danger" :message="mstrings.aggregationnotsupported"></DismissableAlert>
+
             <DismissableAlert v-if="props.gradehidden" alertstyle="warning" :message="mstrings.gradehidden"></DismissableAlert>
 
             <DismissableAlert v-if="props.gradelocked" alertstyle="warning" :message="mstrings.gradelocked"></DismissableAlert>
@@ -20,6 +22,7 @@
 
     const props = defineProps({
         gradesupported: Boolean,
+        aggregationsupported: Boolean,
         gradehidden: Boolean,
         gradelocked: Boolean,
         noids: Boolean,

@@ -92,6 +92,7 @@ class get_aggregation_page extends external_api {
      */
     public static function execute_returns() {
         return new external_single_structure([
+            'aggregationsupported' => new external_value(PARAM_BOOL, 'Is aggregation supported (at all) for this category?'),
             'toplevel' => new external_value(PARAM_BOOL, 'Is this the topmost level?'),
             'atype' => new external_value(PARAM_TEXT, 'Aggregated grade type (A, B, P, E - if mixed'),
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item ID of aggregated category'),

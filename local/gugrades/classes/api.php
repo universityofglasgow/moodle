@@ -70,6 +70,7 @@ class api {
                 'itemtype' => '',
                 'itemname' => '',
                 'gradesupported' => false,
+                'aggregationsupported' => false,
                 'gradesimported' => false,
                 'gradehidden' => false,
                 'gradelocked' => false,
@@ -82,6 +83,9 @@ class api {
 
         // Cleanup unused columns for grade item.
         //\local_gugrades\grades::cleanup_empty_columns($gradeitemid);
+
+        // Is aggregation supported for this gradeitem?
+        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
 
         // Hidden or locked in gradebook?
         [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
@@ -116,6 +120,7 @@ class api {
             'itemtype' => $activity->get_itemtype(),
             'itemname' => $activity->get_itemname(),
             'gradesupported' => true,
+            'aggregationsupported' => $aggregationsupported,
             'gradesimported' => $gradesimported,
             'gradehidden' => $gradehidden ? true : false,
             'gradelocked' => $gradelocked ? true : false,
@@ -224,6 +229,9 @@ class api {
      */
     public static function csv_upload(int $courseid, int $gradeitemid, int $groupid,
         bool $testrun, string $reason, string $other, string $csv) {
+
+        // Can we aggregate?
+        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
 
         // Turn csv into an array - and ditch first line.
         $lines = self::unpack_csv($csv);
@@ -349,7 +357,9 @@ class api {
                 $addcount++;
 
                 // Re-aggregate this user
-                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $user->id);
+                if ($aggregationsupported) {
+                    \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $user->id);
+                }
             }
         }
 
@@ -511,6 +521,9 @@ class api {
             return false;
         }
 
+        // Can we aggregate?
+        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+
         // Ask activity for grade.
         $rawgrade = $activity->get_first_grade($userid);
 
@@ -544,7 +557,9 @@ class api {
                 );
 
                 // Re-aggregate this user
-                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+                if ($aggregationsupported) {
+                    \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+                }
 
                 return true;
             //} else {
@@ -1095,6 +1110,9 @@ class api {
 
         global $DB;
 
+        // Can we aggregate?
+        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+
         // Conversion class.
         $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
 
@@ -1195,7 +1213,9 @@ class api {
         }
 
         // Re-aggregate this user
-        \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+        if ($aggregationsupported) {
+            \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+        }
 
     }
 
@@ -1484,6 +1504,9 @@ class api {
             $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid, 0);
         }
 
+        // Can we aggregate?
+        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+
         // Is it an aggregated category
         if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $userid)) {
 
@@ -1513,8 +1536,10 @@ class api {
             );
 
             // Re-aggregate this user
-            $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
-            \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+            if ($aggregationsupported) {
+                $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
+                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+            }
         }
 
         // Activity action .
@@ -1789,6 +1814,30 @@ class api {
         // I know :(
         set_time_limit(0);
 
+        // Is aggregation supported (at all)?
+        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        if (!$aggregationsupported) {
+            return [
+                'aggregationsupported' => $aggregationsupported,
+                'toplevel' => false,
+                'atype' => '',
+                'gradeitemid' => $gradeitemid,
+                'strategy' => '',
+                'conversion' => '',
+                'allowconversion' => false,
+                'allowrelease' => false,
+                'released' => false,
+                'showweights' => false,
+                'warnings' => [],
+                'columns' => [],
+                'users' => [],
+                'breadcrumb' => [],
+                'excludeempty' => false,
+                'debug' => [],
+            ];
+        }
+
         // Cleanup any empty capture page columns.
         // (It's hard to do over on the capture page - trust me).
         \local_gugrades\grades::cleanup_unused_columns_course($courseid);
@@ -1847,9 +1896,6 @@ class api {
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
         $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
 
-        // Corresponding gradeitemid for category.
-        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
-
         // Allow release. At the moment, this is just going to be "Not points" and "not error".
         $allowrelease = ($atype != \local_gugrades\GRADETYPE_POINTS) && ($atype != \local_gugrades\GRADETYPE_ERROR);
 
@@ -1863,6 +1909,7 @@ class api {
         $excludeempty = \local_gugrades\grades::is_exclude_empty_grades($gradecategoryid);
 
         return [
+            'aggregationsupported' => $aggregationsupported,
             'toplevel' => $istoplevel,
             'atype' => $atype,
             'gradeitemid' => $gradeitemid,

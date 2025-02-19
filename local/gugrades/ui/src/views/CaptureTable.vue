@@ -16,6 +16,7 @@
                 <div v-if="itemid">
                     <CaptureAlerts
                         :gradesupported="gradesupported"
+                        :aggregationsupported="aggregationsupported"
                         :gradehidden="gradehidden"
                         :gradelocked="gradelocked"
                         :noids="!showcsvimport"
@@ -187,6 +188,7 @@
     const itemtype = ref('');
     const itemname = ref('');
     const gradesupported = ref(true);
+    const aggregationsupported = ref(true);
     const gradesimported = ref(false);
     const gradehidden = ref(false);
     const gradelocked = ref(false);
@@ -573,6 +575,7 @@
             itemtype.value = result.itemtype;
             itemname.value = result.itemname;
             gradesupported.value = result.gradesupported;
+            aggregationsupported.value = result.aggregationsupported;
             gradesimported.value = result.gradesimported;
             gradehidden.value = result.gradehidden;
             gradelocked.value = result.gradelocked;
