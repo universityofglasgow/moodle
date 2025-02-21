@@ -42,4 +42,9 @@ $definitions = [
         'staticacceleration' => true,
         'simpledata' => false,
     ],
+    'progress' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+    ],
 ];

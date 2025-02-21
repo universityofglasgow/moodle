@@ -131,6 +131,7 @@ class get_capture_page extends external_api {
             'converted' => new external_value(PARAM_BOOL, 'Grade item has been converted'),
             'released' => new external_value(PARAM_BOOL, 'Grades have been released'),
             'showcsvimport' => new external_value(PARAM_BOOL, 'OK to show CSV Import (only if some id numbers'),
+            'staffuserid' => new external_value(PARAM_INT, 'UserID of person running MyGrades ($USER->id'),
         ]);
     }
 

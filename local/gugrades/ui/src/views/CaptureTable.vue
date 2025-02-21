@@ -38,6 +38,7 @@
                         :released="released"
                         :revealnames="revealnames"
                         :showcsvimport="showcsvimport"
+                        :staffuserid="staffuserid"
                         @refreshtable="refresh"
                         @viewfullnames="viewfullnames"
                         @editcolumn="editcog_clicked"
@@ -218,6 +219,7 @@
     const debug = ref({});
     const firstname = ref('');
     const lastname = ref('');
+    const staffuserid = ref(0);
 
     const toast = useToast();
 
@@ -586,6 +588,7 @@
             converted.value = result.converted;
             released.value = result.released;
             showcsvimport.value = result.showcsvimport;
+            staffuserid.value = result.staffuserid;
 
             users.value = add_grades(users.value, columns.value);
 

@@ -140,6 +140,18 @@ class users {
     }
 
     /**
+     * Convenience function to get a count of all users in the course
+     * @param int $courseid
+     * @return int
+     */
+    public static function count_enrolled_users(int $courseid) {
+        $context = \context_course::instance($courseid);
+        $users = self::get_gradeable_users($context);
+
+        return count($users);
+    }
+
+    /**
      * Get user record from userid
      * Check that user is a valid "student" in the course
      * @param \context $connext

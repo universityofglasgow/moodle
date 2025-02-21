@@ -1,20 +1,77 @@
 <template>
     <VueModal v-model="showmodal" enableClose="false" modalClass="col-3 col-lg-2 rounded" :title="mstrings.pleasewait">
-        <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-center" style="min-width: 250px">
             <div class="border rounded m-1 p-2 text-center">
                 <p>{{ mstrings.pleasewait }}</p>
-                <VueSpinner size="50" color="#005c8a"></VueSpinner>
+                <VueSpinner v-if="!showprogress" size="50" color="#005c8a"></VueSpinner>
+                <div v-if="showprogress" class="progress" style="min-width: 250px">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" :style="'width: ' + progress + '%'" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
+                        {{ progress }}%
+                    </div>
+                </div>
             </div>
         </div>
     </VueModal>
 </template>
 
 <script setup>
-    import {ref, inject, onMounted, onUnmounted} from '@vue/runtime-core';
+    import {ref, inject, onMounted, onUnmounted, defineProps, computed} from '@vue/runtime-core';
     import { VueSpinner } from 'vue3-spinners';
+    import { useIntervalFn } from '@vueuse/core';
 
     const mstrings = inject('mstrings');
     const showmodal = ref(false);
+    const progress = ref(0);
+
+    // Props are only defined for progress bar. 
+    // If you don't want a progress bar then props are not required
+    const props = defineProps({
+        uniqueid: {
+            type: Number,
+            default: 0
+        },
+        progresstype: {
+            type: String,
+            default: '',
+        },
+        staffuserid: {
+            type: Number,
+            default: 0,
+        }
+    });
+
+    const showprogress = computed(() => {
+        return props.progresstype != '';
+    });
+
+    const { pause, resume, isActive } = useIntervalFn(() => {
+        if (props.progresstype != '') {
+            const GU = window.GU;
+            const courseid = GU.courseid;
+            const fetchMany = GU.fetchMany;
+
+            // Note the two additional parameters. They are
+            // async = true
+            // loginrequired = false
+            //
+            // Without loginrequired we'd hit moodle sessions which would stop this returning.
+            fetchMany([{
+                methodname: 'local_gugrades_get_progress',
+                args: {
+                    courseid: courseid,
+                    uniqueid: props.uniqueid,
+                    progresstype: props.progresstype,
+                    staffuserid: props.staffuserid,
+                }
+            }], true, false)[0]
+            .then((result) => {
+                progress.value = result.progress;
+            })
+            .catch((error) => {
+                window.console.error(error);
+            })
+        }
+    }, 1000)
 
     onMounted(() => {
         showmodal.value = true;

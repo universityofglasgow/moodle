@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language EN
+ * Main API entry point.
  *
  * @package    local_gugrades
  * @copyright  2023
@@ -58,6 +58,8 @@ class api {
      */
     public static function get_capture_page(int $courseid, int $gradeitemid,
         string $firstname, string $lastname, int $groupid, bool $viewfullnames) {
+        
+        global $USER;
 
         //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
 
@@ -78,6 +80,7 @@ class api {
                 'converted' => false,
                 'released' => false,
                 'showcsvimport' => false,
+                'staffuserid' => $USER->id,
             ];
         }
 
@@ -128,6 +131,7 @@ class api {
             'converted' => $converted,
             'released' => $released,
             'showcsvimport' => $showcsvimport,
+            'staffuserid' => $USER->id,
         ];
     }
 
@@ -771,8 +775,12 @@ class api {
         // Get a list of all the grade items under the above.
         $items = \local_gugrades\grades::get_gradeitems_recursive($gradecategory);
         $itemcount = count($items);
+        $usercount = \local_gugrades\users::count_enrolled_users($courseid);
+        $transactioncount = $itemcount * $usercount;
         $gradecount = 0;
 
+        // Counts are to track progress.
+        $iitems = 0;
         foreach ($items as $item) {
             $activity = \local_gugrades\users::activity_factory($item->id, $courseid, $groupid);
             $mapping = \local_gugrades\grades::mapping_factory($courseid, $item->id);
@@ -781,11 +789,22 @@ class api {
             $users = $activity->get_users();
 
             // Iterate over these users importing grade.
+            $iusers = 0;
             foreach ($users as $user) {
                 if (self::import_grade($courseid, $item->id, $mapping, $activity, $user->id, $additional, $fillns)) {
                     $gradecount++;
                 }
+                $iusers++;
+
+                // Calculate progress.
+                // Note: $transactioncount is based on ALL enrolled students, which may not always be correct
+                // ...but it'll be close enough. 
+                // This took a lot of thinking about. I'll leave it as an exercise for those who follow me :)
+                $progress = floor((100 * $iitems / $itemcount) + (100 * $iusers / $itemcount / $usercount));
+                \local_gugrades\progress::record($courseid, 0, 'importrecursive', $progress);
             }
+
+            $iitems++;
         }
 
         return [$itemcount, $gradecount];
@@ -2358,5 +2377,21 @@ class api {
     public static function get_aggregation_export_data(int $courseid, int $gradecategoryid, int $groupid, string $plugin, array $form) {
 
         return \local_gugrades\export::get_aggregation_export_data($courseid, $gradecategoryid, $groupid, $plugin, $form);
+    }
+
+    /**
+     * Implement get_progress
+     * @param int $courseid
+     * @param int $uniqueid
+     * @param string $progresstype
+     * @param int $staffuserid
+     * @return int
+     */
+    public static function get_progress(int $courseid, int $uniqueid, string $progresstype, int $staffuserid) {
+        $progress = \local_gugrades\progress::get($courseid, $uniqueid, $progresstype, $staffuserid);
+
+        return [
+            'progress' => $progress,
+        ];
     }
 }

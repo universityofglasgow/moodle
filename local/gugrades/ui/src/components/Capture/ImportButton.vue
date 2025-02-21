@@ -8,7 +8,7 @@
 
     <VueModal v-model="showimportmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.importgrades">
         <div v-if="loading">
-            <PleaseWait></PleaseWait>
+            <PleaseWait progresstype="importrecursive" :staffuserid="props.staffuserid"></PleaseWait>
         </div>
 
         <div v-else>
@@ -100,6 +100,7 @@
         itemid: Number,
         groupid: Number,
         show: Boolean,
+        staffuserid: Number,
     });
 
     const toast = useToast();

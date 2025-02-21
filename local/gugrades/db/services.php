@@ -79,6 +79,7 @@ $services = [
             'local_gugrades_get_aggregation_export_plugins',
             'local_gugrades_get_aggregation_export_form',
             'local_gugrades_get_aggregation_export_data',
+            'local_gugrades_get_progress',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -398,5 +399,12 @@ $functions = [
         'description' => 'Get the data for aggregation export download.',
         'type' => 'read',
         'ajax' => true,
+    ],
+    'local_gugrades_get_progress' => [
+        'classname' => 'local_gugrades\external\get_progress',
+        'description' => 'Get the progress percentage for given task.',
+        'type' => 'read',
+        'ajax' => true,
+        'loginrequired' => false,
     ],
 ];

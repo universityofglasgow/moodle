@@ -1,6 +1,6 @@
 <template>
     <div class="col-12 mt-2">
-        <ImportButton v-if="!converted" :itemid="props.itemid" :groupid="props.groupid" :userids="props.userids" @imported="emit('refreshtable')"></ImportButton>
+        <ImportButton v-if="!converted" :itemid="props.itemid" :groupid="props.groupid" :userids="props.userids" :staffuserid="props.staffuserid" @imported="emit('refreshtable')"></ImportButton>
         <CSVImportButton :itemid="props.itemid" :groupid="props.groupid" :itemname="props.itemname" :show="props.showcsvimport" @uploaded="emit('refreshtable')"></CSVImportButton>
         <AddMultipleButton :itemid="props.itemid"  @editcolumn="multipleclicked"></AddMultipleButton>
         <ReleaseButton v-if="props.gradesimported" :gradeitemid="props.itemid" :groupid="props.groupid" :released="props.released" @released="emit('refreshtable')"></ReleaseButton>
@@ -38,6 +38,7 @@
         released: Boolean,
         revealnames: Boolean,
         showcsvimport: Boolean,
+        staffuserid: Number,
     });
 
     const emit = defineEmits(['viewfullnames', 'refreshtable', 'editcolumn']);
