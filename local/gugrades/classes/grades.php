@@ -320,11 +320,12 @@ class grades {
         // This MUST be a 'second level' category. Which is actually the 3rd one down.
         // SO it will have a path field like /a/b/c/ or longer.
         // If not, recursive import is not available.
+        // MGU-1103 - now available at any level
         $gradecategory = $DB->get_record('grade_categories', ['id' => $categoryid], '*', MUST_EXIST);
 
         // Trim to remove leading and trailing /, otherwise you get two extra empty fields.
         $pathcats = explode('/', trim($gradecategory->path, '/'));
-        if (count($pathcats) > 2) {
+        if (count($pathcats) > 1) {
             $recursiveavailable = true;
 
             // Get grade items.
