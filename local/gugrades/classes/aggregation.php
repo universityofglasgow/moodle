@@ -345,6 +345,42 @@ class aggregation {
     }
 
     /**
+     * Get cachetag for aggdata
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return string
+     */
+    private static function get_aggdata_cachetag(int $courseid, int $gradecategoryid, int $userid) {
+
+        return 'AGGDATA_' . $gradecategoryid . '_' . $userid;
+    }
+
+    /**
+     * Invalidate cache for aggdata.
+     * As aggregation bubbles up, we might as well hit everything in this TL category.
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     */
+    public static function invalidate_aggdata(int $courseid, int $gradecategoryid, int $userid) {
+        global $DB;
+
+        // Get 'top level' for this category.
+        $level1 = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
+
+        // Get all the items.
+        $categories = \local_gugrades\grades::get_gradecategories_recursive($level1);
+
+        // Find all the categories.
+        $cache = \cache::make('local_gugrades', 'useraggdata');
+        foreach ($categories as $category) {
+            $cachetag = self::get_aggdata_cachetag($courseid, $category->id, $userid);
+            $cache->delete($cachetag);
+        }
+    }
+
+    /**
      * Add aggregation data for a single user
      * @param int $courseid
      * @param int gradecategoryid
@@ -356,6 +392,13 @@ class aggregation {
         global $DB;
 
         // We're assuming that this user is fully aggregated and no further checks are required.
+
+        // Establish if this user is already in the cache.
+        $cache = \cache::make('local_gugrades', 'useraggdata');
+        $cachetag = self::get_aggdata_cachetag($courseid, $gradecategoryid, $user->id);
+        if ($cacheduser = $cache->get($cachetag)) {
+            return $cacheduser;
+        }
 
         // Get any hidden gradeitems
         $hiddenids = self::get_user_hidden($courseid, $user->id);
@@ -459,6 +502,9 @@ class aggregation {
 
         // Mismatch (can possibly do better).
         $released = \local_gugrades\grades::is_grades_released($courseid, $gradecatitem->id);
+
+        // Cache result
+        $cache->set($cachetag, $user);
 
         return $user;
     }
@@ -1301,9 +1347,15 @@ class aggregation {
      */
     public static function aggregate_user_helper(int $courseid, int $gradecategoryid, int $userid, bool $force = false) {
 
+
+
         // As $gradecategoryid could be second level + then we first need to find the 1st level
         // categoryid (as we're aggregating everything).
         $level1categoryid = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
+
+        // Invalidate their cached data.
+        self::invalidate_aggdata($courseid, $gradecategoryid, $userid);
+        self::invalidate_aggdata($courseid, $level1categoryid, $userid);
 
         // We need the recursed category tree for this categoryid. Hopefully, this should be cached.
         $toplevel = self::recurse_tree($courseid, $level1categoryid, $force);
@@ -1343,6 +1395,10 @@ class aggregation {
 
         // Run through each user and aggregate their grades.
         foreach ($users as $user) {
+
+            // Invalidate any stored data.
+            self::invalidate_aggdata($courseid, $gradecategoryid, $user->id);
+            self::invalidate_aggdata($courseid, $level1categoryid, $user->id);
 
             // 1 = level 1 (we need to know what level we're at). Level is incremented
             // as call recurses.

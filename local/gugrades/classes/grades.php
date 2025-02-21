@@ -278,6 +278,26 @@ class grades {
     }
 
     /**
+     * Given gradetcategoryid - get all included gradecategories
+     * and child categories.
+     * Not actually recursive - just uses the path
+     * @param int $gradecategoryid
+     * @return array
+     */
+    public static function get_gradecategories_recursive(int $gradecategoryid) {
+        global $DB;
+
+        // All the paths will start with the same start path as this one.
+        $category = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+        $path = $category->path;
+        $sql = "SELECT * FROM {grade_categories}
+            WHERE path LIKE :path";
+        $categories = $DB->get_records_sql($sql, ['path' => $path . '%']);
+
+        return $categories;
+    }
+
+    /**
      * Check that all grades are the same for a potential recursive import
      * For a given gradeitemid, we're looking at that items *peers* and any
      * children thereof. So we want to start with the parent category of the

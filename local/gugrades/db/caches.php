@@ -36,4 +36,10 @@ $definitions = [
         'simplekeys' => true,
         'staticacceleration' => true,
     ],
+    'useraggdata' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'simpledata' => false,
+    ],
 ];
