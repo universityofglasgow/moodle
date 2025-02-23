@@ -39,7 +39,8 @@ require_once($CFG->dirroot . '/local/gugrades/tests/external/gugrades_advanced_t
 final class is_grades_imported_test extends \local_gugrades\external\gugrades_advanced_testcase {
 
     /**
-     * Check that a top=level activiy shows recursiveavailable = false
+     * Check that a top=level activiy shows recursiveavailable = true
+     * Note this functionality changed MGU-1103
      *
      * @covers \local_gugrades\external\is_grades_imported::execute
      */
@@ -56,7 +57,7 @@ final class is_grades_imported_test extends \local_gugrades\external\gugrades_ad
 
         // Check recursiveavailable field.
         $this->assertArrayHasKey('recursiveavailable', $gradesimported);
-        $this->assertFalse($gradesimported['recursiveavailable']);
+        $this->assertTrue($gradesimported['recursiveavailable']);
 
         // Check recursivematch field.
         $this->assertArrayHasKey('recursivematch', $gradesimported);

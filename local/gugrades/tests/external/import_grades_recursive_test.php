@@ -40,16 +40,6 @@ require_once($CFG->dirroot . '/local/gugrades/tests/external/gugrades_advanced_t
 final class import_grades_recursive_test extends \local_gugrades\external\gugrades_advanced_testcase {
 
     /**
-     * Check importing upper level item throws exception
-     *
-     * @covers \local_gugrades\external\import_grades_recursive::execute
-     */
-    public function test_wrong_item_exception(): void {
-        $this->expectException('moodle_exception');
-        import_grades_recursive::execute($this->course->id, $this->gradeitemidassign1, 0, false, false);
-    }
-
-    /**
      * Import first grades.
      *
      * @covers \local_gugrades\external\import_grades_recursive::execute

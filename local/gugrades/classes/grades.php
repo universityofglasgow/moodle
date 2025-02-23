@@ -486,6 +486,9 @@ class grades {
             throw new \moodle_exception('catoverride true when gradetype sis not CATEGORY');
         }
 
+        // Invalidate provisionalgrade cache
+        self::invalidate_provisionalgrade_cache($gradeitemid, $userid);
+
         // Get/create the column entry.
         $column = self::get_column($courseid, $gradeitemid, $gradetype, $other, $ispoints);
 
@@ -605,6 +608,28 @@ class grades {
     }
 
     /**
+     * Create tag for provisionalgrade cache
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return string
+     */
+    public static function get_provisionalgrade_cachetag(int $gradeitemid, int $userid) {
+
+        return 'PROVISIONAL_' . $gradeitemid . '_' . $userid;
+    }
+
+    /**
+     * Invalidate provisionalgrade cache entry
+     * @param int $gradeitemid
+     * @param int $userid
+     */
+    public static function invalidate_provisionalgrade_cache(int $gradeitemid, int $userid) {
+        $cache = \cache::make('local_gugrades', 'provisionalgrade');
+        $tag = self::get_provisionalgrade_cachetag($gradeitemid, $userid);
+        $cache->delete($tag);        
+    }
+
+    /**
      * Get the provisional/released grade from the
      * gradeitemid / userid
      * @param int $gradeitemid
@@ -613,6 +638,13 @@ class grades {
      */
     public static function get_provisional_from_id(int $gradeitemid, int $userid) {
         global $DB;
+
+        // Is this cached?
+        $cache = \cache::make('local_gugrades', 'provisionalgrade');
+        $tag = self::get_provisionalgrade_cachetag($gradeitemid, $userid);
+        if ($grade = $cache->get($tag)) {
+            return $grade;
+        }
 
         // ...id is a proxy for time added.
         // Cannot use the timestamp as the unit tests write the test grades all in the
@@ -627,6 +659,9 @@ class grades {
             'gradeitemid' => $gradeitemid,
             'userid' => $userid,
         ]);
+
+        // Cache grade.
+        $cache->set($tag, $grade);
 
         return $grade;
     }
@@ -1331,6 +1366,8 @@ class grades {
             $altered->timealtered = time();
             $DB->insert_record('local_gugrades_altered_weight', $altered);
         }
+
+        self::invalidate_provisionalgrade_cache($gradeitemid, $userid);
     }
 
     /**

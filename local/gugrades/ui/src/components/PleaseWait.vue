@@ -55,6 +55,8 @@
             // loginrequired = false
             //
             // Without loginrequired we'd hit moodle sessions which would stop this returning.
+            // We also have to pass around the staff userid as that would not be available 
+            // outside a session.
             fetchMany([{
                 methodname: 'local_gugrades_get_progress',
                 args: {

@@ -47,4 +47,9 @@ $definitions = [
         'simplekeys' => true,
         'staticacceleration' => true,
     ],
+    'provisionalgrade' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+    ],
 ];

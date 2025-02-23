@@ -873,6 +873,7 @@ class aggregation {
                 $grade->dropped = 1;
                 $grade->normalisedweight = null;
                 $DB->update_record('local_gugrades_grade', $grade);
+                \local_gugrades\grades::invalidate_provisionalgrade_cache($itemid, $userid);
             }
         }
     }
@@ -902,6 +903,7 @@ class aggregation {
             foreach ($grades as $grade) {
                 $grade->normalisedweight = $normalisedweight;
                 $DB->update_record('local_gugrades_grade', $grade);
+                \local_gugrades\grades::invalidate_provisionalgrade_cache($itemid, $userid);
             }
         }
     }
