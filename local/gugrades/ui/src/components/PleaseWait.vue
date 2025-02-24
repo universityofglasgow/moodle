@@ -5,7 +5,7 @@
                 <p>{{ mstrings.pleasewait }}</p>
                 <VueSpinner v-if="!showprogress" size="50" color="#005c8a"></VueSpinner>
                 <div v-if="showprogress" class="progress" style="min-width: 250px">
-                    <div class="progress-bar progress-bar-striped" role="progressbar" :style="'width: ' + progress + '%'" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" :class="progressclass" role="progressbar" :style="'width: ' + progress + '%'" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
                         {{ progress }}%
                     </div>
                 </div>
@@ -43,6 +43,16 @@
     const showprogress = computed(() => {
         return props.progresstype != '';
     });
+
+    const progressclass = computed(() => {
+        if (progress.value < 33.3) {
+            return 'bg-danger';
+        }
+        if (progress.value < 66.6) {
+            return 'bg-info';
+        }
+        return 'bg-success';
+    })
 
     const { pause, resume, isActive } = useIntervalFn(() => {
         if (props.progresstype != '') {
