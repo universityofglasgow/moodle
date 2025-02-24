@@ -278,6 +278,10 @@ class api {
         // Because it can take a while.
         set_time_limit(0);
 
+        // Counts for progress calculation. 
+        $numberoflines = count($lines);
+        $count = 0;
+
         // Iterate over CSV lines, checking and (optionally) adding new grade.
         foreach ($lines as $line) {
 
@@ -290,6 +294,11 @@ class api {
                 'state' => 0,
                 'error' => '',
             ];
+
+            // Progress.
+            $progress = 100 * $count / $numberoflines;
+            \local_gugrades\progress::record($courseid, 0, 'csvimport', $progress);
+            $count++;
 
             // We just need the idnumber, so must have at least two entries.
             if (count($line) < 2) {
@@ -516,7 +525,8 @@ class api {
         \local_gugrades\activities\base $activity,
         int $userid,
         bool $additional,
-        string $fillns) {
+        string $fillns,
+        ) {
 
         $fillns = self::check_fillns($fillns);
 
@@ -801,7 +811,7 @@ class api {
                 // ...but it'll be close enough. 
                 // This took a lot of thinking about. I'll leave it as an exercise for those who follow me :)
                 $progress = floor((100 * $iitems / $itemcount) + (100 * $iusers / $itemcount / $usercount));
-                \local_gugrades\progress::record($courseid, 0, 'importrecursive', $progress);
+                \local_gugrades\progress::record($courseid, 0, 'import', $progress);
             }
 
             $iitems++;

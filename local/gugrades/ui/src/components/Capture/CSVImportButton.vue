@@ -5,7 +5,7 @@
 
     <VueModal v-model="showcsvmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
 
-        <PleaseWait v-if="waiting"></PleaseWait>
+        <PleaseWait v-if="waiting" progresstype="csvimport"></PleaseWait>
 
         <!-- Initial download/upload page -->
         <div v-if="pagestate == 'showuploadpage'">

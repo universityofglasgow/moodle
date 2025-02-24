@@ -8,7 +8,7 @@
 
     <VueModal v-model="showimportmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.importgrades">
         <div v-if="loading">
-            <PleaseWait progresstype="importrecursive" :staffuserid="props.staffuserid"></PleaseWait>
+            <PleaseWait progresstype="import" :staffuserid="props.staffuserid"></PleaseWait>
         </div>
 
         <div v-else>

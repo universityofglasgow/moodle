@@ -90,6 +90,9 @@ class import_grades_users extends external_api {
 
         //\local_gugrades\development::xhprof_start();
 
+        // Track progress
+        $count = 0;
+
         foreach ($userids as $userid) {
 
             // If additional selected then skip users who already have data.
@@ -107,6 +110,11 @@ class import_grades_users extends external_api {
                 )) {
                 $importcount++;
             }
+
+            // Record progress.
+            $count++;
+            $progress = 100 * $count / count($userids);
+            \local_gugrades\progress::record($courseid, 0, 'import', $progress);
         }
 
         //\local_gugrades\development::xhprof_stop();
