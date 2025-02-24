@@ -5,7 +5,7 @@
 
     <VueModal v-model="showcsvmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
 
-        <PleaseWait v-if="waiting" progresstype="csvimport"></PleaseWait>
+        <PleaseWait v-if="waiting" progresstype="csvimport" :staffuserid="props.staffuserid"></PleaseWait>
 
         <!-- Initial download/upload page -->
         <div v-if="pagestate == 'showuploadpage'">
@@ -132,6 +132,7 @@
         groupid: Number,
         itemname: String,
         show: Boolean,
+        staffuserid: Number,
     });
 
     const emits = defineEmits(['uploaded']);
