@@ -7,81 +7,90 @@
 
         <PleaseWait v-if="waiting" progresstype="csvimport" :staffuserid="props.staffuserid"></PleaseWait>
 
-        <!-- Initial download/upload page -->
-        <div v-if="pagestate == 'showuploadpage'">
-            <div class="border rounded p-5">
-                <p><b>{{  mstrings.csvdownloadhelp }}</b></p>
+        <!-- Doesn't appear to be a CSV -->
+        <div v-if="incorrectfiletype" class="alert alert-danger">
+            {{ mstrings.incorrectfiletype }}
+        </div>
 
-                <button class="btn btn-primary" type="button" @click="csv_download()">{{  mstrings.csvdownload }}</button>
-            </div>
+        <div v-if="!incorrectfiletype">
 
-            <!-- select file / upload bit -->
-            <div class="mt-3 p-4 mb-3 border rounded">
-                <p><b>{{ mstrings.csvuploadhelp }}</b></p>
-                <div>
-                    <button class="btn btn-primary mr-1" type="button" @click="open()">
-                        Choose files
-                    </button>
-                    <button class="btn btn-warning" type="button" :disabled="!files" @click="reset()">
-                        Reset
-                    </button>
-                    <div class="mt-2" v-if="files">
-                        <p>You have selected: <b>{{ `${files.length} ${files.length === 1 ? 'file' : 'files'}` }}</b></p>
-                        <li v-for="file of files" :key="file.name">
-                            {{ file.name }}
-                        </li>
+            <!-- Initial download/upload page -->
+            <div v-if="pagestate == 'showuploadpage'">
+                <div class="border rounded p-5">
+                    <p><b>{{  mstrings.csvdownloadhelp }}</b></p>
+
+                    <button class="btn btn-primary" type="button" @click="csv_download()">{{  mstrings.csvdownload }}</button>
+                </div>
+
+                <!-- select file / upload bit -->
+                <div class="mt-3 p-4 mb-3 border rounded">
+                    <p><b>{{ mstrings.csvuploadhelp }}</b></p>
+                    <div>
+                        <button class="btn btn-primary mr-1" type="button" @click="open()">
+                            Choose files
+                        </button>
+                        <button class="btn btn-warning" type="button" :disabled="!files" @click="reset()">
+                            Reset
+                        </button>
+                        <div class="mt-2" v-if="files">
+                            <p>You have selected: <b>{{ `${files.length} ${files.length === 1 ? 'file' : 'files'}` }}</b></p>
+                            <li v-for="file of files" :key="file.name">
+                                {{ file.name }}
+                            </li>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <button class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
                     </div>
                 </div>
-                <div class="mt-2">
-                    <button class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
+            </div>
+
+            <!-- Test-run / confirm page -->
+            <div v-if="pagestate == 'showtestrun'">
+                <p>{{ mstrings.csvtestrun }}</p>
+                <EasyDataTable :headers="headers" :items="lines10">
+                    <template #item-gradevalue="item">
+                        <span v-if="item.grade">{{ item.gradevalue }}</span>
+                    </template>
+                    <template #item-error="item">
+                        <i v-if="item.state < 0" class="text-danger fa fa-times" aria-hidden="true"></i>
+                        <i v-if="item.state > 0" class="text-success fa fa-check" aria-hidden="true"></i>
+                        <i v-if="item.state == 0" class="text-warning fa fa-info" aria-hidden="true"></i>
+                        {{ item.error }}
+                    </template>
+                </EasyDataTable>
+                <p v-if="errorcount" class="text-danger mt-1">{{ mstrings.lineswitherrors }}: {{ errorcount }}:</p>
+                <ul class="text-danger">
+                    <li v-for="error in errorlist" v-key="error.error">
+                        <span>{{ error.error }}</span>: <b>{{ error.count }} line(s)</b>
+                    </li>
+                </ul>
+
+                <!-- submit bit (if no errors) -->
+                <div v-if="!errorcount" class="mt-2">
+                    <FormKit class="border rounded" type="form" @submit="submit_reason_form">
+                        <FormKit
+                            type="select"
+                            :label="mstrings.reasonforadditionalgrade"
+                            name="reason"
+                            v-model="reason"
+                            :options="gradetypes"
+                            :placeholder="mstrings.selectareason"
+                            validation="required"
+                        />
+                        <FormKit
+                            v-if = 'reason == "OTHER"'
+                            :label="mstrings.pleasespecify"
+                            type="text"
+                            :placeholder="mstrings.pleasespecify"
+                            name="other"
+                            v-model="other"
+                        />
+                    </FormKit>
                 </div>
             </div>
-        </div>
 
-        <!-- Test-run / confirm page -->
-        <div v-if="pagestate == 'showtestrun'">
-            <p>{{ mstrings.csvtestrun }}</p>
-            <EasyDataTable :headers="headers" :items="lines10">
-                <template #item-gradevalue="item">
-                    <span v-if="item.grade">{{ item.gradevalue }}</span>
-                </template>
-                <template #item-error="item">
-                    <i v-if="item.state < 0" class="text-danger fa fa-times" aria-hidden="true"></i>
-                    <i v-if="item.state > 0" class="text-success fa fa-check" aria-hidden="true"></i>
-                    <i v-if="item.state == 0" class="text-warning fa fa-info" aria-hidden="true"></i>
-                    {{ item.error }}
-                </template>
-            </EasyDataTable>
-            <p v-if="errorcount" class="text-danger mt-1">{{ mstrings.lineswitherrors }}: {{ errorcount }}:</p>
-            <ul class="text-danger">
-                <li v-for="error in errorlist" v-key="error.error">
-                    <span>{{ error.error }}</span>: <b>{{ error.count }} line(s)</b>
-                </li>
-            </ul>
-
-            <!-- submit bit (if no errors) -->
-            <div v-if="!errorcount" class="mt-2">
-                <FormKit class="border rounded" type="form" @submit="submit_reason_form">
-                    <FormKit
-                        type="select"
-                        :label="mstrings.reasonforadditionalgrade"
-                        name="reason"
-                        v-model="reason"
-                        :options="gradetypes"
-                        :placeholder="mstrings.selectareason"
-                        validation="required"
-                    />
-                    <FormKit
-                        v-if = 'reason == "OTHER"'
-                        :label="mstrings.pleasespecify"
-                        type="text"
-                        :placeholder="mstrings.pleasespecify"
-                        name="other"
-                        v-model="other"
-                    />
-                </FormKit>
-            </div>
-        </div>
+        </div> <!-- incorrectfiletype -->
 
         <div class="row mt-2">
             <div class="col-sm-12">
@@ -113,6 +122,7 @@
     const reason = ref('');
     const other = ref('');
     const debug = ref({});
+    const incorrectfiletype = ref(false);
     const waiting = ref(false);
     const lines10 = computed(() =>{
         return lines.value.slice(0, 10);
@@ -122,7 +132,7 @@
     const toast = useToast();
 
     const { files, open, reset } = useFileDialog({
-        accept: 'text/json', // Set to accept only json files
+        accept: 'text/csv', // Set to accept only json files
         multiple: false,
         directory: false, // Select directories instead of files if set true
     });
@@ -265,14 +275,19 @@
         }
 
         const file = files.value[0];
-        const reader = new FileReader();
-        reader.addEventListener('load', (event) => {
-            csvcontent.value = event.target.result;
+        const type = file.type;
+        incorrectfiletype.value = type != 'text/csv';
 
-            process_uploaded(true);
-            get_gradetypes();
-        });
-        reader.readAsText(file);
+        if (!incorrectfiletype.value) {
+            const reader = new FileReader();
+            reader.addEventListener('load', (event) => {
+                csvcontent.value = event.target.result;
+
+                process_uploaded(true);
+                get_gradetypes();
+            });
+            reader.readAsText(file);
+        }
     }
 
     /**
@@ -283,6 +298,7 @@
     }
 
     onMounted(() => {
+        incorrectfiletype.value = false;
         headers.value = [
             {text: mstrings.name, value: 'name'},
             {text: mstrings.idnumber, value: 'idnumber'},
@@ -296,6 +312,8 @@
      * Close the modal
      */
     function close_modal() {
+        incorrectfiletype.value = false;
+        reset();
         showcsvmodal.value = false;
         pagestate.value = 'showuploadpage';
     }
