@@ -1395,8 +1395,17 @@ class aggregation {
             self::clear_course_droplow($courseid);
         }
 
+        // Counts for progress
+        $count = 0;
+        $numberofusers = count($users);
+
         // Run through each user and aggregate their grades.
         foreach ($users as $user) {
+
+            // Progress.
+            $progress = 100 * $count / $numberofusers;
+            $count++;
+            \local_gugrades\progress::record($courseid, 0, 'aggregate', $progress);
 
             // Invalidate any stored data.
             self::invalidate_aggdata($courseid, $gradecategoryid, $user->id);

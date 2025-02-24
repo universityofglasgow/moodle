@@ -103,6 +103,7 @@ class get_aggregation_page extends external_api {
             'released' => new external_value(PARAM_BOOL, 'Has the aggregated category been released?'),
             'showweights' => new external_value(PARAM_BOOL, 'Should weights be shown in headers?'),
             'excludeempty' => new external_value(PARAM_BOOL, 'True when exclude empty grades checked, effects NS interpretation.'),
+            'staffuserid' => new external_value(PARAM_INT, 'UserID of person running MyGrades ($USER->id'),
             'debug' => new external_multiple_structure(
                 new external_single_structure([
                     'line' => new external_value(PARAM_RAW, 'Line of debug info, available when DEBUG_DEVELOPER is enabled'),

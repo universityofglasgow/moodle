@@ -7,7 +7,7 @@
 
     <VueModal v-model="showrecalculatemodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.recalculate">
         <div v-if="loading">
-            <PleaseWait></PleaseWait>
+            <PleaseWait :staffuserid="props.staffuserid" progresstype="aggregate"></PleaseWait>
         </div>
 
         <div v-else>
@@ -32,6 +32,7 @@
 
     const props = defineProps({
         categoryid: Number,
+        staffuserid: Number,
     });
 
     const emits = defineEmits([

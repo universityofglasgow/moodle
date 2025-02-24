@@ -1838,7 +1838,7 @@ class api {
         bool $aggregate
         ) {
 
-        global $CFG;
+        global $CFG, $USER;
 
         // I know :(
         set_time_limit(0);
@@ -1864,6 +1864,7 @@ class api {
                 'breadcrumb' => [],
                 'excludeempty' => false,
                 'debug' => [],
+                'staffuserid' => $USER->id,
             ];
         }
 
@@ -1954,6 +1955,7 @@ class api {
             'breadcrumb' => $breadcrumb,
             'excludeempty' => $excludeempty,
             'debug' => $debug,
+            'staffuserid' => $USER->id,
         ];
     }
 

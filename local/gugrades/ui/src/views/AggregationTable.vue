@@ -30,6 +30,7 @@
             :allowconversion="allowconversion"
             :allowrelease="allowrelease"
             :released="released"
+            :staffuserid="staffuserid"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>
@@ -261,6 +262,7 @@
     const excludeempty = ref(false);
     const firstname = ref('');
     const lastname = ref('');
+    const staffuserid = ref(0);
 
     /**
      * Table name filter
@@ -624,6 +626,7 @@
             released.value = result.released;
             showweights.value = result.showweights;
             excludeempty.value = result.excludeempty;
+            staffuserid.value = result.staffuserid;
 
             if (aggregationsupported.value) {
 

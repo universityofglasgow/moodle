@@ -1,6 +1,6 @@
 <template>
     <div class="col-12 mt-2">
-        <RecalculateButton :categoryid="props.categoryid" @recalculated="refreshtable"></RecalculateButton>
+        <RecalculateButton :categoryid="props.categoryid" :staffuserid="props.staffuserid" @recalculated="refreshtable"></RecalculateButton>
         <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
         <ReleaseCategoryButton v-if="!props.toplevel"
             :disabled="!props.allowrelease"
@@ -29,6 +29,7 @@
         allowconversion: Boolean,
         allowrelease: Boolean,
         released: Boolean,
+        staffuserid: Number,
     });
 
     const emits = defineEmits([
