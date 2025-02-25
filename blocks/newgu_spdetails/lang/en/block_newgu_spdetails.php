@@ -42,6 +42,7 @@ $string['overview_tooltip_preamble'] = 'Assessments ';
 $string['duesoon_aria_label_text'] = 'Assessments Due Soon. A chart displaying assessments that are due in the next 24 hours, 7 days, or month.';
 $string['duesoon_accessibility_description'] = 'This is the Assessments due soon chart. It displays information about your assessments that require to be submitted in the next 24 hours, 7 days, or 1 calendar month.';
 $string['duesoon_tooltip_preamble'] = 'Assessments due in the next ';
+$string['report_subheading_text'] = '<h1>{$a} Report</h1><br /><h3>A breakdown of activities undertaken and progress made.</h3>';
 
 $string['newgu_spdetails:addinstance'] = 'Add a new Your Assessment Details (New) block';
 $string['newgu_spdetails:myaddinstance'] = 'Add a new Your Assessment Details (New) to Dashboard';

@@ -192,7 +192,7 @@ if ($coursestype) {
             if ($activitydata) {
                 foreach ($activitydata as $activityitem) {
                     $spdetailspdf .= "<tr>";
-                    $spdetailspdf .= "<td $tdstl>" . $course->fullname . "</td>";
+                    $spdetailspdf .= "<td $tdstl><strong>" . $course->fullname . "</strong></td>";
                     $spdetailspdf .= "<td $tdstl>" . $activityitem->item_name . "</td>";
                     // The assessment type is normally derived from the parent category - which works only
                     // as long as the parent name contains 'Formative' or 'Summative', and the item weight.
@@ -219,13 +219,18 @@ if ($coursestype) {
 
                     $spdetailspdf .= "<td $tdstc>" . $activityitem->assessment_weight . "</td>";
                     if ($coursestype == 'current') {
-                        $spdetailspdf .= "<td $tdstc>" . $activityitem->due_date . "</td>";
+                        $spdetailspdf .= "<td $tdstc><strong>" . $activityitem->due_date . "</strong></td>";
                         $spdetailspdf .= "<td $tdstc>" . $activityitem->status_text . "</td>";
                     } else {
                         $spdetailspdf .= "<td $tdstc>" . $startdate . "</td>";
                         $spdetailspdf .= "<td $tdstc>" . $enddate . "</td>";
                     }
-                    $spdetailspdf .= "<td $tdstc>" . $activityitem->grade . "</td>";
+                    if ($activityitem->grade != get_string('status_text_tobeconfirmed', 'block_newgu_spdetails')) {
+                        $grade = "<strong>" . $activityitem->grade . "</strong>";
+                    } else {
+                        $grade = $activityitem->grade;
+                    }
+                    $spdetailspdf .= "<td $tdstc>" . $grade . "</td>";
                     $spdetailspdf .= "</tr>";
 
                     $row++;
@@ -269,6 +274,7 @@ if ($spdetailstype == "pdf" && $spdetailspdf != "" && $strcoursestype != "") {
     $doc->setAuthor('University of Glasgow');
     $doc->setTitle($strcoursestype . ' Report');
     $doc->setSubject('Course Reports');
+    $doc->setKeywords('Course report, Current Course Report, Current Progress');
 
     // Set the images to be used.
     $background = 'img/uofg-background.jpg';
@@ -336,6 +342,7 @@ if ($spdetailstype == "pdf" && $spdetailspdf != "" && $strcoursestype != "") {
     $doc->setFont('helvetica', '', 9);
     $doc->setXY(245, 20);
     $doc->Cell(25, 10, $strcoursestype . " Report Date : " . date("d-m-Y"), 0, $ln = 0, 'C', 0, '', 0, false, 'B', 'B');
+    $doc->writeHTMLCell(80, 175, 110, 100, get_string('report_subheading_text', 'block_newgu_spdetails', $strcoursestype), 0, 1, 0, true, 'C', true);
     $doc->setMargins(5, 20, 5);
     $doc->setFont('helvetica', '', 10);
     $doc->setXY(5, 23);
