@@ -10,6 +10,10 @@
 
     <VueModal v-model="showreleasemodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releaseaggregatedgrade">
 
+        <div v-if="loading">
+            <PleaseWait></PleaseWait>
+        </div>
+
         <div class="p-2 border rounded">
             <h4>{{ mstrings.releaseaggregatedgrade }}</h4>
             <div v-if="!props.released" class="alert alert-warning">
@@ -57,8 +61,10 @@
     import {ref, inject, defineProps, defineEmits, computed} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import PleaseWait from '@/components/PleaseWait.vue';
 
     const showreleasemodal = ref(false);
+    const loading = ref(false);
     const mstrings = inject('mstrings');
     const debug = ref({});
 
@@ -118,6 +124,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        loading.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_release_grades',
             args: {
@@ -131,6 +139,7 @@
             emit('released');
             showreleasemodal.value = false;
             get_dashboard_enabled();
+            loading.value = false;
             toast.success(mstrings.gradesreleased);
         })
         .catch((error) => {
@@ -150,6 +159,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        loading.value = true;
+
         fetchMany([{
             methodname: 'local_gugrades_release_grades',
             args: {
@@ -163,6 +174,7 @@
             emit('released');
             showreleasemodal.value = false;
             get_dashboard_enabled();
+            loading.value = false;
             toast.success(mstrings.gradesunreleased);
         })
         .catch((error) => {
