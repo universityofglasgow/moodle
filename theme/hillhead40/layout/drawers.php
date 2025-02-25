@@ -37,7 +37,7 @@ $addblockbutton = $OUTPUT->addblockbutton();
 
 if (isloggedin()) {
     $courseindexopen = (get_user_preferences('drawer-open-index', true) == true);
-    $blockdraweropen = (get_user_preferences('drawer-open-block') == true);
+    $blockdraweropen = (get_user_preferences('drawer-open-block', true) == true);
 } else {
     $courseindexopen = false;
     $blockdraweropen = false;
