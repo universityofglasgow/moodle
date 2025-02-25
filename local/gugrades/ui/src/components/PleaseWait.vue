@@ -1,8 +1,8 @@
 <template>
-    <VueModal v-model="showmodal" enableClose="false" modalClass="col-3 col-lg-2 rounded" :title="mstrings.pleasewait">
-        <div class="d-flex justify-content-center" style="min-width: 250px">
-            <div class="border rounded m-1 p-2 text-center">
-                <p>{{ mstrings.pleasewait }}</p>
+    <VueModal v-model="showmodal" enableClose="false" modalClass="col-3 col-lg-2 rounded vm_container" :title="mstrings.pleasewait">
+        <div class="d-flex justify-content-center" >
+            <div class="border rounded m-1 p-2 text-center" style="min-width: 300px">
+                <p>{{ props.message }}</p>
                 <VueSpinner v-if="!showprogress" size="50" color="#005c8a"></VueSpinner>
                 <div v-if="showprogress" class="progress" style="min-width: 250px">
                     <div class="progress-bar progress-bar-striped progress-bar-animated" :class="progressclass" role="progressbar" :style="'width: ' + progress + '%'" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
@@ -23,7 +23,7 @@
     const showmodal = ref(false);
     const progress = ref(0);
 
-    // Props are only defined for progress bar. 
+    // Props are only defined for progress bar.
     // If you don't want a progress bar then props are not required
     const props = defineProps({
         uniqueid: {
@@ -37,7 +37,11 @@
         staffuserid: {
             type: Number,
             default: 0,
-        }
+        },
+        message: {
+            type: String,
+            default: '',
+        },
     });
 
     const showprogress = computed(() => {
@@ -65,7 +69,7 @@
             // loginrequired = false
             //
             // Without loginrequired we'd hit moodle sessions which would stop this returning.
-            // We also have to pass around the staff userid as that would not be available 
+            // We also have to pass around the staff userid as that would not be available
             // outside a session.
             fetchMany([{
                 methodname: 'local_gugrades_get_progress',
@@ -94,3 +98,9 @@
         showmodal.value = false;
     });
 </script>
+
+<style>
+    .vm {
+        min-width: 300px !important;
+    }
+</style>
