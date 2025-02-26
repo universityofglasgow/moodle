@@ -3,6 +3,10 @@
 Unit tests are provided for testing the PHP side of the plugin. This primarily means
 testing the web services expored by the plugin.
 
+Note that the tests ONLY test the web services. There are no tests for the Vue.js UI stuff. 
+
+PLEASE MAKE SURE ALL TESTS PASS BEFORE CHECKING IN!!
+
 ## Configuring Unit Tests
 
 Please see document https://moodledev.io/general/development/tools/phpunit
@@ -14,6 +18,26 @@ Currently tests can be run individually, using (for example)
 ...or the complete set for the plugin can be executed using
 
     vendor/bin/phpunit --testsuite local_gugrades_testsuite
+
+Additional useful flags are --stop-on-error and --stop-on-failue (as the complete suite can take some time to complete)
+
+## Docker
+
+If running PHP in docker, you're going to have to do something like...
+
+Exec into the Docker container for PHP-FPM:
+
+    docker exec -it moodle44-php-1 /bin/bash
+
+CD to the base of the Moodle install:
+
+    cd /app/public
+
+Run the tests:
+
+    vendor/bin/phpunit --testsuite local_gugrades_testsuite --stop-on-error --stop-on-failure
+
+If you need to recreate the database, the above will tell you and supply the correct command. 
 
 ## Test configuration
 
