@@ -8,7 +8,7 @@
         </div>
 
         <!-- display warnings -->
-        <div class="mt-2">
+        <div class="mt-2" v-if="level1category">
             <small>
                 <div v-for="warning in warnings" class="alert alert-warning alert-dismissible fade show mb-1" role="alert">
                     {{ warning.message }}
@@ -309,7 +309,9 @@
     function levelOneChange(level) {
         level1category.value = parseInt(level);
         categoryid.value = level1category.value;
-        table_update();
+        if (categoryid.value) {
+            table_update();
+        }
     }
 
     /**
