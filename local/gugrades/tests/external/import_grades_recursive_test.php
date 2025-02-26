@@ -86,24 +86,31 @@ final class import_grades_recursive_test extends \local_gugrades\external\gugrad
         $this->assertEquals(2, $counts['itemcount']);
         $this->assertEquals(2, $counts['gradecount']);
 
+        // Get the capture page
+        $page = get_capture_page::execute($this->course->id, $this->gradeitemsecond1, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_capture_page::execute_returns(),
+            $page
+        );
+
         // Check that they have been imported.
         $grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id]);
         $grades = array_values($grades);
 
         $this->assertIsArray($grades);
-        $this->assertCount(4, $grades);
+        $this->assertCount(6, $grades);
 
-        $this->assertEquals('16.7', $grades[2]->displaygrade);
-        $this->assertEquals(16.7000, $grades[2]->rawgrade);
-        $this->assertEquals('FIRST', $grades[2]->gradetype);
-        $this->assertEquals(1, $grades[2]->iscurrent);
+        $this->assertEquals('16.7', $grades[4]->displaygrade);
+        $this->assertEquals(16.7000, $grades[4]->rawgrade);
+        $this->assertEquals('FIRST', $grades[4]->gradetype);
+        $this->assertEquals(1, $grades[4]->iscurrent);
 
-        $this->assertEquals('48.5', $grades[3]->displaygrade);
-        $this->assertEquals(48.5000, $grades[3]->rawgrade);
-        $this->assertEquals('FIRST', $grades[3]->gradetype);
-        $this->assertEquals(1, $grades[3]->iscurrent);
+        $this->assertEquals('48.5', $grades[5]->displaygrade);
+        $this->assertEquals(48.5000, $grades[5]->rawgrade);
+        $this->assertEquals('FIRST', $grades[5]->gradetype);
+        $this->assertEquals(1, $grades[5]->iscurrent);
 
-        $this->assertEquals('CATEGORY', $grades[1]->gradetype);
-        $this->assertEquals('32.6', $grades[1]->displaygrade);
+        $this->assertEquals('CATEGORY', $grades[2]->gradetype);
+        $this->assertEquals('32.6', $grades[2]->displaygrade);
     }
 }

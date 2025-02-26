@@ -168,7 +168,6 @@ final class csv_capture_test extends \local_gugrades\external\gugrades_advanced_
      * @covers \local_gugrades\external\upload_csv::execute
      */
     public function test_upload_csv(): void {
-        global $DB;
 
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
@@ -218,12 +217,18 @@ final class csv_capture_test extends \local_gugrades\external\gugrades_advanced_
         $errorcount = $data['errorcount'];
         $addcount = $data['addcount'];
 
-        $grades = $DB->get_records('local_gugrades_grade');
-        $grades = array_values($grades);
+        // Get the capture page
+        $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign2, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_capture_page::execute_returns(),
+            $page
+        );
 
-        $this->assertEquals(2, $addcount);
-        $this->assertCount(6, $grades);
-        $this->assertEquals(18.0, $grades[3]->rawgrade);
+        $fred = $page['users'][0];
+        $this->assertEquals('F2:4', $fred['grades'][0]['displaygrade']);
+        $this->assertEquals('SECOND', $fred['grades'][0]['gradetype']);
+        $this->assertEquals('F2:4', $fred['grades'][1]['displaygrade']);
+        $this->assertEquals('PROVISIONAL', $fred['grades'][1]['gradetype']);
     }
 
     /**

@@ -363,16 +363,17 @@ class api {
                     gradetype:      $reason,
                     other:          $other,
                     iscurrent:      true,
-                    iserror:      false,
+                    iserror:        false,
                     auditcomment:   'CSV import',
                     ispoints:       !$mapping->is_scale(),
                 );
                 $addcount++;
 
                 // Re-aggregate this user
-                if ($aggregationsupported) {
-                    \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $user->id);
-                }
+                // DON'T, we'll do it in one hit at the end.
+                //if ($aggregationsupported) {
+                //    \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $user->id);
+                //}
             }
         }
 
@@ -385,6 +386,11 @@ class api {
                     'count' => $count,
                 ];
             }
+        }
+
+        if ($aggregationsupported && !$testrun) {
+            $gradecategoryid = \local_gugrades\grades::get_gradecategoryid_from_gradeitemid($gradeitemid);
+            self::recalculate($courseid, $gradecategoryid);
         }
 
         return [$testrunlines, $errorcount, $addcount, $errorlist];
@@ -509,6 +515,7 @@ class api {
 
     /**
      * Import grade
+     * Note: $noaggregation intended for recursive imports so that we don't "over aggregate"
      * @param int $courseid
      * @param int $gradeitemid
      * @param \local_gugrades\mapping\base $mapping
@@ -516,6 +523,7 @@ class api {
      * @param int $userid
      * @param bool $additional
      * @param string $fillns
+     * @param bool $noaggregation
      * @return bool - was a grade imported
      */
     public static function import_grade(
@@ -526,6 +534,7 @@ class api {
         int $userid,
         bool $additional,
         string $fillns,
+        bool $noaggregation = false,
         ) {
 
         $fillns = self::check_fillns($fillns);
@@ -536,7 +545,9 @@ class api {
         }
 
         // Can we aggregate?
-        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        if (!$noaggregation) {
+            $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        }
 
         // Ask activity for grade.
         $rawgrade = $activity->get_first_grade($userid);
@@ -571,7 +582,7 @@ class api {
                 );
 
                 // Re-aggregate this user
-                if ($aggregationsupported) {
+                if (!$noaggregation && $aggregationsupported) {
                     \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
                 }
 
@@ -603,7 +614,9 @@ class api {
             );
 
             // Re-aggregate this user
-            \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+            if (!$noaggregation) {
+                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+            }
 
             return true;
         }
@@ -801,7 +814,9 @@ class api {
             // Iterate over these users importing grade.
             $iusers = 0;
             foreach ($users as $user) {
-                if (self::import_grade($courseid, $item->id, $mapping, $activity, $user->id, $additional, $fillns)) {
+                
+                // Import but do not aggregate
+                if (self::import_grade($courseid, $item->id, $mapping, $activity, $user->id, $additional, $fillns, true)) {
                     $gradecount++;
                 }
                 $iusers++;
@@ -816,6 +831,9 @@ class api {
 
             $iitems++;
         }
+
+        // Finally, do the aggregation (once)
+        self::recalculate($courseid, $categoryid);
 
         return [$itemcount, $gradecount];
     }
