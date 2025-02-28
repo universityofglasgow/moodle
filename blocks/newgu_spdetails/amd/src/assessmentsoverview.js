@@ -37,6 +37,7 @@ import Templates from 'core/templates';
 import sortTable from 'block_newgu_spdetails/sorting';
 
 const Selectors = {
+    ASSESSMENTSOVERVIEW_CARD: '#assessements-overview',
     SUMMARY_BLOCK: '#assessmentSummaryContainer',
     COURSECONTENTS_BLOCK: '#courseTab-container',
     ASSESSMENTSDUE_BLOCK: '#assessmentsDue-container',
@@ -102,8 +103,6 @@ const fetchAssessmentsOverview = () => {
             Log.debug(err);
             return;
         });
-        tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentSummaryChart' width='400' height='300'" +
-            " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
 
         // Set specific colours/fonts/weights etc for the Highcharts config object.
         let tmpFontColour = '#000';
@@ -171,26 +170,47 @@ const fetchAssessmentsOverview = () => {
         if (document.querySelector('.hillhead40-font-dyslexic')) {
             tmpFontFamily = "'OpenDyslexic', 'Helvetica', 'Arial', sans-serif";
         }
-        // Check for the size setting
+        // Check for the size setting. We also further control the chart dimensions here.
+        let tmpWidth = 400;
+        let tmpHeight = 300;
+        let tmpCardRem = '33rem';
+        let tmpMarginRight = 200;
+        let tmpX = 0;
         if (document.querySelector('.hillhead40-size-120')) {
             tmpFontSize = 'large';
             labelFontSize = 'large';
             labelDistance = -33;
+            tmpWidth = 500;
+            tmpHeight = 400;
+            tmpCardRem = '70rem';
+            tmpX = -250;
         }
         if (document.querySelector('.hillhead40-size-140')) {
             tmpFontSize = 'x-large';
             labelFontSize = 'x-large';
-            labelDistance = -29;
+            labelDistance = -50;
+            tmpWidth = 600;
+            tmpHeight = 450;
+            tmpCardRem = '70rem';
+            tmpX = -150;
         }
         if (document.querySelector('.hillhead40-size-160')) {
             tmpFontSize = 'xx-large';
             labelFontSize = 'xx-large';
-            labelDistance = -31;
+            labelDistance = -50;
+            tmpWidth = 700;
+            tmpHeight = 500;
+            tmpCardRem = '70rem';
+            tmpMarginRight = 100;
         }
         if (document.querySelector('.hillhead40-size-180')) {
             tmpFontSize = 'xxx-large';
             labelFontSize = 'xxx-large';
-            labelDistance = 0;
+            labelDistance = -75;
+            tmpWidth = 800;
+            tmpHeight = 600;
+            tmpCardRem = '70rem';
+            tmpMarginRight = 300;
         }
         // Check for the bold setting
         let tmpFontWeight = 'normal';
@@ -202,6 +222,14 @@ const fetchAssessmentsOverview = () => {
         if (document.querySelector('.hillhead40-spacing')) {
             tmpLineHeight = '2rem';
         }
+
+        // Set the width/height of the card (container) and chart.
+        let tempCard = document.querySelector(Selectors.ASSESSMENTSOVERVIEW_CARD);
+        tempCard.style.width = tmpCardRem;
+
+        tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentSummaryChart' width='" + tmpWidth +
+            "' height='" + tmpHeight + "'" +
+            " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
 
         // We can hook into require.js, which is dead handy.
         require.config({
@@ -221,8 +249,8 @@ const fetchAssessmentsOverview = () => {
             Highcharts.chart('assessmentSummaryChart', {
                 chart: {
                     type: 'pie',
-                    marginRight: 150,
-                    height: 300,
+                    marginRight: tmpMarginRight,
+                    height: tmpHeight,
                     backgroundColor: backgroundColour,
                     style: {
                         fontFamily: tmpFontFamily,
@@ -244,12 +272,14 @@ const fetchAssessmentsOverview = () => {
                     align: 'right',
                     verticalAlign: 'middle',
                     layout: 'vertical',
+                    x: tmpX,
                     symbolRadius: 5,
                     symbolHeight: 20,
                     symbolWidth: 20,
                     itemStyle: {
                         color: tmpFontColour,
                         fontWeight: tmpFontWeight,
+                        fontSize: tmpFontSize,
                     },
                     itemHoverStyle: {
                         color: tmpFontColour,

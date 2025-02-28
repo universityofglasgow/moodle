@@ -34,6 +34,7 @@ import Templates from 'core/templates';
 import sortTable from 'block_newgu_spdetails/sorting';
 
 const Selectors = {
+    DUESOON_CARD: '#assessments-due',
     DUESOON_BLOCK: '#assessmentsDueSoonContainer',
     COURSECONTENTS_BLOCK: '#courseTab-container',
     ASSESSMENTSDUE_BLOCK: '#assessmentsDue-container',
@@ -95,9 +96,6 @@ const fetchAssessmentsDueSoon = () => {
                 return;
             });
 
-            tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentsDueSoonChart' width='400' height='300'" +
-                " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
-
             // Set specific colours/fonts/weights etc for the Highcharts config object.
             let backgroundColour = '#FFFFFF';
             let tmpFontColour = '#000';
@@ -155,7 +153,6 @@ const fetchAssessmentsDueSoon = () => {
             }
             // Check for the font setting
             let tmpFontFamily = "'Hillhead', 'Ubuntu', 'Trebuchet MS', 'Arial', sans-serif";
-            let tmpFontSize = 20;
             if (document.querySelector('.hillhead40-font-modern')) {
                 tmpFontFamily = "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
             }
@@ -171,18 +168,34 @@ const fetchAssessmentsDueSoon = () => {
             if (document.querySelector('.hillhead40-font-dyslexic')) {
                 tmpFontFamily = "'OpenDyslexic', 'Helvetica', 'Arial', sans-serif";
             }
-            // Check for the size setting
+            // Check for the size setting. We also further control the chart dimensions here.
+            let tmpFontSize = 20;
+            let tmpWidth = 400;
+            let tmpHeight = 300;
+            let tmpCardRem = '33rem';
             if (document.querySelector('.hillhead40-size-120')) {
-                tmpFontSize = '20%';
+                tmpFontSize = 'large';
+                tmpWidth = 500;
+                tmpHeight = 400;
+                tmpCardRem = '70rem';
             }
             if (document.querySelector('.hillhead40-size-140')) {
-                tmpFontSize = '25%';
+                tmpFontSize = 'x-large';
+                tmpWidth = 600;
+                tmpHeight = 500;
+                tmpCardRem = '70rem';
             }
             if (document.querySelector('.hillhead40-size-160')) {
-                tmpFontSize = '30%';
+                tmpFontSize = 'xx-large';
+                tmpWidth = 700;
+                tmpHeight = 600;
+                tmpCardRem = '70rem';
             }
             if (document.querySelector('.hillhead40-size-180')) {
-                tmpFontSize = '35%';
+                tmpFontSize = 'xxx-large';
+                tmpWidth = 800;
+                tmpHeight = 700;
+                tmpCardRem = '70rem';
             }
             // Check for the bold setting
             let tmpFontWeight = 'normal';
@@ -194,6 +207,14 @@ const fetchAssessmentsDueSoon = () => {
             if (document.querySelector('.hillhead40-spacing')) {
                 tmpLineHeight = '2rem';
             }
+
+            // Set the width/height of the card (container) and chart.
+            let tempCard = document.querySelector(Selectors.DUESOON_CARD);
+            tempCard.style.width = tmpCardRem;
+
+            tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentsDueSoonChart' width='" + tmpWidth +
+                "' height='" + tmpHeight + "'" +
+                " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
 
             // We can hook into require.js, which is dead handy.
             require.config({
@@ -241,6 +262,7 @@ const fetchAssessmentsDueSoon = () => {
                         itemStyle: {
                             color: tmpFontColour,
                             fontWeight: tmpFontWeight,
+                            fontSize: tmpFontSize,
                         },
                         itemHoverStyle: {
                             color: tmpFontColour,
@@ -297,6 +319,7 @@ const fetchAssessmentsDueSoon = () => {
                     },
                     yAxis: {
                         title: '',
+                        tickInterval: 1,
                         gridLineWidth: 1,
                         gridLineColor: tmpFontColour,
                         labels: {

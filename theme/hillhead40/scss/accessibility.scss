@@ -24,19 +24,47 @@ body.hillhead40-font-dyslexic {
   font-family: "OpenDyslexic", "Helvetica", "Arial", sans-serif !important;
 }
 
-body.hillhead40-size-120 {
+body.hillhead40-size-120, 
+body.hillhead40-size-120 .assessments-overview-container h2, 
+body.hillhead40-size-120 .assessments-overview-container h3,
+body.hillhead40-size-120 .assessments-details-container h3,
+body.hillhead40-size-120 .assessments-details-container button,
+body.hillhead40-size-120 .return-assessments-text,
+body.hillhead40-size-120 .subcategory-details-container,
+body.hillhead40-size-120 #assessmentsDue-container h3 {
   font-size: 120%;
 }
 
-body.hillhead40-size-140 {
+body.hillhead40-size-140, 
+body.hillhead40-size-140 .assessments-overview-container h2, 
+body.hillhead40-size-140 .assessments-overview-container h3,
+body.hillhead40-size-140 .assessments-details-container h3,
+body.hillhead40-size-140 .assessments-details-container button,
+body.hillhead40-size-140 .return-assessments-text,
+body.hillhead40-size-140 .subcategory-details-container,
+body.hillhead40-size-140 #assessmentsDue-container h3 {
   font-size: 140%;
 }
 
-body.hillhead40-size-160 {
+body.hillhead40-size-160, 
+body.hillhead40-size-160 .assessments-overview-container h2, 
+body.hillhead40-size-160 .assessments-overview-container h3,
+body.hillhead40-size-160 .assessments-details-container h3,
+body.hillhead40-size-160 .assessments-details-container button,
+body.hillhead40-size-160 .return-assessments-text,
+body.hillhead40-size-160 .subcategory-details-container,
+body.hillhead40-size-160 #assessmentsDue-container h3 {
   font-size: 160%;
 }
 
-body.hillhead40-size-180 {
+body.hillhead40-size-180, 
+body.hillhead40-size-180 .assessments-overview-container h2, 
+body.hillhead40-size-180 .assessments-overview-container h3,
+body.hillhead40-size-180 .assessments-details-container h3,
+body.hillhead40-size-180 .assessments-details-container button,
+body.hillhead40-size-180 .return-assessments-text,
+body.hillhead40-size-180 .subcategory-details-container,
+body.hillhead40-size-180 #assessmentsDue-container h3 {
   font-size: 180%;
 }
 
@@ -91,8 +119,7 @@ body.hillhead40-spacing * {
 
   body.hillhead40-#{$class} .primary-navigation .moremenu .nav-link.active,
   body.hillhead40-#{$class} .primary-navigation .moremenu .nav-link:hover,
-  body.hillhead40-#{$class} .btn-primary:hover,
-  {
+  body.hillhead40-#{$class} .btn-primary:hover {
     background-color: $background !important;
     border-bottom-color: $foreground !important;
   }
