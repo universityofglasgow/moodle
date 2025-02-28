@@ -49,6 +49,21 @@ class progress {
     }
 
     /**
+     * Initialise progress bar
+     * Fancy way to set it to zero and create the record
+     * @param int $courseid
+     * @param int $uniqueid
+     * @param string $progresstype
+     */
+    public static function initialise(int $courseid, int $uniqueid, string $progresstype) {
+
+        $cache = \cache::make('local_gugrades', 'progress');
+        $tag = self::get_tag($courseid, $uniqueid, $progresstype);
+
+        $cache->set($tag, 0);       
+    }
+
+    /**
      * Record current progress using the progress cache
      * $uniqueid is something that identifies this progress thing from any other (for this user)
      * $progresstype can be something like 'csvimport', 'recursiveimport' and so forth
@@ -67,6 +82,7 @@ class progress {
 
     /**
      * Get the current progress
+     * If there is no record then return -1
      * @param int $courseid
      * @param int $uniqueid
      * @param string $progresstype
@@ -81,7 +97,7 @@ class progress {
         if ($progress = $cache->get($tag)) {
             return $progress;
         } else {
-            return 0;
+            return -1;
         }
     }
 

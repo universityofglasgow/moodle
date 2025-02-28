@@ -45,7 +45,7 @@
     });
 
     const showprogress = computed(() => {
-        return props.progresstype != '';
+        return (props.progresstype != '') && (progress.value >= 0);
     });
 
     const progressclass = computed(() => {

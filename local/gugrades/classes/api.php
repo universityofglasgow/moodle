@@ -281,6 +281,7 @@ class api {
         // Counts for progress calculation. 
         $numberoflines = count($lines);
         $count = 0;
+        \local_gugrades\progress::initialise($courseid, 0, 'csvimport');
 
         // Iterate over CSV lines, checking and (optionally) adding new grade.
         foreach ($lines as $line) {
@@ -387,6 +388,9 @@ class api {
                 ];
             }
         }
+
+        // Progress complete. Show aggregation as normal spinner
+        \local_gugrades\progress::terminate($courseid, 0, 'csvimport');
 
         if ($aggregationsupported && !$testrun) {
             $gradecategoryid = \local_gugrades\grades::get_gradecategoryid_from_gradeitemid($gradeitemid);
@@ -804,6 +808,7 @@ class api {
 
         // Counts are to track progress.
         $iitems = 0;
+        \local_gugrades\progress::initialise($courseid, 0, 'import');
         foreach ($items as $item) {
             $activity = \local_gugrades\users::activity_factory($item->id, $courseid, $groupid);
             $mapping = \local_gugrades\grades::mapping_factory($courseid, $item->id);
@@ -831,6 +836,9 @@ class api {
 
             $iitems++;
         }
+
+        // Terminate progress and just show 'please wait' for aggregation bit.
+        \local_gugrades\progress::terminate($courseid, 0, 'import');
 
         // Finally, do the aggregation (once)
         self::recalculate($courseid, $categoryid);
