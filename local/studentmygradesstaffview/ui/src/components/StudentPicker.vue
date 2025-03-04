@@ -52,7 +52,6 @@
     // Handle change of selection in dropdown.
     function selectMenuChange(event) {
         const studentid = event.target.value;
-        //localStorage.setItem('level1category', categoryid);
         emit('selectmenuchange', studentid);
     }
 

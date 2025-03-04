@@ -1,9 +1,8 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
-    <h1>Here!!</h1>
     <div class="border rounded p-2 mt-2">
         <div class="col-12 col-lg-6">
-            <StudentPicker></StudentPicker>
+            <StudentPicker />
         </div>
     </div>
 

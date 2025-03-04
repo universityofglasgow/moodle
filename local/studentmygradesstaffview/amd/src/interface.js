@@ -12,10 +12,10 @@ export const init = ({courseid}) => {
     //
     // Vue's main.js has a check that this exists before the Vue
     // app is instantiated.
-    window.SMGSF = {};
-    window.SMGSF.courseid = courseid;
-    window.SMGSF.getString = getString;
-    window.SMGSF.getStrings = getStrings;
+    window.SMGSV = {};
+    window.SMGSV.courseid = courseid;
+    window.SMGSV.getString = getString;
+    window.SMGSV.getStrings = getStrings;
 
-    window.SMGSF.fetchMany = fetchMany;
+    window.SMGSV.fetchMany = fetchMany;
 };
