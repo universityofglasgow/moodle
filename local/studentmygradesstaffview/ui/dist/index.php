@@ -42,6 +42,12 @@ $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 require_login($course);
 $context = context_course::instance($courseid);
 require_capability('local/studentmygradesstaffview:view', $context);
+$PAGE->set_heading($course->fullname);
+
+// Navigation
+$coursenode = $PAGE->navigation->find($courseid, navigation_node::TYPE_COURSE);
+$studentmygradesstaffviewnode = $coursenode->add(get_string('studentmygradesstaffview', 'local_studentmygradesstaffview'));
+$studentmygradesstaffviewnode->make_active();
 
 // VueJS stuff gets injected here.
 echo $OUTPUT->header();

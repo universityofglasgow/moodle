@@ -1,17 +1,13 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <div>
+    <div class="col-12 col-lg-6">
         <select class="form-control border-dark" @change="selectMenuChange($event)">
             <option value="0">{{ mstrings.selectuser }}</option>
             <option v-for="student in students" :key="student.id" :value="student.id" :selected="selected == student.id">{{ student.fullname }}</option>
         </select>
     </div>
 
-    <div v-if="!collapsed">
-        <!-- Please wait spinner -->
-        <PleaseWait v-if="loading"></PleaseWait>
-    </div>
 </template>
 
 <script setup>
