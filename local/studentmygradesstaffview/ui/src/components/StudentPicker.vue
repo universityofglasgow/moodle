@@ -1,7 +1,7 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <div class="">
+    <div>
         <select class="form-control border-dark" @change="selectMenuChange($event)">
             <option value="0">{{ mstrings.selectuser }}</option>
             <option v-for="student in students" :key="student.id" :value="student.id" :selected="selected == student.id">{{ student.fullname }}</option>

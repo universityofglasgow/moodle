@@ -55,6 +55,7 @@ class api {
 
     public static function get_students($courseid) {
         $context = \context_course::instance($courseid);
-        get_enrolled_users($context, 'moodle/grade:view', 0, 'u.id, u.firstname, u.lastname',  null, 0, 0, true);
+        $users = get_enrolled_users($context, 'moodle/grade:view', 0, 'u.id, CONCAT(u.firstname, " ", u.lastname) AS fullname',  null, 0, 0, true);
+        return $users;
     }
 }

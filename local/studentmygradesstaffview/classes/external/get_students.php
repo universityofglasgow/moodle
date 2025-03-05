@@ -49,17 +49,13 @@ class get_students extends external_api {
      * Return a list of students enrolled on the course
      * @param int $courseid
      * @return array of students.
-     * @throws \invalid_parameter_exception
      */
     public static function execute(int $courseid) {
-        $params = self::validate_parameters(self::execute_parameters(),
-            [
-                'courseid' => $courseid,
-            ]
-        );
-        return [
-            'result' => \local_studentmygradesstaffview\api::get_students($params['courseid'])
-        ];
+        $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid,]);
+        $context = \context_course::instance($courseid);
+        self::validate_context($context);
+
+        return \local_studentmygradesstaffview\api::get_students($params['courseid']);
     }
 
     /**
@@ -67,8 +63,11 @@ class get_students extends external_api {
      * @return external_multiple_structure
      */
     public static function execute_returns() {
-        return new external_single_structure([
-            'result' => new external_value(PARAM_TEXT, 'The list of students on the course - in JSON format'),
-        ]);
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'The student id'),
+                'fullname' => new external_value(PARAM_TEXT, 'The student\'s full name'),
+            ])
+        );
     }
 }

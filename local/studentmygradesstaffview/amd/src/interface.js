@@ -6,7 +6,7 @@ import {call as fetchMany} from 'core/ajax';
 
 export const init = ({courseid}) => {
 
-    // Create a SMGSF 'namespace' and bind this to window
+    // Create a SMGSV 'namespace' and bind this to window
     // this is so we can get Moodle core functions through the
     // backdoor to Vue.
     //
