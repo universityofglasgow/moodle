@@ -70,5 +70,23 @@ $content = $OUTPUT->render_from_template('block_newgu_spdetails/coursetabs', $te
 $PAGE->requires->js_call_amd('block_newgu_spdetails/main', 'init');
 
 echo $OUTPUT->header();
+
+$help_url = 'https://www.gla.ac.uk/myglasgow/sld/digitalskills/how-to-moodleforstudents/studentmygrades/';
+
+$help_button_attribs = ['class'=>'btn bg-warning btn-icon icon-no-margin',
+                        'id'=>'UofG_MyGrades_help',
+                        'title'=>'Additional guidance'
+                        ];
+
+$help_link_attribs = ['target'=>'_new',
+                        'HREF'=>$help_url,
+                        ];
+
+$help_link = html_writer::link($helpurl, '<i class="icon fa fa-question fa-fw " aria-hidden="true"></i>', $help_link_attribs);
+
+$help_button = html_writer::tag('button', $help_link, $help_button_attribs);
+
+echo $help_button;
+
 echo $content;
 echo $OUTPUT->footer();

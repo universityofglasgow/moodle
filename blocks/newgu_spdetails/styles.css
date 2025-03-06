@@ -246,3 +246,13 @@
 #region-main {
     margin-top: 0;
 }
+
+#UofG_MyGrades_help {
+    position: fixed;
+    right: 5%;
+    top: 15%;
+    text-align: center;
+    text-decoration: none;
+    z-index: 999;
+    border-radius: 50%;
+}
