@@ -402,6 +402,7 @@ const viewAssessmentsOverviewByChartType = function(index) {
             returnToAssessmentsHandler();
             let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
             sortingEventHandler(sortColumns);
+            assessmentsDueContents.scrollIntoView({behavior: "smooth"});
             return true;
         }).catch((error) => displayException(error));
     }).fail(function(response) {
