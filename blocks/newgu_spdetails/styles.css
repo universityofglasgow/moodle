@@ -250,9 +250,9 @@
 #UofG_MyGrades_help {
     position: fixed;
     right: 5%;
-    top: 15%;
+    top: 85%;
     text-align: center;
     text-decoration: none;
-    z-index: 999;
+    z-index: 1999;
     border-radius: 50%;
 }
