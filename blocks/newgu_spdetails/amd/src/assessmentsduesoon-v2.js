@@ -73,6 +73,7 @@ const fetchAssessmentsDueSoon = () => {
                 {key: 'chart_24hrs', component: 'block_newgu_spdetails'},
                 {key: 'chart_7days', component: 'block_newgu_spdetails'},
                 {key: 'chart_1mth', component: 'block_newgu_spdetails'},
+                {key: 'chart_count', component: 'block_newgu_spdetails'},
                 {key: 'duesoon_aria_label_text', component: 'block_newgu_spdetails'},
                 {key: 'duesoon_accessibility_description', component: 'block_newgu_spdetails'},
                 {key: 'duesoon_tooltip_preamble', component: 'block_newgu_spdetails'}
@@ -80,6 +81,7 @@ const fetchAssessmentsDueSoon = () => {
             let chart_24hrs = '';
             let chart_7days = '';
             let chart_1mth = '';
+            let chart_count = '';
             let aria_label_text = '';
             let accessibility_description = '';
             let duesoon_tooltip_preamble = '';
@@ -87,9 +89,10 @@ const fetchAssessmentsDueSoon = () => {
                 chart_24hrs = result[0];
                 chart_7days = result[1];
                 chart_1mth = result[2];
-                aria_label_text = result[3];
-                accessibility_description = result[4];
-                duesoon_tooltip_preamble = result[5];
+                chart_count = result[3];
+                aria_label_text = result[4];
+                accessibility_description = result[5];
+                duesoon_tooltip_preamble = result[6];
                 return;
             }).catch((err) => {
                 Log.debug(err);
@@ -308,7 +311,6 @@ const fetchAssessmentsDueSoon = () => {
                     },
                     xAxis: {
                         type: 'category',
-                        title: '',
                         gridLineWidth: 1,
                         gridLineColor: tmpFontColour,
                         labels: {
@@ -318,7 +320,9 @@ const fetchAssessmentsDueSoon = () => {
                         }
                     },
                     yAxis: {
-                        title: '',
+                        title: {
+                            text: chart_count,
+                        },
                         tickInterval: 1,
                         gridLineWidth: 1,
                         gridLineColor: tmpFontColour,
@@ -407,6 +411,7 @@ const viewAssessmentsDueByChartType = function(index) {
             returnToAssessmentsHandler();
             let sortColumns = document.querySelectorAll('#assessment_data_table .th-sortable');
             sortingEventHandler(sortColumns);
+            assessmentsDueContents.scrollIntoView({behavior: "smooth"});
             return true;
         }).catch((error) => displayException(error));
     }).fail(function(response) {

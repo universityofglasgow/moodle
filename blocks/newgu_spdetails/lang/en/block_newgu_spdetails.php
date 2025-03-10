@@ -133,6 +133,7 @@ $string['manual_grade_item_hidden_icon_alt_text'] = 'This item is currently hidd
 $string['chart_24hrs'] = '24 hours';
 $string['chart_7days'] = '7 days';
 $string['chart_1mth'] = 'month';
+$string['chart_count'] = 'Assessment count';
 
 $string['status_restricted'] = 'restricted';
 $string['status_new'] = 'new';
