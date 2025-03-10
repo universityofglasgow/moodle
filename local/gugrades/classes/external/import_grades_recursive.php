@@ -45,7 +45,7 @@ class import_grades_recursive extends external_api {
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item id number - import peers and children'),
             'groupid' => new external_value(PARAM_INT, 'Group to import for'),
             'additional' => new external_value(PARAM_BOOL, 'Only import where no grades currently exist for that user'),
-            'fillns' => new external_value(PARAM_ALPHA, 'Users with no submission given NS admin grade. Can be none, fillns or fillns0'),
+            'fillns' => new external_value(PARAM_ALPHANUM, 'Users with no submission given NS admin grade. Can be none, fillns or fillns0'),
         ]);
     }
 
