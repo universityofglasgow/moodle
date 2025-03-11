@@ -626,7 +626,7 @@ class grades {
     public static function invalidate_provisionalgrade_cache(int $gradeitemid, int $userid) {
         $cache = \cache::make('local_gugrades', 'provisionalgrade');
         $tag = self::get_provisionalgrade_cachetag($gradeitemid, $userid);
-        $cache->delete($tag);        
+        $cache->delete($tag);
     }
 
     /**
@@ -667,7 +667,7 @@ class grades {
     }
 
     /**
-     * Create (global/cached) array of provisional grades for 
+     * Create (global/cached) array of provisional grades for
      */
 
     /**
@@ -798,16 +798,17 @@ class grades {
             if ($gradeitem->grademax == 22) {
 
                 // TODO: May change but to get it working.
-                return ['value', $gradeitem];
+                //return ['value', $gradeitem];
+                return ['scale22', $gradeitem];
             } else {
                 return ['value', $gradeitem];
             }
         } else if ($gradetype == GRADE_TYPE_SCALE) {
-            if (($gradeitem->grademin == 1) && ($gradeitem->grademax == 23)) {
-                return ['scale22', $gradeitem];
-            } else {
+            //if (($gradeitem->grademin == 1) && ($gradeitem->grademax == 23)) {
+            //    return ['scale22', $gradeitem];
+            //} else {
                 return ['scale', $gradeitem];
-            }
+            //}
         }
 
         throw new \moodle_exception('Invalid gradeitem encountered in grades::analyse_gradeitem');

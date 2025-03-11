@@ -58,7 +58,7 @@ class api {
      */
     public static function get_capture_page(int $courseid, int $gradeitemid,
         string $firstname, string $lastname, int $groupid, bool $viewfullnames) {
-        
+
         global $USER;
 
         //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
@@ -278,7 +278,7 @@ class api {
         // Because it can take a while.
         set_time_limit(0);
 
-        // Counts for progress calculation. 
+        // Counts for progress calculation.
         $numberoflines = count($lines);
         $count = 0;
         \local_gugrades\progress::initialise($courseid, 0, 'csvimport');
@@ -819,7 +819,7 @@ class api {
             // Iterate over these users importing grade.
             $iusers = 0;
             foreach ($users as $user) {
-                
+
                 // Import but do not aggregate
                 if (self::import_grade($courseid, $item->id, $mapping, $activity, $user->id, $additional, $fillns, true)) {
                     $gradecount++;
@@ -828,7 +828,7 @@ class api {
 
                 // Calculate progress.
                 // Note: $transactioncount is based on ALL enrolled students, which may not always be correct
-                // ...but it'll be close enough. 
+                // ...but it'll be close enough.
                 // This took a lot of thinking about. I'll leave it as an exercise for those who follow me :)
                 $progress = floor((100 * $iitems / $itemcount) + (100 * $iusers / $itemcount / $usercount));
                 \local_gugrades\progress::record($courseid, 0, 'import', $progress);
@@ -910,8 +910,11 @@ class api {
         if ($converted) {
             $scale = \local_gugrades\conversion::get_conversion_scale($courseid, $gradeitemid);
             $scalemenu = self::formkit_menu($scale, true);
-        } else if ($gradeitem->gradetype == GRADE_TYPE_SCALE) {
+        } else if ($itemtype == 'scale') {
             $scale = \local_gugrades\grades::get_scale($gradeitem->scaleid);
+            $scalemenu = self::formkit_menu($scale, true);
+        } else if ($itemtype == 'scale22') {
+            $scale = \local_gugrades\grades::get_scale(0);
             $scalemenu = self::formkit_menu($scale, true);
         } else {
             $scalemenu = [];
