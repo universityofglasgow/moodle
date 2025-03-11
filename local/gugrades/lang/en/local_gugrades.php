@@ -257,6 +257,7 @@ $string['overridenotavailable'] = 'Override is not available here. Convert to Sc
 $string['participant'] = 'Participant';
 $string['participantnumber'] = 'Participant {$a}';
 $string['percentage'] = 'Percentage';
+$string['pleasesavefirst'] = 'Please save first';
 $string['pleasespecify'] = 'Please specify';
 $string['pleasewait'] = 'Please wait...';
 $string['pluginname'] = 'MyGrades';

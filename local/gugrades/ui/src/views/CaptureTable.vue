@@ -76,6 +76,7 @@
                     :body-item-class-name="table_item_class"
                     :header-item-class-name="header_item_class"
                     :filter-options="table_filter"
+                    @xxupdate-page-items="pagination_clicked()"
                     >
 
                     <!-- add header text and edit cog next to cell if required -->
@@ -149,10 +150,15 @@
                             <div v-if="item.gradehidden" class="badge badge-pill badge-warning mb-1">{{ mstrings.hiddenmygrades }}</div>
                         </div>
                     </template>
+
+                    <!-- Override pagination if bulk editing -->
+                    <template #pagination v-if="ineditcellmode">
+                        {{ mstrings.pleasesavefirst }}
+                    </template>
                 </EasyDataTable>
 
                 <!-- button for saving cell edits -->
-                <div class="pb-1 clearfix" v-if="ineditcellmode">
+                <div class="pb-1 clearfix mt-2" v-if="ineditcellmode">
                     <button class="btn btn-warning float-right mr-1" @click="edit_cell_cancelled">{{ mstrings.cancel }}</button>
                     <button class="btn btn-primary float-right mr-1" @click="edit_cell_saved">{{ mstrings.save }}</button>
                 </div>
@@ -279,6 +285,7 @@
         released.value = false;
         loaded.value = false;
     }
+
 
     /**
      * Get class name for table row depending on criteria
@@ -416,6 +423,15 @@
         },
         { debounce: 500, maxWait: 1000 },
     );
+
+    /**
+     * Change pagination
+     */
+    function pagination_clicked() {
+
+        // If the multiple update is open, we'll close it
+        edit_cell_saved();
+    }
 
     /**
      * Are we in "edit a cell" mode?
