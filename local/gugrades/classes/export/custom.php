@@ -399,6 +399,11 @@ class custom extends base {
         set_user_preference($preferencename, $selected);
     }
 
+    /**
+     * Separate out the numerical and letter grade after aggregation to show numerical/letter values for additional exported columns.
+     * @param object $user
+     * @return string
+     */
     protected function sanitise_grade($user) {
 
         // Sanatise the user grade to export scale value only
