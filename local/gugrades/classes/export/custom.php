@@ -112,6 +112,16 @@ class custom extends base {
             'description' => get_string('completed'),
             'category' => false,
         ];
+        $form[] = [
+            'identifier' => 'letter',
+            'description' => 'Letter Grade',
+            'category' => false,
+        ];
+        $form[] = [
+            'identifier' => 'numerical',
+            'description' => 'Numerical Grade',
+            'category' => false,
+        ];
 
         // Get tree from aggregation tab.
         $tree = \local_gugrades\aggregation::recurse_tree($courseid, $gradecategoryid);
@@ -389,6 +399,21 @@ class custom extends base {
         set_user_preference($preferencename, $selected);
     }
 
+    protected function sanitise_grade($user) {
+
+        // Sanatise the user grade to export scale value only
+        if ($user->rawgrade) {
+            $grade = $user->displaygrade;
+
+            // Remove the bracketted value
+            $parts = explode(' ', $grade);
+
+            return $parts[0];
+        }
+
+        return '';
+    }
+
     /**
      * Return data for CSV export
      * @param int $courseid
@@ -461,6 +486,10 @@ class custom extends base {
                 } else if (str_starts_with($ident, 'ITEM_')) {
                     $itemcsv = $this->process_item($ident, $courseid, $user->id, $options);
                     $line = array_merge($line, $itemcsv);
+                } else if ($ident =='letter'){
+                    $line[$ident] = $this->sanitise_grade($user);
+                } else if ($ident =='numerical'){
+                    $line[$ident] = $user->rawgrade;
                 }
 
             }
