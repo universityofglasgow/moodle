@@ -1,7 +1,7 @@
 <template>
     <span class="dropright">
         <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Actions">
-            <i class="fa fa-ellipsis-v fa-lg ml-1" aria-hidden="true" ></i>
+            &nbsp;<i class="fa fa-ellipsis-v fa-lg ml-1" aria-hidden="true" ></i>&nbsp;
         </a>
         <div v-if="props.categoryid == 0" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             <AddGradeButton :itemid="props.itemid" :userid="props.userid" :name="props.name" :itemname="props.itemname" :released="props.released" @gradeadded = "grade_added()"></AddGradeButton>
