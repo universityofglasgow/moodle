@@ -136,7 +136,6 @@
             }
         }])[0]
         .then((result) => {
-            window.console.log(result);
             user.value = result;
 
             loading.value = false;
