@@ -1,7 +1,7 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <div class="row">
+    <div class="row" style="min-width: 250px;">
         <FormKit
             type="select"
             name="admingrades"
