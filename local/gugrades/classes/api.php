@@ -1849,6 +1849,45 @@ class api {
     }
 
     /**
+     * Get explain aggregation
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return array
+     */
+    public static function get_explain_aggregation(int $courseid, int $gradecategoryid, int $userid) {
+
+        // Aggregate and get 'explanation'.
+        $aggregated_result = \local_gugrades\aggregation::aggregate_user_helper($courseid, $gradecategoryid, $userid);
+        [,,,,,,$explain] = $aggregated_result;
+
+        // Get categories and items at this level.
+        [$columns, $atype, $warnings] = \local_gugrades\aggregation::get_columns($courseid, $gradecategoryid);
+
+        // Get user aggregation data
+        $context = \context_course::instance($courseid);
+        $user = \local_gugrades\aggregation::get_user($courseid, $gradecategoryid, $userid);
+        $user = \local_gugrades\aggregation::add_aggregation_fields_to_user($courseid, $gradecategoryid, $user, $columns);
+
+        // Do we show the weights?
+        $showweights = \local_gugrades\aggregation::show_weights($gradecategoryid);
+
+        // Overriding grade changes explanation.
+        if ($user->overridden) {
+            $explain = get_string('explain_overridden', 'local_gugrades');
+        }
+
+        // Add additional info.
+        $user->showweights = $showweights;
+        $user->strategy = \local_gugrades\aggregation::get_formatted_strategy($gradecategoryid);
+        $user->atype = $atype;
+        $user->formattedatype = \local_gugrades\aggregation::translate_atype($atype);
+        $user->explain = $explain;
+
+        return $user;
+    }
+
+    /**
      * Get aggregation page
      * @param int $courseid
      * @param int $gradecategoryid

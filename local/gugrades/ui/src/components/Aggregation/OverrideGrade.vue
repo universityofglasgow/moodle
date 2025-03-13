@@ -20,6 +20,7 @@
             </AddGradeButton>
             <HistoryButton :userid="props.userid" :itemid="props.itemid" :name="props.name" :itemname="props.itemname"></HistoryButton>
             <AlterButton v-if="props.showweights && !props.overridden" :userid="props.userid" :itemid="props.itemid" :categoryid="props.categoryid" @weightsaltered="grade_added()"></AlterButton>
+            <ExplainButton :userid="props.userid" :categoryid="props.categoryid"></ExplainButton>
         </div>
     </span>
 </template>
@@ -30,6 +31,7 @@
     import AddGradeButton from '@/components/Capture/AddGradeButton.vue';
     import HideShowButton from '@/components/Capture/HideShowButton.vue';
     import AlterButton from '@/components/Aggregation/AlterButton.vue';
+    import ExplainButton from '@/components/Aggregation/ExplainButton.vue';
 
     const props = defineProps({
         userid: Number,

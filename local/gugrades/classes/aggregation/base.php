@@ -43,6 +43,11 @@ class base {
     private array $validusers = [];
 
     /**
+     * @var string $explain
+     */
+    private string $explain = '';
+
+    /**
      * Note that MV0 grades were found (and dropped) in pre-process
      * Their presence (even though dropped) effects the aggregated admin grade
      * (see MGU-1110)
@@ -62,6 +67,14 @@ class base {
     public function __construct(int $courseid, string $atype) {
         $this->courseid = $courseid;
         $this->atype = $atype;
+    }
+
+    /**
+     * Get explain string
+     * @return string
+     */
+    public function get_explain() {
+        return $this->explain;
     }
 
     /**
@@ -140,6 +153,7 @@ class base {
         // If this has resulted in ALL items being removed then the
         // result is also MV0
         if (count($newitems) == 0) {
+            $this->explain = get_string('explain_allmv0', 'local_gugrades');
             $agrade = 'MV0';
         } else {
             $agrade = false;
@@ -207,6 +221,7 @@ class base {
         // Any '07' admin grades means aggregation is 07
         foreach ($items as $item) {
             if ($item->admingrade == '07') {
+                $this->explain = get_string('explain_any07', 'local_gugrades');
                 return '07';
             }
         }
@@ -227,6 +242,7 @@ class base {
                 }
             }
             if ($nsfound && $mvfound) {
+                $this->explain('explain_mixmvns', 'local_gugrades');
                 return 'MV';
             }
         }
@@ -234,6 +250,7 @@ class base {
         // Any 'IS' admin grades means aggregation is IS
         foreach ($items as $item) {
             if ($item->admingrade == 'IS') {
+                $this->explain = get_string('explain_anyis', 'local_gugrades');
                 return 'IS';
             }
         }
@@ -241,6 +258,7 @@ class base {
         // Any 'MV' admin grades means aggregation is MV
         foreach ($items as $item) {
             if ($item->admingrade == 'MV') {
+                $this->explain = get_string('explain_anymv', 'local_gugrades');
                 return 'MV';
             }
         }
@@ -256,8 +274,10 @@ class base {
 
             // MGU-1216.
             if ($level == 1) {
+                $this->explain = get_string('explain_allnslevel1', 'local_gugrades');
                 return 'CW';
             } else {
+                $this->explain = get_string('explain_allnslevel2', 'local_gugrades');
                 return 'NS';
             }
         }
@@ -280,6 +300,7 @@ class base {
         foreach ($items as $item) {
             $grade = $item->admingrade;
             if ($grade == 'NS') {
+                $this->explain = get_string('explain_anynslevel2', 'local_gugrades');
                 return 'NS';
             }
         }
@@ -309,16 +330,19 @@ class base {
             // Check for MV0
             if ($this->mv0found) {
 
-                // If there is an NS, then it's GCW
+                // If there is an NS, then it's CW
                 foreach ($items as $item) {
                     if ($item->admingrade == 'NS') {
+                        $this->explain = get_string('explain_lessthan75mv0level1ns', 'local_gugrades');
                         return 'CW';
                     }
                 }
 
+                $this->explain = get_string('explain_lessthan75mv0level1', 'local_gugrades');
                 return 'MV';
             }
 
+            $this->explain = get_string('explain_lessthan75level1', 'local_gugrades');
             return 'CW';
         }
 

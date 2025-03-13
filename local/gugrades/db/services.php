@@ -80,6 +80,7 @@ $services = [
             'local_gugrades_get_aggregation_export_form',
             'local_gugrades_get_aggregation_export_data',
             'local_gugrades_get_progress',
+            'local_gugrades_get_explain_aggregation',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -406,5 +407,11 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
         'loginrequired' => false,
+    ],
+    'local_gugrades_get_explain_aggregation' => [
+        'classname' => 'local_gugrades\external\get_explain_aggregation',
+        'description' => 'Explain the aggregation process for given user and gradecategoryid.',
+        'type' => 'read',
+        'ajax' => true,
     ],
 ];
