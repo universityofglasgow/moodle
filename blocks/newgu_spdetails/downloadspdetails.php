@@ -185,27 +185,33 @@ if ($coursestype) {
             }
 
             if (!$mygradesenabled) {
+                $tmpactivities = [];
+                foreach ($activities as $activity) {
+                    $tmpactivities[] = $activity;
+                }
+                $activities = $tmpactivities;
                 $activitydata = \block_newgu_spdetails\activity::process_default_items($activities, $coursestype,
                 $ltiactivities, '', true);
             }
 
             if ($activitydata) {
-                foreach ($activitydata as $activityitem) {
+                foreach ($activitydata as $key => $activityitem) {
                     $spdetailspdf .= "<tr>";
                     $spdetailspdf .= "<td $tdstl><strong>" . $course->fullname . "</strong></td>";
                     $spdetailspdf .= "<td $tdstl>" . $activityitem->item_name . "</td>";
-                    // The assessment type is normally derived from the parent category - which works only
-                    // as long as the parent name contains 'Formative' or 'Summative', and the item weight.
+                    // The assessment type is normally derived from the top parent category - which works only
+                    // as long as the top parent name contains 'Formative' or 'Summative', and the item weight.
                     // As we have the original activities array, we can get the category id from there and
-                    // use it to then work out the category name for this item.
-                    $categoryid = $activities[$activityitem->id]->categoryid;
-                    $category = grade_category::fetch(['id' => $categoryid]);
-                    $categoryname = '';
-                    if ($category) {
-                        $categoryname = $category->fullname;
+                    // use it to then work out the top category name for this item.
+                    $whichitemid = array_search($activityitem->id , array_column($activities,'id'));
+                    $categoryid = $activities[$whichitemid]->categoryid;
+                    $topcategoryid = \local_gugrades\grades::get_level_one_parent($categoryid);
+                    $topcategory = grade_category::fetch(['id' => $topcategoryid]);
+                    if ($topcategory) {
+                        $topcategoryname = $topcategory->fullname;
                     }
                     $weight = (float) $activityitem->raw_assessment_weight;
-                    $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($categoryname, $weight);
+                    $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($topcategoryname, $weight);
                     $spdetailspdf .= "<td $tdstc>" . $assessmenttype . "</td>";
 
                     // MGU-1066 - Only display activity item weights when a weighted strategy is being used.
@@ -392,6 +398,7 @@ if ($spdetailstype == "excel" && $spdetailspdf != "" && $strcoursestype != "") {
     $myxls->write_string(4, 0, $strcoursestype . ' Report - ' . date("d/m/Y"));
 
     $rowhd = 6;
+    $row++;
     $col = 0;
     $xldata[$row][$col] = ["row" => $rowhd, "col" => $col, "text" => get_string('course')];
     $col++;
@@ -429,8 +436,8 @@ if ($spdetailstype == "excel" && $spdetailspdf != "" && $strcoursestype != "") {
 
     $rowheight = 22;
 
-    foreach ($xldata as $row) {
-        foreach ($row as $cell) {
+    foreach ($xldata as $datarow) {
+        foreach ($datarow as $cell) {
             if ($cell["row"] == 6) {
                 $cellformat = $formatbgcol;
             } else {
