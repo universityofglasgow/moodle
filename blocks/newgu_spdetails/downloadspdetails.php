@@ -121,7 +121,7 @@ if ($coursestype) {
             }
 
             // This returns an array of objects - process_[x]_items() is expecting an ordinary array. It seems to work still.
-            $activities = \block_newgu_spdetails\course::get_activities($course->id, ['itemtype' => 'manual']);
+            $activities = \block_newgu_spdetails\course::get_activities($course->id, ['itemtype' => 'manual'], true);
 
             if ($mygradesenabled) {
                 // get_aggregation_dashboard_user() gets us items for the current category only.
@@ -196,9 +196,13 @@ if ($coursestype) {
 
             if ($activitydata) {
                 foreach ($activitydata as $key => $activityitem) {
+                    $itemrestriction = '';
+                    if ($activityitem->icon_hidden) {
+                        $itemrestriction .= ' (' . get_string('status_text_hidden', 'block_newgu_spdetails') . ')';
+                    }
                     $spdetailspdf .= "<tr>";
                     $spdetailspdf .= "<td $tdstl><strong>" . $course->fullname . "</strong></td>";
-                    $spdetailspdf .= "<td $tdstl>" . $activityitem->item_name . "</td>";
+                    $spdetailspdf .= "<td $tdstl>" . $activityitem->item_name . $itemrestriction . "</td>";
                     // The assessment type is normally derived from the top parent category - which works only
                     // as long as the top parent name contains 'Formative' or 'Summative', and the item weight.
                     // As we have the original activities array, we can get the category id from there and
@@ -251,7 +255,7 @@ if ($coursestype) {
                     $col = 0;
                     $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $course->fullname];
                     $col++;
-                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->item_name];
+                    $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $activityitem->item_name . $itemrestriction];
                     $col++;
                     $xldata[$row][$col] = ["row" => $row, "col" => $col, "text" => $assessmenttype];
                     $col++;

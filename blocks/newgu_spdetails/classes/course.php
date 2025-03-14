@@ -92,7 +92,7 @@ class course {
                     if ($gradecat) {
                         $has_items_or_categories = self::has_items_or_categories($course->id, 'categoryid', $course->category);
                         if ($has_items_or_categories) {
-                        
+
                             $item = \grade_item::fetch(['courseid' => $course->id, 'itemtype' => 'course']);
                             $assessmenttype = self::return_assessmenttype($course->fullname, $item->aggregationcoef);
                             if (count($gradecat) > 0) {
@@ -161,7 +161,7 @@ class course {
                     $subcat->raw_category_weight = $rawsubcatweight;
                     if (is_object($gradecategory['releasegrade'])) {
                         // MGU-1162 - The display of adjusted category weights wasn't being set correctly.
-                        $rawsubcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ? 
+                        $rawsubcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ?
                         $gradecategory['releasegrade']->normalisedweight : 0);
                         $subcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ? course::return_weight(
                             $gradecategory['releasegrade']->normalisedweight) . '%' : '-');
@@ -186,7 +186,7 @@ class course {
             }
             $index++;
         }
-        
+
         return $gradessubcatdata;
     }
 
@@ -248,7 +248,7 @@ class course {
     /**
      * This method checks if a grade category contains any grade items - that aren't hidden.
      * However, the category may still contain further sub categories.
-     * 
+     *
      * @see MGU-973/MGU-1244 for further details around requirments/issues.
      * @param int $courseid
      * @param string $field
@@ -266,7 +266,7 @@ class course {
             // I could be wrong, but I'll take that to mean the item is therefore not hidden.
             foreach ($items as $item) {
                 if ($item->hidden == 0 || $item->hidden > 1) {
-                    $categoryitems++; 
+                    $categoryitems++;
                 }
             }
         }
@@ -483,9 +483,10 @@ class course {
      *
      * @param int $courseid
      * @param array $extraparams - This is to allow the export PDF/Excel feature to work. We need to include 'manual' items.
+     * @param bool $includehidden - Include hidden items
      * @return object
      */
-    public static function get_activities(int $courseid, array $extraparams = []) {
+    public static function get_activities(int $courseid, array $extraparams = [], $includehidden = false) {
         global $DB;
 
         $gradeitemselect = 'courseid = ? AND (itemtype = ?';
@@ -501,7 +502,7 @@ class course {
             }
         }
 
-        $gradeitemselect .= ') AND hidden = 0';
+        $gradeitemselect .= ')' . ($includehidden ? '' : 'AND hidden = 0');
 
         $gradeitems = $DB->get_records_select('grade_items', $gradeitemselect, $gradeitemparams, '', '*');
 
@@ -1105,7 +1106,7 @@ class course {
                                         }
                                     } else {
                                         // We had overlooked that we needed to check the course type when collating these numbers.
-                                        // If the course that this activity belongs to has been processed via MyGrades, first check 
+                                        // If the course that this activity belongs to has been processed via MyGrades, first check
                                         // if we have any 'Released' records, if we have then this item can be skipped from any
                                         // further checking.
                                         if ($course->gugradesenabled) {
