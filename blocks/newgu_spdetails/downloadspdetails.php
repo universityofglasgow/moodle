@@ -205,13 +205,21 @@ if ($coursestype) {
                     // use it to then work out the top category name for this item.
                     $whichitemid = array_search($activityitem->id , array_column($activities,'id'));
                     $categoryid = $activities[$whichitemid]->categoryid;
-                    $topcategoryid = \local_gugrades\grades::get_level_one_parent($categoryid);
+                    $category = grade_category::fetch(['id' => $categoryid]);
+                    // If the item is under the top (course level) category, then we don't want error,
+                    // as it has no level 1 parent,
+                    if ($category->depth > 1) {
+                        $topcategoryid = \local_gugrades\grades::get_level_one_parent($categoryid);
+                    } else {
+                        $topcategoryid = $categoryid;
+                    }
                     $topcategory = grade_category::fetch(['id' => $topcategoryid]);
                     if ($topcategory) {
                         $topcategoryname = $topcategory->fullname;
                     }
                     $weight = (float) $activityitem->raw_assessment_weight;
-                    $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($topcategoryname, $weight);
+                    // We can ignore the weight as we look for the top parent category's name.
+                    $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($topcategoryname, 0);
                     $spdetailspdf .= "<td $tdstc>" . $assessmenttype . "</td>";
 
                     // MGU-1066 - Only display activity item weights when a weighted strategy is being used.
