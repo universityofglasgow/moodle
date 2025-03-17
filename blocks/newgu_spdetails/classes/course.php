@@ -483,7 +483,7 @@ class course {
      *
      * @param int $courseid
      * @param array $extraparams - This is to allow the export PDF/Excel feature to work. We need to include 'manual' items.
-     * @param bool $includehidden - Include hidden items
+     * @param bool $includehidden - Include hidden items // MGU-1280: hidden activities should be listed in PDF/Excel
      * @return object
      */
     public static function get_activities(int $courseid, array $extraparams = [], $includehidden = false) {
