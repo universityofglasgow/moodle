@@ -486,7 +486,7 @@ class course {
      * @param bool $includehidden - Include hidden items // MGU-1280: hidden activities should be listed in PDF/Excel
      * @return object
      */
-    public static function get_activities(int $courseid, array $extraparams = [], $includehidden = false) {
+    public static function get_activities(int $courseid, array $extraparams = [], $includehidden = true) {
         global $DB;
 
         $gradeitemselect = 'courseid = ? AND (itemtype = ?';
