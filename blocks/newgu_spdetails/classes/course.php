@@ -376,6 +376,30 @@ class course {
     }
 
     /**
+     * Returns the assessment type based on the category id.
+     *
+     * @param int $categoryid
+     * @return string 'Formative', 'Summative', or '—'
+     */
+    public static function return_assessmenttype_by_catid(int $categoryid): string {
+        $category = \grade_category::fetch(['id' => $categoryid]);
+        // If the item is under the top (course level) category, then we don't want error,
+        // as it has no level 1 parent.
+        if ($category->depth > 1) {
+            $topcategoryid = \local_gugrades\grades::get_level_one_parent($categoryid);
+        } else {
+            $topcategoryid = $categoryid;
+        }
+        $topcategory = \grade_category::fetch(['id' => $topcategoryid]);
+        if ($topcategory) {
+            $topcategoryname = $topcategory->fullname;
+        }
+        $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($topcategoryname, 0);
+
+        return $assessmenttype;
+    }
+
+    /**
      * Returns the course module id and relevant attributes.
      *
      * @param string $cmodule
@@ -709,8 +733,7 @@ class course {
                                                     $iconalt = get_string('icon_alt_text', 'block_newgu_spdetails', $a);
                                                 }
 
-                                                $assessmenttype = self::return_assessmenttype($course->fullname,
-                                                $item->aggregationcoef);
+                                                $assessmenttype = self::return_assessmenttype_by_catid($item->categoryid);
                                                 $activityweight = self::get_activity_weight($item);
                                                 $status = $activityitem->get_status($USER->id);
                                                 $duedate = $activityitem->get_formattedduedate($assessment->duedate);
@@ -1197,8 +1220,7 @@ class course {
                                                 break;
                                         }
 
-                                        $assessmenttype = self::return_assessmenttype($course->fullname,
-                                        $activityitem->aggregationcoef);
+                                        $assessmenttype = self::return_assessmenttype_by_catid($activityitem->categoryid);
 
                                         $tmp = [
                                             'id' => $activityitem->id,
