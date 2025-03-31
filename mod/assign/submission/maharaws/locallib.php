@@ -219,15 +219,29 @@ class assign_submission_maharaws extends assign_submission_plugin {
                 $this->set_config('key', $data->assignsubmission_maharaws_key);
                 $this->set_config('secret', $data->assignsubmission_maharaws_secret);
             }
-            $this->set_config('debug', false);
-            $this->set_config('remoteuser', false);
+
             $this->set_config('lock', $data->assignsubmission_maharaws_lockpages);
-            $this->set_config('username_attribute', 'email');
-            $this->set_config('archiveonrelease', $data->assignsubmission_maharaws_archiveonrelease);
+        } else {
+            // Set to existing config or default value for users that cannot see lock element.
+            $locked = $this->get_config('lock');
+            if ($locked === false) {
+                $locked = get_config('assignsubmission_maharaws', 'lock');
+            }
+            $this->set_config('lock', $locked);
         }
+
+        $this->set_config('debug', false);
+        $this->set_config('remoteuser', false);
+        $this->set_config('username_attribute', 'email');
+        $this->set_config('archiveonrelease', $data->assignsubmission_maharaws_archiveonrelease);
 
         // Test Mahara connection.
         try {
+            // Skip webservice call if running unit tests.
+            if ((defined('PHPUNIT_TEST') || PHPUNIT_TEST)) {
+                return true;
+            }
+
             $data = $this->webservice_call("mahara_user_get_extended_context", array());
             $funcs = array();
 
@@ -458,7 +472,7 @@ class assign_submission_maharaws extends assign_submission_plugin {
         $remotehost->name = $remotehost->sitename;
 
         // See if any of views are already in use, we will remove them from select.
-        if (count($viewids) || count($views['collections']['data'])) {
+        if (!empty($viewids) || !empty($views['collections']['data'])) {
             $mform->addElement(
                 'static',
                 '',
@@ -471,25 +485,48 @@ class assign_submission_maharaws extends assign_submission_plugin {
             $mform->setType('viewid', PARAM_ALPHANUM);
             $mform->setDefault('viewid', 'none');
 
-            if (count($views['data'])) {
+            if (!empty($views['data'])) {
                 $mform->addElement('static', '',
                     get_string('viewsby', 'assignsubmission_maharaws', $views['displayname'])
                 );
 
                 foreach ($views['data'] as $view) {
-                    $viewurl = "/view/view.php?id=" . $view['id'];
-                    $anchor = $this->get_preview_url($view['title'], $viewurl, strip_tags($view['description']));
-                    $mform->addElement('radio', 'viewid', '', $anchor, 'v' . $view['id']);
+                    // If the view (page) hasn't already been submitted, add it to the options for selection.
+                    if ($view['submissionoriginal'] == 0) {
+                        $viewurl = "/view/view.php?id=" . $view['id'];
+                        $anchor = $this->get_preview_url($view['title'], $viewurl, strip_tags($view['description']));
+                        $mform->addElement('radio', 'viewid', '', $anchor, 'v' . $view['id']);
+                    }
+                    if ($maharasubmission && $view['id'] == $maharasubmission->viewid) {
+                        $currentpagesubmitted = $mform->createElement('static', 'currentsubmission',
+                            get_string('currentsubmitted', 'assignsubmission_maharaws', 'page'), $view['displaytitle']);
+                    }
+                }
+
+                if (!empty($currentpagesubmitted)) {
+                    $mform->addElement($currentpagesubmitted);
                 }
             }
-            if (count($views['collections']['data'])) {
+            if (!empty($views['collections']['data'])) {
                 $mform->addElement('static', 'collection_by',
                     get_string('collectionsby', 'assignsubmission_maharaws', $views['displayname'])
                 );
                 foreach ($views['collections']['data'] as $coll) {
-                    $anchor = $this->get_preview_url($coll['name'], $coll['url'], strip_tags($coll['description']));
-                    $mform->addElement('radio', 'viewid', '', $anchor, 'c' . $coll['id']);
+                    // If the collection hasn't already been submitted, add it to the options for selection.
+                    if ($coll['submissionoriginal'] == 0) {
+                        $anchor = $this->get_preview_url($coll['name'], $coll['url'], strip_tags($coll['description']));
+                        $mform->addElement('radio', 'viewid', '', $anchor, 'c' . $coll['id']);
+                    }
+
+                    if ($maharasubmission && $coll['id'] == $maharasubmission->viewid) {
+                        $currentcollsubmitted = $mform->createElement('static', 'currentsubmission',
+                           get_string('currentsubmitted', 'assignsubmission_maharaws', 'collection'), $coll['name']);
+                    }
                 }
+                if (!empty($currentcollsubmitted)) {
+                    $mform->addElement($currentcollsubmitted);
+                }
+
             }
             if (!empty($maharasubmission)) {
                 if ($maharasubmission->iscollection) {
@@ -532,16 +569,21 @@ class assign_submission_maharaws extends assign_submission_plugin {
             $result = $this->webservice_call("mahara_submission_get_views_for_user",
                                       array('users' => array( array($field => $username,
                                                                     'query' => $query))));
-            $result = array_pop($result);
-            $result['views']['ids'] = array_map('intval', explode(',', $result['views']['ids']));
+            if (!empty($result)) {
+                $result = array_pop($result);
+                $result['views']['ids'] = array_map('intval', explode(',', $result['views']['ids']));
 
-            // Overwrite url with full URL.
-            foreach ($result['views']['data'] as $key => $value) {
-                $result['views']['data'][$key]['url'] = $result['views']['data'][$key]['fullurl'];
+                // Overwrite url with full URL.
+                foreach ($result['views']['data'] as $key => $value) {
+                    $result['views']['data'][$key]['url'] = $result['views']['data'][$key]['fullurl'];
+                }
+                foreach ($result['views']['collections']['data'] as $key => $value) {
+                    $result['views']['collections']['data'][$key]['url'] = $result['views']['collections']['data'][$key]['fullurl'];
+                }
+            } else {
+                $result['views'] = null;
             }
-            foreach ($result['views']['collections']['data'] as $key => $value) {
-                $result['views']['collections']['data'][$key]['url'] = $result['views']['collections']['data'][$key]['fullurl'];
-            }
+
         } catch (Exception $e) {
             throw new moodle_exception('errorwsrequest', 'assignsubmission_maharaws', '', $e->getMessage());
         }
@@ -908,7 +950,8 @@ class assign_submission_maharaws extends assign_submission_plugin {
 
         $maharasubmission = $this->get_mahara_submission($submission->id);
         // Lock view on Mahara side as it has been submitted for assessment.
-        if (!$response = $this->submit_view($submission, $maharasubmission->viewid, $maharasubmission->iscollection, $submission->userid)) {
+        if (!$response = $this->submit_view($submission, $maharasubmission->viewid, $maharasubmission->iscollection,
+          $submission->userid)) {
             throw new moodle_exception('errorrequest', 'assignsubmission_maharaws', '', $this->get_error());
         }
         $apilevel = $this->process_apilevel($response['apilevel']);
@@ -1324,5 +1367,34 @@ class assign_submission_maharaws extends assign_submission_plugin {
             }
         }
         return false;
+    }
+
+    /**
+     * Helper function to call webservice function with specified parameters.
+     *
+     * @param array $data
+     * @param array $records
+     * @return array
+     */
+    public function run_get_views_by_id(array $data, array $records): array {
+        $items = [];
+        foreach ($records as $record) {
+            $items[] = [
+                'id'           => $record->id,
+                'viewid'       => $record->viewid,
+                'iscollection' => $record->iscollection
+            ];
+        }
+        try {
+            $returned = $this->webservice_call("mahara_submission_get_views_by_id", ['items' => $items]);
+        } catch (Exception $e) {
+            throw new moodle_exception('errorwsrequest', 'assignsubmission_maharaws', '', $e->getMessage());
+        }
+        $returned['ids'] = array_map('intval', explode(',', $returned['ids']));
+        for ($i = 0; $i < count($returned['ids']); $i++) {
+            $data[$returned['ids'][$i]] = $returned['data'][$i];
+            $data[$returned['ids'][$i]]['endpointurl'] = trim(get_config('assignsubmission_maharaws', 'url'));
+        }
+        return $data;
     }
 }
