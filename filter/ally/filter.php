@@ -69,7 +69,7 @@ class filter_ally extends moodle_text_filter {
      */
     protected function is_course_page() {
         $path = parse_url(qualified_me())['path'];
-        return (bool) preg_match('~/course/view.php$~', $path);
+        return preg_match('~/course/view.php$~', $path) || preg_match('~/course/section.php~', $path);
     }
 
     /**
@@ -553,7 +553,8 @@ EOF;
             $configvars = (object) [
                 'adminurl' => !empty($config->adminurl) ? $config->adminurl : null,
                 'pushurl' => !empty($config->pushurl) ? $config->pushurl : null,
-                'clientid' => !empty($config->clientid) ? $config->clientid : null
+                'clientid' => !empty($config->clientid) ? $config->clientid : null,
+                'moodleversion' => $CFG->version
             ];
 
             $params = new stdClass();

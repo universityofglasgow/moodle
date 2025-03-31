@@ -24,6 +24,12 @@ use Firebase\JWT\Key;
  */
 class jwthelper_test extends \advanced_testcase {
 
+    public function setUp(): void {
+        global $CFG;
+        require_once($CFG->dirroot.'/mod/forum/lib.php');
+        parent::setUp();
+    }
+
     protected function config_set_ok() {
         set_config('secret', 'WAzk9ohDeK', 'tool_ally');
     }
@@ -56,12 +62,12 @@ class jwthelper_test extends \advanced_testcase {
 
         $payload = \Firebase\JWT\JWT::decode($token, new Key($secret, 'HS256'));
 
-        $this->assertObjectHasAttribute('return_url', $payload);
-        $this->assertObjectHasAttribute('iat', $payload);
-        $this->assertObjectHasAttribute('user_id', $payload);
-        $this->assertObjectHasAttribute('course_id', $payload);
-        $this->assertObjectHasAttribute('locale', $payload);
-        $this->assertObjectHasAttribute('roles', $payload);
+        $this->assertObjectHasProperty('return_url', $payload);
+        $this->assertObjectHasProperty('iat', $payload);
+        $this->assertObjectHasProperty('user_id', $payload);
+        $this->assertObjectHasProperty('course_id', $payload);
+        $this->assertObjectHasProperty('locale', $payload);
+        $this->assertObjectHasProperty('roles', $payload);
 
         $this->assertSame($payload->return_url, $CFG->wwwroot);
         if ($userid != null) {

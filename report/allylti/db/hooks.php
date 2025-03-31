@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   plagiarism_turnitin
- * @copyright 2012 iParadigms LLC
+ * Ally filter hooks.
+ * @author    Guy Thomas
+ * @copyright Copyright (c) 2024 Anthology Inc. and its affiliates
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugins = array(
-    'plagiarism-turnitin_dataTables' => array('files' => array('jquery.dataTables.js', 'jquery.dataTables.css')),
-    'plagiarism-turnitin_dataTables_plugins' => array('files' => array('jquery.dataTables.plugins.js')),
-    'plagiarism-turnitin_settings'      => array('files' => array('turnitin_settings.js')),
-    'plagiarism-turnitin_datatables_columnfilter' => array('files' => array('jquery.dataTables.columnFilter.js'))
-);
+$callbacks = [
+    [
+        'hook' => \core\hook\output\before_standard_head_html_generation::class,
+        'callback' => [\report_allylti\local\hook_callbacks::class, 'before_standard_head_html_generation'],
+        'priority' => 500,
+    ],
+];
