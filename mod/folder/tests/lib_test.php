@@ -40,7 +40,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      Moodle 3.0
  */
-class lib_test extends \advanced_testcase {
+final class lib_test extends \advanced_testcase {
 
     /**
      * Setup.
@@ -376,7 +376,7 @@ class lib_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function folder_get_recent_mod_activity_provider(): array {
+    public static function folder_get_recent_mod_activity_provider(): array {
         return [
             'Teacher with force download' => [
                 'forcedownload' => 1,

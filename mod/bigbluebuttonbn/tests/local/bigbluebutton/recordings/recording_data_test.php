@@ -25,7 +25,7 @@ namespace mod_bigbluebuttonbn\local\bigbluebutton\recordings;
  * @author    Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
  * @coversDefaultClass \mod_bigbluebuttonbn\local\bigbluebutton\recordings\recording_data
  */
-class recording_data_test extends \advanced_testcase {
+final class recording_data_test extends \advanced_testcase {
 
     /**
      * Test for the type_text provider.
@@ -44,7 +44,7 @@ class recording_data_test extends \advanced_testcase {
      *
      * @return \string[][]
      */
-    public function type_text_provider(): array {
+    public static function type_text_provider(): array {
         return [
             ['Presentation', 'presentation'],
             ['Video', 'video'],

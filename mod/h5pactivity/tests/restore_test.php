@@ -41,7 +41,7 @@ use stdClass;
  * @copyright  2020 Ferran Recio <ferran@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore_test extends advanced_testcase {
+final class restore_test extends advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -155,7 +155,7 @@ class restore_test extends advanced_testcase {
      *
      * @return array
      */
-    public function backup_restore_data(): array {
+    public static function backup_restore_data(): array {
         return [
             'Activity attempts and restore with userdata' => [
                 true, true, [1, 1, 3], [1, 1, 3]

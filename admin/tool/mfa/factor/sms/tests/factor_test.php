@@ -25,14 +25,14 @@ namespace factor_sms;
  * @copyright   2023 Raquel Ortega <raquel.ortega@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class factor_test extends \advanced_testcase {
+final class factor_test extends \advanced_testcase {
 
     /**
      * Data provider for test_format_number().
      *
      * @return array of different country codes and phone numbers.
      */
-    public function format_number_provider(): array {
+    public static function format_number_provider(): array {
 
         return [
             'Phone number with local format' => [
@@ -88,7 +88,7 @@ class factor_test extends \advanced_testcase {
      *
      * @return array with different phone numebr tests
      */
-    public function is_valid_phonenumber_provider(): array {
+    public static function is_valid_phonenumber_provider(): array {
         return [
             ['+919367788755', true],
             ['8989829304', false],

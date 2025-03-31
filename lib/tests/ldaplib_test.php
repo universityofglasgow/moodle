@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/ldaplib.php');
  * @copyright  Damyon Wiese, Iñaki Arenaza 2014
  * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-class ldaplib_test extends \advanced_testcase {
+final class ldaplib_test extends \advanced_testcase {
 
     public function test_ldap_addslashes(): void {
         // See http://tools.ietf.org/html/rfc4514#section-5.2 if you want
@@ -184,7 +184,7 @@ class ldaplib_test extends \advanced_testcase {
      *
      * @return array of testcases.
      */
-    public function ldap_normalise_objectclass_provider() {
+    public static function ldap_normalise_objectclass_provider(): array {
         return array(
             'Empty value' => array(
                 array(null),

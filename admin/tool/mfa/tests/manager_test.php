@@ -28,7 +28,7 @@ require_once(__DIR__ . '/tool_mfa_trait.php');
  * @copyright   Catalyst IT
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class manager_test extends \advanced_testcase {
+final class manager_test extends \advanced_testcase {
 
     use tool_mfa_trait;
 
@@ -157,7 +157,7 @@ class manager_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public static function should_redirect_urls_provider() {
+    public static function should_redirect_urls_provider(): array {
         $badurl1 = new \moodle_url('/');
         $badparam1 = $badurl1->out();
         $badurl2 = new \moodle_url('admin/tool/mfa/auth.php');

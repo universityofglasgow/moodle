@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 2.5
  */
-class externallib_test extends externallib_advanced_testcase {
+final class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Tests set up
@@ -2796,7 +2796,7 @@ class externallib_test extends externallib_advanced_testcase {
      *
      * @return array
      */
-    public function get_calendar_event_by_id_prevent_read_other_users_events_data_provider(): array {
+    public static function get_calendar_event_by_id_prevent_read_other_users_events_data_provider(): array {
         $syscontext = \context_system::instance();
         $managerrole = 'manager';
         return [
@@ -2867,7 +2867,7 @@ class externallib_test extends externallib_advanced_testcase {
      *
      * @return array
      */
-    public function edit_or_delete_other_users_events_data_provider(): array {
+    public static function edit_or_delete_other_users_events_data_provider(): array {
         $syscontext = \context_system::instance();
         $managerrole = 'manager';
         return [

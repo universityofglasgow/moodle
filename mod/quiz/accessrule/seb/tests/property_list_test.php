@@ -24,7 +24,7 @@ namespace quizaccess_seb;
  * @copyright 2020 Catalyst IT
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class property_list_test extends \advanced_testcase {
+final class property_list_test extends \advanced_testcase {
 
     /**
      * Test that an empty PList with a root dictionary is created.
@@ -235,11 +235,11 @@ class property_list_test extends \advanced_testcase {
      * Test that the xml is exported to JSON from a real SEB config file. Expected JSON extracted from SEB logs.
      */
     public function test_export_to_json_full_file(): void {
-        $xml = file_get_contents(__DIR__ . '/fixtures/unencrypted_mac_001.seb');
+        $xml = file_get_contents(self::get_fixture_path(__NAMESPACE__, 'unencrypted_mac_001.seb'));
         $plist = new property_list($xml);
         $plist->delete_element('originatorVersion'); // JSON should not contain originatorVersion key.
         $generatedjson = $plist->to_json();
-        $json = trim(file_get_contents(__DIR__ . '/fixtures/JSON_unencrypted_mac_001.txt'));
+        $json = trim(file_get_contents(self::get_fixture_path(__NAMESPACE__, 'JSON_unencrypted_mac_001.txt')));
         $this->assertEquals($json, $generatedjson);
     }
 
@@ -304,7 +304,7 @@ class property_list_test extends \advanced_testcase {
      *
      * @return array Array with test data.
      */
-    public function good_update_data_provider(): array {
+    public static function good_update_data_provider(): array {
         return [
             'Update string' => ['<key>testKey</key><string>testValue</string>', 'testKey', 'newValue'],
             'Update bool' => ['<key>testKey</key><true/>', 'testKey', false],
@@ -317,7 +317,7 @@ class property_list_test extends \advanced_testcase {
      *
      * @return array Array with test data.
      */
-    public function bad_update_data_provider(): array {
+    public static function bad_update_data_provider(): array {
 
         return [
             'Update string with bool' => ['<key>testKey</key><string>testValue</string>', 'testKey', true, 'testValue',
@@ -379,7 +379,7 @@ class property_list_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function json_data_provider(): array {
+    public static function json_data_provider(): array {
         $data = "blahblah";
         $base64data = base64_encode($data);
 

@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_forum_activity_ta
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class backup_forum_activity_task_test extends \advanced_testcase {
+final class backup_forum_activity_task_test extends \advanced_testcase {
 
     /**
      * Test the encoding of forum content links.
@@ -49,7 +49,7 @@ class backup_forum_activity_task_test extends \advanced_testcase {
         $this->assertEquals($expectation, backup_forum_activity_task::encode_content_links($content));
     }
 
-    public function encode_content_links_provider() {
+    public static function encode_content_links_provider(): array {
         global $CFG;
         $altwwwroot = 'http://invalid.example.com/';
         return [

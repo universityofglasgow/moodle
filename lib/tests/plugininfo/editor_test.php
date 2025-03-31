@@ -28,7 +28,7 @@ use advanced_testcase;
  * @copyright   2023 Andrew Lyons <andrew@nicols.co.uk>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class editor_test extends advanced_testcase {
+final class editor_test extends advanced_testcase {
 
     /**
      * Test that editor::get_enabled_plugins() returns the correct list of enabled plugins.
@@ -101,7 +101,7 @@ class editor_test extends advanced_testcase {
      *
      * @return array
      */
-    public function get_sorted_plugins_provider(): array {
+    public static function get_sorted_plugins_provider(): array {
         $pluginmanager = \core_plugin_manager::instance();
         $allplugins = array_keys($pluginmanager->get_plugins_of_type('editor'));
 
@@ -195,7 +195,7 @@ class editor_test extends advanced_testcase {
      *
      * @return array
      */
-    public function change_plugin_order_provider(): array {
+    public static function change_plugin_order_provider(): array {
         $pluginmanager = \core_plugin_manager::instance();
         $allplugins = array_keys($pluginmanager->get_plugins_of_type('editor'));
 

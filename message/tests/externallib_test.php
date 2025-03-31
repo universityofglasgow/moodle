@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/message/externallib.php');
  * @copyright  2012 Jerome Mouneyrac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class externallib_test extends externallib_advanced_testcase {
+final class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Tests set up
@@ -128,7 +128,7 @@ class externallib_test extends externallib_advanced_testcase {
         $sentmessages = core_message_external::send_instant_messages($messages);
         $sentmessages = external_api::clean_returnvalue(core_message_external::send_instant_messages_returns(), $sentmessages);
         $this->assertEquals(
-            get_string('usercantbemessaged', 'message', fullname(\core_user::get_user($message1['touserid']))),
+            get_string('usercantbemessaged', 'message'),
             array_pop($sentmessages)['errormessage']
         );
 
@@ -224,7 +224,7 @@ class externallib_test extends externallib_advanced_testcase {
 
         $sentmessage = reset($sentmessages);
 
-        $this->assertEquals(get_string('usercantbemessaged', 'message', fullname($user2)), $sentmessage['errormessage']);
+        $this->assertEquals(get_string('usercantbemessaged', 'message'), $sentmessage['errormessage']);
 
         $this->assertEquals(0, $DB->count_records('messages'));
     }
@@ -260,7 +260,7 @@ class externallib_test extends externallib_advanced_testcase {
 
         $sentmessage = reset($sentmessages);
 
-        $this->assertEquals(get_string('usercantbemessaged', 'message', fullname($user2)), $sentmessage['errormessage']);
+        $this->assertEquals(get_string('usercantbemessaged', 'message'), $sentmessage['errormessage']);
 
         $this->assertEquals(0, $DB->count_records('messages'));
     }
@@ -5138,7 +5138,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Data provider for test_get_conversation_counts().
      */
-    public function get_conversation_counts_test_cases() {
+    public static function get_conversation_counts_test_cases(): array {
         $typeindividual = \core_message\api::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL;
         $typegroup = \core_message\api::MESSAGE_CONVERSATION_TYPE_GROUP;
         $typeself = \core_message\api::MESSAGE_CONVERSATION_TYPE_SELF;
@@ -5501,7 +5501,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test the get_conversation_counts() function.
      *
-     * @dataProvider get_conversation_counts_test_cases()
+     * @dataProvider get_conversation_counts_test_cases
      * @param array $conversationconfigs Conversations to create
      * @param int $deletemessagesuser The user who is deleting the messages
      * @param array $deletemessages The list of messages to delete (by index)

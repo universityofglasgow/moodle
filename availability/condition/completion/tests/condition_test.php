@@ -28,7 +28,7 @@ require_once($CFG->libdir . '/completionlib.php');
  * @copyright 2014 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class condition_test extends \advanced_testcase {
+final class condition_test extends \advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -469,7 +469,7 @@ class condition_test extends \advanced_testcase {
         $this->assertMatchesRegularExpression($description, $information);
     }
 
-    public function previous_activity_data(): array {
+    public static function previous_activity_data(): array {
         // Assign grade, condition, activity to complete, activity to test, result, resultnot, description.
         return [
             'Missing previous activity complete' => [
@@ -634,7 +634,7 @@ class condition_test extends \advanced_testcase {
 
     }
 
-    public function section_previous_activity_data(): array {
+    public static function section_previous_activity_data(): array {
         return [
             // Condition, Activity completion, section to test, result, resultnot, description.
             'Completion complete Section with no previous activity' => [

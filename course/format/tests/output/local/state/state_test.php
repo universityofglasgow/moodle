@@ -24,7 +24,7 @@ namespace core_courseformat\output\local\state;
  * @copyright  2021 Ilya Tregubov <ilya@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class state_test extends \advanced_testcase {
+final class state_test extends \advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -149,7 +149,7 @@ class state_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function state_provider(): array {
+    public static function state_provider(): array {
         return [
             // COURSEFORMAT. Test behaviour depending on course formats.
             'Single activity format' => [

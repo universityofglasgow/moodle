@@ -41,6 +41,7 @@ $string['bold'] = 'Bold';
 $string['calendarend'] = '{$a} closes';
 $string['calendarstart'] = '{$a} opens';
 $string['cannotaccess'] = 'You can only access this feedback from a course';
+$string['cannotcreatepagebreak'] = 'A page break cannot be added at the beginning, and only one page break can be added at the end.';
 $string['cannotsavetempl'] = 'Saving templates is not allowed';
 $string['captcha'] = 'Captcha';
 $string['captchanotset'] = 'Captcha hasn\'t been set.';

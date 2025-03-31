@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * Note: execution may take many minutes especially on slower servers.
  */
-class accesslib_test extends advanced_testcase {
+final class accesslib_test extends advanced_testcase {
 
     /**
      * Setup.
@@ -2070,7 +2070,7 @@ class accesslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function deprecated_capabilities_use_cases() {
+    public static function deprecated_capabilities_use_cases(): array {
         return [
             'capability missing' => [
                 'fake/access:missingcapability',
@@ -2112,6 +2112,38 @@ class accesslib_test extends advanced_testcase {
                 false // As the capability is applied to managers, we should not have this capability for this simple user.
             ],
         ];
+    }
+
+    /**
+     * Test get_deprecated_capability_info() with an invalid component.
+     *
+     * @covers get_deprecated_capability_info
+     */
+    public function test_get_deprecated_capability_info_invalid_component(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Set up a fake plugin.
+        $this->setup_fake_plugin('access');
+
+        // Add a plugin for an unrelated fake component.
+        $DB->insert_record('capabilities', [
+            'name' => 'mod/fake:addinstance',
+            'captype' => 'write',
+            'contextlevel' => CONTEXT_COURSE,
+            'component' => 'mod_fake',
+            'riskbitmask' => 4,
+        ]);
+
+        // Purge the cache.
+        cache::make('core', 'capabilities')->purge();
+
+        // For now we have deprecated fake/access:fakecapability.
+        $this->assertNotEmpty($DB->get_record('capabilities', ['component' => 'mod_fake']));
+        $info = get_deprecated_capability_info('fake/access:fakecapability');
+        $this->assertIsArray($info);
+        $this->assertDebuggingNotCalled();
     }
 
     /**
@@ -3044,7 +3076,7 @@ class accesslib_test extends advanced_testcase {
         $this->assertEquals(1, count_enrolled_users($coursecontext, '', $groupids));
     }
 
-    public function get_enrolled_sql_provider() {
+    public static function get_enrolled_sql_provider(): array {
         return array(
             array(
                 // Two users who are enrolled.
@@ -4607,7 +4639,7 @@ class accesslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function get_get_with_capability_join_override_cases() {
+    public static function get_get_with_capability_join_override_cases(): array {
         return [
                 'no overrides' => [true, []],
                 'one override' => [true, ['moodle/course:viewscales']],
@@ -4809,7 +4841,7 @@ class accesslib_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function is_parent_of_provider(): array {
+    public static function is_parent_of_provider(): array {
         $provideboth = function(string $desc, string $contextpath, string $testpath, bool $expected): array {
             return [
                 "includeself: true; {$desc}" => [
@@ -4910,7 +4942,7 @@ class accesslib_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function is_child_of_provider(): array {
+    public static function is_child_of_provider(): array {
         $provideboth = function(string $desc, string $contextpath, string $testpath, bool $expected): array {
             return [
                 "includeself: true; {$desc}" => [

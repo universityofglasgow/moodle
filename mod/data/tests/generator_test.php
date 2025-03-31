@@ -27,7 +27,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \mod_data_generator
  */
-class generator_test extends \advanced_testcase {
+final class generator_test extends \advanced_testcase {
     /**
      * @covers ::create_instance
      */
@@ -300,7 +300,7 @@ class generator_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function create_preset_provider(): array {
+    public static function create_preset_provider(): array {
         return [
             'Create using the default configuration' => [
                 'record' => null,

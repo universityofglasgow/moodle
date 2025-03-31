@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/question/type/multichoice/edit_multichoice_form.p
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_multichoice
  */
-class question_type_test extends \advanced_testcase {
+final class question_type_test extends \advanced_testcase {
     protected $qtype;
 
     protected function setUp(): void {
@@ -107,7 +107,7 @@ class question_type_test extends \advanced_testcase {
         ), $this->qtype->get_possible_responses($q));
     }
 
-    public function get_question_saving_which() {
+    public static function get_question_saving_which(): array {
         return array(array('two_of_four'), array('one_of_four'));
     }
 

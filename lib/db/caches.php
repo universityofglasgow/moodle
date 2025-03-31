@@ -237,6 +237,9 @@ $definitions = array(
         'mode' => cache_store::MODE_SESSION,
         'simplekeys' => true,
         'simpledata' => true,
+        'invalidationevents' => [
+            'changesincoursestate',
+        ],
     ],
     // Course actions instances cache.
     'courseactionsinstances' => [
@@ -617,5 +620,12 @@ $definitions = array(
         'simplekeys' => true,
         'simpledata' => true,
         'staticacceleration' => true,
+    ],
+    // The navigation_cache class used this cache to store the navigation nodes.
+    'navigation_cache' => [
+        'mode' => cache_store::MODE_SESSION,
+        'simplekeys' => true,
+        'simpledata' => true,
+        'ttl' => 1800,
     ],
 );

@@ -40,7 +40,7 @@ require_once(__DIR__.'/../../tests/fixtures/event_fixtures.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \moodle_read_slave_trait
  */
-class dml_read_slave_test extends \base_testcase {
+final class dml_read_slave_test extends \base_testcase {
 
     /** @var float */
     static private $dbreadonlylatency = 0.8;
@@ -94,7 +94,7 @@ class dml_read_slave_test extends \base_testcase {
      * @return array
      * @dataProvider table_names_provider
      */
-    public function table_names_provider(): array {
+    public static function table_names_provider(): array {
         return [
             [
                 "SELECT *

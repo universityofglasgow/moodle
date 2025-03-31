@@ -23,7 +23,7 @@ namespace mod_feedback\form;
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package mod_feedback
  */
-class use_template_form_test extends \advanced_testcase {
+final class use_template_form_test extends \advanced_testcase {
     /**
      * Run the basic setup for the test
      */
@@ -100,7 +100,7 @@ class use_template_form_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function usetemplate_form_provider() {
+    public static function usetemplate_form_provider(): array {
         return [
             'Test submission with a private template as an admin' => [
                 'admin', true, true

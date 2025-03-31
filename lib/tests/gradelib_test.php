@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/gradelib.php');
  * @copyright 2012 Andrew Davis
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradelib_test extends \advanced_testcase {
+final class gradelib_test extends \advanced_testcase {
 
     public function test_grade_update_mod_grades(): void {
 
@@ -188,7 +188,7 @@ class gradelib_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function grade_get_date_for_user_grade_provider(): array {
+    public static function grade_get_date_for_user_grade_provider(): array {
         $u1 = (object) [
             'id' => 42,
         ];

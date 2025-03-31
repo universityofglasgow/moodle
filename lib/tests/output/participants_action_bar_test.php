@@ -25,7 +25,7 @@ use ReflectionMethod;
  * @copyright   2021 onwards Peter Dias
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class participants_action_bar_test extends \advanced_testcase {
+final class participants_action_bar_test extends \advanced_testcase {
 
     /**
      * Test the get_content_for_select function
@@ -68,7 +68,7 @@ class participants_action_bar_test extends \advanced_testcase {
      * Provider for test_get_content_for_select
      * @return array[]
      */
-    public function get_content_for_select_provider() {
+    public static function get_content_for_select_provider(): array {
         return [
             'Get dropdown content when in a course context' => [
                 'course', 3, ['Enrolments', 'Groups', 'Permissions']

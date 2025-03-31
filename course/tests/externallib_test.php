@@ -2876,7 +2876,7 @@ final class externallib_test extends externallib_advanced_testcase {
             'filepath' => '/',
         ];
         $fs = get_file_storage();
-        $fs->create_file_from_pathname($filerecord, __DIR__ . '/fixtures/image.jpg');
+        $fs->create_file_from_pathname($filerecord, self::get_fixture_path('core_course', 'image.jpg'));
         $course2 = self::getDataGenerator()->create_course([
             'visible' => 0,
             'category' => $category2->id,
@@ -3705,7 +3705,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test the get_enrolled_courses_by_timeline_classification function.
      *
-     * @dataProvider get_get_enrolled_courses_by_timeline_classification_test_cases()
+     * @dataProvider get_get_enrolled_courses_by_timeline_classification_test_cases
      * @param array $coursedata Courses to create
      * @param string $classification Timeline classification
      * @param int $limit Maximum number of results

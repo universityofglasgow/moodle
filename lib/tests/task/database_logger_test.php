@@ -24,7 +24,7 @@ namespace core\task;
  * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class database_logger_test extends \advanced_testcase {
+final class database_logger_test extends \advanced_testcase {
 
     /**
      * @var \moodle_database The original database prior to mocking
@@ -236,7 +236,7 @@ class database_logger_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public function delete_task_logs_provider(): array {
+    public static function delete_task_logs_provider(): array {
         return [
             [
                 [0],

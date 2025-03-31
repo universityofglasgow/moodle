@@ -26,7 +26,7 @@ use ReflectionMethod;
  * @copyright   2021 onwards Peter Dias
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class language_menu_test extends \advanced_testcase {
+final class language_menu_test extends \advanced_testcase {
     /**
      * Basic setup to make sure the nav objects gets generated without any issues.
      */
@@ -100,7 +100,7 @@ class language_menu_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function get_lang_menu_provider(): array {
+    public static function get_lang_menu_provider(): array {
         return [
             'Lang menu with only the current language' => [
                 false, 'en', []

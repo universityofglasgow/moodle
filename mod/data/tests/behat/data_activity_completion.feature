@@ -47,7 +47,7 @@ Feature: View activity completion in the database activity
     And I press "Save and display"
     And I log out
 
-  Scenario: View automatic completion items as a teacher
+  Scenario: Database activity displays completion conditions to teachers
 #   We add an entry to let the user change to a different view.
     Given the following "mod_data > entries" exist:
       | database | user     | Instrument types |
@@ -61,7 +61,7 @@ Feature: View activity completion in the database activity
     And "Music history" should have the "Make entries: 2" completion condition
     And "Music history" should have the "Receive a grade" completion condition
 
-  Scenario: View automatic completion items as a student
+  Scenario: A student can complete an database activity by achieving a passing grade
     Given I am on the "Music history" "data activity" page logged in as student1
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Make entries: 2" completion condition of "Music history" is displayed as "todo"
@@ -97,7 +97,7 @@ Feature: View activity completion in the database activity
     And "Vinnie Student1" user has completed "Music history" activity
 
   @javascript
-  Scenario: Use manual completion
+  Scenario: A student can manually mark the data activity as done but a teacher cannot
     Given I am on the "Music history" "data activity editing" page logged in as teacher1
     And I expand all fieldsets
     And I set the field "Students must manually mark the activity as done" to "1"

@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @author    Laurent David (laurent@call-learning.fr)
  * @covers \mod_bigbluebuttonbn\external\get_recordings
  */
-class get_recordings_test extends \externallib_advanced_testcase {
+final class get_recordings_test extends \externallib_advanced_testcase {
     use testcase_helper_trait;
 
     /**
@@ -421,7 +421,7 @@ class get_recordings_test extends \externallib_advanced_testcase {
      *
      * @return array[]
      */
-    public function recording_group_test_data() {
+    public static function recording_group_test_data(): array {
         return [
             'visiblegroups' => [
                 'type' => instance::TYPE_ALL,

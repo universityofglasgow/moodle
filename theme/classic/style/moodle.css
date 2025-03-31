@@ -13266,7 +13266,7 @@ readers do not read off random characters that represent icons */
   --blue: #0f6cbf;
   --indigo: #6610f2;
   --purple: #613d7c;
-  --pink: #e83e8c;
+  --pink: #db1a74;
   --red: #ca3120;
   --orange: #f0ad4e;
   --yellow: #ff7518;
@@ -13822,7 +13822,7 @@ mark,
 
 code {
   font-size: 87.5%;
-  color: #e83e8c;
+  color: #db1a74;
   word-wrap: break-word;
 }
 a > code {
@@ -25199,6 +25199,10 @@ h3.sectionname .inplaceeditable.inplaceeditingon .editinstructions {
   bottom: calc(4rem + max(80px, 0.9375rem * 3));
 }
 
+.hasstickyfooter .maintenancewarning {
+  bottom: max(80px, 0.9375rem * 3);
+}
+
 .popover.footer .popover-body {
   padding: 0;
 }
@@ -25225,6 +25229,10 @@ h3.sectionname .inplaceeditable.inplaceeditingon .editinstructions {
   .jsenabled .btn-footer-communication {
     display: block;
     z-index: 1000;
+  }
+  .jsenabled .maintenancewarning,
+  .jsenabled.hasstickyfooter:has(.drawer-right-toggle) .maintenancewarning {
+    right: 5rem;
   }
 }
 .bg-inverse a {
@@ -25672,25 +25680,24 @@ input[disabled] {
   }
   .nav-tabs:not(.more-nav) .nav-link.active,
   .nav-pills .nav-link.active {
-    color: #6a737b;
-    border-color: #6a737b;
-    border-color: #6a737b;
+    color: #0f6cbf;
+    border-color: #0f6cbf;
   }
   .nav-tabs:not(.more-nav) .nav-link.active:hover,
   .nav-pills .nav-link.active:hover {
     color: #fff;
-    background-color: #6a737b;
+    background-color: #0f6cbf;
     border-color: #6a737b;
   }
   .nav-tabs:not(.more-nav) .nav-link.active:focus, .nav-tabs:not(.more-nav) .nav-link.active.focus,
   .nav-pills .nav-link.active:focus,
   .nav-pills .nav-link.active.focus {
-    box-shadow: 0 0 0 0.2rem rgba(106, 115, 123, 0.5);
+    box-shadow: 0 0 0 0.2rem rgba(15, 108, 191, 0.5);
   }
   .nav-tabs:not(.more-nav) .nav-link.active.disabled, .nav-tabs:not(.more-nav) .nav-link.active:disabled,
   .nav-pills .nav-link.active.disabled,
   .nav-pills .nav-link.active:disabled {
-    color: #6a737b;
+    color: #0f6cbf;
     background-color: transparent;
   }
   .nav-tabs:not(.more-nav) .nav-link.active:not(:disabled):not(.disabled):active, .nav-tabs:not(.more-nav) .nav-link.active:not(:disabled):not(.disabled).active, .show > .nav-tabs:not(.more-nav) .nav-link.active.dropdown-toggle,
@@ -25698,14 +25705,14 @@ input[disabled] {
   .nav-pills .nav-link.active:not(:disabled):not(.disabled).active,
   .show > .nav-pills .nav-link.active.dropdown-toggle {
     color: #fff;
-    background-color: #6a737b;
+    background-color: #0f6cbf;
     border-color: #6a737b;
   }
   .nav-tabs:not(.more-nav) .nav-link.active:not(:disabled):not(.disabled):active:focus, .nav-tabs:not(.more-nav) .nav-link.active:not(:disabled):not(.disabled).active:focus, .show > .nav-tabs:not(.more-nav) .nav-link.active.dropdown-toggle:focus,
   .nav-pills .nav-link.active:not(:disabled):not(.disabled):active:focus,
   .nav-pills .nav-link.active:not(:disabled):not(.disabled).active:focus,
   .show > .nav-pills .nav-link.active.dropdown-toggle:focus {
-    box-shadow: 0 0 0 0.2rem rgba(106, 115, 123, 0.5);
+    box-shadow: 0 0 0 0.2rem rgba(15, 108, 191, 0.5);
   }
 }
 @media (max-width: 576px) and (max-height: 320px) {
@@ -25982,7 +25989,12 @@ blockquote {
   margin: 0 0.5rem 1rem;
   padding-left: 1rem;
   color: #495057;
-  border-left: 5px solid #ced4da;
+  border-left: 5px solid #8f959e;
+}
+
+.pagelayout-maintenance .page-header-headings,
+.pagelayout-secure .page-header-headings {
+  background-color: #fff;
 }
 
 /* Prevent long strings exceeding page width */
@@ -26524,6 +26536,10 @@ body.behat-site .action-menu .dropdown-subpanel-content.show {
   text-align: left;
 }
 
+#page-admin-index .upgradekeyreq {
+  min-width: 220px;
+}
+
 #page-admin-index .adminwarning.availableupdatesinfo .moodleupdateinfo span {
   display: block;
 }
@@ -26935,8 +26951,18 @@ body.behat-site .action-menu .dropdown-subpanel-content.show {
   position: fixed;
   bottom: 0;
   right: 0;
+  margin: 1rem;
   overflow: hidden;
   z-index: 1000;
+}
+
+.jsenabled .maintenancewarning {
+  transition: 0.2s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .jsenabled .maintenancewarning {
+    transition: none;
+  }
 }
 
 .modal.modal-in-page {
@@ -27743,41 +27769,41 @@ table.calendartable caption {
   }
 }
 @media (min-width: 768px) {
-  section:not(#region-main) .block.block_calendar_month .maincalendar div.header {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar div.header {
     visibility: hidden;
     height: 0;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendarwrapper .current {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendarwrapper .current {
     width: 40%;
     font-size: inherit;
     line-height: inherit;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendarwrapper .previous,
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendarwrapper .next {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendarwrapper .previous,
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendarwrapper .next {
     width: 30%;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendarwrapper .previous .arrow_text,
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendarwrapper .next .arrow_text {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendarwrapper .previous .arrow_text,
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendarwrapper .next .arrow_text {
     display: none;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth th,
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth th,
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td {
     border: none;
     text-align: center !important;
     padding: 0;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td {
     height: auto;
     font-size: 0.8em;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.hasevent [data-region=day-content] {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.hasevent [data-region=day-content] {
     display: none;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.hasevent .day-number {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.hasevent .day-number {
     display: inline-block;
     position: relative;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.hasevent .day-number:before {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.hasevent .day-number:before {
     content: ".";
     display: inline-block;
     position: absolute;
@@ -27788,19 +27814,19 @@ table.calendartable caption {
     font-size: 3em;
     color: inherit;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td:after {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td:after {
     content: "";
     display: block;
     margin-top: calc(100% - 26px);
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.clickable:hover {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.clickable:hover {
     background-color: inherit;
   }
-  section:not(#region-main) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.clickable:not(.today):hover .day-number-circle {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .maincalendar .calendartable.calendarmonth td.clickable:not(.today):hover .day-number-circle {
     border-radius: 50%;
     background-color: #ededed;
   }
-  section:not(#region-main) .block.block_calendar_month .bottom {
+  [data-blockregion]:not([data-blockregion=content]) .block.block_calendar_month .bottom {
     border-top: 1px solid rgba(0, 0, 0, 0.125);
     padding-top: 0.5rem;
   }
@@ -28521,16 +28547,6 @@ span.editinstructions .alert-link {
   border: 1px solid #dee2e6;
   margin-bottom: 0.5rem;
   border-radius: 0.25rem;
-}
-
-.subcategories .coursebox > .info > .coursename a,
-#frontpage-category-names .coursebox > .info > .coursename a,
-#frontpage-category-combo .coursebox > .info > .coursename a {
-  display: block;
-  background-image: url([[pix:moodle|i/course]]);
-  background-repeat: no-repeat;
-  padding-left: 21px;
-  background-position: left 0.2em;
 }
 
 .coursebox > .info > .coursename {
@@ -29688,6 +29704,9 @@ span.editinstructions .alert-link {
   border-top: 1px solid #dee2e6;
   font-size: 0.875em;
 }
+.activity-item .activity-altcontent.activity-description ul:not(.activity-description ul ul) {
+  margin-bottom: 1rem;
+}
 .activity-item .activity-altcontent img {
   border-radius: 1rem;
 }
@@ -29780,6 +29799,9 @@ span.editinstructions .alert-link {
 /* Bulk editing */
 .bulkenabled .bulk-hidden {
   display: none !important;
+}
+.bulkenabled .section {
+  margin-left: 1rem;
 }
 .bulkenabled .section:not(:first-child) {
   margin-top: 1.5rem;
@@ -30334,11 +30356,6 @@ body.drawer-ease {
 /* The javascript is adding a style="height: 0px;" to this element - we need to set the min-height so the height is ignored. */
 .filepicker .moodle-dialogue-bd {
   min-height: 520px;
-}
-
-.file-picker .fp-navbar {
-  min-height: 40px;
-  padding: 4px;
 }
 
 .fp-navbar {
@@ -33290,6 +33307,7 @@ textarea[data-auto-rows] {
 .felement[data-fieldtype=autocomplete],
 .felement[data-fieldtype=tags] {
   display: block !important; /* stylelint-disable-line declaration-no-important */
+  position: static;
 }
 
 [data-fieldtype=editor] > div {
@@ -33374,6 +33392,7 @@ textarea[data-auto-rows] {
   padding: 3rem;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   margin-bottom: 2rem;
+  border-radius: 0.25rem;
 }
 .login-container .login-languagemenu {
   display: flex;
@@ -33414,7 +33433,6 @@ textarea[data-auto-rows] {
 @media (min-width: 768px) {
   .login-container {
     width: 500px !important; /* stylelint-disable-line declaration-no-important */
-    border-radius: 0.25rem;
   }
 }
 /* modules.less */
@@ -35122,12 +35140,12 @@ table .sticky-column {
   background-color: inherit;
 }
 
-.table-dynamic .loading-icon {
+.table-dynamic > .loading-icon {
   position: absolute;
   left: calc(50% - 1.5rem);
   top: 200px;
 }
-.table-dynamic .loading-icon .icon {
+.table-dynamic > .loading-icon .icon {
   max-height: 3rem;
   max-width: 3rem;
   font-size: 3rem;
@@ -36579,11 +36597,9 @@ body {
 /**
  * Tour step must sit above all other UI components.
  * The backdrop is the lowest point in the tour.
- * Everything else is in the container, and the target background should be at the same z-index.
  * ----- moodle
  *  ---- step backdrop
  *   --- step container
- *   --- step target background
  */
 div[data-flexitour=backdrop] {
   background-color: #000;
@@ -36591,18 +36607,8 @@ div[data-flexitour=backdrop] {
   z-index: 1040;
 }
 
-div[data-flexitour=step-background-fader],
-div[data-flexitour=step-background] {
-  border-radius: 0.3rem;
-  padding: 10px;
+span[data-flexitour=container] {
   z-index: 1041;
-}
-
-span[data-flexitour=container],
-div[data-flexitour=step-background-fader],
-[data-flexitour=step-backdrop] > td,
-[data-flexitour=step-backdrop] {
-  z-index: 1042;
 }
 
 span[data-flexitour=container] .modal-dialog {
@@ -36744,6 +36750,17 @@ span[data-flexitour=container][x-placement=right] div[data-role=arrow]:after, sp
 }
 .modal .close:not(:disabled):not(.disabled):hover, .modal .close:not(:disabled):not(.disabled):focus {
   opacity: inherit;
+}
+
+/* Change the modal-dialog-scrollable class to position: static to fix the issue with popper.js and autocomplete. */
+.modal-dialog-scrollable:has(.form-autocomplete-suggestions) {
+  position: static;
+}
+.modal-dialog-scrollable:has(.form-autocomplete-suggestions) .modal-content {
+  position: static;
+}
+.modal-dialog-scrollable:has(.form-autocomplete-suggestions) .modal-content .modal-body {
+  position: static;
 }
 
 /* Bug fix for TinyMCE menu when in fullscreen mode. */
@@ -36938,6 +36955,12 @@ body.tox-fullscreen .tox.tox-tinymce-aux {
     pointer-events: auto;
     visibility: hidden;
   }
+  .hasstickyfooter:has(.drawer-right-toggle) .maintenancewarning {
+    right: 2rem;
+  }
+  .hasstickyfooter:has(.drawer-left-toggle) .maintenancewarning {
+    margin-left: 3.5rem;
+  }
 }
 @media (min-width: 576px) {
   #page.drawers .main-inner {
@@ -36996,6 +37019,9 @@ body.tox-fullscreen .tox.tox-tinymce-aux {
   }
   .jsenabled #page.drawers.show-drawer-right .popover-process-monitor, .jsenabled #page.drawers.show-drawer-right .btn-footer-popover, .jsenabled #page.drawers.show-drawer-right .btn-footer-communication {
     right: calc(315px + 2rem);
+  }
+  .jsenabled:has(#page.drawers.show-drawer-right) .maintenancewarning {
+    right: calc(315px + 5rem);
   }
 }
 @media (min-width: 992px) {
@@ -37556,6 +37582,7 @@ div.editor_atto_toolbar button .icon {
 .navbar.fixed-top .usermenu .dropdown-menu .dropdown-item.carousel-navigation-link::after {
   content: "\f0da";
   font-size: 1rem;
+  padding-top: 0.2rem;
   right: 0.75rem;
   position: absolute;
 }
@@ -38703,7 +38730,7 @@ body.behat-site .path-course-view li.activity form.togglecompletion,
 body.behat-site .path-course-view li.activity form.togglecompletion::before,
 .path-course-view li.activity form.togglecompletion body.behat-site.path-course-view li.activity form.togglecompletion::before, body.themedesignermode .path-course-view li.activity form.togglecompletion::before,
 .path-course-view li.activity form.togglecompletion body.themedesignermode.path-course-view li.activity form.togglecompletion::before {
-  content: "Deprecated style in use" !important;
+  content: "Deprecated style in use (.togglecompletion)" !important;
   color: #ca3120 !important;
   font-size: smaller !important;
 }

@@ -31,7 +31,7 @@ use core_course\cache\course_image;
  * @copyright  2021 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_image_cache_test extends \advanced_testcase {
+final class course_image_cache_test extends \advanced_testcase {
 
     /**
      * Initial setup.
@@ -125,7 +125,9 @@ class course_image_cache_test extends \advanced_testcase {
         $cache = course_image::get_instance_for_cache(new cache_definition());
 
         // Create course without one image.
-        $draftid1 = $this->fill_draft_area(['filename1.jpg' => file_get_contents(__DIR__ . '/fixtures/image.jpg')]);
+        $draftid1 = $this->fill_draft_area([
+            'filename1.jpg' => file_get_contents(self::get_fixture_path(__NAMESPACE__, 'image.jpg')),
+        ]);
         $course1 = $this->getDataGenerator()->create_course(['overviewfiles_filemanager' => $draftid1]);
         $expected = $this->build_expected_course_image_url($course1, 'filename1.jpg');
         $this->assertEquals($expected, $method->invokeArgs($cache, [$course1]));
@@ -140,8 +142,8 @@ class course_image_cache_test extends \advanced_testcase {
 
         // Create course with two image files.
         $draftid1 = $this->fill_draft_area([
-            'filename1.jpg' => file_get_contents(__DIR__ . '/fixtures/image.jpg'),
-            'filename2.jpg' => file_get_contents(__DIR__ . '/fixtures/image.jpg'),
+            'filename1.jpg' => file_get_contents(self::get_fixture_path(__NAMESPACE__, 'image.jpg')),
+            'filename2.jpg' => file_get_contents(self::get_fixture_path(__NAMESPACE__, 'image.jpg')),
         ]);
         $course1 = $this->getDataGenerator()->create_course(['overviewfiles_filemanager' => $draftid1]);
 
@@ -159,8 +161,8 @@ class course_image_cache_test extends \advanced_testcase {
         // Create course with two image files and one zip file.
         $draftid1 = $this->fill_draft_area([
             'filename1.zip' => 'Test file contents2',
-            'filename2.jpg' => file_get_contents(__DIR__ . '/fixtures/image.jpg'),
-            'filename3.jpg' => file_get_contents(__DIR__ . '/fixtures/image.jpg'),
+            'filename2.jpg' => file_get_contents(self::get_fixture_path(__NAMESPACE__, 'image.jpg')),
+            'filename3.jpg' => file_get_contents(self::get_fixture_path(__NAMESPACE__, 'image.jpg')),
         ]);
         $course1 = $this->getDataGenerator()->create_course(['overviewfiles_filemanager' => $draftid1]);
 

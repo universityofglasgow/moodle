@@ -28,14 +28,14 @@ require_once('data_privacy_testcase.php');
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class data_request_test extends data_privacy_testcase {
+final class data_request_test extends data_privacy_testcase {
 
     /**
      * Data provider for testing is_resettable, and is_active.
      *
      * @return  array
      */
-    public function status_state_provider(): array {
+    public static function status_state_provider(): array {
         return [
             [
                 'state' => api::DATAREQUEST_STATUS_PENDING,
@@ -138,9 +138,9 @@ class data_request_test extends data_privacy_testcase {
      *
      * @return      array
      */
-    public function non_resettable_provider(): array {
+    public static function non_resettable_provider(): array {
         $states = [];
-        foreach ($this->status_state_provider() as $thisstatus) {
+        foreach (self::status_state_provider() as $thisstatus) {
             if (!$thisstatus['resettable']) {
                 $states[] = $thisstatus;
             }

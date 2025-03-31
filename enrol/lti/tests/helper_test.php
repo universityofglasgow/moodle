@@ -23,7 +23,7 @@ namespace enrol_lti;
  * @copyright 2016 Mark Nelson <markn@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class helper_test extends \advanced_testcase {
+final class helper_test extends \advanced_testcase {
 
     /**
      * @var \stdClass $user1 A user.
@@ -404,7 +404,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Data provider for the set_xpath test.
      */
-    public function set_xpath_provider() {
+    public static function set_xpath_provider(): array {
         return [
             "Correct structure" => [
                 "parameters" => [
@@ -479,11 +479,11 @@ class helper_test extends \advanced_testcase {
         $function = $helper->getMethod('set_xpath');
 
         $document = new \DOMDocument();
-        $document->load(realpath(__DIR__ . '/fixtures/input.xml'));
+        $document->load(realpath(self::get_fixture_path(__NAMESPACE__, 'input.xml')));
         $xpath = new \DOMXpath($document);
         $function->invokeArgs(null, [$xpath, $parameters]);
         $result = $document->saveXML();
-        $expected = file_get_contents(realpath(__DIR__ . '/fixtures/' . $expected));
+        $expected = file_get_contents(realpath(self::get_fixture_path(__NAMESPACE__, $expected)));
         $this->assertEquals($expected, $result);
     }
 
@@ -503,7 +503,7 @@ class helper_test extends \advanced_testcase {
         $function = $helper->getMethod('set_xpath');
 
         $document = new \DOMDocument();
-        $document->load(realpath(__DIR__ . '/fixtures/input.xml'));
+        $document->load(realpath(self::get_fixture_path(__NAMESPACE__, 'input.xml')));
         $xpath = new \DOMXpath($document);
 
         $this->expectException('coding_exception');

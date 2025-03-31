@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/filter/emoticon/filter.php'); // Include the code
 /**
  * Skype icons filter testcase.
  */
-class filter_test extends \advanced_testcase {
+final class filter_test extends \advanced_testcase {
 
     /**
      * Test that filter ignores nolink/pre element, and processes remaining text
@@ -97,7 +97,7 @@ class filter_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public function filter_emoticon_provider() {
+    public static function filter_emoticon_provider(): array {
         $grr = '(grr)';
         return [
             'FORMAT_MOODLE is not filtered' => [

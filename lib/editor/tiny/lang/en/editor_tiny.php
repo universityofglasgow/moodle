@@ -22,12 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['settings'] = 'General settings';
 $string['pluginname'] = 'TinyMCE editor';
 $string['settings'] = 'General settings';
 $string['privacy:reason'] = 'The TinyMCE editor does not store any preferences or user data.';
 $string['branding'] = 'TinyMCE branding';
 $string['branding_desc'] = 'Support TinyMCE by displaying the logo in the bottom corner of the text editor. The logo links to the TinyMCE website.';
+$string['extended_valid_elements'] = 'Extended valid elements';
+$string['extended_valid_elements_desc'] = 'This allows you to use additional HTML elements and attributes in the editor.';
 $string['plugin_enabled'] = '{$a} enabled.';
 $string['plugin_disabled'] = '{$a} disabled.';
 $string['subplugintype_tiny'] = 'TinyMCE plugin';
@@ -62,7 +63,7 @@ $string['tiny:black'] = 'Black';
 $string['tiny:block'] = 'Block';
 $string['tiny:block_0'] = 'Block {0}';
 $string['tiny:blockquote'] = 'Blockquote';
-$string['tiny:blocks'] = 'Blocks';
+$string['tiny:blocks'] = 'Paragraph styles';
 $string['tiny:blue'] = 'Blue';
 $string['tiny:blue_component'] = 'Blue component';
 $string['tiny:body'] = 'Body';
@@ -346,7 +347,7 @@ $string['tiny:select_all'] = 'Select all';
 $string['tiny:select...'] = 'Select...';
 $string['tiny:selection'] = 'Selection';
 $string['tiny:shortcut'] = 'Shortcut';
-$string['tiny:show_blocks'] = 'Show blocks';
+$string['tiny:show_blocks'] = 'Show paragraph styles';
 $string['tiny:show_caption'] = 'Show caption';
 $string['tiny:show_invisible_characters'] = 'Show invisible characters';
 $string['tiny:size'] = 'Size';

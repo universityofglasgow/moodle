@@ -41,14 +41,14 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core\external\record_userfeedback_action
  */
-class record_userfeedback_action_test extends externallib_advanced_testcase {
+final class record_userfeedback_action_test extends externallib_advanced_testcase {
 
     /**
      * Data provider for test_record_userfeedback_action.
      *
      * @return  array
      */
-    public function record_userfeedback_action_provider() {
+    public static function record_userfeedback_action_provider(): array {
         return [
             'give action' => ['give'],
             'remind action' => ['remind'],

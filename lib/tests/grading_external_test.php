@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @copyright 2013 Paul Charsley
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class grading_external_test extends \externallib_advanced_testcase {
+final class grading_external_test extends \externallib_advanced_testcase {
 
     /**
      * Test get_definitions
@@ -274,7 +274,8 @@ class grading_external_test extends \externallib_advanced_testcase {
             'raterid' => $USER->id,
             'itemid' => $gid,
             'status' => 1,
-            'feedbackformat' => 0,
+            'feedback' => 'Fabulous',
+            'feedbackformat' => FORMAT_HTML,
             'timemodified' => 1
         );
         $instanceid = $DB->insert_record('grading_instances', $instance);
@@ -297,9 +298,12 @@ class grading_external_test extends \externallib_advanced_testcase {
         $this->assertEquals($USER->id, $result['instances'][0]['raterid']);
         $this->assertEquals($gid, $result['instances'][0]['itemid']);
         $this->assertEquals(1, $result['instances'][0]['status']);
+        $this->assertEquals('Fabulous', $result['instances'][0]['feedback']);
+        $this->assertEquals(FORMAT_HTML, $result['instances'][0]['feedbackformat']);
         $this->assertEquals(1, $result['instances'][0]['timemodified']);
-        $this->assertEquals(1, count($result['instances'][0]['rubric']));
-        $this->assertEquals(1, count($result['instances'][0]['rubric']['criteria']));
+        $this->assertCount(1, $result['instances'][0]['rubric']);
+        $this->assertCount(1, $result['instances'][0]['rubric']['criteria']);
+
         $criteria = $result['instances'][0]['rubric']['criteria'];
         $this->assertEquals($criterionid, $criteria[0]['criterionid']);
         $this->assertEquals($levelid, $criteria[0]['levelid']);

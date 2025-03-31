@@ -33,14 +33,14 @@ use mod_data\manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \mod_data\external\get_mapping_information
  */
-class get_mapping_information_test extends \advanced_testcase {
+final class get_mapping_information_test extends \advanced_testcase {
 
     /**
      * Data provider for test_get_mapping_information().
      *
      * @return array[]
      */
-    public function get_mapping_information_provider(): array {
+    public static function get_mapping_information_provider(): array {
         // Image gallery preset is: ['title' => 'text', 'description' => 'textarea', 'image' => 'picture'];
 
         $titlefield = new \stdClass();

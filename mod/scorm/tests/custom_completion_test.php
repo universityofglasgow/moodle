@@ -37,14 +37,14 @@ require_once($CFG->dirroot.'/mod/scorm/locallib.php');
  * @copyright 2021 Michael Hawkins <michaelh@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class custom_completion_test extends advanced_testcase {
+final class custom_completion_test extends advanced_testcase {
 
     /**
      * Data provider for get_state().
      *
      * @return array[]
      */
-    public function get_state_provider(): array {
+    public static function get_state_provider(): array {
 
         // Prepare various reusable user scorm track data used to mock various completion states/requirements.
         $completionincomplete = (object) [
@@ -301,7 +301,7 @@ class custom_completion_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_available_custom_rules_provider(): array {
+    public static function get_available_custom_rules_provider(): array {
         return [
             'Completion status enabled only' => [
                 [

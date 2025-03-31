@@ -32,7 +32,7 @@ use core_external\external_api;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core_courseformat\external\get_state
  */
-class get_state_test extends \externallib_advanced_testcase {
+final class get_state_test extends \externallib_advanced_testcase {
 
     /** @var array Sections in the testing course. */
     private $sections;
@@ -182,7 +182,7 @@ class get_state_test extends \externallib_advanced_testcase {
      *
      * @return array
      */
-    public function get_state_provider(): array {
+    public static function get_state_provider(): array {
         return [
             // ROLES. Testing behaviour depending on the user role calling the method.
             'Admin user should work' => [

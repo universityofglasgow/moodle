@@ -24,7 +24,7 @@ namespace core_user;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \core_user\fields
  */
-class fields_test extends \advanced_testcase {
+final class fields_test extends \advanced_testcase {
 
     /**
      * Tests getting the user picture fields.
@@ -549,7 +549,7 @@ class fields_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function get_sql_fullname_provider(): array {
+    public static function get_sql_fullname_provider(): array {
         return [
             ['firstname lastname', 'FN LN'],
             ['lastname, firstname', 'LN, FN'],

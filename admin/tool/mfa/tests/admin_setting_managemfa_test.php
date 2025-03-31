@@ -29,7 +29,7 @@ require_once(__DIR__ . '/tool_mfa_trait.php');
  * @copyright   Catalyst IT
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class admin_setting_managemfa_test extends \advanced_testcase {
+final class admin_setting_managemfa_test extends \advanced_testcase {
 
     use tool_mfa_trait;
 
@@ -51,7 +51,7 @@ class admin_setting_managemfa_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function get_factor_combinations_provider() {
+    public static function get_factor_combinations_provider(): array {
         $provider = [];
 
         $factors = [];

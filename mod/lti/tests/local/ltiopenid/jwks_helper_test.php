@@ -42,7 +42,7 @@ namespace mod_lti\local\ltiopenid;
  * @copyright  2023 Jake Dallimore <jrhdallimore@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class jwks_helper_test extends \basic_testcase {
+final class jwks_helper_test extends \basic_testcase {
 
     /**
      * Test the fix_jwks_alg method with a range of inputs.
@@ -66,7 +66,7 @@ class jwks_helper_test extends \basic_testcase {
      * Provider for test_fix_jwks_alg.
      * @return array test data.
      */
-    public function jwks_alg_provider(): array {
+    public static function jwks_alg_provider(): array {
         return [
             // Algs already present, so no changes to input key array.
             'All JWKS keys have algs set' => [

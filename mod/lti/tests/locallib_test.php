@@ -65,7 +65,7 @@ require_once($CFG->dirroot . '/mod/lti/tests/mod_lti_testcase.php');
  * @copyright  Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class locallib_test extends mod_lti_testcase {
+final class locallib_test extends mod_lti_testcase {
 
     /**
      * @covers ::lti_split_parameters()
@@ -517,7 +517,7 @@ class locallib_test extends mod_lti_testcase {
      *
      * @return array of [urlToTest, expectedTool, allTools]
      */
-    public function lti_get_best_tool_by_url_provider() {
+    public static function lti_get_best_tool_by_url_provider(): array {
         $tools = [
             (object) [
                 'name' => 'Here',
@@ -605,7 +605,7 @@ class locallib_test extends mod_lti_testcase {
         // Construct the final array as required by the provider API. Each row
         // of the array contains the URL to test, the expected tool, and
         // the complete list of tools.
-        return array_map(function($data) use ($tools) {
+        return array_map(function($data) use ($tools): array {
             return [$data['url'], $data['expected'], $tools];
         }, $data);
     }
@@ -2020,7 +2020,7 @@ MwIDAQAB
      *
      * @return array[] the test case data.
      */
-    public function lti_get_ims_role_provider() {
+    public static function lti_get_ims_role_provider(): array {
         return [
             'Student, LTI 1.1, no role switch' => [
                 'islti2' => false,

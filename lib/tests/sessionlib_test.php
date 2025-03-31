@@ -25,7 +25,7 @@ namespace core;
  * @copyright 2014 Totara Learning Solutions Ltd {@link http://www.totaralms.com/}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class sessionlib_test extends \advanced_testcase {
+final class sessionlib_test extends \advanced_testcase {
 
     /**
      * @covers ::cron_setup_user
@@ -169,7 +169,7 @@ class sessionlib_test extends \advanced_testcase {
      *
      * @return array of config and secure result
      */
-    public function moodle_cookie_secure_provider() {
+    public static function moodle_cookie_secure_provider(): array {
         return array(
             array(
                 // Non ssl, not set.

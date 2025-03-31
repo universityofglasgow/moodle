@@ -37,14 +37,14 @@ use core_user\reportbuilder\datasource\users;
  * @copyright   2021 Paul Holden <paulh@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class send_schedule_test extends advanced_testcase {
+final class send_schedule_test extends advanced_testcase {
 
     /**
      * Data provider for {@see test_execute_viewas_user}
      *
      * @return array[]
      */
-    public function execute_report_viewas_user_provider(): array {
+    public static function execute_report_viewas_user_provider(): array {
         return [
             'View report as schedule creator' => [schedule::REPORT_VIEWAS_CREATOR, null, 'admin', 'admin'],
             'View report as schedule recipient' => [schedule::REPORT_VIEWAS_RECIPIENT, null, 'userone', 'usertwo'],

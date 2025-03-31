@@ -36,7 +36,7 @@ use stdClass;
  * @copyright  2020 Ferran Recio <ferran@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class grader_test extends \advanced_testcase {
+final class grader_test extends \advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -160,7 +160,7 @@ class grader_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function grade_item_update_data(): array {
+    public static function grade_item_update_data(): array {
         return [
             'Change idnumber' => [
                 100, false, 'newidnumber'
@@ -258,7 +258,7 @@ class grader_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function update_grades_data(): array {
+    public static function update_grades_data(): array {
         return [
             // Quantitative grade, all attempts completed.
             'Same grademax, all users, all completed' => [

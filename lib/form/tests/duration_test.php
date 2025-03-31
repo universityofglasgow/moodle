@@ -45,7 +45,7 @@ require_once($CFG->libdir . '/form/duration.php');
  * @copyright  2009 Tim Hunt
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class duration_test extends \basic_testcase {
+final class duration_test extends \basic_testcase {
 
     /**
      * Get a form that can be used for testing.
@@ -106,7 +106,7 @@ class duration_test extends \basic_testcase {
      *
      * @return array test cases.
      */
-    public function seconds_to_unit_cases(): array {
+    public static function seconds_to_unit_cases(): array {
         return [
             [[0, MINSECS], 0], // Zero minutes, for a nice default unit.
             [[1, 1], 1],
@@ -147,7 +147,7 @@ class duration_test extends \basic_testcase {
      *
      * @return array test cases.
      */
-    public function export_value_cases(): array {
+    public static function export_value_cases(): array {
         return [
             [10, '10', 1],
             [9, '9.3', 1],

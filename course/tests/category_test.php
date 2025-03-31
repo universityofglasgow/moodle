@@ -26,7 +26,7 @@ use core_course_category;
  * @copyright  2013 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class category_test extends \advanced_testcase {
+final class category_test extends \advanced_testcase {
 
     protected $roles;
 
@@ -1289,7 +1289,7 @@ class category_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function get_nearest_editable_subcategory_provider(): array {
+    public static function get_nearest_editable_subcategory_provider(): array {
         return [
             'Hidden main category for manager. Checking create and manage' => [
                 0,

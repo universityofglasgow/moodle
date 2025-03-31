@@ -35,7 +35,7 @@ require_once(__DIR__ . '/generator_trait.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-class mail_test extends \advanced_testcase {
+final class mail_test extends \advanced_testcase {
     // Make use of the cron tester trait.
     use mod_forum_tests_cron_trait;
 
@@ -994,7 +994,7 @@ class mail_test extends \advanced_testcase {
     /**
      * dataProvider for test_forum_post_email_templates().
      */
-    public function forum_post_email_templates_provider() {
+    public static function forum_post_email_templates_provider(): array {
         // Base information, we'll build variations based on it.
         $base = array(
             'user' => array('firstname' => 'Love', 'lastname' => 'Moodle', 'mailformat' => 0, 'maildigest' => 0),

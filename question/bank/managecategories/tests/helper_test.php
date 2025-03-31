@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/mod/quiz/tests/quiz_question_helper_test_trait.ph
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \qbank_managecategories\helper
  */
-class helper_test extends \advanced_testcase {
+final class helper_test extends \advanced_testcase {
 
     use \quiz_question_helper_test_trait;
 
@@ -251,5 +251,68 @@ class helper_test extends \advanced_testcase {
             $count = count($oldcategorycontext);
             $this->assertCount($count + 1, $categorycontext);
         }
+    }
+
+    /**
+     * Test that question_category_options function does not include the current category.
+     *
+     * @covers ::question_category_options
+     */
+    public function test_question_category_options_exclude_current(): void {
+        $this->setAdminUser();
+        $this->resetAfterTest();
+
+        // Create categories.
+        $qcategory1 = $this->qgenerator->create_question_category(['contextid' => $this->context->id]);
+        $qcategory2 = $this->qgenerator->create_question_category(['contextid' => $this->context->id, 'parent' => $qcategory1->id]);
+        $qcategory3 = $this->qgenerator->create_question_category(['contextid' => $this->context->id]);
+
+        $contexts = new \core_question\local\bank\question_edit_contexts($this->context);
+
+        $categorycontexts = helper::question_category_options($contexts->having_cap('moodle/question:add'));
+        // We get all categories without the currentcat parameter.
+        $categorycontext = $categorycontexts['Quiz: Quiz 1'];
+        $this->assertCount(3, $categorycontext);
+
+        // The currentcat category is excluded.
+        $newcategorycontexts = helper::question_category_options(
+            $contexts->having_cap('moodle/question:add'),
+            currentcat: $qcategory2->id,
+        );
+        $newcategorycontext = $newcategorycontexts['Quiz: Quiz 1'];
+        $this->assertCount(2, $newcategorycontext);
+        $this->assertContains($qcategory1->name, $newcategorycontext);
+        $this->assertNotContains($qcategory2->name, $newcategorycontext);
+        $this->assertContains($qcategory3->name, $newcategorycontext);
+    }
+
+    /**
+     * Test that get_categories_for_contexts function returns the correct question count number.
+     *
+     * @covers ::get_categories_for_contexts
+     */
+    public function test_question_category_question_count(): void {
+        global $DB;
+        // Create quiz.
+        $quiz = $this->quiz;
+        // Create category 1 and one hidden question.
+        $qcat = $this->qgenerator->create_question_category(['contextid' => $this->context->id]);
+        $q1 = $this->qgenerator->create_question('shortanswer', null, ['category' => $qcat->id]);
+        $DB->set_field('question_versions', 'status', 'hidden', ['questionid' => $q1->id]);
+
+        $contexts = new \core_question\local\bank\question_edit_contexts(\context_module::instance($quiz->cmid));
+        $contexts = $contexts->having_cap('moodle/question:add');
+        foreach ($contexts as $context) {
+            $contextslist[] = $context->id;
+        }
+        $contextslist = join(', ', $contextslist);
+        // Verify we have 0 question in category since it is hidden.
+        $categorycontexts = helper::get_categories_for_contexts($contextslist);
+        $this->assertEquals(0, reset($categorycontexts)->questioncount);
+        // Add an extra question.
+        $this->qgenerator->create_question('shortanswer', null, ['category' => $qcat->id]);
+        $categorycontexts = helper::get_categories_for_contexts($contextslist);
+        // Verify we have 1 question in category.
+        $this->assertEquals(1, reset($categorycontexts)->questioncount);
     }
 }

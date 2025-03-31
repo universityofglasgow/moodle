@@ -28,7 +28,7 @@ require_once(__DIR__ . '/test_helper_trait.php');
  * @copyright 2020 Catalyst IT
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class backup_restore_test extends \advanced_testcase {
+final class backup_restore_test extends \advanced_testcase {
     use \quizaccess_seb_test_helper_trait;
 
 
@@ -201,7 +201,7 @@ class backup_restore_test extends \advanced_testcase {
 
         $expected = seb_quiz_settings::get_record(['quizid' => $this->quiz->id]);
         $expected->set('requiresafeexambrowser', settings_provider::USE_SEB_UPLOAD_CONFIG);
-        $xml = file_get_contents(__DIR__ . '/fixtures/unencrypted.seb');
+        $xml = file_get_contents(self::get_fixture_path(__NAMESPACE__, 'unencrypted.seb'));
         $this->create_module_test_file($xml, $this->quiz->cmid);
         $expected->save();
 

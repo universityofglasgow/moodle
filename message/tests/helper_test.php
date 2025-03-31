@@ -31,7 +31,7 @@ require_once($CFG->dirroot . '/message/tests/messagelib_test.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \core_message\helper
  */
-class helper_test extends \advanced_testcase {
+final class helper_test extends \advanced_testcase {
 
     public function setUp(): void {
         $this->resetAfterTest(true);
@@ -228,7 +228,7 @@ class helper_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public function prevent_unclosed_html_tags_data(): array {
+    public static function prevent_unclosed_html_tags_data(): array {
         return [
             'Prevent unclosed html elements' => [
                 '<h1>Title</h1><p>Paragraph</p><b>Bold', '<h1>Title</h1><p>Paragraph</p><b>Bold</b>', true

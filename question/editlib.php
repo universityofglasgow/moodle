@@ -99,8 +99,9 @@ function get_questions_category(object $category, bool $noparent, bool $recurse 
 
     // Iterate through questions, getting stuff we need.
     $qresults = [];
-    foreach($questions as $key => $question) {
+    foreach ($questions as $question) {
         $question->export_process = $export;
+        $question->categoryobject = $category;
         $qtype = question_bank::get_qtype($question->qtype, false);
         if ($export && $qtype->name() === 'missingtype') {
             // Unrecognised question type. Skip this question when exporting.
@@ -229,7 +230,23 @@ function question_build_edit_resources($edittab, $baseurl, $params,
         if (!is_array($params['filter'])) {
             $params['filter'] = json_decode($params['filter'], true);
         }
-        $cleanparams['filter'] = $params['filter'];
+        $cleanparams['filter'] = [];
+        foreach ($params['filter'] as $filterkey => $filtervalue) {
+            if ($filterkey == 'jointype') {
+                $cleanparams['filter']['jointype'] = clean_param($filtervalue, PARAM_INT);
+            } else {
+                if (!array_key_exists('name', $filtervalue)) {
+                    $filtervalue['name'] = $filterkey;
+                }
+                $cleanfilter = [
+                    'name' => clean_param($filtervalue['name'], PARAM_ALPHANUM),
+                    'jointype' => clean_param($filtervalue['jointype'], PARAM_INT),
+                    'values' => $filtervalue['values'],
+                    'filteroptions' => $filtervalue['filteroptions'] ?? [],
+                ];
+                $cleanparams['filter'][$filterkey] = $cleanfilter;
+            }
+        }
     }
 
     if (isset($params['sortdata'])) {

@@ -141,6 +141,10 @@
     text-align: left;
 }
 
+#page-admin-index .upgradekeyreq {
+    min-width: 220px;
+}
+
 #page-admin-index .adminwarning.availableupdatesinfo .moodleupdateinfo span {
     display: block;
 }
@@ -610,8 +614,12 @@
     position: fixed;
     bottom: 0;
     right: 0;
+    margin: 1rem;
     overflow: hidden;
     z-index: $zindex-dropdown;
+}
+.jsenabled .maintenancewarning {
+    @include transition(0.2s);
 }
 
 .modal.modal-in-page {

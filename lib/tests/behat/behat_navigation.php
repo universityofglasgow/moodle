@@ -937,10 +937,12 @@ class behat_navigation extends behat_base {
                 ]);
         }
 
+        // This next section handles page types starting with an activity name. For example:
+        // "forum activity" or "quiz activity editing".
         $parts = explode(' ', $type);
         if (count($parts) > 1) {
+            $modname = $parts[0];
             if ($parts[1] === 'activity') {
-                $modname = $parts[0];
                 $cm = $this->get_cm_by_activity_name($modname, $identifier);
 
                 if (count($parts) == 2) {
@@ -962,6 +964,13 @@ class behat_navigation extends behat_base {
                     // Permissions page.
                     return new moodle_url('/admin/roles/permissions.php', ['contextid' => $cm->context->id]);
                 }
+
+            } else if ($parts[1] === 'index' && count($parts) == 2) {
+                $courseid = $this->get_course_id($identifier);
+                if (!$courseid) {
+                    throw $coursenotfoundexception;
+                }
+                return new moodle_url("/mod/$modname/index.php", ['id' => $courseid]);
             }
         }
 
@@ -1159,7 +1168,7 @@ class behat_navigation extends behat_base {
     protected function select_on_administration_page($nodelist) {
         $parentnodes = $nodelist;
         $lastnode = array_pop($parentnodes);
-        $xpath = '//section[@id=\'region-main\']';
+        $xpath = '//div[@id=\'region-main\']';
 
         // Check if there is a separate tab for this submenu of the page. If found go to it.
         if ($parentnodes) {
@@ -1627,5 +1636,61 @@ class behat_navigation extends behat_base {
     public function i_keep_block_drawer_closed() {
         set_user_preference('behat_keep_drawer_closed', 1);
         $this->i_close_block_drawer_if_open();
+    }
+
+    /**
+     * Checks if a navigation menu item is active.
+     *
+     * @Then menu item :navigationmenuitem should be active
+     * @param string $navigationmenuitem The navigation menu item name.
+     */
+    public function menu_item_should_be_active(string $navigationmenuitem): void {
+        $elementselector = "//*//a/following-sibling::*//a[contains(text(), '$navigationmenuitem') and @aria-current='true']";
+        $params = [$elementselector, "xpath_element"];
+        $this->execute("behat_general::should_exist", $params);
+    }
+
+    /**
+     * Checks if a navigation menu item is not active
+     *
+     * @Then menu item :navigationmenuitem should not be active
+     * @param string $navigationmenuitem The navigation menu item name.
+     */
+    public function menu_item_should_not_be_active(string $navigationmenuitem): void {
+        $elementselector = "//*//a/following-sibling::*//a[contains(text(), '$navigationmenuitem') and @aria-current='true']";
+        $params = [$elementselector, "xpath_element"];
+        $this->execute("behat_general::should_not_exist", $params);
+    }
+
+    /**
+     * Sets a link to no longer navigate when selected.
+     *
+     * @When /^I update the href of the "(?P<locator_string>[^"]*)" "(?P<selector_string>[^"]*)" link to "(?P<href_string>[^"]*)"$/
+     * @param string $locator The locator to use
+     * @param string $selector selector type
+     * @param string $href The value
+     */
+    public function i_update_the_link_to_go_nowhere(
+        string $locator,
+        string $selector,
+        string $href,
+    ): void {
+        $this->require_javascript();
+        $xpath = $this->find(
+            selector: $selector,
+            locator: $locator,
+        )->getXpath();
+        $script = <<<JS
+            var result = document.evaluate("{$xpath}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+            var link = result.singleNodeValue;
+
+            if (link) {
+                link.setAttribute('href', '{$href}');
+            } else {
+                throw new Error('No element found with the XPath: ' + "$selector");
+            }
+        JS;
+
+        $this->getSession()->executeScript($script);
     }
 }

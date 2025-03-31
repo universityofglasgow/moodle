@@ -26,7 +26,7 @@ use mod_lesson\local\numeric\helper;
  * @copyright 2020 Peter Dias
  * @license   http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-class numeric_helper_test extends \advanced_testcase {
+final class numeric_helper_test extends \advanced_testcase {
     /**
      * Test the lesson_unformat_numeric_value function.
      *
@@ -62,7 +62,7 @@ class numeric_helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function lesson_unformat_dataprovider() {
+    public static function lesson_unformat_dataprovider(): array {
         return [
             "Using a decimal as a separator" => [
                 "decsep" => ".",
@@ -100,7 +100,7 @@ class numeric_helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function lesson_format_dataprovider() {
+    public static function lesson_format_dataprovider(): array {
         return [
             "Using a decimal as a separator" => [
                 "decsep" => ".",

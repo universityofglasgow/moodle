@@ -37,7 +37,7 @@ use \core_privacy\local\request\writer;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core_privacy\local\request\helper
  */
-class request_helper_test extends advanced_testcase {
+final class request_helper_test extends advanced_testcase {
     /**
      * Test that basic module data is returned.
      *
@@ -203,7 +203,7 @@ class request_helper_test extends advanced_testcase {
             'filename'  => 'logo.png',
         );
 
-        $content = file_get_contents(__DIR__ . '/fixtures/logo.png');
+        $content = file_get_contents(self::get_fixture_path('core_privacy', 'logo.png'));
 
         // Store the file.
         $fs = get_file_storage();

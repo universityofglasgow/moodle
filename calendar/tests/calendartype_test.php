@@ -47,7 +47,7 @@ require_once($CFG->dirroot . '/user/profile/definelib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since Moodle 2.6
  */
-class calendartype_test extends \advanced_testcase {
+final class calendartype_test extends \advanced_testcase {
     /** @var MoodleQuickForm Keeps reference of dummy form object */
     private $mform;
 
@@ -194,6 +194,12 @@ class calendartype_test extends \advanced_testcase {
         // Test the userdate function.
         $this->assertEquals($calendar->timestamp_to_date_string($this->user->timecreated, '', 99, true, true),
             userdate($this->user->timecreated));
+
+        // Test the userdate function with a timezone.
+        $this->assertEquals(
+            $calendar->timestamp_to_date_string($this->user->timecreated, '', 'Australia/Sydney', true, true),
+            userdate($this->user->timecreated, timezone: 'Australia/Sydney'),
+        );
 
         // Test the calendar/lib.php functions.
         $this->assertEquals($calendar->get_weekdays(), calendar_get_days());

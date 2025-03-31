@@ -28,7 +28,7 @@ require_once(__DIR__ . '/fixtures/test_target_shortname.php');
  * @copyright 2017 David Monllaó {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class prediction_actions_test extends \advanced_testcase {
+final class prediction_actions_test extends \advanced_testcase {
 
     /** @var model Store Model. */
     protected $model;
@@ -135,7 +135,7 @@ class prediction_actions_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public function execute_actions_provider(): array {
+    public static function execute_actions_provider(): array {
         return [
             'Empty actions with no filter' => [
                 [],

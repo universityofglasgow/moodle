@@ -14,26 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use core_badges\helper;
+use core_badges\tests\badges_testcase;
+use core\task\manager;
+
 /**
  * Unit tests for badges
  *
- * @package    core
- * @subpackage badges
+ * @package    core_badges
  * @copyright  2013 onwards Totara Learning Solutions Ltd {@link http://www.totaralms.com/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Yuliya Bozhko <yuliya.bozhko@totaralms.com>
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once($CFG->libdir . '/badgeslib.php');
-require_once($CFG->dirroot . '/badges/lib.php');
-
-use core_badges\helper;
-use core\task\manager;
-
-class badgeslib_test extends advanced_testcase {
+final class badgeslib_test extends badges_testcase {
     protected $badgeid;
     protected $course;
     protected $user;
@@ -43,129 +36,6 @@ class badgeslib_test extends advanced_testcase {
 
     /** @var $assertion2 to define json format for Open badge version 2 */
     protected $assertion2;
-
-    protected function setUp(): void {
-        global $DB, $CFG;
-        $this->resetAfterTest(true);
-        $CFG->enablecompletion = true;
-        $user = $this->getDataGenerator()->create_user();
-        $fordb = new stdClass();
-        $fordb->id = null;
-        $fordb->name = "Test badge with 'apostrophe' and other friends (<>&@#)";
-        $fordb->description = "Testing badges";
-        $fordb->timecreated = time();
-        $fordb->timemodified = time();
-        $fordb->usercreated = $user->id;
-        $fordb->usermodified = $user->id;
-        $fordb->issuername = "Test issuer";
-        $fordb->issuerurl = "http://issuer-url.domain.co.nz";
-        $fordb->issuercontact = "issuer@example.com";
-        $fordb->expiredate = null;
-        $fordb->expireperiod = null;
-        $fordb->type = BADGE_TYPE_SITE;
-        $fordb->version = 1;
-        $fordb->language = 'en';
-        $fordb->courseid = null;
-        $fordb->messagesubject = "Test message subject";
-        $fordb->message = "Test message body";
-        $fordb->attachment = 1;
-        $fordb->notification = 0;
-        $fordb->imageauthorname = "Image Author 1";
-        $fordb->imageauthoremail = "author@example.com";
-        $fordb->imageauthorurl = "http://author-url.example.com";
-        $fordb->imagecaption = "Test caption image";
-        $fordb->status = BADGE_STATUS_INACTIVE;
-
-        $this->badgeid = $DB->insert_record('badge', $fordb, true);
-
-        // Set the default Issuer (because OBv2 needs them).
-        set_config('badges_defaultissuername', $fordb->issuername);
-        set_config('badges_defaultissuercontact', $fordb->issuercontact);
-
-        // Create a course with activity and auto completion tracking.
-        $this->course = $this->getDataGenerator()->create_course(array('enablecompletion' => true));
-        $this->user = $this->getDataGenerator()->create_user();
-        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
-        $this->assertNotEmpty($studentrole);
-
-        // Get manual enrolment plugin and enrol user.
-        require_once($CFG->dirroot.'/enrol/manual/locallib.php');
-        $manplugin = enrol_get_plugin('manual');
-        $maninstance = $DB->get_record('enrol', array('courseid' => $this->course->id, 'enrol' => 'manual'), '*', MUST_EXIST);
-        $manplugin->enrol_user($maninstance, $this->user->id, $studentrole->id);
-        $this->assertEquals(1, $DB->count_records('user_enrolments'));
-        $completionauto = array('completion' => COMPLETION_TRACKING_AUTOMATIC);
-        $this->module = $this->getDataGenerator()->create_module('forum', array('course' => $this->course->id), $completionauto);
-
-        // Build badge and criteria.
-        $fordb->type = BADGE_TYPE_COURSE;
-        $fordb->courseid = $this->course->id;
-        $fordb->status = BADGE_STATUS_ACTIVE;
-        $this->coursebadge = $DB->insert_record('badge', $fordb, true);
-
-        // Insert Endorsement.
-        $endorsement = new stdClass();
-        $endorsement->badgeid = $this->coursebadge;
-        $endorsement->issuername = "Issuer 123";
-        $endorsement->issueremail = "issuer123@email.com";
-        $endorsement->issuerurl = "https://example.org/issuer-123";
-        $endorsement->dateissued = 1524567747;
-        $endorsement->claimid = "https://example.org/robotics-badge.json";
-        $endorsement->claimcomment = "Test endorser comment";
-        $DB->insert_record('badge_endorsement', $endorsement, true);
-
-        // Insert related badges.
-        $badge = new badge($this->coursebadge);
-        $clonedid = $badge->make_clone();
-        $badgeclone = new badge($clonedid);
-        $badgeclone->status = BADGE_STATUS_ACTIVE;
-        $badgeclone->save();
-
-        $relatebadge = new stdClass();
-        $relatebadge->badgeid = $this->coursebadge;
-        $relatebadge->relatedbadgeid = $clonedid;
-        $relatebadge->relatedid = $DB->insert_record('badge_related', $relatebadge, true);
-
-        // Insert a aligment.
-        $alignment = new stdClass();
-        $alignment->badgeid = $this->coursebadge;
-        $alignment->targetname = 'CCSS.ELA-Literacy.RST.11-12.3';
-        $alignment->targeturl = 'http://www.corestandards.org/ELA-Literacy/RST/11-12/3';
-        $alignment->targetdescription = 'Test target description';
-        $alignment->targetframework = 'CCSS.RST.11-12.3';
-        $alignment->targetcode = 'CCSS.RST.11-12.3';
-        $DB->insert_record('badge_alignment', $alignment, true);
-
-        // Insert tags.
-        core_tag_tag::set_item_tags('core_badges', 'badge', $badge->id, $badge->get_context(), ['tag1', 'tag2']);
-
-        $this->assertion = new stdClass();
-        $this->assertion->badge = '{"uid":"%s","recipient":{"identity":"%s","type":"email","hashed":true,"salt":"%s"},' .
-            '"badge":"%s","verify":{"type":"hosted","url":"%s"},"issuedOn":"%d","evidence":"%s","tags":%s}';
-        $this->assertion->class = '{"name":"%s","description":"%s","image":"%s","criteria":"%s","issuer":"%s","tags":%s}';
-        $this->assertion->issuer = '{"name":"%s","url":"%s","email":"%s"}';
-        // Format JSON-LD for Openbadge specification version 2.0.
-        $this->assertion2 = new stdClass();
-        $this->assertion2->badge = '{"recipient":{"identity":"%s","type":"email","hashed":true,"salt":"%s"},' .
-            '"badge":{"name":"%s","description":"%s","image":"%s",' .
-            '"criteria":{"id":"%s","narrative":"%s"},"issuer":{"name":"%s","url":"%s","email":"%s",' .
-            '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"Issuer"},' .
-            '"tags":%s,"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"BadgeClass","version":"%s",' .
-            '"@language":"en","related":[{"id":"%s","version":"%s","@language":"%s"}],"endorsement":"%s",' .
-            '"alignments":[{"targetName":"%s","targetUrl":"%s","targetDescription":"%s","targetFramework":"%s",' .
-            '"targetCode":"%s"}]},"verify":{"type":"hosted","url":"%s"},"issuedOn":"%s","evidence":"%s","tags":%s,' .
-            '"@context":"https:\/\/w3id.org\/openbadges\/v2","type":"Assertion","id":"%s"}';
-
-        $this->assertion2->class = '{"name":"%s","description":"%s","image":"%s",' .
-            '"criteria":{"id":"%s","narrative":"%s"},"issuer":{"name":"%s","url":"%s","email":"%s",' .
-            '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"Issuer"},' .
-            '"tags":%s,"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"BadgeClass","version":"%s",' .
-            '"@language":"%s","related":[{"id":"%s","version":"%s","@language":"%s"}],"endorsement":"%s",' .
-            '"alignments":[{"targetName":"%s","targetUrl":"%s","targetDescription":"%s","targetFramework":"%s",' .
-            '"targetCode":"%s"}]}';
-        $this->assertion2->issuer = '{"name":"%s","url":"%s","email":"%s",' .
-            '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"Issuer"}';
-    }
 
     public function test_create_badge(): void {
         $badge = new badge($this->badgeid);
@@ -482,7 +352,7 @@ class badgeslib_test extends advanced_testcase {
 
     }
 
-    public function data_for_message_from_template() {
+    public static function data_for_message_from_template(): array {
         return array(
             array(
                 'This is a message with no variables',
@@ -1242,7 +1112,7 @@ class badgeslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function save_backpack_credentials_provider(): array {
+    public static function save_backpack_credentials_provider(): array {
         return [
             'Empty fields' => [
                 false,
@@ -1310,7 +1180,7 @@ class badgeslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function badges_save_external_backpack_provider() {
+    public static function badges_save_external_backpack_provider(): array {
         $data = [
             'apiversion' => 2,
             'backpackapiurl' => 'https://api.ca.badgr.io/v2',
@@ -1427,7 +1297,7 @@ class badgeslib_test extends advanced_testcase {
     /**
      * Provider for test_badges_(create/update)_site_backpack
      */
-    public function badges_create_site_backpack_provider() {
+    public static function badges_create_site_backpack_provider(): array {
         return [
             "Test as admin user - creation test" => [true, true],
             "Test as admin user - update test" => [true, false],
@@ -1598,7 +1468,7 @@ class badgeslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function badges_get_site_primary_backpack_provider() {
+    public static function badges_get_site_primary_backpack_provider(): array {
         return [
             "Test with auth details" => [true],
             "Test without auth details" => [false],
@@ -1653,7 +1523,8 @@ class badgeslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function badges_change_sortorder_backpacks_provider(): array {
+    public static function badges_change_sortorder_backpacks_provider(): array {
+        static::load_requirements();
         return [
             "Test up" => [
                 'backpacktomove' => 1,
@@ -1707,7 +1578,9 @@ class badgeslib_test extends advanced_testcase {
      * Data provider for test_badges_generate_badgr_open_url
      * @return array
      */
-    public function badgr_open_url_generator() {
+    public static function badgr_open_url_generator(): array {
+        static::load_requirements();
+
         return [
             'Badgr Assertion URL test' => [
                 OPEN_BADGES_V2_TYPE_ASSERTION, "https://api.ca.badgr.io/public/assertions/123455"
@@ -1754,7 +1627,7 @@ class badgeslib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function badges_external_get_mapping_provider() {
+    public static function badges_external_get_mapping_provider(): array {
         return [
             "Get the site backpack value" => [
                 1234, 4321, 'id', 'sitebackpackid'

@@ -44,7 +44,7 @@ require_once($CFG->dirroot . '/mod/assign/tests/generator.php');
  * @copyright Simey Lameze <simey@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class custom_completion_test extends advanced_testcase {
+final class custom_completion_test extends advanced_testcase {
 
     // Use the generator helper.
     use \mod_assign_test_generator;
@@ -54,7 +54,7 @@ class custom_completion_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_state_provider(): array {
+    public static function get_state_provider(): array {
         return [
             'Undefined rule' => [
                 'somenonexistentrule', COMPLETION_DISABLED, false, null, coding_exception::class
@@ -200,7 +200,7 @@ class custom_completion_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_available_custom_rules_provider(): array {
+    public static function get_available_custom_rules_provider(): array {
         return [
             'Completion submit available' => [
                 COMPLETION_ENABLED, ['completionsubmit']

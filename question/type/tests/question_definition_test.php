@@ -27,8 +27,9 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @package   core_question
  * @copyright  2015 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \question_definition
  */
-class question_definition_test extends \advanced_testcase {
+final class question_definition_test extends \advanced_testcase {
     public function test_make_html_inline(): void {
         // Base class is abstract, so we need to pick one qusetion type to test this method.
         $mc = \test_question_maker::make_a_multichoice_single_question();
@@ -43,5 +44,23 @@ class question_definition_test extends \advanced_testcase {
                     <p> XXX <img src='http://example.com/pic.png' alt='Graph' /> </p> "));
         $this->assertEquals('Frog', $mc->make_html_inline('<p>Frog</p><p></p>'));
         $this->assertEquals('Frog<br />†', $mc->make_html_inline('<p>Frog</p><p>†</p>'));
+    }
+
+    public function test_check_file_access_hints(): void {
+        // Prepare a shortanswer question with a hint plus default display options.
+        $question = \test_question_maker::make_question('shortanswer', 'frogtoad');
+        $question->id = 42;
+        $question->hints[] = new \question_hint_with_parts(12, 'foo', FORMAT_HTML, false, false);
+        $options = new \question_display_options();
+
+        // Prepare and start an interactive question attempt.
+        $quba = new \question_usage_by_activity('qtype_shortanswer', \context_system::instance());
+        $qa = new \question_attempt($question, $quba->get_id());
+        $qa->start('interactive', 1);
+
+        // No answer has been submitted, so we should not have access to files from the 'hint' area.
+        $args = [$question->hints[0]->id, 'foo.jpg'];
+        $checkresult = $question->check_file_access($qa, $options, 'question', 'hint', $args, false);
+        $this->assertFalse($checkresult);
     }
 }

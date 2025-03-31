@@ -975,7 +975,7 @@ function feedback_get_incomplete_users(cm_info $cm,
                                             $group,
                                             '',
                                             true)) {
-        return false;
+        return [];
     }
     // Filter users that are not in the correct group/grouping.
     $info = new \core_availability\info_module($cm);
@@ -1983,7 +1983,7 @@ function feedback_delete_completedtmp() {
 function feedback_create_pagebreak($feedbackid) {
     global $DB;
 
-    //check if there already is a pagebreak on the last position
+    // Disallow pagebreak if there's already one present in last position, or the feedback has no items.
     $lastposition = $DB->count_records('feedback_item', array('feedback'=>$feedbackid));
     if ($lastposition == feedback_get_last_break_position($feedbackid)) {
         return false;

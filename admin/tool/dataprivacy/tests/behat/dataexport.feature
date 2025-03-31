@@ -48,13 +48,15 @@ Feature: Data export from the privacy API
     And I should see "Awaiting approval" in the "Victim User 1" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
     And I follow "Approve request"
+    And I wait until "Approve request" "button" exists
     And I press "Approve request"
     And I should see "Approved" in the "Victim User 1" "table_row"
     And I run all adhoc tasks
     And I reload the page
     And I should see "Download ready" in the "Victim User 1" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
-    And following "Download" should download between "1" and "200000" bytes
+    And following "Download" should download a file that:
+      | Contains file in zip | index.html |
     And the following config values are set as admin:
       | privacyrequestexpiry | 1 | tool_dataprivacy |
     And I wait "1" seconds
@@ -89,7 +91,8 @@ Feature: Data export from the privacy API
     And I reload the page
     And I should see "Download ready" in the "Export all of my personal data" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
-    And following "Download" should download between "1" and "200000" bytes
+    And following "Download" should download a file that:
+      | Contains file in zip | index.html |
 
     And the following config values are set as admin:
       | privacyrequestexpiry | 1 | tool_dataprivacy |
@@ -115,6 +118,7 @@ Feature: Data export from the privacy API
     And I navigate to "Users > Privacy and policies > Data requests" in site administration
     And I open the action menu in "Victim User 1" "table_row"
     And I follow "Approve request"
+    And I wait until "Approve request" "button" exists
     And I press "Approve request"
 
     And I log out
@@ -126,7 +130,8 @@ Feature: Data export from the privacy API
     And I reload the page
     And I should see "Download ready" in the "Victim User 1" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
-    And following "Download" should download between "1" and "200000" bytes
+    And following "Download" should download a file that:
+      | Contains file in zip | index.html |
 
     And the following config values are set as admin:
       | privacyrequestexpiry | 1 | tool_dataprivacy |
@@ -185,7 +190,8 @@ Feature: Data export from the privacy API
     And I reload the page
     And I should see "Download ready" in the "Victim User 1" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
-    And following "Download" should download between "1" and "172000" bytes
+    And following "Download" should download a file that:
+      | Contains file in zip | index.html |
     And the following config values are set as admin:
       | privacyrequestexpiry | 1 | tool_dataprivacy |
     And I wait "1" seconds
@@ -229,7 +235,8 @@ Feature: Data export from the privacy API
     And I reload the page
     And I should see "Download ready" in the "Victim User 1" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
-    And following "Download" should download between "1" and "180000" bytes
+    And following "Download" should download a file that:
+      | Contains file in zip | index.html |
 
   @javascript
   Scenario: Filter before export data for a user and download it in the view request action
@@ -262,4 +269,5 @@ Feature: Data export from the privacy API
     And I reload the page
     And I should see "Download ready" in the "Victim User 1" "table_row"
     And I open the action menu in "Victim User 1" "table_row"
-    And following "Download" should download between "1" and "180000" bytes
+    And following "Download" should download a file that:
+      | Contains file in zip | index.html |

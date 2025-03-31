@@ -37,7 +37,7 @@ use \core_privacy\local\request\moodle_content_writer;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core_privacy\local\request\moodle_content_writer
  */
-class moodle_content_writer_test extends advanced_testcase {
+final class moodle_content_writer_test extends advanced_testcase {
 
     /**
      * Test that exported data is saved correctly within the system context.
@@ -173,7 +173,7 @@ class moodle_content_writer_test extends advanced_testcase {
     /**
      * Data provider for exporting user data.
      */
-    public function export_data_provider() {
+    public static function export_data_provider(): array {
         return [
             'basic' => [
                 (object) [
@@ -308,7 +308,7 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * return   array
      */
-    public function export_metadata_provider() {
+    public static function export_metadata_provider(): array {
         return [
             'basic' => [
                 'key',
@@ -472,7 +472,7 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function export_file_provider() {
+    public static function export_file_provider(): array {
         return [
             'basic' => [
                 'intro',
@@ -507,7 +507,7 @@ class moodle_content_writer_test extends advanced_testcase {
                 0,
                 '/',
                 'logo.png',
-                file_get_contents(__DIR__ . '/fixtures/logo.png'),
+                file_get_contents(self::get_fixture_path('core_privacy', 'logo.png')),
             ],
             'UTF8' => [
                 'submission_content',
@@ -858,7 +858,7 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function export_user_preference_provider() {
+    public static function export_user_preference_provider(): array {
         return [
             'basic' => [
                 'core_privacy',
@@ -1024,7 +1024,7 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * @return array
      */
-    public function unescaped_unicode_export_provider() {
+    public static function unescaped_unicode_export_provider(): array {
         return [
             'Unicode' => ['ةكءيٓ‌پچژکگیٹڈڑہھےâîûğŞAaÇÖáǽ你好!'],
         ];
@@ -1193,7 +1193,7 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * @return array
      */
-    public function long_filename_provider() {
+    public static function long_filename_provider(): array {
         return [
             'More than 100 characters' => [
                 'Etiam sit amet dui vel leo blandit viverra. Proin viverra suscipit velit. Aenean efficitur suscipit nibh nec suscipit',
@@ -1288,7 +1288,7 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * @return array
      */
-    public function rewrite_pluginfile_urls_provider() {
+    public static function rewrite_pluginfile_urls_provider(): array {
         return [
             'nullcontent' => [
                 'intro',

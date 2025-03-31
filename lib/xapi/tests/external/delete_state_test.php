@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @copyright  2023 Sara Arjona (sara@moodle.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class delete_state_test extends externallib_advanced_testcase {
+final class delete_state_test extends externallib_advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -73,7 +73,7 @@ class delete_state_test extends externallib_advanced_testcase {
      *
      * @return  array
      */
-    public function components_provider(): array {
+    public static function components_provider(): array {
         return [
             'Inexistent component' => [
                 'component' => 'inexistent_component',
@@ -150,7 +150,7 @@ class delete_state_test extends externallib_advanced_testcase {
      *
      * @return array
      */
-    public function states_provider(): array {
+    public static function states_provider(): array {
         return [
             'Existing and valid state' => [
                 'info' => [],

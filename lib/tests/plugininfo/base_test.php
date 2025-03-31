@@ -28,7 +28,7 @@ use testable_plugininfo_base;
  * @copyright 2019 Andrew Nicols
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base_test extends \advanced_testcase {
+final class base_test extends \advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -83,7 +83,7 @@ class base_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function load_disk_version_invalid_supported_version_provider(): array {
+    public static function load_disk_version_invalid_supported_version_provider(): array {
         return [
             'Invalid supported range.' => [
                 'supported' => [31, 29],
@@ -149,7 +149,7 @@ class base_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function load_disk_version_invalid_incompatible_version_provider(): array {
+    public static function load_disk_version_invalid_incompatible_version_provider(): array {
         return [
             [[38]],
             [['38']],
@@ -197,7 +197,7 @@ class base_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function load_disk_version_branch_supports_provider(): array {
+    public static function load_disk_version_branch_supports_provider(): array {
         return [
             'Range, branch in support, lowest' => [
                 'supported' => [29, 31],
@@ -311,7 +311,7 @@ class base_test extends \advanced_testcase {
      *
      * @return string[]
      */
-    public function plugins_not_supporting_ordering(): array {
+    public static function plugins_not_supporting_ordering(): array {
         return [
             ['mod_assign'],
             ['block_login'],

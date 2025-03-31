@@ -47,7 +47,7 @@ require_once($CFG->libdir . '/filestorage/stored_file.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \file_storage
  */
-class file_storage_test extends \advanced_testcase {
+final class file_storage_test extends \advanced_testcase {
 
     /**
      * Files can be created from strings.
@@ -2132,7 +2132,7 @@ class file_storage_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function filepath_mimetype_provider(): array {
+    public static function filepath_mimetype_provider(): array {
         return [
             [__DIR__ . '/fixtures/testimage.jpg', 'image/jpeg'],
             [__DIR__ . '/fixtures/testimage.svg', 'image/svg+xml'],

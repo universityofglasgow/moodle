@@ -68,7 +68,12 @@ class category_condition extends condition {
         $this->category = self::get_category_record($categoryid, $contextid);
 
         parent::__construct($qbank);
-        $this->includesubcategories = $this->filter['filteroptions']['includesubcategories'] ?? false;
+        if (isset($this->filter['filteroptions']['includesubcategories'])) {
+            set_user_preference('qbank_managecategories_includesubcategories_filter_default',
+                $this->filter['filteroptions']['includesubcategories']);
+        }
+        $this->includesubcategories = $this->filter['filteroptions']['includesubcategories'] ??
+            get_user_preferences('qbank_managecategories_includesubcategories_filter_default', false);
     }
 
     /**
@@ -331,4 +336,35 @@ class category_condition extends condition {
     public function is_required(): bool {
         return true;
     }
+
+    #[\Override]
+    public function filter_invalid_values(array $filterconditions): array {
+
+        global $DB;
+
+        $defaultcatid = explode(',', $filterconditions['cat'])[0];
+
+        [$insql, $inparams] = $DB->get_in_or_equal($filterconditions['filter']['category']['values']);
+        $categories = $DB->get_records_select('question_categories', "id {$insql}",
+            $inparams, null, 'id');
+        $categoryids = array_keys($categories);
+
+        foreach ($filterconditions['filter']['category']['values'] as $key => $catid) {
+
+            // Check that the category still exists, and if not, remove it from the conditions.
+            if (!in_array($catid, $categoryids)) {
+                unset($filterconditions['filter']['category']['values'][$key]);
+            }
+
+        }
+
+        // If we now don't have any valid categories, use the default loaded from the page.
+        if (count($filterconditions['filter']['category']['values']) === 0) {
+            $filterconditions['filter']['category']['values'] = [$defaultcatid];
+        }
+
+        return $filterconditions;
+
+    }
+
 }

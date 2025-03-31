@@ -41,7 +41,7 @@ require_once($CFG->dirroot . '/question/type/gapselect/classes/privacy/provider.
  * @copyright  2021 The Open university
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider_test extends \core_privacy\tests\provider_testcase {
+final class provider_test extends \core_privacy\tests\provider_testcase {
     // Include the privacy helper which has assertions on it.
 
     public function test_get_metadata(): void {
@@ -91,7 +91,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
      *
      * @return array Array of valid user preferences.
      */
-    public function user_preference_provider() {
+    public static function user_preference_provider(): array {
         return [
                 'default mark 1.5' => ['defaultmark', 1.5, 1.5],
                 'penalty 25%' => ['penalty', 0.2500000, '25%'],

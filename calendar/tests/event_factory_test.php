@@ -31,11 +31,11 @@ require_once($CFG->dirroot . '/calendar/lib.php');
  * @copyright 2017 Cameron Ball <cameron@cameron1729.xyz>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class event_factory_test extends \advanced_testcase {
+final class event_factory_test extends \advanced_testcase {
     /**
      * Test event class getters.
      *
-     * @dataProvider create_instance_testcases()
+     * @dataProvider create_instance_testcases
      * @param \stdClass $dbrow Row from the event table.
      * @param callable  $actioncallbackapplier     Action callback applier.
      * @param callable  $visibilitycallbackapplier Visibility callback applier.
@@ -346,7 +346,7 @@ class event_factory_test extends \advanced_testcase {
      *
      * @return array Array of testcases.
      */
-    public function create_instance_testcases() {
+    public static function create_instance_testcases(): array {
         return [
             'Sample event record with event exposed' => [
                 'dbrow' => (object)[

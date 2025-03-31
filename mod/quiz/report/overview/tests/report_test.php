@@ -44,7 +44,7 @@ require_once($CFG->dirroot . '/mod/quiz/tests/quiz_question_helper_test_trait.ph
  * @copyright  2014 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_test extends \advanced_testcase {
+final class report_test extends \advanced_testcase {
     use \quiz_question_helper_test_trait;
 
     /**
@@ -52,7 +52,7 @@ class report_test extends \advanced_testcase {
      *
      * @return array the data for the test sub-cases.
      */
-    public function report_sql_cases(): array {
+    public static function report_sql_cases(): array {
         return [[null], ['csv']]; // Only need to test on or off, not all download types.
     }
 
@@ -245,7 +245,7 @@ class report_test extends \advanced_testcase {
      * Bands provider.
      * @return array
      */
-    public function get_bands_count_and_width_provider(): array {
+    public static function get_bands_count_and_width_provider(): array {
         return [
             [10, [20, .5]],
             [20, [20, 1]],

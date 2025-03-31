@@ -23,7 +23,7 @@ namespace core_user;
  * @copyright 2014 The Open University
  * @licensehttp://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class profilelib_test extends \advanced_testcase {
+final class profilelib_test extends \advanced_testcase {
 
     /**
      * Load required test libraries
@@ -281,7 +281,7 @@ class profilelib_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function profile_get_custom_field_data_by_shortname_case_sensitivity_provider(): array {
+    public static function profile_get_custom_field_data_by_shortname_case_sensitivity_provider(): array {
         return [
             'Matching case, case-sensitive search' => ['hello', 'hello', true, true],
             'Matching case, case-insensitive search' => ['hello', 'hello', false, true],

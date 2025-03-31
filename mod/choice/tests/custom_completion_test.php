@@ -36,14 +36,14 @@ require_once($CFG->libdir . '/completionlib.php');
  * @copyright 2021 Jun Pataleta <jun@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class custom_completion_test extends advanced_testcase {
+final class custom_completion_test extends advanced_testcase {
 
     /**
      * Data provider for get_state().
      *
      * @return array[]
      */
-    public function get_state_provider(): array {
+    public static function get_state_provider(): array {
         return [
             'Undefined rule' => [
                 'somenonexistentrule', COMPLETION_DISABLED, false, null, coding_exception::class
@@ -166,7 +166,7 @@ class custom_completion_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_available_custom_rules_provider(): array {
+    public static function get_available_custom_rules_provider(): array {
         return [
             'Completion submit available' => [
                 COMPLETION_ENABLED, ['completionsubmit']

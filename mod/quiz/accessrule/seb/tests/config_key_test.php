@@ -25,7 +25,7 @@ namespace quizaccess_seb;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \quizaccess_seb\config_key
  */
-class config_key_test extends \advanced_testcase {
+final class config_key_test extends \advanced_testcase {
 
     /**
      * Test that trying to generate the hash key with bad xml will result in an error.
@@ -53,7 +53,7 @@ class config_key_test extends \advanced_testcase {
      * @dataProvider real_ck_hash_provider
      */
     public function test_config_key_hash_is_derived_correctly($config, $hash): void {
-        $xml = file_get_contents(__DIR__ . '/fixtures/' . $config);
+        $xml = file_get_contents(self::get_fixture_path(__NAMESPACE__, $config));
         $derivedhash = config_key::generate($xml)->get_hash();
         $this->assertEquals($hash, $derivedhash);
     }
@@ -62,8 +62,8 @@ class config_key_test extends \advanced_testcase {
      * Check that the Config Key hash is not altered if the originatorVersion is present in the XML or not.
      */
     public function test_presence_of_originator_version_does_not_effect_hash(): void {
-        $xmlwithoriginatorversion = file_get_contents(__DIR__ . '/fixtures/simpleunencrypted.seb');
-        $xmlwithoutoriginatorversion = file_get_contents(__DIR__ . '/fixtures/simpleunencryptedwithoutoriginator.seb');
+        $xmlwithoriginatorversion = file_get_contents(self::get_fixture_path(__NAMESPACE__, 'simpleunencrypted.seb'));
+        $xmlwithoutoriginatorversion = file_get_contents(self::get_fixture_path(__NAMESPACE__, 'simpleunencryptedwithoutoriginator.seb'));
         $hashwithorigver = config_key::generate($xmlwithoriginatorversion)->get_hash();
         $hashwithoutorigver = config_key::generate($xmlwithoutoriginatorversion)->get_hash();
         $this->assertEquals($hashwithorigver, $hashwithoutorigver);
@@ -74,7 +74,7 @@ class config_key_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function real_ck_hash_provider(): array {
+    public static function real_ck_hash_provider(): array {
         return [
             'unencrypted_mac2.1.4' => ['unencrypted_mac_001.seb',
                     '4fa9af8ec8759eb7c680752ef4ee5eaf1a860628608fccae2715d519849f9292', ''],

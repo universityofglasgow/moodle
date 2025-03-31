@@ -27,7 +27,7 @@ use tool_uploadcourse_course;
  * @copyright  2013 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  */
-class course_test extends \advanced_testcase {
+final class course_test extends \advanced_testcase {
 
     /** @var \testing_data_generator $datagenerator */
     protected $datagenerator;
@@ -967,8 +967,14 @@ class course_test extends \advanced_testcase {
         // Restore from a file, checking that the file takes priority over the templatecourse.
         $mode = tool_uploadcourse_processor::MODE_CREATE_NEW;
         $updatemode = tool_uploadcourse_processor::UPDATE_ALL_WITH_DATA_ONLY;
-        $data = array('shortname' => 'A1', 'backupfile' => __DIR__ . '/fixtures/backup.mbz',
-            'summary' => 'A', 'category' => 1, 'fullname' => 'A1', 'templatecourse' => $c1->shortname);
+        $data = [
+            'shortname' => 'A1',
+            'backupfile' => self::get_fixture_path(__NAMESPACE__, 'backup.mbz'),
+            'summary' => 'A',
+            'category' => 1,
+            'fullname' => 'A1',
+            'templatecourse' => $c1->shortname,
+        ];
         $co = new tool_uploadcourse_course($mode, $updatemode, $data);
         $this->assertTrue($co->prepare());
         $co->proceed();
@@ -986,8 +992,13 @@ class course_test extends \advanced_testcase {
         $this->assertTrue($found);
 
         // Restoring twice from the same file should work.
-        $data = array('shortname' => 'B1', 'backupfile' => __DIR__ . '/fixtures/backup.mbz',
-            'summary' => 'B', 'category' => 1, 'fullname' => 'B1');
+        $data = [
+            'shortname' => 'B1',
+            'backupfile' => self::get_fixture_path(__NAMESPACE__, 'backup.mbz'),
+            'summary' => 'B',
+            'category' => 1,
+            'fullname' => 'B1',
+        ];
         $co = new tool_uploadcourse_course($mode, $updatemode, $data);
         $this->assertTrue($co->prepare());
         $co->proceed();
@@ -1020,8 +1031,14 @@ class course_test extends \advanced_testcase {
 
         $mode = tool_uploadcourse_processor::MODE_CREATE_NEW;
         $updatemode = tool_uploadcourse_processor::UPDATE_ALL_WITH_DATA_ONLY;
-        $data = array('shortname' => 'A1', 'backupfile' => __DIR__ . '/fixtures/backup.mbz',
-            'summary' => 'A', 'category' => 1, 'fullname' => 'A1', 'templatecourse' => $c1->shortname);
+        $data = [
+            'shortname' => 'A1',
+            'backupfile' => self::get_fixture_path(__NAMESPACE__, 'backup.mbz'),
+            'summary' => 'A',
+            'category' => 1,
+            'fullname' => 'A1',
+            'templatecourse' => $c1->shortname,
+        ];
         $co = new tool_uploadcourse_course($mode, $updatemode, $data);
         $this->assertTrue($co->prepare());
         $co->proceed();
@@ -1259,7 +1276,7 @@ class course_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function enrolment_uploaddata_error_provider(): array {
+    public static function enrolment_uploaddata_error_provider(): array {
         return [
             ['errorcannotcreateorupdateenrolment', [
                 'shortname' => 'C1',
@@ -1487,7 +1504,7 @@ class course_test extends \advanced_testcase {
         // Create our custom field.
         $category = $this->get_customfield_generator()->create_category();
         $this->create_custom_field($category, 'date', 'mydate',
-            ['mindate' => strtotime('2020-04-01'), 'maxdate' => '2020-04-30']);
+            ['mindate' => strtotime('2020-04-01'), 'maxdate' => strtotime('2020-04-30')]);
 
         $mode = tool_uploadcourse_processor::MODE_UPDATE_ONLY;
         $updatemode = tool_uploadcourse_processor::UPDATE_ALL_WITH_DATA_ONLY;

@@ -39,7 +39,7 @@ require_once($CFG->dirroot . '/mod/wiki/parser/parser.php');
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class wikiparser_test extends \advanced_testcase {
+final class wikiparser_test extends \advanced_testcase {
 
     /**
      * URL inside the clickable text of some link should not be turned into a new link via the url_tag_rule.
@@ -64,7 +64,7 @@ class wikiparser_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function urls_inside_link_text_provider() {
+    public static function urls_inside_link_text_provider(): array {
         return [
             'creole implicit link' => [
                 'markup' => 'creole',

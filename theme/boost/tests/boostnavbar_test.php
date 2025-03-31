@@ -24,14 +24,14 @@ namespace theme_boost;
  * @copyright  2021 Peter Dias
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class boostnavbar_test extends \advanced_testcase {
+final class boostnavbar_test extends \advanced_testcase {
     /**
      * Provider for test_remove_no_link_items
      * The setup and expected arrays are defined as an array of 'nodekey' => $hasaction
      *
      * @return array
      */
-    public function remove_no_link_items_provider(): array {
+    public static function remove_no_link_items_provider(): array {
         return [
             'All nodes have links links including leaf node. Set to remove section nodes.' => [
                 [
@@ -229,7 +229,7 @@ class boostnavbar_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function remove_duplicate_items_provider(): array {
+    public static function remove_duplicate_items_provider(): array {
         global $CFG;
 
         return [
@@ -407,7 +407,7 @@ class boostnavbar_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function remove_items_that_exist_in_navigation_provider(): array {
+    public static function remove_items_that_exist_in_navigation_provider(): array {
         global $CFG;
 
         return [

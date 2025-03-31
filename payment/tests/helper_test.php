@@ -36,7 +36,7 @@ use core\plugininfo\paygw;
  * @copyright  2020 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class helper_test extends advanced_testcase {
+final class helper_test extends advanced_testcase {
 
     protected function enable_paypal_gateway(): bool {
         if (!array_key_exists('paypal', \core_component::get_plugin_list('paygw'))) {
@@ -137,7 +137,7 @@ class helper_test extends advanced_testcase {
      *
      * @return array
      */
-    public function get_rounded_cost_provider(): array {
+    public static function get_rounded_cost_provider(): array {
         return [
             'IRR 0 surcharge' => [5.345, 'IRR', 0, 5],
             'IRR 12% surcharge' => [5.345, 'IRR', 12, 6],
@@ -151,7 +151,7 @@ class helper_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_cost_as_string_provider(): array {
+    public static function get_cost_as_string_provider(): array {
         return [
             'IRR 0 surcharge' => [5.345, 'IRR', 0, 'IRR'."\xc2\xa0".'5'],
             'IRR 12% surcharge' => [5.345, 'IRR', 12, 'IRR'."\xc2\xa0".'6'],

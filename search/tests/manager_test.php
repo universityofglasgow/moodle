@@ -29,7 +29,7 @@ require_once(__DIR__ . '/fixtures/mock_search_area.php');
  * @copyright   2015 David Monllao {@link http://www.davidmonllao.com}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class manager_test extends \advanced_testcase {
+final class manager_test extends \advanced_testcase {
 
     /**
      * Forum area id.
@@ -106,7 +106,7 @@ class manager_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function data_course_search_url(): array {
+    public static function data_course_search_url(): array {
         return [
             'defaults' => [null, null, null, '/course/search.php'],
             'enabled' => [true, true, true, '/search/index.php'],
@@ -155,7 +155,7 @@ class manager_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function data_can_replace_course_search(): array {
+    public static function data_can_replace_course_search(): array {
         return [
             'defaults' => [null, null, null, false],
             'enabled' => [true, true, true, true],
@@ -1503,7 +1503,7 @@ class manager_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function parse_search_area_id_data_provider() {
+    public static function parse_search_area_id_data_provider(): array {
         return [
             ['mod_book-chapter', ['mod_book', 'search_chapter']],
             ['mod_customcert-activity', ['mod_customcert', 'search_activity']],
@@ -1623,5 +1623,73 @@ class manager_test extends \advanced_testcase {
             ['context', $context5->id]
         ];
         $this->assertEquals($expected, $search->get_engine()->get_and_clear_deletes());
+    }
+
+    /**
+     * Tests the indexing delay (used to avoid race conditions) in {@see manager::index()}.
+     *
+     * @covers \core_search\manager::index
+     */
+    public function test_indexing_delay(): void {
+        global $USER, $CFG;
+
+        $this->resetAfterTest();
+
+        // Normally the indexing delay is turned off for test scripts because we don't want to have
+        // to wait 5 seconds after creating anything to index it and it's not like there will be a
+        // race condition (indexing doesn't run at same time as adding). This turns it on.
+        $CFG->searchindexingdelayfortestscript = true;
+
+        $this->setAdminUser();
+
+        // Create a course and a forum.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $forum = $generator->create_module('forum', ['course' => $course->id]);
+
+        // Skip ahead 5 seconds so everything gets indexed.
+        $now = time();
+        $now += manager::INDEXING_DELAY;
+        $search = \testable_core_search::instance();
+        $search->fake_current_time($now);
+        $search->index();
+        $search->get_engine()->get_and_clear_added_documents();
+
+        // Basic discussion data.
+        $basicdata = [
+            'course' => $course->id,
+            'forum' => $forum->id,
+            'userid' => $USER->id,
+        ];
+        // Discussion so old it's prior to indexing delay (not realistic).
+        $generator->get_plugin_generator('mod_forum')->create_discussion(array_merge($basicdata,
+            ['timemodified' => $now - manager::INDEXING_DELAY, 'name' => 'Frog']));
+        // Discussion just within indexing delay (simulates if it took a while to add to database).
+        $generator->get_plugin_generator('mod_forum')->create_discussion(array_merge($basicdata,
+            ['timemodified' => $now - (manager::INDEXING_DELAY - 1), 'name' => 'Toad']));
+        // Move time along a bit.
+        $now += 100;
+        $search->fake_current_time($now);
+        // Discussion that happened 5 seconds before the new now.
+        $generator->get_plugin_generator('mod_forum')->create_discussion(array_merge($basicdata,
+            ['timemodified' => $now - (manager::INDEXING_DELAY), 'name' => 'Zombie']));
+        // This one only happened 4 seconds before so it shouldn't be indexed yet.
+        $generator->get_plugin_generator('mod_forum')->create_discussion(array_merge($basicdata,
+            ['timemodified' => $now - (manager::INDEXING_DELAY - 1), 'name' => 'Werewolf']));
+
+        // Reindex and check that it added the middle two discussions.
+        $search->index();
+        $added = $search->get_engine()->get_and_clear_added_documents();
+        $this->assertCount(2, $added);
+        $this->assertEquals('Toad', $added[0]->get('title'));
+        $this->assertEquals('Zombie', $added[1]->get('title'));
+
+        // Move time forwards a couple of seconds and now the last one will get indexed.
+        $now += 2;
+        $search->fake_current_time($now);
+        $search->index();
+        $added = $search->get_engine()->get_and_clear_added_documents();
+        $this->assertCount(1, $added);
+        $this->assertEquals('Werewolf', $added[0]->get('title'));
     }
 }

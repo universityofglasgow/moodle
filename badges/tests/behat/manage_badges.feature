@@ -45,12 +45,12 @@ Feature: Manage badges
     And I navigate to "Badges > Manage badges" in site administration
     And I press "Delete" action in the "Badge #1" report row
     And I press "Delete and remove existing issued badges"
-    Then I should see "There are currently no badges available for users to earn"
+    Then I should see "There are no matching badges available for users to earn."
 
   Scenario Outline: Filter managed badges
     Given the following "core_badges > Badges" exist:
-      | name     | status | version |
-      | Badge #2 | 1      | 2.0     |
+      | name     | status | version | image                        |
+      | Badge #2 | 1      | 2.0     | badges/tests/behat/badge.png |
     And I log in as "admin"
     When I navigate to "Badges > Manage badges" in site administration
     And I click on "Filters" "button"
@@ -90,7 +90,10 @@ Feature: Manage badges
       | Badge #1  | Not available |
 
   Scenario: Award a badge
-    Given I log in as "admin"
+    Given the following "users" exist:
+      | username | firstname | lastname | email             |
+      | user1    | User      | One      | user1@example.com |
+    When I log in as "admin"
     And I navigate to "Badges > Manage badges" in site administration
     And I press "Edit" action in the "Badge #1" report row
     And I select "Criteria" from the "jump" singleselect
@@ -101,9 +104,14 @@ Feature: Manage badges
     And I press "Enable access" action in the "Badge #1" report row
     And I press "Continue"
     And I press "Award badge" action in the "Badge #1" report row
-    And I set the field "potentialrecipients[]" to "Admin User (moodle@example.com)"
+    And I set the field "potentialrecipients[]" to "Admin User (moodle@example.com),User One (user1@example.com)"
     And I press "Award badge"
     And I navigate to "Badges > Manage badges" in site administration
-    Then the following should exist in the "reportbuilder-table" table:
+    Then the following should exist in the "Badges" table:
       | Name      | Badge status  | Recipients |
-      | Badge #1  | Available     | 1          |
+      | Badge #1  | Available     | 2          |
+    And I click on "2" "link" in the "Badge #1" "table_row"
+    And the following should exist in the "Recipients" table:
+      | -1-        |
+      | Admin User |
+      | User One   |

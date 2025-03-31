@@ -38,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2012 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class lib_test extends \advanced_testcase {
+final class lib_test extends \advanced_testcase {
     /**
      * Test enrol migration function used when uninstalling enrol plugins.
      */
@@ -586,7 +586,7 @@ class lib_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function default_enrolment_instance_data_provider(): array {
+    public static function default_enrolment_instance_data_provider(): array {
         $studentroles = get_archetype_roles('student');
         $studentrole = array_shift($studentroles);
 
@@ -700,7 +700,7 @@ class lib_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function update_enrolment_instance_data_provider(): array {
+    public static function update_enrolment_instance_data_provider(): array {
         $studentroles = get_archetype_roles('student');
         $studentrole = array_shift($studentroles);
 

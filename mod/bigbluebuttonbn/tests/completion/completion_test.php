@@ -32,7 +32,7 @@ use mod_bigbluebuttonbn\test\testcase_helper_trait;
  * @author    Laurent David (laurent@call-learning.fr)
  * @covers \mod_bigbluebuttonbn\completion\custom_completion
  */
-class completion_test extends \advanced_testcase {
+final class completion_test extends \advanced_testcase {
     use testcase_helper_trait;
 
     /**
@@ -280,7 +280,7 @@ class completion_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function custom_completion_data_provider() {
+    public static function custom_completion_data_provider(): array {
         return [
             'simple' => [
                 'customcompletionrules' => [

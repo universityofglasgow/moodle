@@ -29,7 +29,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \course_enrolment_manager
  */
-class course_enrolment_manager_test extends \advanced_testcase {
+final class course_enrolment_manager_test extends \advanced_testcase {
     /**
      * The course used in tests.
      * @var \stdClass
@@ -503,7 +503,7 @@ class course_enrolment_manager_test extends \advanced_testcase {
      *
      * @return array Dataset
      */
-    public function search_users_provider() {
+    public static function search_users_provider(): array {
         return [
                 [2, false, 2, 3, true],
                 [5, false, 3, 3, false],

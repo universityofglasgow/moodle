@@ -31,7 +31,7 @@ require_once($CFG->dirroot.'/filter/mathjaxloader/filter.php');
  * @copyright 2017 David Mudrak <david@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class filter_test extends \advanced_testcase {
+final class filter_test extends \advanced_testcase {
 
     /**
      * Test the functionality of {@link filter_mathjaxloader::map_language_code()}.
@@ -52,7 +52,7 @@ class filter_test extends \advanced_testcase {
      *
      * @return array of [moodlelangcode, mathjaxcode] tuples
      */
-    public function map_language_code_expected_mappings() {
+    public static function map_language_code_expected_mappings(): array {
 
         return [
             ['cz', 'cs'], // Explicit mapping.

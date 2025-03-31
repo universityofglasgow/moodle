@@ -37,7 +37,7 @@ use mod_bigbluebuttonbn\test\testcase_helper_trait;
  * @covers \mod_bigbluebuttonbn\recording
  * @coversDefaultClass \mod_bigbluebuttonbn\recording
  */
-class recording_test extends \advanced_testcase {
+final class recording_test extends \advanced_testcase {
     use testcase_helper_trait;
 
     /**
@@ -103,7 +103,7 @@ class recording_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function get_status_provider(): array {
+    public static function get_status_provider(): array {
         return [
             [recording::RECORDING_STATUS_PROCESSED],
             [recording::RECORDING_STATUS_DISMISSED],
@@ -137,7 +137,7 @@ class recording_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function get_allrecordings_types_provider(): array {
+    public static function get_allrecordings_types_provider(): array {
         return [
             'Instance Type ALL' => [
                 'type' => instance::TYPE_ALL

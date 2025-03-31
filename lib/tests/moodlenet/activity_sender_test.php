@@ -37,7 +37,7 @@ use testing_data_generator;
  * @copyright 2023 Huong Nguyen <huongnv13@gmail.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activity_sender_test extends \advanced_testcase {
+final class activity_sender_test extends \advanced_testcase {
 
     /** @var testing_data_generator Data generator. */
     private testing_data_generator $generator;
@@ -255,7 +255,7 @@ The last word of this sentence is in bold', $processeddescription);
      *
      * @return array Test data.
      */
-    public function share_resource_provider(): array {
+    public static function share_resource_provider(): array {
         return [
             'Success' => [
                 'http_response' => new Response(

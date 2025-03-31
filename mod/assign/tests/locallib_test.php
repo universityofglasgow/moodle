@@ -40,8 +40,7 @@ require_once($CFG->dirroot . '/mod/assign/tests/generator.php');
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class locallib_test extends \advanced_testcase {
-
+final class locallib_test extends \advanced_testcase {
     // Use the generator helper.
     use mod_assign_test_generator;
 
@@ -150,7 +149,7 @@ class locallib_test extends \advanced_testcase {
      *
      * @return array Provider data
      */
-    public function get_assign_perpage_provider() {
+    public static function get_assign_perpage_provider(): array {
         return array(
             array(
                 'maxperpage' => -1,
@@ -919,7 +918,7 @@ class locallib_test extends \advanced_testcase {
      *
      * @return array of testcases
      */
-    public function new_submission_empty_testcases() {
+    public static function new_submission_empty_testcases(): array {
         return [
             'With file and onlinetext' => [
                 [
@@ -2654,15 +2653,15 @@ class locallib_test extends \advanced_testcase {
         $this->add_submission($student, $assign);
         $this->submit_for_grading($student, $assign);
 
-        // Mark the submission as passing.
-        $this->mark_submission($teacher, $assign, $student, 80.0);
+        // Mark the second submission as passing.
+        $this->mark_submission($teacher, $assign, $student, 80.0, [], 1);
 
         // Check that the student does not have a button for Add a new attempt.
         $this->setUser($student);
         $output = $assign->view_student_summary($student, true);
         $this->assertEquals(false, strpos($output, get_string('addnewattempt', 'assign')));
 
-        // Re-mark the submission as not passing.
+        // Re-mark the second submission as not passing.
         $this->mark_submission($teacher, $assign, $student, 40.0, [], 1);
 
         // Check that the student now has a button for Add a new attempt.
@@ -3067,7 +3066,7 @@ class locallib_test extends \advanced_testcase {
         $this->assertEquals($isenabled, (bool) $plugin->is_enabled('enabled'));
     }
 
-    public function submission_plugin_settings_provider() {
+    public static function submission_plugin_settings_provider(): array {
         return [
             'CFG->usecomments true, empty config => Enabled by default' => [
                 true,
@@ -3202,7 +3201,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $this->assertEquals($isenabled, (bool) $plugin->is_enabled('enabled'));
     }
 
-    public function feedback_plugin_settings_provider() {
+    public static function feedback_plugin_settings_provider(): array {
         return [
             'No configuration => disabled' => [
                 [],
@@ -3377,6 +3376,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $student2 = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $student3 = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $student4 = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $student5 = $this->getDataGenerator()->create_and_enrol($course, 'student');
 
         $grouping = $this->getDataGenerator()->create_grouping(array('courseid' => $course->id));
         $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
@@ -3394,6 +3394,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
             'submissiondrafts' => 1,
             'groupingid' => $grouping->id,
             'groupmode' => SEPARATEGROUPS,
+            'preventsubmissionnotingroup' => 0,
         ]);
 
         // Add the capability to the new \assignment for student 1.
@@ -3407,12 +3408,27 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $this->assertTrue($assign->can_edit_submission($student2->id, $student1->id));
         $this->assertFalse($assign->can_edit_submission($student3->id, $student1->id));
         $this->assertFalse($assign->can_edit_submission($student4->id, $student1->id));
+        $this->assertFalse($assign->can_edit_submission($student5->id, $student1->id));
 
         // Verify other students do not have the ability to edit submissions for other users.
         $this->assertTrue($assign->can_edit_submission($student2->id, $student2->id));
         $this->assertFalse($assign->can_edit_submission($student1->id, $student2->id));
         $this->assertFalse($assign->can_edit_submission($student3->id, $student2->id));
         $this->assertFalse($assign->can_edit_submission($student4->id, $student2->id));
+        $this->assertFalse($assign->can_edit_submission($student5->id, $student2->id));
+
+        // Add the required capability to edit other submissions and to view all groups to the teacher.
+        $roleid = create_role('Dummy role 2', 'dummyrole2', 'dummy role description');
+        assign_capability('mod/assign:editothersubmission', CAP_ALLOW, $roleid, $assign->get_context()->id);
+        assign_capability('moodle/site:accessallgroups', CAP_ALLOW, $roleid, $assign->get_context()->id);
+        role_assign($roleid, $teacher->id, $assign->get_context()->id);
+
+        // Verify the teacher has the ability to edit submissions for other users including users not in a group.
+        $this->assertTrue($assign->can_edit_submission($student1->id, $teacher->id));
+        $this->assertTrue($assign->can_edit_submission($student2->id, $teacher->id));
+        $this->assertTrue($assign->can_edit_submission($student3->id, $teacher->id));
+        $this->assertTrue($assign->can_edit_submission($student4->id, $teacher->id));
+        $this->assertTrue($assign->can_edit_submission($student5->id, $teacher->id));
     }
 
     /**
@@ -3940,7 +3956,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
      * Data provider for test_fix_null_grades
      * @return array[] Test data for test_fix_null_grades. Each element should contain grade, expectedcount and gradebookvalue
      */
-    public function fix_null_grades_provider() {
+    public static function fix_null_grades_provider(): array {
         return [
             'Negative less than one is errant' => [
                 'grade' => -0.64,
@@ -4126,7 +4142,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
     /**
      * The test_assign_get_instance data provider.
      */
-    public function assign_get_instance_provider() {
+    public static function assign_get_instance_provider(): array {
         $timenow = time();
 
         // The get_default_instance() method shouldn't calculate any properties per-user. It should just return the record data.
@@ -4207,7 +4223,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
     /**
      * The test_assign_get_default_instance data provider.
      */
-    public function assign_get_default_instance_provider() {
+    public static function assign_get_default_instance_provider(): array {
         $timenow = time();
 
         // The get_default_instance() method shouldn't calculate any properties per-user. It should just return the record data.

@@ -43,7 +43,7 @@ use Moodle\H5PCore;
  *
  * @runTestsInSeparateProcesses
  */
-class editor_test extends advanced_testcase {
+final class editor_test extends advanced_testcase {
 
     /**
      * Form object to be used in test case.
@@ -84,7 +84,7 @@ class editor_test extends advanced_testcase {
         // Add H5P content.
         // This is a valid .H5P file.
         $filename = 'find-the-words.h5p';
-        $path = __DIR__ . '/fixtures/' . $filename;
+        $path = self::get_fixture_path(__NAMESPACE__, $filename);
         $syscontext = \context_system::instance();
         $filerecord = [
             'contextid' => $syscontext->id,

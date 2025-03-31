@@ -23,13 +23,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @package    core
  */
-class client_test extends advanced_testcase {
+final class client_test extends advanced_testcase {
     /**
      * Uses the static dataset as feed-in
      *
      * @return array
      */
-    public function map_response_provider(): array {
+    public static function map_response_provider(): array {
         return [
             "Nested objects syntax a-b-c syntax " => [
                 [

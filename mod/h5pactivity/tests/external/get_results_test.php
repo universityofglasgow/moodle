@@ -43,7 +43,7 @@ use dml_missing_record_exception;
  * @copyright  2020 Ferran Recio <ferran@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class get_results_test extends externallib_advanced_testcase {
+final class get_results_test extends externallib_advanced_testcase {
 
     /**
      * Test the behaviour of get_results.
@@ -146,7 +146,7 @@ class get_results_test extends externallib_advanced_testcase {
      *
      * @return  array
      */
-    public function execute_data(): array {
+    public static function execute_data(): array {
         return [
             'Teacher reviewing an attempt' => [
                 1, manager::REVIEWCOMPLETION, 'editingteacher', 'student', true, 1
@@ -277,7 +277,7 @@ class get_results_test extends externallib_advanced_testcase {
      *
      * @return  array
      */
-    public function execute_multipleattempts_data(): array {
+    public static function execute_multipleattempts_data(): array {
         return [
             // Teacher cases.
             'Teacher reviewing students attempts' => [
@@ -408,7 +408,7 @@ class get_results_test extends externallib_advanced_testcase {
      *
      * @return  array
      */
-    public function execute_mixactivities_data(): array {
+    public static function execute_mixactivities_data(): array {
         return [
             // Teacher cases.
             'Correct activity id' => [

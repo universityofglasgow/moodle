@@ -29,7 +29,7 @@ use zip_archive;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \mod_data\preset
  */
-class preset_test extends \advanced_testcase {
+final class preset_test extends \advanced_testcase {
 
     /**
      * Test for static create_from_plugin method.
@@ -495,7 +495,7 @@ class preset_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function is_directory_a_preset_provider(): array {
+    public static function is_directory_a_preset_provider(): array {
         global $CFG;
 
         return [
@@ -607,7 +607,7 @@ class preset_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function generate_preset_xml_provider(): array {
+    public static function generate_preset_xml_provider(): array {
         return [
             'Generate preset.xml with the default params and empty description' => [
                 'params' => [],

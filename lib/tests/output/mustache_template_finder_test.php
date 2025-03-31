@@ -27,7 +27,7 @@ namespace core\output;
  * @copyright 2015 Damyon Wiese
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mustache_template_finder_test extends \advanced_testcase {
+final class mustache_template_finder_test extends \advanced_testcase {
 
     /**
      * Data provider which reutrns a set of valid template directories to be used when testing
@@ -35,7 +35,7 @@ class mustache_template_finder_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function valid_template_directories_provider(): array {
+    public static function valid_template_directories_provider(): array {
         return [
             'plugin: mod_assign' => [
                 'component' => 'mod_assign',
@@ -111,7 +111,7 @@ class mustache_template_finder_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function valid_template_filepath_provider(): array {
+    public static function valid_template_filepath_provider(): array {
         return [
             'Standard core template' => [
                 'template' => 'core/modal',

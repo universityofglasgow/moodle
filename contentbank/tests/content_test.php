@@ -39,7 +39,7 @@ use contenttype_testable\contenttype as contenttype;
  * @coversDefaultClass \core_contentbank\content
  *
  */
-class content_test extends \advanced_testcase {
+final class content_test extends \advanced_testcase {
 
     /**
      * Setup to ensure that fixtures are loaded.
@@ -74,7 +74,7 @@ class content_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public function set_name_provider() {
+    public static function set_name_provider(): array {
         return [
             'Standard name' => ['New name', 'New name'],
             'Name with digits' => ['Today is 17/04/2017', 'Today is 17/04/2017'],

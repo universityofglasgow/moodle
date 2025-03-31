@@ -1119,8 +1119,11 @@ function course_module_bulk_update_calendar_events($modulename, $courseid = 0) {
  * @since  Moodle 3.3.4
  */
 function course_module_calendar_event_update_process($instance, $cm) {
+    global $CFG;
+
     // We need to call *_refresh_events() first because some modules delete 'old' events at the end of the code which
     // will remove the completion events.
+    include_once("$CFG->dirroot/mod/$cm->modname/lib.php");
     $refresheventsfunction = $cm->modname . '_refresh_events';
     if (function_exists($refresheventsfunction)) {
         call_user_func($refresheventsfunction, $cm->course, $instance, $cm);
@@ -2981,7 +2984,11 @@ function include_course_editor(course_format $format) {
 function get_sorted_course_formats($enabledonly = false) {
     global $CFG;
 
-    $formats = core_plugin_manager::instance()->get_installed_plugins('format');
+    // Include both formats that exist on disk (but might not have been installed yet), and those
+    // which were installed but no longer exist on disk.
+    $installedformats = core_plugin_manager::instance()->get_installed_plugins('format');
+    $existingformats = core_component::get_plugin_list('format');
+    $formats = array_merge($installedformats, $existingformats);
 
     if (!empty($CFG->format_plugins_sortorder)) {
         $order = explode(',', $CFG->format_plugins_sortorder);
@@ -4884,6 +4891,12 @@ function course_get_communication_instance_data(int $courseid): array {
  */
 function course_update_communication_instance_data(stdClass $data): void {
     $data->id = $data->instanceid; // For correct use in update_course.
+    // If the room name is set to empty, then set it course name.
+    $provider = $data->selectedcommunication ?? null;
+    $roomnameidentifier = $provider . 'roomname';
+    if ($provider && empty($data->$roomnameidentifier)) {
+        $data->$roomnameidentifier = $data->fullname ?? get_course($data->id)->fullname;
+    }
     core_communication\helper::update_course_communication_instance(
         course: $data,
         changesincoursecat: false,

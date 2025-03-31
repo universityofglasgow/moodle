@@ -518,9 +518,10 @@ abstract class base {
     /**
      * Return all active report conditions (by default, all available conditions)
      *
+     * @param bool $checkavailable
      * @return filter[]
      */
-    public function get_active_conditions(): array {
+    public function get_active_conditions(bool $checkavailable = true): array {
         $conditions = $this->get_conditions();
         foreach ($conditions as $condition) {
             if ($condition->get_is_deprecated()) {
@@ -785,8 +786,9 @@ abstract class base {
     /**
      * Set the default lang string for the notice used when no results are found.
      *
+     * Note this should be called from within the report class instance itself (ideally it would be protected)
+     *
      * @param lang_string|null $notice string, or null to tell the report to omit the notice entirely.
-     * @return void
      */
     public function set_default_no_results_notice(?lang_string $notice): void {
         $this->noresultsnotice = $notice;

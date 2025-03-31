@@ -29,7 +29,7 @@ require_once($CFG->libdir.'/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \completion_info
  */
-class completionlib_test extends advanced_testcase {
+final class completionlib_test extends advanced_testcase {
     protected $course;
     protected $user;
     protected $module1;
@@ -247,10 +247,17 @@ class completionlib_test extends advanced_testcase {
         $c->expects($this->exactly(1)) // Pretend the user has the required capability for overriding completion statuses.
             ->method('user_can_override_completion')
             ->will($this->returnValue(true));
-        $c->expects($this->exactly(2))
+        $getinvocations = $this->exactly(2);
+        $c->expects($getinvocations)
             ->method('get_data')
             ->with($cm, false, 100)
-            ->willReturnOnConsecutiveCalls($current1, $current2);
+            ->willReturnCallback(function () use ($getinvocations, $current1, $current2) {
+                return match (self::getInvocationCount($getinvocations)) {
+                    1 => $current1,
+                    2 => $current2,
+                    default => $this->fail('Unexpected invocation count'),
+                };
+            });
         $changed1 = clone($current1);
         $changed1->timemodified = time();
         $changed1->completionstate = COMPLETION_COMPLETE;
@@ -263,12 +270,28 @@ class completionlib_test extends advanced_testcase {
         $changed2->completionstate = COMPLETION_INCOMPLETE;
         $comparewith2 = new phpunit_constraint_object_is_equal_with_exceptions($changed2);
         $comparewith2->add_exception('timemodified', 'assertGreaterThanOrEqual');
-        $c->expects($this->exactly(2))
+        $setinvocations = $this->exactly(2);
+        $c->expects($setinvocations)
             ->method('internal_set_data')
-            ->withConsecutive(
-                array($cm, $comparewith1),
-                array($cm, $comparewith2)
-            );
+            ->willReturnCallback(function ($comparecm, $comparewith) use (
+                $setinvocations,
+                $cm,
+                $comparewith1,
+                $comparewith2
+            ): void {
+                switch (self::getInvocationCount($setinvocations)) {
+                    case 1:
+                        $this->assertEquals($cm, $comparecm);
+                        $comparewith1->evaluate($comparewith);
+                        break;
+                    case 2:
+                        $this->assertEquals($cm, $comparecm);
+                        $comparewith2->evaluate($comparewith);
+                        break;
+                    default:
+                        $this->fail('Unexpected invocation count');
+                }
+            });
         $c->update_state($cm, COMPLETION_COMPLETE, 100, true);
         // And confirm that the status can be changed back to incomplete without an override.
         $c->update_state($cm, COMPLETION_INCOMPLETE, 100);
@@ -331,7 +354,7 @@ class completionlib_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function internal_get_state_provider() {
+    public static function internal_get_state_provider(): array {
         return [
             'View required, but not viewed yet' => [
                 COMPLETION_VIEW_REQUIRED, 1, '', COMPLETION_INCOMPLETE
@@ -392,7 +415,7 @@ class completionlib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function internal_get_state_with_grade_criteria_provider() {
+    public static function internal_get_state_with_grade_criteria_provider(): array {
         return [
             "Passing grade enabled and achieve. State should be COMPLETION_COMPLETE_PASS" => [
                 [
@@ -685,13 +708,26 @@ class completionlib_test extends advanced_testcase {
             (object)array('id' => 100, 'firstname' => 'Woot', 'lastname' => 'Plugh'),
             (object)array('id' => 201, 'firstname' => 'Vroom', 'lastname' => 'Xyzzy'))));
 
-        $c->expects($this->exactly(3))
+        $updateinvocations = $this->exactly(3);
+        $c->expects($updateinvocations)
             ->method('update_state')
-            ->withConsecutive(
-                array($cm, COMPLETION_UNKNOWN, 100),
-                array($cm, COMPLETION_UNKNOWN, 101),
-                array($cm, COMPLETION_UNKNOWN, 201)
-            );
+            ->willReturnCallback(function ($comparecm, $state, $userid) use ($updateinvocations, $cm): void {
+                $this->assertEquals($cm, $comparecm);
+                $this->assertEquals(COMPLETION_UNKNOWN, $state);
+                switch (self::getInvocationCount($updateinvocations)) {
+                    case 1:
+                        $this->assertEquals(100, $userid);
+                        break;
+                    case 2:
+                        $this->assertEquals(101, $userid);
+                        break;
+                    case 3:
+                        $this->assertEquals(201, $userid);
+                        break;
+                    default:
+                        $this->fail('Unexpected invocation count');
+                }
+            });
 
         $c->reset_all_state($cm);
     }
@@ -701,7 +737,7 @@ class completionlib_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_data_provider() {
+    public static function get_data_provider(): array {
         return [
             'No completion record' => [
                 false, true, false, COMPLETION_INCOMPLETE
@@ -1178,20 +1214,31 @@ class completionlib_test extends advanced_testcase {
             ->method('get_tracked_users')
             ->with(true,  3,  0,  '',  '',  '',  null)
             ->will($this->returnValue($tracked));
-        $DB->expects($this->exactly(2))
+        $inorequalsinvocations = $this->exactly(2);
+        $DB->expects($inorequalsinvocations)
             ->method('get_in_or_equal')
-            ->withConsecutive(
-                array(array_slice($ids, 0, 1000)),
-                array(array_slice($ids, 1000))
-            )
-            ->willReturnOnConsecutiveCalls(
-                array(' IN whatever', array()),
-                array(' IN whatever2', array()));
-        $DB->expects($this->exactly(2))
+            ->willReturnCallback(function ($paramids) use ($inorequalsinvocations, $ids) {
+                switch (self::getInvocationCount($inorequalsinvocations)) {
+                    case 1:
+                        $this->assertEquals(array_slice($ids, 0, 1000), $paramids);
+                        return [' IN whatever', []];
+                    case 2:
+                        $this->assertEquals(array_slice($ids, 1000), $paramids);
+                        return [' IN whatever2', []];
+                    default:
+                        $this->fail('Unexpected invocation count');
+                }
+            });
+        $getinvocations = $this->exactly(2);
+        $DB->expects($getinvocations)
             ->method('get_recordset_sql')
-            ->willReturnOnConsecutiveCalls(
-                new core_completionlib_fake_recordset(array_slice($progress, 0, 1000)),
-                new core_completionlib_fake_recordset(array_slice($progress, 1000)));
+            ->willReturnCallback(function () use ($getinvocations, $progress) {
+                return match (self::getInvocationCount($getinvocations)) {
+                    1 => new core_completionlib_fake_recordset(array_slice($progress, 0, 1000)),
+                    2 => new core_completionlib_fake_recordset(array_slice($progress, 1000)),
+                    default => $this->fail('Unexpected invocation count'),
+                };
+            });
 
         $result = $c->get_progress_all(true, 3);
         $resultok = true;
@@ -1600,7 +1647,7 @@ class completionlib_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function get_grade_completion_provider() {
+    public static function get_grade_completion_provider(): array {
         return [
             'Grade not required' => [false, false, null, null, null],
             'Grade required, but has no grade yet' => [true, false, null, null, COMPLETION_INCOMPLETE],
@@ -2038,6 +2085,155 @@ class completionlib_test extends advanced_testcase {
             'coursemoduleid IN (SELECT id FROM {course_modules} WHERE course=:course)',
             ['course' => $this->course->id]
         ));
+    }
+
+    /**
+     * Data provider for test_count_modules_completed().
+     *
+     * @return array[]
+     */
+    public static function count_modules_completed_provider(): array {
+        return [
+            'Multiple users with two different modules but only one completed' => [
+                'existinguser' => true,
+                'totalusers' => 3,
+                'modules' => [
+                    [
+                        'name' => 'assign',
+                        'completionstate' => COMPLETION_COMPLETE,
+                    ],
+                    [
+                        'name' => 'choice',
+                        'completionstate' => COMPLETION_INCOMPLETE,
+                    ],
+                ],
+                'expectedcount' => 1,
+            ],
+            'Multiple users with three different modules but only two completed' => [
+                'existinguser' => true,
+                'totalusers' => 4,
+                'modules' => [
+                    [
+                        'name' => 'assign',
+                        'completionstate' => COMPLETION_COMPLETE,
+                    ],
+                    [
+                        'name' => 'choice',
+                        'completionstate' => COMPLETION_INCOMPLETE,
+                    ],
+                    [
+                        'name' => 'workshop',
+                        'completionstate' => COMPLETION_COMPLETE,
+                    ],
+                ],
+                'expectedcount' => 2,
+            ],
+            'Multiple users with one completion each' => [
+                'existinguser' => true,
+                'totalusers' => 5,
+                'modules' => [
+                    [
+                        'name' => 'assign',
+                        'completionstate' => COMPLETION_COMPLETE,
+                    ],
+                ],
+                'expectedcount' => 1,
+            ],
+            'One user with one completion' => [
+                'existinguser' => true,
+                'totalusers' => 1,
+                'modules' => [
+                    [
+                        'name' => 'assign',
+                        'completionstate' => COMPLETION_COMPLETE,
+                    ],
+                ],
+                'expectedcount' => 1,
+            ],
+            'Multiple users without completion' => [
+                'existinguser' => true,
+                'totalusers' => 3,
+                'modules' => [
+                    [
+                        'name' => 'assign',
+                        'completionstate' => COMPLETION_INCOMPLETE,
+                    ],
+                ],
+                'expectedcount' => 0,
+            ],
+            'Non-existing user' => [
+                'existinguser' => false,
+                'totalusers' => 1,
+                'modules' => [
+                    [
+                        'name' => 'assign',
+                        'completionstate' => COMPLETION_INCOMPLETE,
+                    ],
+                ],
+                'expectedcount' => 0,
+            ],
+        ];
+    }
+
+    /**
+     * Test for count_modules_completed().
+     *
+     * @dataProvider count_modules_completed_provider
+     * @param bool $existinguser Whether the given user exists or not.
+     * @param int $totalusers The amount of users to check completion.
+     * @param array $modules The course modules with its completion state.
+     * @param int $expectedcount Expected total of modules completed.
+     * @covers ::count_modules_completed
+     */
+    public function test_count_modules_completed(bool $existinguser, int $totalusers, array $modules,
+        int $expectedcount): void {
+        global $DB;
+
+        $this->setAdminUser();
+        $this->setup_data();
+
+        // Loop through the provided modules array and set the id key based on the generated module.
+        $modules = array_map(function(array $module): array {
+            $generator = $this->getDataGenerator()->get_plugin_generator('mod_' . $module['name']);
+            $modinstance = $generator->create_instance([
+                'course' => $this->course->id,
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionsubmit' => true,
+            ]);
+            $cminstance = get_coursemodule_from_instance($module['name'], $modinstance->id);
+
+            $module['id'] = $cminstance->id;
+            return $module;
+        }, $modules);
+
+        $completion = new completion_info($this->course);
+
+        if ($existinguser) {
+            // Create users, assign them to a course and define the completion record.
+            for ($i = 0; $i < $totalusers; $i++) {
+                $user = $this->getDataGenerator()->create_user();
+                $this->getDataGenerator()->enrol_user($user->id, $this->course->id);
+                $users[] = $user;
+
+                foreach ($modules as $module) {
+                    $cmcompletionrecords[] = (object)[
+                        'coursemoduleid' => $module['id'],
+                        'userid' => $user->id,
+                        'completionstate' => $module['completionstate'],
+                        'timemodified' => 0,
+                    ];
+                }
+            }
+
+            $DB->insert_records('course_modules_completion', $cmcompletionrecords);
+
+            foreach ($users as $user) {
+                $this->assertEquals($expectedcount, $completion->count_modules_completed($user->id));
+            }
+        } else {
+            $nonexistinguserid = 123;
+            $this->assertEquals($expectedcount, $completion->count_modules_completed($nonexistinguserid));
+        }
     }
 }
 

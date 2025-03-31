@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/question/type/shortanswer/edit_shortanswer_form.p
  * @covers \question_type
  * @covers \qtype_shortanswer
  */
-class question_type_test extends \advanced_testcase {
+final class question_type_test extends \advanced_testcase {
     protected $qtype;
 
     protected function setUp(): void {
@@ -118,7 +118,7 @@ class question_type_test extends \advanced_testcase {
         $actualquestiondata = end($actualquestionsdata);
 
         foreach ($questiondata as $property => $value) {
-            if (!in_array($property, array('id', 'timemodified', 'timecreated', 'options'))) {
+            if (!in_array($property, ['id', 'timemodified', 'timecreated', 'options', 'hints'])) {
                 $this->assertEquals($value, $actualquestiondata->$property);
             }
         }
@@ -138,6 +138,11 @@ class question_type_test extends \advanced_testcase {
                 }
             }
         }
+
+        $this->assertCount(1, $actualquestiondata->hints);
+        $hint = array_pop($actualquestiondata->hints);
+        $this->assertEquals($formdata->hint[0]['text'], $hint->hint);
+        $this->assertEquals($formdata->hint[0]['format'], $hint->hintformat);
     }
 
     public function test_question_saving_trims_answers(): void {

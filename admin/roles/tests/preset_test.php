@@ -26,7 +26,7 @@ use core_role_preset;
  * @copyright 2013 Petr Skoda {@link http://skodak.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class preset_test extends \advanced_testcase {
+final class preset_test extends \advanced_testcase {
     public function test_xml(): void {
         global $DB;
 
@@ -84,7 +84,7 @@ class preset_test extends \advanced_testcase {
     public function test_mixed_levels(): void {
         // The problem here is that we cannot guarantee plugin contexts
         // have unique short names, so we have to also support level numbers.
-        $xml = file_get_contents(__DIR__ . '/fixtures/mixed_levels.xml');
+        $xml = file_get_contents(self::get_fixture_path(__NAMESPACE__, 'mixed_levels.xml'));
         $this->assertTrue(\core_role_preset::is_valid_preset($xml));
 
         $preset = \core_role_preset::parse_preset($xml);

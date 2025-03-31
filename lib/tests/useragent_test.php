@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \core_useragent
  */
-class useragent_test extends advanced_testcase {
+final class useragent_test extends advanced_testcase {
 
     /**
      * Restores the user agent to the default one.
@@ -36,7 +36,7 @@ class useragent_test extends advanced_testcase {
      *
      * @return array
      */
-    public function user_agents_providers() {
+    public static function user_agents_providers(): array {
         // Note: When adding new entries to this list, please ensure that any new browser versions are added to the corresponding list.
         // This ensures that regression tests are applied to all known user agents.
         return array(

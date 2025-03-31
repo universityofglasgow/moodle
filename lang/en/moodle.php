@@ -219,6 +219,8 @@ $string['block'] = 'Block';
 $string['blockconfiga'] = 'Configuring a {$a} block';
 $string['blockconfigbad'] = 'This block has not been implemented correctly and thus cannot provide a configuration interface.';
 $string['blocks'] = 'Blocks';
+$string['blocks_main'] = 'Main content blocks';
+$string['blocks_supplementary'] = 'Supplementary blocks';
 $string['blocksaddedit'] = 'Add/Edit blocks';
 $string['blockseditoff'] = 'Blocks editing off';
 $string['blocksediton'] = 'Blocks editing on';
@@ -607,7 +609,7 @@ $string['editcategorythis'] = 'Edit this category';
 $string['editcoursesettings'] = 'Edit course settings';
 $string['editsettings'] = 'Edit settings';
 $string['editfiles'] = 'Edit files';
-$string['editgroupprofile'] = 'Edit group profile';
+$string['editgroupprofile'] = 'Edit group description';
 $string['editingteachershort'] = 'Editor';
 $string['editmode'] = 'Edit mode';
 $string['editlock'] = 'This value cannot be edited!';
@@ -1089,7 +1091,6 @@ $string['courseduration_desc'] = 'The course duration is used to calculate the d
 $string['courseenddateenabled'] = 'Course end date enabled by default';
 $string['courseenddateenabled_desc'] = 'This setting determines if the course end date will be enabled by default for new courses and set to the date calculated from the course duration.';
 $string['eventcontentviewed'] = 'Content viewed';
-$string['filter'] = 'Filter';
 $string['filteroption'] = '{$a->criteria}: {$a->value}';
 $string['filterrowlegend'] = 'Filter {$a}';
 $string['filters'] = 'Filters';
@@ -1517,24 +1518,17 @@ $string['newuser'] = 'New user';
 $string['newusernewpasswordsubj'] = 'New user account';
 $string['newusernewpasswordtext'] = 'Hi {$a->firstname},
 
-A new account has been created for you at \'{$a->sitename}\'
-and you have been issued with a new temporary password.
+An account has been created for you at \'{$a->sitename}\'.
 
-Your current login information is now:
    username: {$a->username}
    password: {$a->newpassword}
-             (you will have to change your password
-              when you login for the first time)
 
-To start using \'{$a->sitename}\', login at
+(You will be prompted to change your password when you log in for the first time.)
+
+To start using \'{$a->sitename}\', log in at
    {$a->link}
 
-In most mail programs, this should appear as a blue link
-which you can just click on.  If that doesn\'t work,
-then cut and paste the address into the address
-line at the top of your web browser window.
-
-Cheers from the \'{$a->sitename}\' administrator,
+If you need help, contact the site administrator,
 {$a->signoff}';
 $string['newusers'] = 'New users';
 $string['newwindow'] = 'New window';
@@ -1708,7 +1702,7 @@ $string['pluginsetup'] = 'Setting up plugin tables';
 $string['policyaccept'] = 'I understand and agree';
 $string['policyagree'] = 'You must agree to this policy to continue using this site.  Do you agree?';
 $string['policyagreement'] = 'Site policy agreement';
-$string['policyagreementclick'] = 'Link to site policy agreement';
+$string['policyagreementclick'] = 'Site policy agreement';
 $string['popup'] = 'popup';
 $string['popupwindow'] = 'Open file in new window';
 $string['popupwindowname'] = 'Popup window';

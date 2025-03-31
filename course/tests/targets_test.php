@@ -33,14 +33,14 @@ require_once($CFG->dirroot . '/lib/grade/constants.php');
  * @copyright 2019 Victor Deniz <victor@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class targets_test extends \advanced_testcase {
+final class targets_test extends \advanced_testcase {
 
     /**
      * Provides course params for the {@link self::test_core_target_course_completion_analysable()} method.
      *
      * @return array
      */
-    public function analysable_provider() {
+    public static function analysable_provider(): array {
 
         $now = new \DateTime("now", \core_date::get_server_timezone_object());
         $year = $now->format('Y');
@@ -153,7 +153,7 @@ class targets_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function sample_provider() {
+    public static function sample_provider(): array {
         $now = time();
         return [
             'enrolmentendbeforecourse' => [
@@ -204,7 +204,7 @@ class targets_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function active_during_analysis_time_provider() {
+    public static function active_during_analysis_time_provider(): array {
         $now = time();
 
         return [

@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/mod/quiz/locallib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \mod_quiz\quiz_attempt
  */
-class attempt_test extends \advanced_testcase {
+final class attempt_test extends \advanced_testcase {
 
     /**
      * Create quiz and attempt data with layout.
@@ -308,7 +308,7 @@ class attempt_test extends \advanced_testcase {
         $this->assertEquals(true, $quizobj->is_participant($USER->id),
             'Admin is enrolled and can participate');
 
-        $this->getDataGenerator()->enrol_user(2, $course->id, [], 'manual', 0, 0, ENROL_USER_SUSPENDED);
+        $this->getDataGenerator()->enrol_user(2, $course->id, null, 'manual', 0, 0, ENROL_USER_SUSPENDED);
         $this->assertEquals(true, $quizobj->is_participant($USER->id),
             'Admin is enrolled, suspended and can participate');
     }

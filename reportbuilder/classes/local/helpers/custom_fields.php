@@ -172,7 +172,7 @@ class custom_fields {
 
                 $columns[] = (new column(
                     'customfield_' . $field->get('shortname'),
-                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name()),
+                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name(false)),
                     $this->entityname
                 ))
                     ->add_joins($this->get_joins())
@@ -261,18 +261,17 @@ class custom_fields {
                 $filter = (new filter(
                     $typeclass,
                     'customfield_' . $field->get('shortname'),
-                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name()),
+                    new lang_string('customfieldcolumn', 'core_reportbuilder', $field->get_formatted_name(false)),
                     $this->entityname,
                     $datafieldsql
                 ))
                     ->add_joins($this->get_joins())
-                    ->add_join($this->get_table_join($field));
+                    ->add_join($this->get_table_join($field))
+                    ->set_is_available($this->handler->can_view($field, 0));
 
-                // Options are stored inside configdata json string and we need to convert it to array.
-                if ($field->get('type') === 'select') {
-                    $filter->set_options_callback(static function() use ($field): array {
-                        return $field->get_options();
-                    });
+                // If using a select filter, then populate the options.
+                if ($filter->get_filter_class() === select::class) {
+                    $filter->set_options_callback(fn(): array => $field->get_options());
                 }
 
                 $filters[] = $filter;

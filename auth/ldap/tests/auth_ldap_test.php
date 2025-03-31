@@ -46,7 +46,7 @@ use auth_ldap\task\{
  * @copyright  2013 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class auth_ldap_test extends \advanced_testcase {
+final class auth_ldap_test extends \advanced_testcase {
 
     public static function setUpBeforeClass(): void {
         global $CFG;
@@ -66,7 +66,7 @@ class auth_ldap_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function auth_ldap_provider() {
+    public static function auth_ldap_provider(): array {
         $pagesizes = [1, 3, 5, 1000];
         $subcontexts = [0, 1];
         $combinations = [];

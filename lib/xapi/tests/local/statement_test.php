@@ -49,7 +49,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 Ferran Recio
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class statement_test extends advanced_testcase {
+final class statement_test extends advanced_testcase {
 
     /**
      * Returns a valid item for a specific attribute.
@@ -184,7 +184,7 @@ class statement_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function create_provider(): array {
+    public static function create_provider(): array {
         return [
             'Agent statement with no extras' => [
                 true, [], []
@@ -413,7 +413,7 @@ class statement_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function invalid_gets_provider(): array {
+    public static function invalid_gets_provider(): array {
         return [
             'Method get_user on empty statement' => ['get_user', true],
             'Method get_all_users on empty statement' => ['get_all_users', true],
@@ -532,7 +532,7 @@ class statement_test extends advanced_testcase {
      *
      * @return  array
      */
-    public function invalid_data_provider(): array {
+    public static function invalid_data_provider(): array {
         return [
             'No actor, no verb, no object'  => [false, false, false],
             'No actor, verb, no object'     => [false, true, false],

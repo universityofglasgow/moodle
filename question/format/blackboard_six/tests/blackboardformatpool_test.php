@@ -36,12 +36,12 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @copyright  2012 Jean-Michel Vedrine
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class blackboardformatpool_test extends \question_testcase {
+final class blackboardformatpool_test extends \question_testcase {
 
     public function make_test_xml() {
         $xmlfile = new qformat_blackboard_six_file();
         $xmlfile->filetype = 2;
-        $xmlfile->text = file_get_contents(__DIR__ . '/fixtures/sample_blackboard_pool.dat');
+        $xmlfile->text = file_get_contents(self::get_fixture_path(__NAMESPACE__, 'sample_blackboard_pool.dat'));
         return array(0 => $xmlfile);
     }
 

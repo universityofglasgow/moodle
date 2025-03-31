@@ -39,7 +39,7 @@ require_once(__DIR__ . '/fixtures/testable_assign.php');
  * @copyright 2012 Paul Charsley
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class externallib_test extends \mod_assign\externallib_advanced_testcase {
+final class externallib_test extends \mod_assign\externallib_advanced_testcase {
 
     /**
      * Test get_grades
@@ -2770,7 +2770,7 @@ class externallib_test extends \mod_assign\externallib_advanced_testcase {
     /**
      * The test_get_participant_relative_dates data provider.
      */
-    public function get_participant_relative_dates_provider() {
+    public static function get_participant_relative_dates_provider(): array {
         $timenow = time();
 
         return [

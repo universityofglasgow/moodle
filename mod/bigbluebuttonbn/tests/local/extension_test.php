@@ -36,7 +36,7 @@ use restore_dbops;
  * @author    Laurent David (laurent@call-learning.fr)
  * @coversDefaultClass \mod_bigbluebuttonbn\extension
  */
-class extension_test extends \advanced_testcase {
+final class extension_test extends \advanced_testcase {
     use subplugins_test_helper_trait;
     use testcase_helper_trait;
 
@@ -372,7 +372,7 @@ class extension_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public function classes_implementing_class(): array {
+    public static function classes_implementing_class(): array {
         return [
             'mod_instance_helper with plugin disabled' => [
                 'bbbenabled' => false,

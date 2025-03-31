@@ -28,14 +28,14 @@ use xmldb_table;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core\dml\table
  */
-class dml_table_test extends \database_driver_testcase {
+final class dml_table_test extends \database_driver_testcase {
 
     /**
      * Data provider for various \core\dml\table method tests.
      *
      * @return  array
      */
-    public function get_field_select_provider(): array {
+    public static function get_field_select_provider(): array {
         return [
             'single field' => [
                 'tablename' => 'test_table_single',
@@ -102,7 +102,7 @@ class dml_table_test extends \database_driver_testcase {
      *
      * @return  array
      */
-    public function extract_from_result_provider(): array {
+    public static function extract_from_result_provider(): array {
         return [
             'single table' => [
                 'fieldlist' => [

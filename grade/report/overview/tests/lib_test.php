@@ -24,7 +24,7 @@ namespace gradereport_overview;
  * @covers \grade_report_overview
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class lib_test extends \advanced_testcase {
+final class lib_test extends \advanced_testcase {
 
     /**
      * Require the library file we're about to test, and other requirements.
@@ -40,7 +40,7 @@ class lib_test extends \advanced_testcase {
      *
      * @return array Two options, one with true and one with false
      */
-    public function true_or_false(): array {
+    public static function true_or_false(): array {
         return [
             [true],
             [false]

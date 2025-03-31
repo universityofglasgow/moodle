@@ -43,7 +43,7 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @copyright  2018 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class external_test extends externallib_advanced_testcase {
+final class external_test extends externallib_advanced_testcase {
 
     /**
      * Test for external::approve_data_request() with the user not logged in.
@@ -580,7 +580,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Data provider for \tool_dataprivacy_external_testcase::test_XX_options().
      */
-    public function get_options_provider() {
+    public static function get_options_provider(): array {
         return [
             [false, false],
             [false, true],
@@ -705,7 +705,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Data provider for \tool_dataprivacy_external_testcase::get_activity_options().
      */
-    public function get_activity_options_provider() {
+    public static function get_activity_options_provider(): array {
         return [
             [false, false, true],
             [false, true, true],

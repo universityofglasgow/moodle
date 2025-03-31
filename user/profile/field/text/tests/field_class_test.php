@@ -33,7 +33,7 @@ use profile_field_text;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \profilefield_text\profile_field_text
  */
-class field_class_test extends \advanced_testcase {
+final class field_class_test extends \advanced_testcase {
     /**
      * Test that the profile text data is formatted and required filters applied
      *
@@ -60,7 +60,7 @@ class field_class_test extends \advanced_testcase {
      *
      * @return string[]
      */
-    public function filter_profile_field_text_provider(): array {
+    public static function filter_profile_field_text_provider(): array {
         return [
                 'simple_string' => ['Simple string', 'Simple string'],
                 'format_string' => ['HTML & is escaped', 'HTML &amp; is escaped'],

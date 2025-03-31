@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/calendar/tests/helpers.php');
 /**
  * Tests various classes and functions in upgradelib.php library.
  */
-class upgradelib_test extends advanced_testcase {
+final class upgradelib_test extends advanced_testcase {
 
     /**
      * Test the {@link upgrade_stale_php_files_present() function
@@ -744,7 +744,7 @@ class upgradelib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function serialized_strings_dataprovider() {
+    public static function serialized_strings_dataprovider(): array {
         return [
             'A configuration that uses the old object' => [
                 'O:6:"object":3:{s:4:"text";s:32:"Nothing that anyone cares about.";s:5:"title";s:16:"Really old block";s:6:"format";s:1:"1";}',
@@ -1427,7 +1427,7 @@ class upgradelib_test extends advanced_testcase {
      *
      * @return array
      */
-    public function usermenu_items_dataprovider(): array {
+    public static function usermenu_items_dataprovider(): array {
         return [
             'Add new item to empty usermenu' => [
                 '',

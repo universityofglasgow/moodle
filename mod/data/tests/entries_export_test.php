@@ -29,7 +29,7 @@ use mod_data\local\exporter\utils;
  * @author     Philipp Memmel
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entries_export_test extends \advanced_testcase {
+final class entries_export_test extends \advanced_testcase {
 
     /**
      * Get the test data.
@@ -130,7 +130,7 @@ class entries_export_test extends \advanced_testcase {
         $includefiles = false;
         utils::data_exportdata($data->id, $fields, $selectedfields, $exporter, $currentgroup, $context,
             $exportuser, $exporttime, $exportapproval, $tags, $includefiles);
-        $this->assertEquals(file_get_contents(__DIR__ . '/fixtures/test_data_export_without_files.csv'),
+        $this->assertEquals(file_get_contents(self::get_fixture_path(__NAMESPACE__, 'test_data_export_without_files.csv')),
             $exporter->send_file(false));
 
         $this->assertEquals(1, $exporter->get_records_count());
@@ -158,7 +158,7 @@ class entries_export_test extends \advanced_testcase {
             // that the filenames in the csv file correspond to the names of the exported file.
             // It also verifies that files with identical file names in different fields (or records) will be numbered
             // automatically (samplefile.png, samplefile_1.png, ...).
-            'testexportfile.csv' => __DIR__ . '/fixtures/test_data_export_with_files.csv'
+            'testexportfile.csv' => self::get_fixture_path(__NAMESPACE__, 'test_data_export_with_files.csv'),
         ];
         for ($i = 0; $i < $ziparchive->count(); $i++) {
             // We here iterate over all files in the zip archive and check if their content is identical to the files

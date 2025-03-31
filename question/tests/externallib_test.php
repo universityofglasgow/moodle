@@ -37,7 +37,7 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      Moodle 3.1
  */
-class externallib_test extends externallib_advanced_testcase {
+final class externallib_test extends externallib_advanced_testcase {
 
     /** @var \stdClass course record. */
     protected $course;
@@ -112,7 +112,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Data provider for the get_random_question_summaries test.
      */
-    public function get_random_question_summaries_test_cases() {
+    public static function get_random_question_summaries_test_cases(): array {
         return [
             'empty category' => [
                 'categoryindex' => 'emptycat',
@@ -184,7 +184,7 @@ class externallib_test extends externallib_advanced_testcase {
      *          Parent: cat1
      *      Category: emptycat
      *
-     * @dataProvider get_random_question_summaries_test_cases()
+     * @dataProvider get_random_question_summaries_test_cases
      * @param string $categoryindex The named index for the category to use
      * @param bool $includesubcategories If the search should include subcategories
      * @param string[] $usetagnames The tag names to include in the search

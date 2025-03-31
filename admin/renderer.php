@@ -874,8 +874,8 @@ class core_admin_renderer extends plugin_renderer_base {
     protected function mobile_configuration_warning($mobileconfigured) {
         $output = '';
         if (!$mobileconfigured) {
-            $settingslink = new moodle_url('/admin/settings.php', ['section' => 'mobilesettings']);
-            $configurebutton = $this->single_button($settingslink, get_string('enablemobilewebservice', 'admin'));
+            $settingslink = new moodle_url('/admin/search.php', ['query' => 'enablemobilewebservice']);
+            $configurebutton = $this->single_button($settingslink, get_string('enablemobilewebservice', 'admin'), 'get');
             $output .= $this->warning(get_string('mobilenotconfiguredwarning', 'admin') . '&nbsp;' . $configurebutton);
         }
 
@@ -2180,10 +2180,11 @@ class core_admin_renderer extends plugin_renderer_base {
 
         $output = '';
         $output .= $this->header();
-        $output .= $this->container_start('upgradekeyreq');
         $output .= $this->heading(get_string('upgradekeyreq', 'core_admin'));
+        $output .= $this->container_start('upgradekeyreq w-25');
         $output .= html_writer::start_tag('form', array('method' => 'POST', 'action' => $url));
         $output .= html_writer::empty_tag('input', [
+            'id' => 'upgradekey',
             'name' => 'upgradekey',
             'type' => 'password',
             'class' => 'form-control w-auto',

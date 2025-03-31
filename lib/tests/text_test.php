@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * @coversDefaultClass \core_text
  *
  */
-class text_test extends advanced_testcase {
+final class text_test extends advanced_testcase {
 
     /**
      * Tests the static parse charset method.
@@ -607,7 +607,7 @@ class text_test extends advanced_testcase {
     /**
      * Tests the static checker is_charset_supported
      *
-     * @dataProvider is_charset_supported_provider()
+     * @dataProvider is_charset_supported_provider
      * @param string $charset
      * @param bool $expected
      * @covers ::is_charset_supported()
@@ -621,7 +621,7 @@ class text_test extends advanced_testcase {
      * Provider for the test_is_charset_supported()
      * @return array[]
      */
-    public function is_charset_supported_provider() {
+    public static function is_charset_supported_provider(): array {
         return [
             "Check unsupported windows charset" => [
                 "cp1250", false

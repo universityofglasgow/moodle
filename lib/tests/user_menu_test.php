@@ -23,14 +23,14 @@ namespace core;
  * @copyright  2015 Jetha Chan <jetha@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_menu_test extends \advanced_testcase {
+final class user_menu_test extends \advanced_testcase {
 
     /**
      * Custom user menu data for the test_custom_user_menu test.
      *
      * @return array containing testing data
      */
-    public function custom_user_menu_data() {
+    public static function custom_user_menu_data(): array {
         return array(
             // These are fillers only.
             array('###', 0, 1),
