@@ -4,6 +4,51 @@ All notable changes to this project will be documented in this file.
 
 Note - All hash comments refer to the issue number. Eg. #169 refers to https://github.com/mdjnelson/moodle-mod_customcert/issues/169.
 
+## [4.4.4] - 2025-02-23
+
+### Fixed
+
+- A SQL error in the issue certificate task on MSSQL and Oracle (#646).
+- Issuing a certificate when there are no issues yet (#659).
+- Issue in rearrange JS with Modal not closing (#648).
+
+### Added
+
+- ISO 8601 date format (#638).
+
+## [4.4.3] - 2024-10-12
+
+### Fixed
+
+- A SQL error in the issue certificate task on Oracle (#646).
+- Verification error when expiry date element is present (#647).
+
+### Added
+
+- Only fetch teachers during the email process when necessary, reducing the number of SQL queries if they are not included (#531). 
+- Filter users before process to speed up certificate task (#634).
+
+## [4.4.2] - 2024-09-28
+
+### Fixed
+
+- Mobile app: Stop using deprecated module-description.
+- Fixed auto-linking filters moving text element positions if reference point is center (#629).
+
+### Changed
+
+- Mobile app: Update Mobile template to Ionic 7.
+- Mobile app: Remove Ionic 3 template.
+
+### Added
+
+- Optimise email certificate task by reducing database reads/writes and introducing
+  configurable settings for task efficiency (#531).
+- New element `expiry` which when used will display the expiry date on the list of issued certificates 
+  and the verification pages.<br />
+  Any Custom Certificates that are using the `date` element and selected the expiry dates will
+  automatically be upgraded to use this new element (#499).
+
 ## [4.4.1] - 2024-05-28
 
 ### Fixed

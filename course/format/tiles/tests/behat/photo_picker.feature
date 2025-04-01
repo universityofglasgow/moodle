@@ -41,6 +41,7 @@ Feature: Teacher can allocate photos to tiles
   Scenario: Teacher can use photo picker to pick photos (and icons), can backup and restore course, and student can view
     When I log in as "teacher1"
     And I am on "Business Law" course homepage with editing mode on
+    And I wait until the page is ready
     And I click on "#tileicon_1" "css_element"
     And I wait until the page is ready
     And I wait "1" seconds

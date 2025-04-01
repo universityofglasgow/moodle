@@ -25,12 +25,10 @@ Feature: Create course in format tiles
       | Course short name | C1 |
       | Number of announcements | 5 |
       | Enable completion tracking | Yes |
-      | Format | Tiles format |
+      | Format | Tiles |
       | Number of sections | 10 |
       | Use sub tiles for activities | Yes |
-      | Progress on each tile | Show as % in circle |
-
-      #todo test icon picker and colour picker here?
+      | Progress on each tile | Show as % |
 
     And I am on "Create Course Test Course" course homepage with editing mode on
     And I log out tiles

@@ -51,12 +51,12 @@ define(['jquery', 'core/ajax', 'core/str', 'core/notification'], function($, Aja
             stringsPromise.then(([title, yesLabel, noLabel, qSubmission]) => {
                 return Notification.confirm(title, qSubmission, yesLabel, noLabel, () => {
                     node.hide();
-                    Ajax.call([{
+                    Ajax.call([{ // eslint-disable-line promise/no-nesting
                         methodname: 'mod_peerwork_unlock_submission',
                         args: {submissionid: submissionId}
                     }])[0].then(() => {
                         node.remove();
-                        return;
+                        return true;
                     }).catch((e) => {
                         node.show();
                         return Notification.exception(e);
@@ -82,12 +82,12 @@ define(['jquery', 'core/ajax', 'core/str', 'core/notification'], function($, Aja
                     () => {
                         const nodes = $(graderSelector).filter(`[data-graderid=${graderId}]`);
                         nodes.hide();
-                        Ajax.call([{
+                        Ajax.call([{ // eslint-disable-line promise/no-nesting
                             methodname: 'mod_peerwork_unlock_grader',
                             args: {peerworkid: peerworkId, graderid: graderId}
                         }])[0].then(() => {
                             nodes.remove();
-                            return;
+                            return true;
                         }).catch((e) => {
                             nodes.show();
                             return Notification.exception(e);

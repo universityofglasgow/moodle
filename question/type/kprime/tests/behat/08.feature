@@ -28,6 +28,8 @@ Feature: Step 8
     And quiz "Quiz 1" contains the following questions:
       | Kprime Question 001 | 1 |
       | Kprime Question 002 | 2 |
+    And the following config values are set as admin:
+      | enableasyncbackup | 0 |
 
   @javascript @qtype_kprime_8_sc_20
   Scenario: Testcase 20

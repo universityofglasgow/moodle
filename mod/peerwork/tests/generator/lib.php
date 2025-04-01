@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Peerwork data generator class.
  *
@@ -42,9 +40,9 @@ class mod_peerwork_generator extends testing_module_generator {
      * @param array|null $options Some options.
      * @return object The instance.
      */
-    public function create_instance($record = null, array $options = null) {
-        $record = (object) (array) $record;
-        return parent::create_instance($record, (array) $options);
+    public function create_instance($record = null, ?array $options = null) {
+        $record = (object)(array)$record;
+        return parent::create_instance($record, (array)$options);
     }
 
     /**
@@ -55,7 +53,7 @@ class mod_peerwork_generator extends testing_module_generator {
      */
     public function create_criterion($record) {
         global $DB;
-        $record = (object) (array) $record;
+        $record = (object)(array)$record;
 
         if (empty($record->peerworkid)) {
             throw new coding_exception('Missing peerworkid');
@@ -90,7 +88,7 @@ class mod_peerwork_generator extends testing_module_generator {
      */
     public function create_submission($record) {
         global $DB;
-        $record = (object) (array) $record;
+        $record = (object)(array)$record;
 
         if (empty($record->peerworkid)) {
             throw new coding_exception('Missing peerworkid');
@@ -110,7 +108,7 @@ class mod_peerwork_generator extends testing_module_generator {
      */
     public function create_grade($record) {
         global $DB;
-        $record = (object) (array) $record;
+        $record = (object)(array)$record;
 
         if (empty($record->peerworkid)) {
             throw new coding_exception('Missing peerworkid');
@@ -136,7 +134,7 @@ class mod_peerwork_generator extends testing_module_generator {
      */
     public function create_peer_grade($record) {
         global $DB;
-        $record = (object) (array) $record;
+        $record = (object)(array)$record;
 
         if (isset($record->peerworkid)) {
             $record->peerwork = $record->peerworkid;
@@ -177,7 +175,7 @@ class mod_peerwork_generator extends testing_module_generator {
      */
     public function create_justification($record) {
         global $DB;
-        $record = (object) (array) $record;
+        $record = (object)(array)$record;
 
         if (empty($record->peerworkid)) {
             throw new coding_exception('Missing peerworkid');

@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * Testing form service prepare draft area
  *
@@ -27,7 +27,7 @@ class testable_form_service extends \mod_hsuforum\service\form_service {
     }
 }
 
-class mod_hsuforum_form_service_testcase extends advanced_testcase {
+class form_service_test extends advanced_testcase {
     public function test_prepare_draft_area() {
         global $DB, $CFG, $USER;
 
@@ -79,13 +79,13 @@ class mod_hsuforum_form_service_testcase extends advanced_testcase {
             'filearea' => 'draft',
             'itemid' => $draftid,
             'filepath' => '/',
-            'filename' => ''
+            'filename' => '',
         );
 
         // Create some files.
         $imagefiles = array(
             'testgif_small.gif',
-            'testgif2_small.gif'
+            'testgif2_small.gif',
         );
 
         // Add files to draft area and make sure they exist!

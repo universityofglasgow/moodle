@@ -22,6 +22,7 @@
  * @author    Neill Magill <neill.magill@nottingham.ac.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/filelib.php');
 
@@ -39,7 +40,7 @@ $strheading = get_string('test_conversion', 'fileconverter_onedrive');
 $PAGE->navbar->add(get_string('administrationsite'));
 $PAGE->navbar->add(get_string('plugins', 'admin'));
 $PAGE->navbar->add(get_string('pluginname', 'fileconverter_onedrive'),
-        new moodle_url('/admin/settings.php', array('section' => 'fileconverteronedrive')));
+        new moodle_url('/admin/settings.php', ['section' => 'fileconverteronedrive']));
 $PAGE->navbar->add($strheading);
 $PAGE->set_heading($strheading);
 $PAGE->set_title($strheading);
@@ -56,7 +57,7 @@ if ($sendpdf) {
 $result = $converter->are_requirements_met();
 if ($result) {
     $msg = $OUTPUT->notification(get_string('test_conversionready', 'fileconverter_onedrive'), notification::SUCCESS);
-    $pdflink = new moodle_url($PAGE->url, array('sendpdf' => 1, 'sesskey' => sesskey()));
+    $pdflink = new moodle_url($PAGE->url, ['sendpdf' => 1, 'sesskey' => sesskey()]);
     $msg .= html_writer::link($pdflink, get_string('test_conversion', 'fileconverter_onedrive'));
     $msg .= html_writer::empty_tag('br');
 } else {
@@ -78,7 +79,7 @@ if ($result) {
     }
     $msg = $OUTPUT->notification($problem, notification::WARNING);
 }
-$returl = new moodle_url('/admin/settings.php', array('section' => 'fileconverteronedrive'));
+$returl = new moodle_url('/admin/settings.php', ['section' => 'fileconverteronedrive']);
 $msg .= $OUTPUT->continue_button($returl);
 
 echo $OUTPUT->header();

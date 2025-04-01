@@ -30,8 +30,10 @@ Feature: Step 4
       | KPrime-Question-3 | 2    |
       | KPrime-Question-4 | 3    |
 
+
   @javascript
-  Scenario: Testcase 12
+  Scenario: Testcase 12 for Moodle ≤ 4.1
+    Given the site is running Moodle version 4.1 or lower
 
   # (12) Navigation and label
 
@@ -69,3 +71,44 @@ Feature: Step 4
     And I click on "tr:contains('option text 4') input[value=2]" "css_element"
     And I click on "quiznavbutton1" "link"
     Then "//a[@id='quiznavbutton3' and @title='Answer saved']" "xpath_element" should exist
+
+  @javascript
+  Scenario: Testcase 12 for Moodle ≥ 4.2
+    Given the site is running Moodle version 4.2 or higher
+
+  # (12) Navigation and label
+
+  # Login as teacher and set Question behavior to "Deferred feedback"
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I navigate to "Settings" in current page administration
+    And I click on "Question behaviour" "link"
+    And I set the field "How questions behave" to "Deferred feedback"
+    And I press "Save and return to course"
+    And I log out
+
+  # Login as student and see if everything works
+    When I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    Then I should see "Quiz 1"
+    And I press "Attempt quiz"
+
+  # No option selected
+    When I click on "quiznavbutton2" "link"
+    Then "//a[@id='quiznavbutton1' and @title='Question 1 - Not yet answered']" "xpath_element" should exist
+
+  # Not all options selected
+    When I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "quiznavbutton3" "link"
+    Then "//a[@id='quiznavbutton2' and @title='Question 2 - Incomplete answer']" "xpath_element" should exist
+
+  #All options selected
+    When I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I click on "quiznavbutton1" "link"
+    Then "//a[@id='quiznavbutton3' and @title='Question 3 - Answer saved']" "xpath_element" should exist

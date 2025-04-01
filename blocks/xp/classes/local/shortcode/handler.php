@@ -200,22 +200,15 @@ class handler {
             return;
         }
 
-        // Compute the best group we can think of.
-        $groupid = 0;
-        if (di::get('config')->get('context') == CONTEXT_COURSE) {
-            $groupid = static::get_group_id($world->get_courseid(), $USER->id);
-        }
-
-        // Prepare the config.
-        $config = $world->get_config();
+        // Override the config to disable the neighbours when the top argument is set.
+        $configoverride = null;
         if (!empty($args['top'])) {
-            // Disable the neighbours when argument top is set.
-            $config = new config_stack([new static_config(['neighbours' => 0]), $config]);
+            $configoverride = new static_config(['neighbours' => 0]);
         }
 
         // Retrieve the leaderboard.
-        $factory = di::get('course_world_leaderboard_factory_with_config');
-        $leaderboard = $factory->get_course_leaderboard_with_config($world, $config, $groupid);
+        $lf = di::get('leaderboard_factory_maker')->get_leaderboard_factory($world, $configoverride);
+        $leaderboard = $lf->get_leaderboard();
 
         // Check the position of the user.
         $pos = $leaderboard->get_position($USER->id);
@@ -244,7 +237,13 @@ class handler {
             $limit = new limit($count + min(0, $pos - $before), $offset);
         }
 
+        // Prepare the page.
+        if (!$PAGE->has_set_url() && defined('WS_SERVER') && WS_SERVER) {
+            $PAGE->set_url(di::get('url_resolver')->reverse('ladder', ['courseid' => $world->get_courseid()]));
+        }
+
         // Output the table.
+        $config = $world->get_config();
         $baseurl = $PAGE->url;
         $table = new \block_xp\output\leaderboard_table($leaderboard, di::get('renderer'), [
             'context' => $world->get_context(),
@@ -272,8 +271,20 @@ class handler {
                 'xp-link-to-full-ladder'
             );
         }
+
+        // Mobile quick fix.
+        $customstyles = '';
+        if (defined('WS_SERVER') && WS_SERVER) {
+            $customstyles = \html_writer::tag('style', <<<EOT
+                .shortcode-xpladder table { width: 100%; }
+                .shortcode-xpladder table th,
+                .shortcode-xpladder table td { padding: .25rem; text-align: left; vertical-align: middle; }
+                .shortcode-xpladder table img { width: var(--core-avatar-size); }
+            EOT);
+        }
+
         return \html_writer::div(
-            $html . $link,
+            $html . $link . $customstyles,
             'shortcode-xpladder'
         );
     }
@@ -371,12 +382,18 @@ class handler {
      */
     public static function xpprogressbar($shortcode, $args, $content, $env, $next) {
         global $USER;
+
+        // Not available on mobile, too many styles are missing.
+        if (defined('WS_SERVER') && WS_SERVER) {
+            return '';
+        }
+
         $world = static::get_world_from_env($env);
         if (!$world) {
             return;
         }
         $state = $world->get_store()->get_state($USER->id);
-        return \html_writer::div(di::get('renderer')->progress_bar($state), '', ['style' => 'max-width: 200px']);
+        return \html_writer::div(di::get('renderer')->progress_bar($state), 'block_xp', ['style' => 'max-width: 200px']);
     }
 
 }

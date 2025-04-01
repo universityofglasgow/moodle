@@ -39,7 +39,7 @@ class before_footer_html_generation {
         try {
             $editing = $PAGE->user_is_editing();
 
-            $allowedpagetypes = ['course-view-tiles', 'section-view-tiles'];
+            $allowedpagetypes = ['course-view-tiles', 'section-view-tiles', 'course-view-section-tiles'];
             $oncourseviewpage = in_array($PAGE->pagetype, $allowedpagetypes);
 
             // On a mod/view.php page we may need JS to ensure that any clicks on course index menu launch modals where appropriate.

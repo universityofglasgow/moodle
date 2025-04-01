@@ -81,15 +81,32 @@ const rebuildLocalState = () => {
         return;
     }
     localStateUpdating = true;
-    const courseEditor = getCurrentCourseEditor();
 
     // First we rebuild our data structures depending on the course editor state.
-    sections = [];
     for (const prop of Object.getOwnPropertyNames(sectionBoxes)) {
         delete sectionBoxes[prop];
     }
-    // The section map object is being sorted by section id. We have to sort after order in this course.
-    sections = [...courseEditor.stateManager.state.section.values()].sort((a, b) => a.number > b.number ? 1 : -1);
+
+    const courseEditor = getCurrentCourseEditor();
+    const state = courseEditor.stateManager.state;
+    const exporter = courseEditor.getExporter();
+
+    // Get all modules, sections and subsections in display order.
+    const courseItems = exporter.allItemsArray(state);
+
+    // Build sections array.
+    sections = [];
+    courseItems.forEach(item => {
+        if (item.type === 'section') {
+            // Get section info.
+            let sectioninfo = {...state.section.get(item.id)};
+            // Rename subsections for display purposes.
+            sectioninfo.title = getTitleOfSection(sectioninfo);
+            sections.push(sectioninfo);
+        }
+    });
+
+    // Get all module names and parameters.
     moduleNames = [...courseEditor.stateManager.state.cm.values()];
 
     // Now we use the new information to rebuild dropdowns and re-apply checkboxes.
@@ -98,6 +115,21 @@ const rebuildLocalState = () => {
     updateSelectionAndMoveToDropdowns(sections, sectionsUnfiltered);
     addCheckboxesToDataStructure();
     localStateUpdating = false;
+};
+
+/**
+ * Returns the title of a given section.
+ * If the section is a subsection, a prefix with a dash is added.
+ *
+ * @param {Object} section the section object from the course editor
+ * @returns {string} title of the section object corrected for subsections
+ */
+export const getTitleOfSection = (section) => {
+    let title = section.title;
+    if (section.component === 'mod_subsection') {
+        title = ' - ' + title;
+    }
+    return title;
 };
 
 /**
@@ -115,6 +147,7 @@ export const getSelectedModIds = () => {
             }
         }
     }
+
     return moduleIds;
 };
 
@@ -127,7 +160,6 @@ export const getSelectedModIds = () => {
  */
 export const setSectionSelection = (value, sectionNumber) => {
     const boxIds = [];
-
     if (typeof sectionNumber !== 'undefined' && sectionNumber === constants.SECTION_SELECT_DESCRIPTION_VALUE) {
         // Description placeholder has been selected, do nothing.
         return;
@@ -142,6 +174,7 @@ export const setSectionSelection = (value, sectionNumber) => {
         // We select all boxes of the given section.
         sectionBoxes[sectionNumber].forEach(box => boxIds.push(box.boxId));
     }
+
     // Un/check the boxes.
     for (let i = 0; i < boxIds.length; i++) {
         document.getElementById(boxIds[i]).checked = value;
@@ -158,15 +191,18 @@ const addCheckboxesToDataStructure = () => {
     sections.forEach(section => {
         sectionBoxes[section.number] = [];
         const moduleIds = section.cmlist;
+
         if (moduleIds && moduleIds.length > 0 && moduleIds[0] !== '') {
             const moduleNamesFiltered = moduleNames.filter(modinfo => moduleIds.includes(modinfo.id.toString()));
             moduleNamesFiltered.forEach(modinfo => {
-                // Checkbox should already be created by moodle massactions. Just add it to our data structure.
-                const boxId = usedMoodleCssClasses.BOX_ID_PREFIX + modinfo.id.toString();
-                sectionBoxes[section.number].push({
-                    'moduleId': modinfo.id.toString(),
-                    'boxId': boxId,
-                });
+                if (modinfo.module !== 'subsection') {
+                    // Checkbox should already be created by moodle massactions. Just add it to our data structure.
+                    const boxId = usedMoodleCssClasses.BOX_ID_PREFIX + modinfo.id.toString();
+                    sectionBoxes[section.number].push({
+                        'moduleId': modinfo.id.toString(),
+                        'boxId': boxId,
+                    });
+                }
             });
         }
     });

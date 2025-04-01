@@ -29,7 +29,7 @@
  * @return bool
  */
 function xmldb_local_recompletion_upgrade($oldversion) {
-    global $DB;
+    global $DB, $OUTPUT;
 
     $dbman = $DB->get_manager();
 
@@ -1098,5 +1098,23 @@ function xmldb_local_recompletion_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024071100, 'local', 'recompletion');
     }
 
+    if ($oldversion < 2024090300) {
+        // Convert old recompletionemailenable setting to recompletionnotify.
+        $emailsettings = $DB->get_records('local_recompletion_config', ['name' => 'recompletionemailenable']);
+        foreach ($emailsettings as $esetting) {
+            if (empty($esetting->value)) {
+                // old value set to 0 now an empty string.
+                $esetting->value = '';
+            } else {
+                $esetting->value = 'completed';
+            }
+            $esetting->name = 'recompletionnotify';
+            $DB->update_record('local_recompletion_config', $esetting);
+        }
+
+        // Recompletion savepoint reached.
+        upgrade_plugin_savepoint(true, 2024090300, 'local', 'recompletion');
+
+    }
     return true;
 }

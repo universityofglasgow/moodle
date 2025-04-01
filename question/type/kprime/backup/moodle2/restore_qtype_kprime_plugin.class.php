@@ -36,7 +36,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
      * Returns the paths to be handled by the plugin at question level.
      */
     protected function define_question_plugin_structure() {
-        $result = array();
+        $result = [];
 
         // We used get_recommended_name() so this works.
         $elename = 'kprime';
@@ -117,7 +117,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
             $data->questionid = $newquestionid;
             $newitemid = $DB->insert_record('qtype_kprime_columns', $data);
         } else {
-            $originalrecords = $DB->get_records('qtype_kprime_columns', array('questionid' => $newquestionid));
+            $originalrecords = $DB->get_records('qtype_kprime_columns', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
                 if ($data->number == $record->number) {
                     $newitemid = $record->id;
@@ -152,7 +152,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
             $data->questionid = $newquestionid;
             $newitemid = $DB->insert_record('qtype_kprime_rows', $data);
         } else {
-            $originalrecords = $DB->get_records('qtype_kprime_rows', array('questionid' => $newquestionid));
+            $originalrecords = $DB->get_records('qtype_kprime_rows', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
                 if ($data->number == $record->number) {
                     $newitemid = $record->id;
@@ -187,7 +187,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
             $data->questionid = $newquestionid;
             $newitemid = $DB->insert_record('qtype_kprime_weights', $data);
         } else {
-            $originalrecords = $DB->get_records('qtype_kprime_weights', array('questionid' => $newquestionid));
+            $originalrecords = $DB->get_records('qtype_kprime_weights', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
                 if ($data->rownumber == $record->rownumber
                     && $data->columnnumber == $record->columnnumber) {
@@ -226,7 +226,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
      * @return string the recoded order.
      */
     protected function recode_option_order($order) {
-        $neworder = array();
+        $neworder = [];
         foreach (explode(',', $order) as $id) {
             if ($newid = $this->get_mappingid('qtype_kprime_rows', $id)) {
                 $neworder[] = $newid;
@@ -239,9 +239,9 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
      * Return the contents of this qtype to be processed by the links decoder.
      */
     public static function define_decode_contents() {
-        $contents = array();
+        $contents = [];
 
-        $fields = array('optiontext', 'optionfeedback');
+        $fields = ['optiontext', 'optionfeedback'];
         $contents[] = new restore_decode_content('qtype_kprime_rows', $fields, 'qtype_kprime_rows');
 
         return $contents;

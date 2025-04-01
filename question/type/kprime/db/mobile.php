@@ -36,9 +36,9 @@ $addons = [
                 'method' => 'kprime_view',
                 'styles' => [
                     'url' => '/question/type/kprime/mobile/styles_app.css',
-                    'version' => '0.02'
-                ]
-            ]
-        ]
-    ]
+                    'version' => '0.02',
+                ],
+            ],
+        ],
+    ],
 ];

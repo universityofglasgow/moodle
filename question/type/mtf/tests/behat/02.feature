@@ -30,7 +30,7 @@ Feature: Step 2
     And I click on "Export" "option"
     And I set the field "id_format_xml" to "1"
     And I press "Export questions to file"
-    And following "click here" should download between "2000" and "2500" bytes
+    And following "click here" should download between "0" and "25000" bytes
     And I log out
 
   @javascript @_file_upload @qtype_mtf_scenario25

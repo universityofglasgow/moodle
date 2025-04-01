@@ -1,8 +1,8 @@
 @cul @_file_upload @mod @mod_peerwork @mod_peerwork_clear_all_submissions
 Feature: Clear submissions
-    In order to test clearing submissions
-    As a teacher
-    I need to be able to delete all content from submissions
+  In order to test clearing submissions
+  As a teacher
+  I need to be able to delete all content from submissions
 
   Background:
     Given the following "courses" exist:
@@ -35,7 +35,7 @@ Feature: Clear submissions
       | calculator | webpa | peerwork |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Peer Assessment" to section "1" and I fill the form with:
+    And I add a "peerwork" activity to course "Course 1" section "1" and I fill the form with:
       | Peer assessment         | Test peerwork name        |
       | Description             | Test peerwork description |
       | Peer grades visibility  | Hidden from students      |
@@ -86,10 +86,10 @@ Feature: Clear submissions
     Then I should see "empty.txt" in the "Peer submission and grades" "fieldset"
     And "Student 3" row "Student 1" column of "Criteria 1" table should contain "1"
     And the following should exist in the "justificationbyforstudent2" table:
-        | -1-       | -2- |
-        | Student 0 | Poor |
-        | Student 1 | Did well |
-        | Student 3 | Exceeded |
+      | -1-       | -2-      |
+      | Student 0 | Poor     |
+      | Student 1 | Did well |
+      | Student 3 | Exceeded |
     And I follow "Peer Assessment"
     And I press "Clear all submissions"
     And I click on "Yes" "button" in the "Confirmation" "dialogue"
@@ -98,8 +98,8 @@ Feature: Clear submissions
     Then I should see "Nothing submitted yet" in the "Peer submission and grades" "fieldset"
     And "Student 3" row "Student 1" column of "Criteria 1" table should contain "-"
     And the following should exist in the "justificationbyforstudent2" table:
-        | -1-       | -2- |
-        | Student 0 | None given |
-        | Student 1 | None given |
-        | Student 3 | None given |
+      | -1-       | -2-        |
+      | Student 0 | None given |
+      | Student 1 | None given |
+      | Student 3 | None given |
     And I log out

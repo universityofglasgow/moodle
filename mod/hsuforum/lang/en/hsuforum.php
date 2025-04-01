@@ -188,6 +188,11 @@ $string['emaildigesttype_help'] = 'The type of notification that you will receiv
 * Digest - complete posts - you will receive one digest e-mail per day containing the complete contents of each forum post;
 * Digest - subjects only - you will receive one digest e-mail per day containing just the subject of each forum post.
 ';
+$string['emaildigestupdated'] = 'The e-mail digest option was changed to \'{$a->maildigesttitle}\' for the forum \'{$a->forum}\'. {$a->maildigestdescription}';
+$string['emaildigestupdated_default'] = 'Your default profile setting of \'{$a->maildigesttitle}\' was used for the forum \'{$a->forum}\'. {$a->maildigestdescription}.';
+$string['emaildigest_0'] = 'You will receive one e-mail per forum post.';
+$string['emaildigest_1'] = 'You will receive one digest e-mail per day containing the complete contents of each forum post.';
+$string['emaildigest_2'] = 'You will receive one digest e-mail per day containing the subject of each forum post.';
 $string['emptymessage'] = 'Something was wrong with your post. Perhaps you left it blank or the attachment was too big. Your changes have NOT been saved.';
 $string['erroremptymessage'] = 'Post message cannot be empty';
 $string['erroremptysubject'] = 'Post subject cannot be empty.';
@@ -203,6 +208,7 @@ $string['existingsubscribers'] = 'Existing subscribers';
 $string['exportdiscussion'] = 'Export whole discussion to portfolio';
 $string['forcessubscribe'] = 'This forum forces everyone to be subscribed';
 $string['forum'] = 'Forum';
+$string['from'] = 'From';
 $string['gradingmethodpreview'] = 'Grading criteria';
 $string['hsuforum:addinstance'] = 'Add a new forum';
 $string['hsuforum:allowforcesubscribe'] = 'Allow force subscribe';
@@ -467,6 +473,16 @@ $string['privacy:metadata:hsuforum_track_prefs:userid'] = 'The ID of the user th
 $string['privacy:metadata:hsuforum_track_prefs:forumid'] = 'The Open Forum that has read tracking enabled.';
 $string['privacy:metadata:hsuforum_track_prefs'] = 'Information about which forums the user has chosen to track post reads for.';
 
+$string['privacy:metadata:hsuforum_discussion_subs:discussionid'] = 'The ID of the discussion that was subscribed to.';
+$string['privacy:metadata:hsuforum_discussion_subs:preference'] = 'The start time of the subscription.';
+$string['privacy:metadata:hsuforum_discussion_subs:userid'] = 'The ID of the user with the discussion subscription.';
+$string['privacy:metadata:hsuforum_discussion_subs'] = 'Information about the subscriptions to individual forum discussions';
+
+$string['privacy:metadata:hsuforum_grades:forum'] = 'The forum that was graded';
+$string['privacy:metadata:hsuforum_grades:grade'] = 'The grade awarded';
+$string['privacy:metadata:hsuforum_grades:userid'] = 'The user who was graded';
+$string['privacy:metadata:hsuforum_grades'] = 'Grade data for the forum';
+
 $string['privacy:metadata:core_tag'] = 'The Open Forum makes use of the tag subsystem to support tagging of posts.';
 $string['privacy:metadata:core_rating'] = 'The Open Forum makes use of the rating subsystem to support the rating of posts.';
 
@@ -579,6 +595,7 @@ $string['timedhidden'] = 'Timed status: Hidden from students';
 $string['timedposts'] = 'Timed posts';
 $string['timedvisible'] = 'Timed status: Visible to all users';
 $string['timestartenderror'] = 'Display end date cannot be earlier than the start date';
+$string['to'] = 'To';
 $string['trackforum'] = 'Track unread posts';
 $string['trackreadposts_header'] = 'Forum tracking';
 $string['unread'] = 'New';
@@ -617,6 +634,11 @@ $string['reveal'] = 'Reveal yourself in this post';
 $string['reveal_help'] = 'If checked, then your name will be shown in the post and you will no longer be anonymous.';
 $string['hsuforum:revealpost'] = 'Reveal yourself in an anonymous forum';
 $string['hsuforum:viewflags'] = 'View post flags';
+$string['hsuforum:canoverridecutoff'] = 'Post to forums after their cut-off date';
+$string['hsuforum:cantogglefavourite'] = 'Star discussions';
+$string['hsuforum:grade'] = 'Grade forum';
+$string['hsuforum:postprivatereply'] = 'Reply privately to posts';
+$string['hsuforum:readprivatereplies'] = 'View private replies';
 $string['viewposters'] = 'View posters';
 $string['substantive'] = 'Substantive';
 $string['toggle:bookmark'] = 'Bookmark';
@@ -755,3 +777,8 @@ $string['confighiderecentposts'] = 'Set to yes to stop the display of recent for
 $string['forumsubjectdeleted'] = 'This forum post has been removed';
 $string['forumbodydeleted'] = 'The content of this forum post has been removed and can no longer be accessed.';
 $string['gradeitem:posts'] = 'Posts';
+// Replacements for deprecated core completion strings of Moodle 4.3+.
+$string['completionview'] = 'Require view';
+$string['completionusegrade'] = 'Require grade';
+$string['completionusegrade_desc'] = 'Receive a grade';
+$string['completionusegrade_help'] = 'If enabled, the activity is considered complete when a student receives a grade. If a pass grade for the activity is set, then pass and fail icons are displayed in the activity completion report.';

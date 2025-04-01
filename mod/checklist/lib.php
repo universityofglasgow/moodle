@@ -884,12 +884,6 @@ function checklist_supports($feature) {
         }
     }
 
-    if ((int)$CFG->branch < 28) {
-        if ($feature === FEATURE_GROUPMEMBERSONLY) {
-            return true;
-        }
-    }
-
     switch ($feature) {
         case FEATURE_GROUPS:
             return true;
@@ -985,9 +979,6 @@ function checklist_get_coursemodule_info($coursemodule) {
  */
 function checklist_extend_settings_navigation(settings_navigation $settings, navigation_node $checklistnode) {
     global $CFG;
-    if ($CFG->branch < 400) {
-        return;
-    }
     $cm = $settings->get_page()->cm;
     if (has_capability('mod/checklist:viewreports', $cm->context)
         || has_capability('mod/checklist:viewmenteereports', $cm->context)) {

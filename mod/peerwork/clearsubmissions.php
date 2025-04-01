@@ -22,6 +22,7 @@
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/locallib.php');
 require_once(__DIR__ . '/lib.php');
@@ -29,7 +30,7 @@ require_once(__DIR__ . '/lib.php');
 $id = required_param('id', PARAM_INT);
 $groupid = required_param('groupid', PARAM_INT);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'peerwork');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'peerwork');
 $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);

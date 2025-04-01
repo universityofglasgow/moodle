@@ -22,25 +22,29 @@
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace peerworkcalculator_webpa;
 
-defined('MOODLE_INTERNAL') || die();
+use basic_testcase;
+use stdClass;
 
 /**
  * WebPA testcase.
+ *
  * @group mod_peerwork
  * @package    peerworkcalculator_webpa
  * @copyright  2019 Coventry University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \peerworkcalculator_webpa\calculator
  */
-class calculator_test extends \basic_testcase {
+final class calculator_test extends basic_testcase {
 
     /**
      * Test the WebPA result with no weighting or penalties.
      */
     public function test_webpa_result_basic(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample();
         $calculator = new calculator($peerwork, 'webpa');
@@ -53,7 +57,7 @@ class calculator_test extends \basic_testcase {
             'bob' => 0.29,
             'claire' => 0.21,
             'david' => 0.14,
-            'elaine' => 0.07
+            'elaine' => 0.07,
         ], array_map(function($a) {
             return round($a, 2);  // We must round because the data we were given is rounded.
         }, $fracs));
@@ -92,7 +96,7 @@ class calculator_test extends \basic_testcase {
      * Test the WebPA result with weighting.
      */
     public function test_webpa_result_with_weighting(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample();
         $calculator = new calculator($peerwork, 'webpa');
@@ -118,7 +122,7 @@ class calculator_test extends \basic_testcase {
      * Test the WebPA result with weighting and penalty.
      */
     public function test_webpa_result_with_weighting_and_penalty(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample();
         $calculator = new calculator($peerwork, 'webpa');
@@ -145,7 +149,7 @@ class calculator_test extends \basic_testcase {
      * Test the WebPA result with weighting and penalty and selfgrade off.
      */
     public function test_webpa_result_without_self_grade_a(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample_a();
         $calculator = new calculator($peerwork, 'webpa');
@@ -172,7 +176,7 @@ class calculator_test extends \basic_testcase {
      * Test the webpa result when one student did not get grades.
      */
     public function test_webpa_result_outlier_b(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample_b();
         $calculator = new calculator($peerwork, 'webpa');
@@ -184,7 +188,7 @@ class calculator_test extends \basic_testcase {
             'bob' => 0.40,
             'claire' => 0.30,
             'david' => 0.20,
-            'elaine' => 0.10
+            'elaine' => 0.10,
         ], array_map(function($a) {
             return round($a, 2);  // We must round because the data we were given is rounded.
         }, $fracs));
@@ -208,7 +212,7 @@ class calculator_test extends \basic_testcase {
      * Test the webpa result when only one student gave grades.
      */
     public function test_webpa_result_outlier_c(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample_c();
         $calculator = new calculator($peerwork, 'webpa');
@@ -221,7 +225,7 @@ class calculator_test extends \basic_testcase {
             'bob' => 0.29,
             'claire' => 0.21,
             'david' => 0.14,
-            'elaine' => 0.07
+            'elaine' => 0.07,
         ], array_map(function($a) {
             return round($a, 2);  // We must round because the data we were given is rounded.
         }, $fracs));
@@ -245,7 +249,7 @@ class calculator_test extends \basic_testcase {
      * Test the webpa result when one student did not give or get grades.
      */
     public function test_webpa_result_outlier_d(): void {
-        $peerwork = new \stdClass();
+        $peerwork = new stdClass();
         $peerwork->id = 1;
         $grades = $this->get_sample_d();
         $calculator = new calculator($peerwork, 'webpa');
@@ -257,7 +261,7 @@ class calculator_test extends \basic_testcase {
             'alice' => 0.31,
             'bob' => 0.31,
             'claire' => 0.23,
-            'david' => 0.15
+            'david' => 0.15,
         ], array_map(function($a) {
             return round($a, 2);  // We must round because the data we were given is rounded.
         }, $fracs));
@@ -293,30 +297,30 @@ class calculator_test extends \basic_testcase {
                 'bob' => [1, 3],
                 'claire' => [3, 0],
                 'david' => [1, 1],
-                'elaine' => [1, 0]
+                'elaine' => [1, 0],
             ],
             'bob' => [
                 'alice' => [2, 1],
                 'bob' => [2, 3],
                 'claire' => [2, 1],
                 'david' => [1, 1],
-                'elaine' => [0, 0]
+                'elaine' => [0, 0],
             ],
             'claire' => [
                 'alice' => [2, 2],
                 'bob' => [2, 2],
                 'claire' => [2, 2],
                 'david' => [2, 2],
-                'elaine' => [2, 2]
+                'elaine' => [2, 2],
             ],
             'david' => [
                 'alice' => [2, 1],
                 'bob' => [3, 2],
                 'claire' => [2, 2],
                 'david' => [1, 2],
-                'elaine' => [1, 0]
+                'elaine' => [1, 0],
             ],
-            'elaine' => []
+            'elaine' => [],
         ];
     }
 
@@ -332,27 +336,27 @@ class calculator_test extends \basic_testcase {
                 'bob' => [1, 3],
                 'claire' => [2, 1],
                 'david' => [1, 1],
-                'elaine' => [1, 0]
+                'elaine' => [1, 0],
             ],
             'bob' => [
                 'alice' => [2, 1],
                 'claire' => [2, 1],
                 'david' => [1, 1],
-                'elaine' => [0, 0]
+                'elaine' => [0, 0],
             ],
             'claire' => [
                 'alice' => [2, 2],
                 'bob' => [2, 2],
                 'david' => [2, 2],
-                'elaine' => [2, 2]
+                'elaine' => [2, 2],
             ],
             'david' => [
                 'alice' => [2, 1],
                 'bob' => [3, 2],
                 'claire' => [2, 2],
-                'elaine' => [0, 0]
+                'elaine' => [0, 0],
             ],
-            'elaine' => []
+            'elaine' => [],
         ];
     }
 
@@ -368,27 +372,27 @@ class calculator_test extends \basic_testcase {
                 'bob' => [1, 3],
                 'claire' => [3, 0],
                 'david' => [1, 1],
-                'elaine' => [1, 0]
+                'elaine' => [1, 0],
             ],
             'bob' => [
                 'bob' => [2, 3],
                 'claire' => [2, 1],
                 'david' => [1, 1],
-                'elaine' => [0, 0]
+                'elaine' => [0, 0],
             ],
             'claire' => [
                 'bob' => [2, 2],
                 'claire' => [2, 2],
                 'david' => [2, 2],
-                'elaine' => [2, 2]
+                'elaine' => [2, 2],
             ],
             'david' => [
                 'bob' => [3, 2],
                 'claire' => [2, 2],
                 'david' => [1, 2],
-                'elaine' => [1, 0]
+                'elaine' => [1, 0],
             ],
-            'elaine' => []
+            'elaine' => [],
         ];
     }
 
@@ -405,12 +409,12 @@ class calculator_test extends \basic_testcase {
                 'bob' => [1, 3],
                 'claire' => [3, 0],
                 'david' => [1, 1],
-                'elaine' => [1, 0]
+                'elaine' => [1, 0],
             ],
             'bob' => [],
             'claire' => [],
             'david' => [],
-            'elaine' => []
+            'elaine' => [],
         ];
     }
 
@@ -426,27 +430,27 @@ class calculator_test extends \basic_testcase {
                 'alice' => [2, 2],
                 'bob' => [1, 3],
                 'claire' => [3, 0],
-                'david' => [1, 1]
+                'david' => [1, 1],
             ],
             'bob' => [
                 'alice' => [2, 1],
                 'bob' => [2, 3],
                 'claire' => [2, 1],
-                'david' => [1, 1]
+                'david' => [1, 1],
             ],
             'claire' => [
                 'alice' => [2, 2],
                 'bob' => [2, 2],
                 'claire' => [2, 2],
-                'david' => [2, 2]
+                'david' => [2, 2],
             ],
             'david' => [
                 'alice' => [2, 1],
                 'bob' => [3, 2],
                 'claire' => [2, 2],
-                'david' => [1, 2]
+                'david' => [1, 2],
             ],
-            'elaine' => []
+            'elaine' => [],
         ];
     }
 }

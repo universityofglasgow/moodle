@@ -24,7 +24,7 @@
 
 namespace peerworkcalculator_webpa\privacy;
 
-defined('MOODLE_INTERNAL') || die();
+use core_privacy\local\metadata\null_provider;
 
 /**
  * Privacy Subsystem for peerworkcalculator_webpa implementing null_provider.
@@ -32,7 +32,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 Amanda Doughty
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements null_provider {
 
     /**
      * Get the language string identifier with the component's language
@@ -40,7 +40,7 @@ class provider implements \core_privacy\local\metadata\null_provider {
      *
      * @return  string
      */
-    public static function get_reason() : string {
+    public static function get_reason(): string {
         return 'privacy:metadata';
     }
 }

@@ -43,7 +43,7 @@ class observer_test extends \advanced_testcase {
             'recompletionunenrolenable' => 1,
             'archivecompletiondata' => 0,
             'deletegradedata' => 1,
-            'recompletionemailenable' => 0,
+            'recompletionnotify' => '',
         ];
 
         $config = array_merge($defaultconfig, $config);

@@ -92,7 +92,6 @@
     {{>format_tiles/local/content/section/cmitem}}
 {{/useSubtiles}}
 {{#useSubtiles}}
-    <li class="activity{{^is_label}} subtile{{/is_label}} {{#is_label}}fullwidth{{/is_label}} {{modname}} modtype_{{modname}}{{#modresourceicon}} resourcetype_{{modresourceicon}}{{/modresourceicon}}{{^clickable}} unclickable {{/clickable}}{{#clickable}} cursorpointer{{/clickable}} {{#photourl}} hasphoto{{/photourl}} purpose_{{purpose}} {{extraclasses}}"
     {{#hasSpacersBefore}}
         {{! A label will have spacers before it to left align the items on the previous row }}
         <li class="activity subtile spacer" aria-hidden="true"></li>
@@ -137,7 +136,8 @@
         {{/is_label}}
 
         {{#is_label}}
-            <div class="cm-inner">
+            {{! In Moodle 4.5 this could cover subsections too as they are label like}}
+            <div class="cm-inner{{#issubsection}} activity-item p-3{{/issubsection}}">
                 {{#hascompletion}}
                     {{#completionenabled}}
                         {{>format_tiles/completion_button_subtile}}
@@ -149,7 +149,7 @@
 
         {{#dimmed}}
             {{#clickable}}
-                <a href="{{url}}" class="dim-overlay cm-link"{{#modalType}} data-action="launch-tiles-cm-modal"{{/modalType}}
+                <a id="cm-link-{{id}}" href="{{url}}" class="dim-overlay cm-link"{{#modalType}} data-action="launch-tiles-cm-modal"{{/modalType}}
                     {{#onclick}} onclick="{{{onclick}}}"{{/onclick}}>
                 </a>
             {{/clickable}}

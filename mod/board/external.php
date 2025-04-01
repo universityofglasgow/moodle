@@ -708,8 +708,8 @@ class mod_board_external extends external_api {
             $comment = (object)[];
             $comment->id = $note->id;
             $comment->noteid = $note->noteid;
-            $comment->content = $note->content;
-            $comment->candelete = ($note->userid === $USER->id || $candeleteall) ? true : false;
+            $comment->content = clean_param($note->content, PARAM_TEXT);
+            $comment->candelete = (($canpost && $note->userid === $USER->id) || $candeleteall) ? true : false;
             $comment->date = userdate($note->timecreated);
             $comments[] = $comment;
         }

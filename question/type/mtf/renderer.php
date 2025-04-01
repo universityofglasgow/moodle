@@ -26,8 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/outputcomponents.php');
-
 /**
  * Subclass for generating the bits of output specific to qtype_mtf questions.
  *

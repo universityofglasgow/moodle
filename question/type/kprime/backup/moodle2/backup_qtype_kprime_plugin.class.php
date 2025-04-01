@@ -46,15 +46,15 @@ class backup_qtype_kprime_plugin extends backup_qtype_plugin {
         $plugin->add_child($pluginwrapper);
 
         // Now create the qtype own structures.
-        $kprime = new backup_nested_element('kprime', array('id'),
-                array('scoringmethod', 'shuffleanswers', 'numberofrows', 'numberofcolumns'));
+        $kprime = new backup_nested_element('kprime', ['id'],
+                ['scoringmethod', 'shuffleanswers', 'numberofrows', 'numberofcolumns']);
         $rows = new backup_nested_element('rows');
-        $row = new backup_nested_element('row', array('id'),
-                array('number', 'optiontext', 'optiontextformat', 'optionfeedback', 'optionfeedbackformat'));
+        $row = new backup_nested_element('row', ['id'],
+                ['number', 'optiontext', 'optiontextformat', 'optionfeedback', 'optionfeedbackformat']);
         $columns = new backup_nested_element('columns');
-        $column = new backup_nested_element('column', array('id'), array('number', 'responsetext', 'responsetextformat'));
+        $column = new backup_nested_element('column', ['id'], ['number', 'responsetext', 'responsetextformat']);
         $weights = new backup_nested_element('weights');
-        $weight = new backup_nested_element('weight', array('id'), array('rownumber', 'columnnumber', 'weight'));
+        $weight = new backup_nested_element('weight', ['id'], ['rownumber', 'columnnumber', 'weight']);
 
         // Now the qtype tree.
         $pluginwrapper->add_child($kprime);
@@ -66,10 +66,10 @@ class backup_qtype_kprime_plugin extends backup_qtype_plugin {
         $weights->add_child($weight);
 
         // Set sources to populate the data.
-        $kprime->set_source_table('qtype_kprime_options', array('questionid' => backup::VAR_PARENTID));
-        $row->set_source_table('qtype_kprime_rows', array('questionid' => backup::VAR_PARENTID), 'number ASC');
-        $column->set_source_table('qtype_kprime_columns', array('questionid' => backup::VAR_PARENTID), 'number ASC');
-        $weight->set_source_table('qtype_kprime_weights', array('questionid' => backup::VAR_PARENTID));
+        $kprime->set_source_table('qtype_kprime_options', ['questionid' => backup::VAR_PARENTID]);
+        $row->set_source_table('qtype_kprime_rows', ['questionid' => backup::VAR_PARENTID], 'number ASC');
+        $column->set_source_table('qtype_kprime_columns', ['questionid' => backup::VAR_PARENTID], 'number ASC');
+        $weight->set_source_table('qtype_kprime_weights', ['questionid' => backup::VAR_PARENTID]);
 
         return $plugin;
     }
@@ -80,6 +80,6 @@ class backup_qtype_kprime_plugin extends backup_qtype_plugin {
      * files to be processed both in backup and restore.
      */
     public static function get_qtype_fileareas() {
-        return array('optiontext' => 'qtype_kprime_rows', 'feedbacktext' => 'qtype_kprime_rows');
+        return ['optiontext' => 'qtype_kprime_rows', 'feedbacktext' => 'qtype_kprime_rows'];
     }
 }

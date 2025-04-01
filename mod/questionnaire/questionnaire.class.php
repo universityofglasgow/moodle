@@ -270,10 +270,6 @@ class questionnaire {
 
         $PAGE->set_title(format_string($this->name));
         $PAGE->set_heading(format_string($this->course->fullname));
-
-        // Initialise the JavaScript.
-        $PAGE->requires->js_init_call('M.mod_questionnaire.init_attempt_form', null, false, questionnaire_get_js_module());
-
         $message = $this->user_access_messages($USER->id, true);
         if ($message !== false) {
             $this->page->add_to_page('notifications', $message);

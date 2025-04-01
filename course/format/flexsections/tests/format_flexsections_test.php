@@ -39,6 +39,7 @@ final class format_flexsections_test extends \advanced_testcase {
     public function setUp(): void {
         global $CFG;
         require_once($CFG->dirroot . '/course/lib.php');
+        parent::setUp();
     }
 
     /**

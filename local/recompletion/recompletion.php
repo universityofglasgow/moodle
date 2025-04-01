@@ -75,7 +75,7 @@ $setnames = [
     'recompletionschedule',
     'deletegradedata',
     'archivecompletiondata',
-    'recompletionemailenable',
+    'recompletionnotify',
     'recompletionunenrolenable',
     'recompletionemailsubject',
     'recompletionemailbody',

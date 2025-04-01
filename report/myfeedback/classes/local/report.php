@@ -1032,7 +1032,7 @@ class report {
                     return number_format($grade, $decima);
                 }
             }
-            return number_format($grade, $decimals);
+            return number_format($grade, $decimals ?? 0);
         }
         return isset($grade) ? number_format($grade, 0) : 0;
     }
@@ -3715,15 +3715,16 @@ class report {
         global $currentdb;
 
         $sql = "SELECT DISTINCT notes
-                 FROM {report_myfeedback}
-                 WHERE userid=? AND gradeitemid=? AND iteminstance=?";
+                  FROM {report_myfeedback}
+                 WHERE userid=? AND gradeitemid=? AND iteminstance=?
+                       AND notes IS NOT NULL";
         $params = [$userid, $gradeitemid, $instn];
-        $usernotes = $currentdb->get_record_sql($sql, $params);
-        $displaynotes = '';
-        if ($usernotes) {
-            $displaynotes = $usernotes->notes;
+
+        if ($usernotes = $currentdb->get_record_sql($sql, $params)) {
+            return $usernotes->notes;
+        } else {
+            return '';
         }
-        return $displaynotes;
     }
 
     /**
@@ -3738,14 +3739,15 @@ class report {
         global $currentdb;
 
         $sql = "SELECT DISTINCT modifierid, feedback
-                 FROM {report_myfeedback}
+                  FROM {report_myfeedback}
                  WHERE userid=? AND gradeitemid=? AND iteminstance=?";
         $params = [$userid, $gradeitemid, $inst];
-        $turnitinfeedback = $currentdb->get_record_sql($sql, $params);
-        if ($turnitinfeedback) {
+
+        if ($turnitinfeedback = $currentdb->get_record_sql($sql, $params)) {
             return $turnitinfeedback;
+        } else {
+            return "";
         }
-        return "";
     }
 
     /**
@@ -5304,6 +5306,7 @@ class report {
                     }
                     $duedate = ($record->duedate ? userdate($record->duedate) : "-");
                     $duedatesort = ($record->duedate ? $record->duedate : "-");
+                    $record->highestgrade = (float)$record->highestgrade; // Cast string to float to avoid division by zero error.
 
                     // Submission date.
                     $submissiondate = "-";
@@ -5363,7 +5366,7 @@ class report {
                                         $record->gi_iteminstance, $userid, $record->assigngradeid);
                                 }
 
-                                $feedbacktext = $record->feedbacklink;
+                                $feedbacktext = $record->feedbacklink ?? '';
                                 // Implementing the rubric guide.
                                 if ($record->activemethod == "rubric") {
                                     $getrubric = $this->rubrictext($userid, $record->courseid, $record->gi_iteminstance, 'assign');

@@ -536,3 +536,68 @@ Other
 4.4.0.20 (2024082441)
 =====================
 - Correct mustache template example typos
+
+4.4.0.21 (2024090540)
+=====================
+- Fix issue #219 filters not applying to non-subtile headings
+- Fix issue #221 unit test provider bug
+- Fix issue #222 safari PDF modal not displaying
+- Add behat test for filtering for tile names, activity names and content
+
+4.4.0.22 (2024090741)
+=====================
+- Fix previous merge error causing sub-tile spacing issue
+- Preparatory work for upcoming Moodle 4.5 around delegated sections / activity chooser button refactor (MDL-81765)
+
+4.4.0.23 (2024090840)
+=====================
+- Further preparatory work for upcoming Moodle 4.5 around delegated sections (implement for sub-tiles courses)
+
+4.4.0.24 (2024091140)
+=====================
+- Fix issue with ampersand display on sub-tile title
+- Change format name to "Tiles" not "Tiles format" (consistent with core)
+
+4.4.0.25 (2024100940)
+=====================
+- Improve tile number icons
+    - add new tab to icon picker for tile numbers with numbers up to 20
+    - tile numbers now shown as styled HTML not images
+- In non JS navigation mode, do not expand page width in single section view
+- Improve tile progress title and simplify progress indicators
+- Hide tooltip for empty course activity summary
+- Lambda theme - unset extra wide tile from Lambda developer, as it restricts number of tiles per row
+- Improve progress indicators
+- Fix issue 123 mod_unilabel modals behind backdrop
+- Fix issue 222 Safari PDF modals
+- Fix issue 223 custom certificate monologo
+- Fix issue 226 stop page modal when pop up set
+
+4.4.0.27 (2024100942)
+=====================
+- Reserve space for right scroll bar on tiles main screen
+    (avoid layout change in Chrome when tiles open/close and scrollbar appears/disappears)
+- Mobile sub-tile layout adjustment
+- Fix missing section link in breadcrumb in activity
+- Fix new number picker button titles
+- Remove jquery from behat tests
+- Remove redundant local icons for resource subtiles in Moodle 4.3+
+- Improve appearance of bigbluebutton and Turnitin icons on sub-tiles
+
+4.4.0.28 (2024111540)
+=====================
+- High contrast mode available (shown if activated by user preference)
+
+4.4.0.29 (2024120940)
+=====================
+- Simplify $displaysection
+- Improve scroll bar access when tile open (overlay in centre section only, exposing left and right drawers to user)
+- Include "General" heading (for section zero) at top of course index
+- In course index, clicks on section headings can open sections using JS nav (if enabled)
+- Remove debug message
+- Allow null displaysection on js init
+
+
+4.4.0.30 (2024121240)
+=====================
+- Adjust tests

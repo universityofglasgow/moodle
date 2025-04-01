@@ -1,7 +1,7 @@
 Moodle Tiny editor Cloze question type button
 =============================================
 
-![Release](https://img.shields.io/badge/Release-1.6-blue.svg)
+![Release](https://img.shields.io/badge/Release-1.11-blue.svg)
 [![Moodle Plugin 
 CI](https://github.com/srobotta/moodle-tiny_cloze/workflows/Moodle%20Plugin%20CI/badge.svg?branch=main)](https://github.com/srobotta/moodle-tiny_cloze/actions?query=workflow%3A%22Moodle+Plugin+CI%22+branch%3Amain)
 ![Supported](https://img.shields.io/badge/Moodle-4.1+-orange.svg)
@@ -101,7 +101,63 @@ you must use the Moodle annotation with the <span> elements. The [multilang2 fil
 is not supported here. For more information please check out the Moodle documentation
 at https://docs.moodle.org/en/Multi-language_content_filter.
 
+## Troubleshooting FAQ
+
+When the button ![edit cloze question icon](pix/icon.svg) does not appear in the toolbar and the menu "Insert" does not contain
+the item to edit a cloze question then please check the following:
+
+- Are you editing a cloze question type? Only for these questions the button appears.
+- Are you in the field question text? The button does not appear on the feedback field or
+other fields.
+- Do you work with the TinyMCE? This plugin is for the current TinyMCE and does not work
+with the TinyMCE legacy (this is the old TinyMCE that is not anymore available in newer
+Moodle versions).
+- Do you see any error messages in the Javascript console? Please hit F12 in your browser
+that should bring up the developer tools.
+![develpper tools window from Chromium](screenshots/developer-tools.png)
+In that window click the console tab and delete
+possible existing messages. Now reload the page (can be launched from inside the developer
+tools window via Ctrl + r)
+- Check that the Moodle dependencies are met. The plugin needs at least Moodle 4.1.
+
+If the problem persists then please [open a new issue on Github](https://github.com/srobotta/moodle-tiny_cloze/issues/new)
+or write a new comment on the [Moodle plugins directory](https://moodle.org/plugins/tiny_cloze).
+
 ## History
+
+### v1.11
+- Fix [Issue 25](https://github.com/srobotta/moodle-tiny_cloze/issues/25) on error in essay
+questions in the questionnaire plugin.
+
+### v1.10
+- Fix issue with Moodle 4.1 where class loading doesn't seem to work for the question_bank class.
+- Extend the README file by a Troubleshooting FAQ when the button is not displayed.
+
+### v1.9
+- Fix issue that if a selected text contains trailing or leading whitespaces,
+  these are preserved around the cloze question string when inserted into the text.
+- Support for a new REGEX and REGEX_C type that might available through a new
+  plugin [moodle-qtype_multianswerrgx](https://github.com/rezeau/moodle-qtype_multianswerrgx)
+  by [Joseph Rézeau](https://github.com/rezeau).
+- Add CI of Moodle 4.5.
+- Fix bug that escaped closing curly brakets where not recognized [issue #21](https://github.com/srobotta/moodle-tiny_cloze/issues/21).
+- On double click on a cloze question opens the dialogue automatically.
+- Delete icon disappears when there is one answer option left only.
+- Style adaptations on the dalogue that will be necessary with upcoming Moodle 4.5. 
+
+### v1.8
+- Empty response field are automatically ignored when the question otherwise can be created
+from the remaining filled response fields.
+- When creating a new question, by default the first answer is marked as correct, all
+subsequent answer options are marked as incorrect.
+
+### v1.7
+- When creating blanks for possible answers, the default grade is now "Correct" instead
+of the previous "Incorrect".
+- When a text is selected, the content is taken for the first answer field. This restores
+a behaviour that the original cloze plugin for Atto contained.
+- Wider input fields for answer and feedback in modal dialogue
+(thanks to [Joseph Rézeau](https://github.com/rezeau)).
 
 ### v1.6
 - Add Support for Moodle 4.4 and PHP 8.3.

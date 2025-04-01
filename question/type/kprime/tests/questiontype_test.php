@@ -44,7 +44,7 @@ require_once($CFG->dirroot . '/question/type/kprime/edit_kprime_form.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group       qtype_kprime
  */
-class questiontype_test extends \advanced_testcase {
+final class questiontype_test extends \advanced_testcase {
 
     /** @var object qtype */
     protected $qtype;
@@ -62,7 +62,7 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::get_name()
      */
-    public function test_name() {
+    public function test_name(): void {
         $this->assertEquals($this->qtype->name(), 'kprime');
     }
 
@@ -79,9 +79,9 @@ class questiontype_test extends \advanced_testcase {
         $qdata->parent = 0;
         $qdata->name = "Kprime001";
         $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
-        $qdata->questiontext = array("text" => 'Questiontext for Question 1');
+        $qdata->questiontext = ["text" => 'Questiontext for Question 1'];
         $qdata->questiontextformat = FORMAT_HTML;
-        $qdata->generalfeedback = array("text" => 'This feedback is general');
+        $qdata->generalfeedback = ["text" => 'This feedback is general'];
         $qdata->generalfeedbackformat = FORMAT_HTML;
         $qdata->defaultmark = 1;
         $qdata->length = 1;
@@ -97,66 +97,66 @@ class questiontype_test extends \advanced_testcase {
         $qdata->options->shuffleanswers = 0;
         $qdata->options->numberofrows = 4;
         $qdata->options->numberofcolumns = 2;
-        $qdata->options->rows = array(
-            1 => (object) array(
+        $qdata->options->rows = [
+            1 => (object) [
                 "id" => 1,
                 "questionid" => 1,
                 "number" => 1,
                 "optiontext" => "option text 1",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 1",
-                "optionfeedbackformat" => 1
-            ),
-            2 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            2 => (object) [
                 "id" => 2,
                 "questionid" => 1,
                 "number" => 2,
                 "optiontext" => "option text 2",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 2",
-                "optionfeedbackformat" => 1
-            ),
-            3 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            3 => (object) [
                 "id" => 3,
                 "questionid" => 1,
                 "number" => 3,
                 "optiontext" => "option text 3",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 3",
-                "optionfeedbackformat" => 1
-            ),
-            4 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            4 => (object) [
                 "id" => 4,
                 "questionid" => 1,
                 "number" => 4,
                 "optiontext" => "option text 4",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 4",
-                "optionfeedbackformat" => 1
-            )
-        );
-        $qdata->options->columns = array(
-            1 => (object) array("id" => 1, "questionid" => 1, "number" => 1, "responsetext" => "True", "responsetextformat" => 0),
-            2 => (object) array("id" => 2, "questionid" => 1, "number" => 2, "responsetext" => "False", "responsetextformat" => 0)
-        );
-        $qdata->options->weights = array(
-            1 => array(
-                1 => (object) array ("id" => 1, "questionid" => 1, "rownumber" => 1, "columnnumber" => 1, "weight" => 1.000),
-                2 => (object) array ("id" => 2, "questionid" => 1, "rownumber" => 1, "columnnumber" => 2, "weight" => 0.000)
-            ),
-            2 => array(
-                1 => (object) array ("id" => 3, "questionid" => 1, "rownumber" => 2, "columnnumber" => 1, "weight" => 1.000),
-                2 => (object) array ("id" => 4, "questionid" => 1, "rownumber" => 2, "columnnumber" => 2, "weight" => 0.000)
-            ),
-            3 => array(
-                1 => (object) array ("id" => 5, "questionid" => 1, "rownumber" => 3, "columnnumber" => 1, "weight" => 0.000),
-                2 => (object) array ("id" => 6, "questionid" => 1, "rownumber" => 3, "columnnumber" => 2, "weight" => 1.000)
-            ),
-            4 => array(
-                1 => (object) array ("id" => 7, "questionid" => 1, "rownumber" => 4, "columnnumber" => 1, "weight" => 0.000),
-                2 => (object) array ("id" => 8, "questionid" => 1, "rownumber" => 4, "columnnumber" => 2, "weight" => 1.000)
-            )
-        );
+                "optionfeedbackformat" => 1,
+            ],
+        ];
+        $qdata->options->columns = [
+            1 => (object) ["id" => 1, "questionid" => 1, "number" => 1, "responsetext" => "True", "responsetextformat" => 0],
+            2 => (object) ["id" => 2, "questionid" => 1, "number" => 2, "responsetext" => "False", "responsetextformat" => 0],
+        ];
+        $qdata->options->weights = [
+            1 => [
+                1 => (object)  ["id" => 1, "questionid" => 1, "rownumber" => 1, "columnnumber" => 1, "weight" => 1.000],
+                2 => (object)  ["id" => 2, "questionid" => 1, "rownumber" => 1, "columnnumber" => 2, "weight" => 0.000],
+            ],
+            2 => [
+                1 => (object)  ["id" => 3, "questionid" => 1, "rownumber" => 2, "columnnumber" => 1, "weight" => 1.000],
+                2 => (object)  ["id" => 4, "questionid" => 1, "rownumber" => 2, "columnnumber" => 2, "weight" => 0.000],
+            ],
+            3 => [
+                1 => (object)  ["id" => 5, "questionid" => 1, "rownumber" => 3, "columnnumber" => 1, "weight" => 0.000],
+                2 => (object)  ["id" => 6, "questionid" => 1, "rownumber" => 3, "columnnumber" => 2, "weight" => 1.000],
+            ],
+            4 => [
+                1 => (object)  ["id" => 7, "questionid" => 1, "rownumber" => 4, "columnnumber" => 1, "weight" => 0.000],
+                2 => (object)  ["id" => 8, "questionid" => 1, "rownumber" => 4, "columnnumber" => 2, "weight" => 1.000],
+            ],
+        ];
         return $qdata;
     }
 
@@ -165,7 +165,7 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::can_analyse_responses()
      */
-    public function test_can_analyse_responses() {
+    public function test_can_analyse_responses(): void {
         $this->assertTrue($this->qtype->can_analyse_responses());
     }
 
@@ -174,7 +174,7 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::get_random_guess_score()
      */
-    public function test_get_random_guess_score_kprime() {
+    public function test_get_random_guess_score_kprime(): void {
         $question = $this->get_test_question_data();
         $question->options->scoringmethod = "kprime";
         $this->assertEquals(0.1875, $this->qtype->get_random_guess_score($question));
@@ -185,7 +185,7 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::get_random_guess_score()
      */
-    public function test_get_random_guess_score_kprimeonezero() {
+    public function test_get_random_guess_score_kprimeonezero(): void {
         $question = $this->get_test_question_data();
         $question->options->scoringmethod = "kprimeonezero";
         $this->assertEquals(0.0625, $this->qtype->get_random_guess_score($question));
@@ -196,7 +196,7 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::get_random_guess_score()
      */
-    public function test_get_random_guess_score_subpoints() {
+    public function test_get_random_guess_score_subpoints(): void {
         $question = $this->get_test_question_data();
         $this->assertEquals(0.5, $this->qtype->get_random_guess_score($question));
     }
@@ -206,65 +206,68 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::get_possible_responses()
      */
-    public function test_get_possible_responses_subpoints() {
+    public function test_get_possible_responses_subpoints(): void {
         $question = $this->get_test_question_data();
         $responses = $this->qtype->get_possible_responses($question);
-        $this->assertEquals(array(
-            1 => array(
+        $this->assertEquals([
+            1 => [
                 1 => new \question_possible_response('option text 1: True (Correct Response)', 0.25),
                 2 => new \question_possible_response('option text 1: False', 0.0),
-                null => \question_possible_response::no_response()
-            ),
-            2 => array (
+                null => \question_possible_response::no_response(),
+            ],
+            2 => [
                 1 => new \question_possible_response('option text 2: True (Correct Response)', 0.25),
                 2 => new \question_possible_response('option text 2: False', 0.0),
-                null => \question_possible_response::no_response()
-            ),
-            3 => array(
+                null => \question_possible_response::no_response(),
+            ],
+            3 => [
                 1 => new \question_possible_response('option text 3: True', 0.0),
                 2 => new \question_possible_response('option text 3: False (Correct Response)', 0.25),
-                null => \question_possible_response::no_response()
-            ),
-            4 => array (
+                null => \question_possible_response::no_response(),
+            ],
+            4 => [
                 1 => new \question_possible_response('option text 4: True', 0.0),
                 2 => new \question_possible_response('option text 4: False (Correct Response)', 0.25),
-                null => \question_possible_response::no_response()
-            )
-        ), $this->qtype->get_possible_responses($question));
+                null => \question_possible_response::no_response(),
+            ],
+        ], $this->qtype->get_possible_responses($question));
     }
 
     /**
      * Test question_saving_which
+     *
+     * @return array[]
      */
-    public function get_question_saving_which() {
-        return array(array('question_one'), array('question_two'));
+    public static function get_question_saving_which() {
+        return [['question_one'], ['question_two']];
     }
 
     /**
      * Test question saving
-     * @dataProvider get_question_saving_which
-     * @param string $which
+     *
+     * @param void
      *
      * @covers ::save_question()
      */
-    public function test_question_saving_question_one($which) {
+    public function test_question_saving_question_one(): void {
         $this->resetAfterTest(true);
         $this->setAdminUser();
-        $questiondata = \test_question_maker::get_question_data('kprime', $which);
-        $formdata = \test_question_maker::get_question_form_data('kprime', $which);
+        $questiondata = \test_question_maker::get_question_data('kprime', 'question_one');
+        $formdata = \test_question_maker::get_question_form_data('kprime', 'question_one');
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
-        $cat = $generator->create_question_category(array());
+        $cat = $generator->create_question_category([]);
         $formdata->category = "{$cat->id},{$cat->contextid}";
         \qtype_kprime_edit_form::mock_submit((array)$formdata);
         $form = \qtype_kprime_test_helper::get_question_editing_form($cat, $questiondata);
         $this->assertTrue($form->is_validated());
         $fromform = $form->get_data();
         $returnedfromsave = $this->qtype->save_question($questiondata, $fromform);
-        $actualquestionsdata = question_load_questions(array($returnedfromsave->id));
+        $actualquestionsdata = question_load_questions([$returnedfromsave->id]);
         $actualquestiondata = end($actualquestionsdata);
 
         foreach ($questiondata as $property => $value) {
-            if (!in_array($property, array('id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp', 'idnumber', 'hidden'))) {
+            if (!in_array($property, ['id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp', 'idnumber',
+                'hidden', ], )) {
                 $this->assertEquals($value, $actualquestiondata->$property);
             }
         }
@@ -276,7 +279,7 @@ class questiontype_test extends \advanced_testcase {
         foreach ($questiondata->hints as $hint) {
             $actualhint = array_shift($actualquestiondata->hints);
             foreach ($hint as $property => $value) {
-                if (!in_array($property, array('id', 'questionid', 'options'))) {
+                if (!in_array($property, ['id', 'questionid', 'options'])) {
                     $this->assertEquals($value, $actualhint->$property);
                 }
             }
@@ -284,7 +287,7 @@ class questiontype_test extends \advanced_testcase {
         foreach ($questiondata->options->rows as $row) {
             $actualrow = array_shift($actualquestiondata->options->rows);
             foreach ($row as $rowproperty => $rowvalue) {
-                if (!in_array($rowproperty, array('id', 'questionid'))) {
+                if (!in_array($rowproperty, ['id', 'questionid'])) {
                     $this->assertEquals($rowvalue, $actualrow->$rowproperty);
                 }
             }
@@ -292,7 +295,7 @@ class questiontype_test extends \advanced_testcase {
         foreach ($questiondata->options->columns as $column) {
             $actualcolumn = array_shift($actualquestiondata->options->columns);
             foreach ($column as $columnproperty => $columnvalue) {
-                if (!in_array($columnproperty, array('id', 'questionid'))) {
+                if (!in_array($columnproperty, ['id', 'questionid'])) {
                     $this->assertEquals($columnvalue, $actualcolumn->$columnproperty);
                 }
             }
@@ -301,7 +304,7 @@ class questiontype_test extends \advanced_testcase {
             foreach ($row as $columnkey => $column) {
                 $actualweight = array_shift($actualquestiondata->options->weights[$rowkey]);
                 foreach ($column as $propertykey => $property) {
-                    if (!in_array($propertykey, array('id', 'questionid'))) {
+                    if (!in_array($propertykey, ['id', 'questionid'])) {
                         $this->assertEquals($property, $actualweight->$propertykey);
                     }
                 }
@@ -314,14 +317,14 @@ class questiontype_test extends \advanced_testcase {
      *
      * @covers ::get_question_options()
      */
-    public function test_get_question_options() {
+    public function test_get_question_options(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
         $questiondata = \test_question_maker::get_question_data('kprime', 'question_one');
         $formdata = \test_question_maker::get_question_form_data('kprime', 'question_two');
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
-        $cat = $generator->create_question_category(array());
+        $cat = $generator->create_question_category([]);
         $formdata->category = "{$cat->id},{$cat->contextid}";
         \qtype_kprime_edit_form::mock_submit((array)$formdata);
         $form = \qtype_kprime_test_helper::get_question_editing_form($cat, $questiondata);

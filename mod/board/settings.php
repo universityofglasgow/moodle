@@ -38,6 +38,13 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('mod_board/new_note_icon', get_string('new_note_icon', 'mod_board'),
                        get_string('new_note_icon_desc', 'mod_board'), 'fa-plus', PARAM_RAW_TRIMMED));
 
+    $settings->add(new admin_setting_configcheckbox(
+        'mod_board/enableprivacystatement',
+        get_string('settings:enableprivacystatement', 'mod_board'),
+        get_string('settings:enableprivacystatement_desc', 'mod_board'),
+        '0'
+    ));
+
     $options = array(
         1 => get_string('media_selection_buttons', 'mod_board'),
         2 => get_string('media_selection_dropdown', 'mod_board')
@@ -64,6 +71,13 @@ if ($ADMIN->fulltree) {
         'mod_board/allowyoutube',
         get_string('allowyoutube', 'mod_board'),
         get_string('allowyoutube_desc', 'mod_board'),
+        '1'
+    ));
+
+    $settings->add(new admin_setting_configcheckbox(
+        'mod_board/embed_allowed',
+        get_string('embed_allowed', 'mod_board'),
+        get_string('embed_allowed_desc', 'mod_board'),
         '1'
     ));
 
@@ -117,5 +131,48 @@ if ($ADMIN->fulltree) {
             board::SINGLEUSER_PRIVATE => get_string('singleusermodeprivate', 'mod_board'),
             board::SINGLEUSER_PUBLIC => get_string('singleusermodepublic', 'mod_board')
         ]
+    ));
+
+    // Heading.
+    $setting = new admin_setting_heading('mod_board/settings_heading_logging',
+            get_string('settings_heading_logging', 'mod_board'),
+            get_string('settings_heading_logging_info', 'mod_board'));
+    $settings->add($setting);
+
+    $settings->add(new admin_setting_configcheckbox(
+            'mod_board/addcolumnnametolog',
+            get_string('settings:addcolumnnametolog', 'mod_board'),
+            '',
+            '1'
+    ));
+    $settings->add(new admin_setting_configcheckbox(
+            'mod_board/addnotetolog',
+            get_string('settings:addnotetolog', 'mod_board'),
+            '',
+            '1'
+    ));
+    $settings->add(new admin_setting_configcheckbox(
+            'mod_board/addcommenttolog',
+            get_string('settings:addcommenttolog', 'mod_board'),
+            '',
+            '1'
+    ));
+    $settings->add(new admin_setting_configcheckbox(
+            'mod_board/addheadingtolog',
+            get_string('settings:addheadingtolog', 'mod_board'),
+            '',
+            '1'
+    ));
+    $settings->add(new admin_setting_configcheckbox(
+            'mod_board/addattachmenttolog',
+            get_string('settings:addattachmenttolog', 'mod_board'),
+            '',
+            '1'
+    ));
+    $settings->add(new admin_setting_configcheckbox(
+            'mod_board/addratingtolog',
+            get_string('settings:addratingtolog', 'mod_board'),
+            '',
+            '1'
     ));
 }

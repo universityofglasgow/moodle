@@ -4,7 +4,7 @@ Feature: Step 6
   Background:
     Given the following "users" exist:
       | username | firstname    | lastname   | email               |
-      | teacher  | T1Firstname  | T1Lasname  | teacher@moodle.com |
+      | teacher  | T1Firstname  | T1Lastname | teacher@moodle.com |
       | student1 | S1_SP_100    | S1Lastname | student1@moodle.com |
       | student2 | S2_SP_050    | S2Lastname | student2@moodle.com |
       | student3 | S3_SP_000    | S3Lastname | student3@moodle.com |

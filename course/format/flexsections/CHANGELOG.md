@@ -1,6 +1,27 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.1.3] - 2024-12-08
+### Fixed
+- Fixed exception: Call to undefined function format_flexsections_add_back_link_to_cm #99, #101
+
+## [4.1.2] - 2024-10-06
+### Fixed
+- When a section used to be displayed on a course page and is now displayed as a link,
+  the old student preferences about collapsed state affect the visibility of
+  the section summary #68
+- Coding error when trying to collapse a large number of sections #88
+  (workaround for the core bug MDL-78073)
+### Added
+- Support for Moodle 4.5
+
+## [4.1.1] - 2024-10-02
+### Fixed
+- When section has availability restriction and the restriction is displayed, all subsections
+  and activities in the subsections should not be available.
+  This also fixes the exception that made course index disappear for students #89
+- Coding style fixes for upcoming 4.5 release
+
 ## [4.1.0] - 2024-05-22
 ### Added
 - Support for Moodle 4.4, #83

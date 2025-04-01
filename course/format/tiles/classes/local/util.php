@@ -69,15 +69,26 @@ class util {
         $modaltype = \format_tiles\local\modal_helper::cm_modal_type($courseid, $cmrecord->id);
         $description = $cm->showdescription ? $cm->get_formatted_content() : '';
         $description = $description && trim(strip_tags($description)) ? $description : '';
+
+        // In Moodle 4.5+ the section may be a subsection, in which case we want the real (parent) section.
+        $section = $modinfo->get_section_info($cm->sectionnum);
+        if (self::get_moodle_release() >= 4.5 && ($section->is_delegated() ?? false)) {
+            $sectiondelegate = $section->get_component_instance();
+            if ($sectiondelegate) {
+                // This would give an error in Moodle 4.4 (but not 4.5) that get_parent_section() is not a function.
+                $section = $sectiondelegate->get_parent_section();
+            };
+        }
+
         return (object)[
             'id' => $cm->id,
             'courseid' => $courseid,
             'modulecontextid' => $cm->context->id,
             'coursecontextid' => $coursecontext->id,
-            'name' => $cm->name,
+            'name' => $cm->get_formatted_name(),
             'modname' => $cm->modname,
-            'sectionnumber' => $cm->sectionnum,
-            'sectionid' => $cm->section,
+            'sectionnumber' => $section->section,
+            'sectionid' => $section->id,
             'completionenabled' => (bool)$completiondata,
             'completionstate' => $completiondata ? $completiondata->completionstate : null,
             'iscomplete' => in_array($completiondata->completionstate ?? null, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS])
@@ -172,10 +183,10 @@ class util {
      * @throws \dml_exception
      */
     public static function using_js_nav() {
-        $userstopjsnav = get_user_preferences('format_tiles_stopjsnav', 0);
-
         // JS navigation and modals in Internet Explorer are not supported by this plugin so we disable JS nav here.
-        return !$userstopjsnav && get_config('format_tiles', 'usejavascriptnav') && !\core_useragent::is_ie();
+        return get_config('format_tiles', 'usejavascriptnav')
+            && !get_user_preferences('format_tiles_stopjsnav', 0)
+            && !\core_useragent::is_ie();
     }
 
     /**
@@ -234,27 +245,25 @@ class util {
      * Include AMD module required for tiles course.
      * @param \stdClass $course
      * @param int $contextid
-     * @param int|null $displaysection
+     * @param int|null $sectionnumber
      * @return void
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public static function init_js($course, int $contextid, $displaysection) {
+    public static function init_js($course, int $contextid, ?int $sectionnumber) {
         global $USER, $SESSION, $PAGE;
         if ($PAGE->user_allowed_editing()) {
-            $SESSION->editing_last_edited_section = $course->id . "-" . $displaysection;
+            $SESSION->editing_last_edited_section = $course->id . "-" . $sectionnumber;
         }
 
         $usejsnav = self::using_js_nav();
-        $jssectionnum = $displaysection ?? optional_param('expand', 0, PARAM_INT);
-
         if (!$PAGE->user_is_editing()) {
             // Initialise the main JS module for non editing users.
             $jsparams = [
                 'courseId' => $course->id,
                 'useJSNav' => $usejsnav, // See also lib.php page_set_course().
                 'isMobile' => \core_useragent::get_device_type() == \core_useragent::DEVICETYPE_MOBILE ? 1 : 0,
-                'jsSectionNum' => $jssectionnum,
+                'jsSectionNum' => $sectionnumber ?? optional_param('expand', 0, PARAM_INT),
                 'displayFilterBar' => $course->displayfilterbar,
                 'assumeDataStoreContent' => get_config('format_tiles', 'assumedatastoreconsent'),
                 'reOpenLastSection' => get_config('format_tiles', 'reopenlastsection'),
@@ -272,6 +281,7 @@ class util {
                 'pageType' => $PAGE->pagetype,
                 'allowPhotoTiles' => get_config('format_tiles', 'allowphototiles'),
                 'documentationurl' => get_config('format_tiles', 'documentationurl'),
+                'maxnumbericons' => self::get_icon_picker_max_number_icons(),
             ];
             $PAGE->requires->js_call_amd('format_tiles/edit_icon_picker', 'init', $editparams);
         }
@@ -312,5 +322,36 @@ class util {
         }
 
         return $data;
+    }
+
+
+    /**
+     * Tile numbers have icon names in format number_1, number_2 etc up to number_99.
+     * (UI cannot handle greater than 2 chars).
+     * @param string $iconname
+     * @return int|null null if not a number icon.
+     */
+    public static function get_tile_number_from_icon_name(string $iconname): ?int {
+        if (preg_match('/^number_[\d]{1,2}$/', $iconname)) {
+            return filter_var($iconname, FILTER_SANITIZE_NUMBER_INT);
+        }
+        return null;
+    }
+
+    /**
+     * The number of number icons to offer to editing teacher in icon picker.
+     * @return int
+     */
+    public static function get_icon_picker_max_number_icons() {
+        return 20;
+    }
+
+    /**
+     * Does the user want high contrast mode?
+     * @return bool
+     */
+    public static function using_high_contrast(): bool {
+        return get_config('format_tiles', 'highcontrastmodeallow')
+            && get_user_preferences('format_tiles_high_contrast_mode', 0);
     }
 }

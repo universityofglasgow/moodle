@@ -35,7 +35,7 @@ Feature: Edit the grade of a submission
       | calculator | webpa | peerwork |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Peer Assessment" to section "1" and I fill the form with:
+    And I add a "peerwork" activity to course "Course 1" section "1" and I fill the form with:
       | Peer assessment           | Test peerwork name        |
       | Description               | Test peerwork description |
       | Peer grades visibility    | Hidden from students      |
@@ -91,9 +91,9 @@ Feature: Edit the grade of a submission
 
   @javascript
   Scenario: Cannot view the gradebook hidden grade.
-    Given I am on the "Course 1" course page logged in as teacher1
-    And I navigate to "Setup > Gradebook setup" in the course gradebook
-    And I set the following settings for grade item "Test peerwork name" of type "gradeitem" on "setup" page:
+    Given I am on the "Course 1" "grades > Grader report > View" page logged in as "teacher1"
+    And I turn editing mode on
+    And I set the following settings for grade item "Test peerwork name" of type "gradeitem" on "grader" page:
       | Hidden | 1 |
     And I log out
     And I am on the "Test peerwork name" "peerwork activity" page logged in as student1

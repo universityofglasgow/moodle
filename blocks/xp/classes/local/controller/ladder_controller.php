@@ -25,6 +25,9 @@
 
 namespace block_xp\local\controller;
 
+use block_xp\di;
+use block_xp\local\division\division;
+use block_xp\local\division\group_division;
 use moodle_exception;
 
 /**
@@ -47,13 +50,6 @@ class ladder_controller extends page_controller {
     /** @var string */
     protected $routename = 'ladder';
 
-    protected function permissions_checks() {
-        parent::permissions_checks();
-        if (!$this->world->get_config()->get('enableladder')) {
-            throw new moodle_exception('nopermissions', '', '', 'view_ladder_page');
-        }
-    }
-
     protected function page_setup() {
         global $PAGE;
         parent::page_setup();
@@ -72,13 +68,38 @@ class ladder_controller extends page_controller {
     }
 
     /**
+     * Is visible to viewers?
+     *
+     * @return bool
+     */
+    protected function is_visible_to_viewers() {
+        return (bool) $this->world->get_config()->get('enableladder');
+    }
+
+    /**
+     * Get the division.
+     *
+     * @return division|null
+     */
+    protected function get_division(): ?division {
+        if ($this->get_groupid()) {
+            return new group_division($this->get_groupid());
+        }
+        return null;
+    }
+
+    /**
      * Get the leadeboard.
      *
      * @return \block_xp\local\leaderboard\leaderboard
      */
     protected function get_leaderboard() {
-        $leaderboardfactory = \block_xp\di::get('course_world_leaderboard_factory');
-        return $leaderboardfactory->get_course_leaderboard($this->world, $this->get_groupid());
+        $division = $this->get_division();
+        $lbf = \block_xp\di::get('leaderboard_factory_maker')->get_leaderboard_factory($this->world);
+        if ($division) {
+            return $lbf->get_leaderboard_for_division($division);
+        }
+        return $lbf->get_leaderboard();
     }
 
     /**
@@ -151,8 +172,47 @@ class ladder_controller extends page_controller {
     }
 
     protected function page_content() {
+        global $PAGE;
+        $output = $this->get_renderer();
+
+        $canmanage = $this->world->get_access_permissions()->can_manage();
+        if ($canmanage) {
+            echo $output->advanced_heading(get_string('ladder', 'block_xp'), [
+                'intro' => new \lang_string('ladderintro', 'block_xp'),
+                'help' => new \help_icon('ladder', 'block_xp'),
+                'visible' => $this->is_visible_to_viewers(),
+                'menu' => $this->get_page_menu_items(),
+            ]);
+            $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
+        }
+
         $this->print_group_menu();
         echo $this->get_table()->out($this->get_page_size(), false);
+    }
+
+    /**
+     * Get the menu items.
+     *
+     * @return array
+     */
+    protected function get_page_menu_items() {
+        $config = di::get('config');
+        $hasaddon = di::get('addon')->is_activated();
+        return array_filter([
+            [
+                'label' => get_string('pagesettings', 'block_xp'),
+                'data-action' => 'open-form',
+                'data-form-class' => di::get('leaderboard_form_class'),
+                'data-form-args__contextid' => $this->world->get_context()->id,
+                'href' => '#',
+            ],
+            $config->get('enablepromoincourses') && !$hasaddon ? [
+                'label' => get_string('export', 'block_xp'),
+                'href' => '#',
+                'disabled' => true,
+                'addonrequired' => true,
+            ] : null,
+        ]);
     }
 
 }

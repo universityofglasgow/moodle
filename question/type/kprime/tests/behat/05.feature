@@ -4,7 +4,7 @@ Feature: Step 5
   Background:
     Given the following "users" exist:
       | username | firstname   | lastname   | email               |
-      | teacher1 | T1Firstname | T1Lasname  | teacher1@moodle.com |
+      | teacher1 | T1Firstname | T1Lastname | teacher1@moodle.com |
       | student1 | S1Firstname | S1Lastname | student1@moodle.com |
       | student2 | S2Firstname | S2Lastname | student2@moodle.com |
     And the following "courses" exist:
@@ -61,12 +61,7 @@ Feature: Step 5
     And I log out
 
   # Login as teacher1 and grade manually
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Quiz 1"
-    And I navigate to "Results" in current page administration
-    And I click on "Grades" "option"
-    And I click on "Manual grading" "option"
+    When I am on the "Quiz 1" "mod_quiz > Manual grading report" page logged in as "teacher1"
     Then I should see "Nothing to display"
     When I click on "Also show questions that have been graded automatically" "link"
     And I click on "grade all" "link"

@@ -27,6 +27,7 @@ require_once($CFG->dirroot. '/course/format/lib.php');
 
 use format_flexsections\constants;
 use core\output\inplace_editable;
+use format_flexsections\local\helpers\preferences;
 
 define('FORMAT_FLEXSECTIONS_COLLAPSED', 1);
 define('FORMAT_FLEXSECTIONS_EXPANDED', 0);
@@ -39,6 +40,7 @@ define('FORMAT_FLEXSECTIONS_EXPANDED', 0);
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_flexsections extends core_courseformat\base {
+    use preferences;
 
     /**
      * Returns true if this course format uses sections.
@@ -196,7 +198,7 @@ class format_flexsections extends core_courseformat\base {
 
         $sectionno = $this->resolve_section_number($section);
         $section = $this->get_section($sectionno);
-        if ($sectionno && (!$section->uservisible || !$this->is_section_real_available($section))) {
+        if ($sectionno && !$this->is_section_visible($section)) {
             return empty($options['navigation']) ? $url : null;
         }
 
@@ -312,7 +314,7 @@ class format_flexsections extends core_courseformat\base {
      * @return null|navigation_node
      */
     protected function navigation_add_section($navigation, navigation_node $node, section_info $section): ?navigation_node {
-        if (!$section->uservisible || !$this->is_section_real_available($section)) {
+        if (!$section->uservisible) {
             return null;
         }
         $sectionname = get_section_name($this->get_course(), $section);
@@ -657,6 +659,7 @@ class format_flexsections extends core_courseformat\base {
     /**
      * Checks if section is really available for the current user (analyses parent section available)
      *
+     * @deprecated since Moodle 4.5
      * @param int|section_info $section
      * @return bool
      */
@@ -671,7 +674,7 @@ class format_flexsections extends core_courseformat\base {
             return true;
         }
         $section = $this->get_section($section);
-        return $section->available && $this->is_section_real_available($section->parent);
+        return $section->available;
     }
 
     /**
@@ -789,10 +792,6 @@ class format_flexsections extends core_courseformat\base {
                 if (!$sectioninfo || !$sectioninfo->collapsed) {
                     redirect(course_get_url($this->get_course(), $sectioninfo ? $this->find_collapsed_parent($sectioninfo) : null));
                 }
-            }
-
-            if (!$this->is_section_real_available($this->get_viewed_section())) {
-                throw new moodle_exception('nopermissiontoviewpage');
             }
 
             if ($currentsectionnum) {
@@ -1533,6 +1532,46 @@ class format_flexsections extends core_courseformat\base {
         $newsection = $parentmapping[$oldsectioninfo->section]->section;
         $newsection = $this->move_section($newsection, $oldsectioninfo->parent, $createbefore);
         return get_fast_modinfo($course)->get_section_info($newsection);
+    }
+
+    /**
+     * Allows to specify for modinfo that section is not available even when it is visible and conditionally available.
+     *
+     * @param section_info $section
+     * @param bool $available the 'available' propery of the section_info as it was evaluated by conditional availability.
+     *     Can be changed by the method but 'false' can not be overridden by 'true'.
+     * @param string $availableinfo the 'availableinfo' propery of the section_info as it was evaluated by conditional availability.
+     *     Can be changed by the method
+     */
+    public function section_get_available_hook(section_info $section, &$available, &$availableinfo) {
+        if (($available || $availableinfo) && $section->parent) {
+            $parent = $section->modinfo->get_section_info_all()[$section->parent] ?? null;
+            if ($parent && !$parent->get_available()) {
+                $available = false;
+                $availableinfo = null;
+            }
+        }
+    }
+
+    /**
+     * Return the format section preferences.
+     *
+     * @return array of preferences indexed by sectionid
+     */
+    public function get_sections_preferences(): array {
+        $result = parent::get_sections_preferences();
+
+        // For sections that are displayed as links ignore the 'contentcollapsed' preference.
+        $displayedaslink = [];
+        foreach ($this->get_sections() as $s) {
+            $displayedaslink[$s->id] = $s->collapsed;
+        }
+        foreach ($result as $sectionid => &$obj) {
+            if (!empty($obj->contentcollapsed) && !empty($displayedaslink[$sectionid])) {
+                $obj->contentcollapsed = 0;
+            }
+        }
+        return $result;
     }
 }
 

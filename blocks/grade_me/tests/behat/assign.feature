@@ -29,13 +29,16 @@ Feature: Assignments are displayed in the block
       And I follow "My courses"
       And I follow "Course 1"
       And I turn editing mode on
-      And I add a "Assignment" to section "1" and I fill the form with:
-        | Assignment name | Assign |
-        | Description | Submit your online text |
-        | assignsubmission_onlinetext_enabled | 1 |
-        | assignsubmission_onlinetext_wordlimit_enabled | 1 |
-        | assignsubmission_onlinetext_wordlimit | 10 |
-        | assignsubmission_file_enabled | 0 |
+      And the following "activity" exists:
+        | activity                                      | assign                  |
+        | course                                        | C1                      |
+        | section                                       | 1                       |
+        | name                                          | Assign                  |
+        | description                                   | Submit your online text |
+        | assignsubmission_onlinetext_enabled           | 1                       |
+        | assignsubmission_onlinetext_wordlimit_enabled | 1                       |
+        | assignsubmission_onlinetext_wordlimit         | 10                      |
+        | assignsubmission_file_enabled                 | 0                       |
       And I log out
       # Now the students submit assignments.
       And I log in as "student1"
@@ -46,6 +49,8 @@ Feature: Assignments are displayed in the block
       And I set the following fields to these values:
         | Online text | 7 8 9 10. |
       And I press "Save changes"
+      And I press "Submit assignment"
+      And I press "Continue"
       Then I should see "Submitted for grading"
       And I log out
       # Student2  submit assigment.
@@ -57,6 +62,8 @@ Feature: Assignments are displayed in the block
       And I set the following fields to these values:
         | Online text | A dog barked. |
       And I press "Save changes"
+      And I press "Submit assignment"
+      And I press "Continue"
       Then I should see "Submitted for grading"
       And I log out
       # Student3 submits assignment.
@@ -68,6 +75,8 @@ Feature: Assignments are displayed in the block
       And I set the following fields to these values:
         | Online text | A pig made a noise. |
       And I press "Save changes"
+      And I press "Submit assignment"
+      And I press "Continue"
       Then I should see "Submitted for grading"
       And I log out
       # Now we check the block.
@@ -123,13 +132,16 @@ Feature: Assignments are displayed in the block
       And I follow "My courses"
       And I follow "Course 1"
       And I turn editing mode on
-      And I add a "Assignment" to section "1" and I fill the form with:
-        | Assignment name | Assign |
-        | Description | Submit your online text |
-        | assignsubmission_onlinetext_enabled | 1 |
-        | assignsubmission_onlinetext_wordlimit_enabled | 1 |
-        | assignsubmission_onlinetext_wordlimit | 10 |
-        | assignsubmission_file_enabled | 0 |
+      And the following "activity" exists:
+        | activity                                      | assign                  |
+        | course                                        | C1                      |
+        | section                                       | 1                       |
+        | name                                          | Assign                  |
+        | description                                   | Submit your online text |
+        | assignsubmission_onlinetext_enabled           | 1                       |
+        | assignsubmission_onlinetext_wordlimit_enabled | 1                       |
+        | assignsubmission_onlinetext_wordlimit         | 10                      |
+        | assignsubmission_file_enabled                 | 0                       |
         | grade[modgrade_type] | Scale |
       And I log out
       # Now the students submit assignments.
@@ -141,6 +153,8 @@ Feature: Assignments are displayed in the block
       And I set the following fields to these values:
         | Online text | 7 8 9 10. |
       And I press "Save changes"
+      And I press "Submit assignment"
+      And I press "Continue"
       Then I should see "Submitted for grading"
       And I log out
       # Student2  submit assigment.
@@ -152,6 +166,8 @@ Feature: Assignments are displayed in the block
       And I set the following fields to these values:
         | Online text | A dog barked. |
       And I press "Save changes"
+      And I press "Submit assignment"
+      And I press "Continue"
       Then I should see "Submitted for grading"
       And I log out
       # Student3 submits assignment.
@@ -163,6 +179,8 @@ Feature: Assignments are displayed in the block
       And I set the following fields to these values:
         | Online text | A pig made a noise. |
       And I press "Save changes"
+      And I press "Submit assignment"
+      And I press "Continue"
       Then I should see "Submitted for grading"
       And I log out
       # Now we check the block.
@@ -196,7 +214,9 @@ Feature: Assignments are displayed in the block
       And "//dd[@class='module']//ul//li[1]//a[contains(@title, 'Grade assignment')]" "xpath_element" should exist in the "Grade Me" "block"
       # Grade the seconds student's submission.
       When I click on "//dd[@class='module']//ul//li[1]//a[contains(@title, 'Grade assignment')]" "xpath_element" in the "Grade Me" "block"
-      And I set the field "Feedback comments" to "feed back comments"
+      And I click on "//span[contains(text(), 'Comments')]" "xpath_element"
+      And I set the field "content" to "feed back comments"
+      And I set the field "grade" to "1"
       And I press "Save changes"
       Then I should see "C1" in the "Grade Me" "block"
       And I should see "Assign" in the "Grade Me" "block"

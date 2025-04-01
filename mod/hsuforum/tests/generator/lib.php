@@ -207,6 +207,10 @@ class mod_hsuforum_generator extends testing_module_generator {
             $mailed = $record['mailed'];
         }
 
+        if (!isset($record['timelocked'])) {
+            $record['timelocked'] = 0;
+        }
+
         $record = (object) $record;
 
         // Add the discussion.
@@ -322,6 +326,18 @@ class mod_hsuforum_generator extends testing_module_generator {
             $record['privatereply'] = 0;
         }
 
+        if (!isset($record['privatereplyto'])) {
+            $record['privatereplyto'] = 0;
+        }
+
+        if (!isset($record['wordcount'])) {
+            $record['wordcount'] = null;
+        }
+
+        if (!isset($record['charcount'])) {
+            $record['charcount'] = null;
+        }
+
         $record = (object) $record;
 
         // Add the post.
@@ -347,7 +363,7 @@ class mod_hsuforum_generator extends testing_module_generator {
         $record = (array)$record + array(
             'forum' => $instance->id,
             'userid' => $USER->id,
-            'course' => $instance->course
+            'course' => $instance->course,
         );
         if (empty($record['discussion']) && empty($record['parent'])) {
             // Create discussion.

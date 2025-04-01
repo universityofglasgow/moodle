@@ -229,7 +229,9 @@ M.mod_questionnaire = M.mod_questionnaire || {};
 /* exported Y */
 /* exported e */
 M.mod_questionnaire.init_attempt_form = function() {
-    M.core_formchangechecker.init({formid: 'phpesp_response'});
+    require(['core_form/changechecker'], function(FormChangeChecker) {
+        FormChangeChecker.watchFormById('phpesp_response');
+    });
 };
 
 M.mod_questionnaire.init_sendmessage = function(Y) {

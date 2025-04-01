@@ -98,7 +98,7 @@ class provider implements
             'userid' => 'privacy:metadata:hsuforum_queue:userid',
             'discussionid' => 'privacy:metadata:hsuforum_queue:discussionid',
             'postid' => 'privacy:metadata:hsuforum_queue:postid',
-            'timemodified' => 'privacy:metadata:hsuforum_queue:timemodified'
+            'timemodified' => 'privacy:metadata:hsuforum_queue:timemodified',
         ], 'privacy:metadata:hsuforum_queue');
 
         // The 'hsuforum_read' table stores data about which forum posts have been read by each user.
@@ -121,6 +121,20 @@ class provider implements
             'userid' => 'privacy:metadata:hsuforum_track_prefs:userid',
             'forumid' => 'privacy:metadata:hsuforum_track_prefs:forumid',
         ], 'privacy:metadata:hsuforum_track_prefs');
+
+        // The 'hsuforum_discussion_subs' table stores information about which discussions a user is subscribed to.
+        $items->add_database_table('hsuforum_discussion_subs', [
+            'discussionid' => 'privacy:metadata:hsuforum_discussion_subs:discussionid',
+            'preference' => 'privacy:metadata:hsuforum_discussion_subs:preference',
+            'userid' => 'privacy:metadata:hsuforum_discussion_subs:userid',
+        ], 'privacy:metadata:hsuforum_discussion_subs');
+
+        // The 'hsuforum_grades' table stores grade data.
+        $items->add_database_table('hsuforum_grades', [
+            'userid' => 'privacy:metadata:hsuforum_grades:userid',
+            'forum' => 'privacy:metadata:hsuforum_grades:forum',
+            'grade' => 'privacy:metadata:hsuforum_grades:grade',
+        ], 'privacy:metadata:hsuforum_grades');
 
         // Forum posts can be tagged and rated.
         $items->link_subsystem('core_tag', 'privacy:metadata:core_tag');
@@ -529,7 +543,7 @@ class provider implements
              LEFT JOIN {grade_items} gi ON gi.iteminstance = f.id AND gi.itemmodule = 'hsuforum'
              LEFT JOIN {grade_grades} gg ON gg.itemid = gi.id AND gg.userid = d.userid
              LEFT JOIN {hsuforum_posts} p ON p.discussion = d.id
-                 WHERE f.id ${hsuforuminsql}
+                 WHERE f.id {$hsuforuminsql}
                    AND (
                         d.userid    = :discussionuserid OR
                         p.userid    = :postuserid OR
@@ -561,7 +575,7 @@ class provider implements
                 'pinned' => transform::yesno((bool)$discussion->pinned),
                 'timemodified' => transform::datetime($discussion->timemodified),
                 'usermodified' => transform::datetime($discussion->usermodified),
-                'creator_was_you' => transform::yesno($discussion->userid == $userid)
+                'creator_was_you' => transform::yesno($discussion->userid == $userid),
             ];
 
             $discussionarea = static::get_discussion_area($discussion);
@@ -627,7 +641,7 @@ class provider implements
                   JOIN {hsuforum_posts} p ON p.discussion = d.id
              LEFT JOIN {hsuforum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
             {$ratingsql->join}
-                 WHERE f.id ${hsuforuminsql} AND
+                 WHERE f.id {$hsuforuminsql} AND
                 (
                     p.userid = :postuserid OR
                     fr.userid IS NOT NULL OR

@@ -206,11 +206,13 @@ final class leaderboard_test extends base_testcase {
         $this->assertEquals(1, $lb->get_rank($u8->id)->get_rank());
 
         $lb = $this->get_leaderboard($world1, $g3->id);
+        $this->assertDebuggingCalled('The $groupid argument of the leaderboard is deprecated, use set_user_filter() instead.');
         $this->assertEquals(0, $lb->get_count());
         $this->assertEquals(null, $lb->get_rank($u1->id));
         $this->assertEquals(null, $lb->get_rank($u8->id));
 
         $lb = $this->get_leaderboard($world1, $g1->id);
+        $this->assertDebuggingCalled('The $groupid argument of the leaderboard is deprecated, use set_user_filter() instead.');
         $this->assertEquals(4, $lb->get_count());
         $this->assertEquals(4, $lb->get_rank($u1->id)->get_rank());
         $this->assertEquals(1, $lb->get_rank($u4->id)->get_rank());
@@ -218,6 +220,7 @@ final class leaderboard_test extends base_testcase {
         $this->assert_ranking($lb->get_ranking(new limit(0, 0)), [[$u4, 1], [$u3, 2], [$u2, 3], [$u1, 4]]);
 
         $lb = $this->get_leaderboard($world1, $g2->id);
+        $this->assertDebuggingCalled('The $groupid argument of the leaderboard is deprecated, use set_user_filter() instead.');
         $this->assertEquals(3, $lb->get_count());
         $this->assertEquals(null, $lb->get_rank($u1->id));
         $this->assertEquals(3, $lb->get_rank($u4->id)->get_rank());
@@ -823,6 +826,67 @@ final class leaderboard_test extends base_testcase {
         $this->assertEquals(0, $lb->get_rank($u3->id)->get_rank());
         $expected = [[$u3, 0], [$u2, 0], [$u1, 0]];
         $this->assert_ranking($lb->get_ranking(new limit(0, 0)), $expected);
+    }
+
+    /**
+     * Test leaderboard with deleted users.
+     *
+     * @covers \block_xp\local\leaderboard\course_user_leaderboard
+     */
+    public function test_leaderboard_with_deleted_users(): void {
+        $dg = $this->getDataGenerator();
+        $c1 = $dg->create_course();
+
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+
+        $world1 = $this->get_world($c1->id);
+        $store1 = $world1->get_store();
+        $store1->set($u1->id, 100);
+        $store1->set($u2->id, 90);
+        $store1->set($u3->id, 110);
+
+        delete_user($u1);
+
+        $lb = $this->get_leaderboard($world1);
+        $this->assert_ranking($lb->get_ranking(new limit(0, 0)), [
+            [$u3, 1],
+            [$u2, 2],
+        ]);
+        $this->assertNull($lb->get_position($u1->id));
+        $this->assertNull($lb->get_rank($u1->id));
+    }
+
+    /**
+     * Test leaderboard with suspended users.
+     *
+     * @covers \block_xp\local\leaderboard\course_user_leaderboard
+     */
+    public function test_leaderboard_with_suspended_users(): void {
+        $dg = $this->getDataGenerator();
+        $c1 = $dg->create_course();
+
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+
+        $world1 = $this->get_world($c1->id);
+        $store1 = $world1->get_store();
+        $store1->set($u1->id, 100);
+        $store1->set($u2->id, 90);
+        $store1->set($u3->id, 110);
+
+        $u1->suspended = 1;
+        user_update_user($u1, false);
+
+        $lb = $this->get_leaderboard($world1);
+        $this->assert_ranking($lb->get_ranking(new limit(0, 0)), [
+            [$u3, 1],
+            [$u2, 2],
+        ]);
+        $this->assertNull($lb->get_position($u1->id));
+        $this->assertNull($lb->get_rank($u1->id));
     }
 
     /**

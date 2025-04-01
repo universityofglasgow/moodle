@@ -42,7 +42,7 @@ define('QTYPE_KPRIME_NUMBER_OF_RESPONSES', 2);
  * @param array    $options       additional options affecting the file serving
  * @return bool
  */
-function qtype_kprime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+function qtype_kprime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
 
     global $CFG;
     require_once($CFG->libdir.'/questionlib.php');

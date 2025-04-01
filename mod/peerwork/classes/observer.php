@@ -23,7 +23,8 @@
  *
  */
 
-defined('MOODLE_INTERNAL') || die;
+use core\event\base;
+use mod_peerwork\event\gradebookupdate_failed;
 
 /**
  * Event observer.
@@ -37,12 +38,12 @@ class mod_peerwork_observer {
      *
      * Called by observers to handle notification sending.
      *
-     * @param \core\event\base $event The event object.
+     * @param base $event The event object.
      *
      * @return boolean true
      *
      */
-    public static function group_member_added(\core\event\base $event) {
+    public static function group_member_added(base $event) {
         self::group_members_updated($event, false);
     }
 
@@ -51,12 +52,12 @@ class mod_peerwork_observer {
      *
      * Called by observers to handle notification sending.
      *
-     * @param \core\event\base $event The event object.
+     * @param base $event The event object.
      *
      * @return boolean true
      *
      */
-    public static function group_member_removed(\core\event\base $event) {
+    public static function group_member_removed(base $event) {
         self::group_members_updated($event);
     }
 
@@ -64,11 +65,11 @@ class mod_peerwork_observer {
      * Function updates the gradebook when there is a change
      * to the group members.
      *
-     * @param \core\event\base $event The event object.
+     * @param base $event The event object.
      * @param boolean $removed Whether the change was a member removed.
      *
      */
-    protected static function group_members_updated(\core\event\base $event, $removed = true) {
+    protected static function group_members_updated(base $event, $removed = true) {
         global $CFG, $DB;
 
         require_once($CFG->dirroot . '/mod/peerwork/lib.php');
@@ -95,11 +96,11 @@ class mod_peerwork_observer {
                 'objectid' => $peerwork->id,
                 'other' => [
                     'error' => $e->getMessage(),
-                    'groupid' => $groupid
-                ]
+                    'groupid' => $groupid,
+                ],
             ];
 
-            $newevent = \mod_peerwork\event\gradebookupdate_failed::create($params);
+            $newevent = gradebookupdate_failed::create($params);
             $newevent->trigger();
         }
 
@@ -155,11 +156,11 @@ class mod_peerwork_observer {
                         'relateduserid' => $member->id,
                         'other' => [
                             'error' => $e->getMessage(),
-                            'groupid' => $groupid
-                        ]
+                            'groupid' => $groupid,
+                        ],
                     ];
 
-                    $newevent = \mod_peerwork\event\gradebookupdate_failed::create($params);
+                    $newevent = gradebookupdate_failed::create($params);
                     $newevent->trigger();
                 }
             }

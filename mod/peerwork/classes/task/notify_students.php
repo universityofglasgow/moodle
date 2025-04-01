@@ -22,8 +22,12 @@
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_peerwork\task;
-defined('MOODLE_INTERNAL') || die();
+use core\message\message;
+use core\task\scheduled_task;
+use core_user;
+use moodle_url;
 
 /**
  * Notify students task.
@@ -33,7 +37,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class notify_students extends \core\task\scheduled_task {
+class notify_students extends scheduled_task {
 
     /**
      * Get name.
@@ -52,7 +56,7 @@ class notify_students extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
         $origlang = current_language();
-        $userfrom = \core_user::get_noreply_user();
+        $userfrom = core_user::get_noreply_user();
         $uadditionalfields = ['lang', 'auth', 'suspended', 'deleted', 'emailstop'];
 
         $sql = "SELECT u.*, p.id AS peerworkid, p.course AS courseid, s.id AS submissionid
@@ -86,7 +90,7 @@ class notify_students extends \core\task\scheduled_task {
                 $submissionids = [];
             }
 
-            $url = new \moodle_url('/mod/peerwork/view.php', ['id' => $cm->id]);
+            $url = new moodle_url('/mod/peerwork/view.php', ['id' => $cm->id]);
             $userto = clone($record);
             unset($userto->courseid);
             unset($userto->submissionid);
@@ -97,29 +101,29 @@ class notify_students extends \core\task\scheduled_task {
             $subject = get_string('notifygradesreleasedsmall', 'mod_peerwork', $name);
             $message = get_string('notifygradesreleasedtext', 'mod_peerwork', [
                 'name' => $name,
-                'url' => $url->out()
+                'url' => $url->out(),
             ]);
             $messagehtml = get_string('notifygradesreleasedhtml', 'mod_peerwork', [
                 'name' => $name,
-                'url' => $url->out()
+                'url' => $url->out(),
             ]);
 
-            $eventdata = new \core\message\message();
-            $eventdata->courseid         = $record->courseid;
-            $eventdata->modulename       = 'peerwork';
-            $eventdata->userfrom         = $userfrom;
-            $eventdata->userto           = $userto;
-            $eventdata->subject          = $subject;
-            $eventdata->fullmessage      = $message;
+            $eventdata = new message();
+            $eventdata->courseid = $record->courseid;
+            $eventdata->modulename = 'peerwork';
+            $eventdata->userfrom = $userfrom;
+            $eventdata->userto = $userto;
+            $eventdata->subject = $subject;
+            $eventdata->fullmessage = $message;
             $eventdata->fullmessageformat = FORMAT_PLAIN;
-            $eventdata->fullmessagehtml  = $messagehtml;
-            $eventdata->smallmessage     = $subject;
+            $eventdata->fullmessagehtml = $messagehtml;
+            $eventdata->smallmessage = $subject;
 
-            $eventdata->name            = 'grade_released';
-            $eventdata->component       = 'mod_peerwork';
-            $eventdata->notification    = 1;
-            $eventdata->contexturl      = $url;
-            $eventdata->contexturlname  = $name;
+            $eventdata->name = 'grade_released';
+            $eventdata->component = 'mod_peerwork';
+            $eventdata->notification = 1;
+            $eventdata->contexturl = $url;
+            $eventdata->contexturlname = $name;
 
             message_send($eventdata);
 
@@ -147,7 +151,7 @@ class notify_students extends \core\task\scheduled_task {
         if (empty($submissionids)) {
             return;
         }
-        list($insql, $inparams) = $DB->get_in_or_equal($submissionids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($submissionids, SQL_PARAMS_NAMED);
         $sql = "UPDATE {peerwork_submission}
                    SET releasednotified = 1
                  WHERE id $insql";

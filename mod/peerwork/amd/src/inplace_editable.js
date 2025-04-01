@@ -23,7 +23,6 @@
  * Any exception thrown by the web service (or callback) is displayed as an error popup.
  *
  * @module     core/inplace_editable
- * @package    core
  * @copyright  2016 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      3.1
@@ -33,84 +32,80 @@ define(['jquery',
         'core/templates',
         'core/notification',
         'core/str',
-        'core/config',
-        'core/url',
-        'core/form-autocomplete',
-        'core/pending',
     ],
-function($, ajax, templates, notification, str, cfg, url, autocomplete, Pending) {
+    function($, ajax, templates, notification, str) {
 
-    var itemid;
-    var warningshown = false;
+        var itemid;
+        var warningshown = false;
 
-    /**
-     * Enables inplace editing.
-     */
-    var handleInplaceEdit = function() {
-        warningshown = true;
+        /**
+         * Enables inplace editing.
+         */
+        var handleInplaceEdit = function() {
+            warningshown = true;
+
+            document.querySelectorAll('.inplace-grading.cell').forEach(function(td) {
+                td.removeEventListener('click', beforeDueDate, true);
+                td.removeEventListener('keypress', beforeDueDate, true);
+            });
+
+            document.querySelector("[data-itemid='" + itemid + "'] [data-inplaceeditablelink]").click();
+        };
+
+        /**
+         * Prevents inplace editing.
+         */
+        var stopInplaceEdit = function() {
+            return true;
+        };
+
+        /**
+         * Displays the show confirmation to edit grade.
+         *
+         * @param {String} message confirmation message
+         * @param {function} onconfirm function to execute on confirm
+         * @param {function} onreject function to execute on reject
+         */
+        var confirmHandleInplaceEdit = function(message, onconfirm, onreject) {
+            str.get_strings([
+                {key: 'confirmeditgrade', component: 'mod_peerwork'},
+                {key: 'yes', component: 'core'},
+                {key: 'no', component: 'mod_peerwork'}
+            ]).done(function(s) {
+                    notification.confirm(s[0], message, s[1], s[2], onconfirm, onreject);
+                }
+            );
+        };
+
+        /**
+         * The edit link was clicked in the group list.
+         *
+         * @param {Event} e click/keypress event
+         */
+        var beforeDueDate = function(e) {
+            if (e.type === 'keypress' && e.keyCode !== 13) {
+                return;
+            }
+
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            itemid = e.target.closest('.inplaceeditable').dataset.itemid;
+
+            str.get_strings([
+                {key: 'confirmeditgradetxt', component: 'mod_peerwork'}
+            ]).done(function(s) {
+                confirmHandleInplaceEdit(s[0], handleInplaceEdit, stopInplaceEdit);
+
+            });
+        };
 
         document.querySelectorAll('.inplace-grading.cell').forEach(function(td) {
-            td.removeEventListener('click', beforeDueDate, true);
-            td.removeEventListener('keypress', beforeDueDate, true);
-        });
-
-        document.querySelector("[data-itemid='" + itemid + "'] [data-inplaceeditablelink]").click();
-    };
-
-    /**
-     * Prevents inplace editing.
-     */
-    var stopInplaceEdit = function() {
-        return true;
-    };    
-
-    /**
-     * Displays the show confirmation to edit grade.
-     *
-     * @param {String} message confirmation message
-     * @param {function} onconfirm function to execute on confirm
-     * @param {function} onreject function to execute on reject
-     */
-    var confirmHandleInplaceEdit = function(message, onconfirm, onreject, e) {
-        str.get_strings([
-            {key: 'confirmeditgrade', component: 'mod_peerwork'},
-            {key: 'yes', component: 'core'},
-            {key: 'no', component: 'mod_peerwork'}
-        ]).done(function(s) {
-                notification.confirm(s[0], message, s[1], s[2], onconfirm, onreject);                
+            if (!warningshown) {
+                td.addEventListener('click', beforeDueDate, true);
+                td.addEventListener('keypress', beforeDueDate, true);
             }
-        );
-    };
-
-    /**
-     * The edit link was clicked in the group list.
-     *
-     * @param {Event} e click/keypress event
-     */
-    var beforeDueDate = function(e) {
-        if (e.type === 'keypress' && e.keyCode !== 13) {
-            return;
-        }
-
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        itemid = e.target.closest('.inplaceeditable').dataset.itemid;        
-
-        str.get_strings([
-            {key: 'confirmeditgradetxt', component: 'mod_peerwork'}
-        ]).done(function(s) {
-            confirmHandleInplaceEdit(s[0], handleInplaceEdit, stopInplaceEdit, e);    
-
+            return false;
         });
-    };
 
-    document.querySelectorAll('.inplace-grading.cell').forEach(function(td) {
-        if (!warningshown) {
-            td.addEventListener('click', beforeDueDate, true);
-            td.addEventListener('keypress', beforeDueDate, true);
-        }
-        return false;
+        return {};
     });
-
-    return {};
-});

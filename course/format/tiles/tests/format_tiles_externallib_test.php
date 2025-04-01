@@ -139,7 +139,7 @@ final class format_tiles_externallib_test extends \externallib_advanced_testcase
      * @throws \moodle_exception
      */
     public function test_set_session_width(): void {
-        global $DB, $SESSION, $CFG;
+        global $DB, $SESSION;
         $this->resetAfterTest(true);
 
         $course = self::getDataGenerator()->create_course($this->tilescourseformatoptions);

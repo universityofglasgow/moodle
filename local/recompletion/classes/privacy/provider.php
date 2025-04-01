@@ -473,9 +473,10 @@ class provider implements
             $DB->delete_records('local_recompletion_cmv', $params);
             $DB->delete_records('local_recompletion_qa', $params);
             $DB->delete_records('local_recompletion_qg', $params);
-            $DB->delete_records_select('local_recompletion_ssv', 'attemptid in (SELECT id
-                                                                                  FROM {local_recompletion_sa}
-                                                                                  WHERE userid = :userid AND courseid = :course');
+            $DB->delete_records_select('local_recompletion_ssv',
+                                       'attemptid in (SELECT id
+                                                        FROM {local_recompletion_sa}
+                                                       WHERE userid = :userid AND courseid = :course', $params);
             $DB->delete_records('local_recompletion_sa', $params);
             $DB->delete_records('local_recompletion_ltia', ['userid' => $userid]);
             $DB->delete_records('local_recompletion_qr', $params);

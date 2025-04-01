@@ -72,6 +72,16 @@ class restore_local_recompletion_plugin extends restore_local_plugin {
 
         $data = (object) $data;
         $data->course = $this->task->get_courseid();
+        if ($data->name == 'recompletionemailenable') {
+            // Old format of email setting.
+            if (empty($data->value)) {
+                // Old value stored as 0 - new one stored as empty string.
+                $data->value = '';
+            } else {
+                $data->value = 'completed';
+            }
+            $data->name = 'recompletionnotify';
+        }
 
         $DB->insert_record('local_recompletion_config', $data);
     }

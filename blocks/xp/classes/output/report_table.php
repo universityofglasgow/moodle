@@ -114,7 +114,6 @@ class report_table extends table_sql {
         $columnsdef = $this->get_columns_definition();
         $this->define_columns(array_keys($columnsdef));
         $this->define_headers(array_values($columnsdef));
-        $this->init_sql();
 
         // Level sorting is a fake column sorting that uses the 'xp' column under the hood.
         $this->sortable(true, 'lvl', SORT_DESC);
@@ -157,6 +156,7 @@ class report_table extends table_sql {
                      WHERE courseid = :courseid';
             $params = ['courseid' => $courseid, 'groupid' => $groupid];
         }
+
         $entries = $this->db->get_recordset_sql($sql, $params);
         foreach ($entries as $entry) {
             $ids[$entry->userid] = $entry->userid;
@@ -164,9 +164,12 @@ class report_table extends table_sql {
         $entries->close();
         list($insql, $inparams) = $this->db->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'param', true, null);
 
+        // User filter.
+        [$usersql, $userparams] = $this->generate_user_filter_sql();
+
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = user_utils::picture_fields('u') . ', u.idnumber, u.email, u.username, x.xp, ' .
+        $this->sql->fields = user_utils::picture_fields('u') . ', u.idnumber, u.email, u.username, u.suspended, x.xp, ' .
             context_helper::get_preload_record_columns_sql('ctx');
         $this->sql->from = "{user} u
                        JOIN {context} ctx
@@ -174,8 +177,8 @@ class report_table extends table_sql {
                         AND ctx.contextlevel = :contextlevel
                   LEFT JOIN {block_xp} x
                          ON (x.userid = u.id AND x.courseid = :courseid)";
-        $this->sql->where = "u.id $insql";
-        $this->sql->params = array_merge($inparams, [
+        $this->sql->where = "u.deleted = 0 AND u.id $insql AND $usersql";
+        $this->sql->params = array_merge($inparams, $userparams, [
             'courseid' => $courseid,
             'contextlevel' => CONTEXT_USER,
         ]);
@@ -198,6 +201,64 @@ class report_table extends table_sql {
             $cols['actions'] = '';
         }
         return $cols;
+    }
+
+    /**
+     * Generate the user filter SQL.
+     *
+     * @return array
+     */
+    protected function generate_user_filter_sql() {
+        $filterset = $this->get_filterset();
+        if (!$filterset || !$filterset->has_filter('term')) {
+            return ['1=1', []];
+        }
+
+        $term = trim($filterset->get_filter('term')->current());
+        if (empty($term)) {
+            return ['1=1', []];
+        }
+
+        $wheres = [];
+        $params = [];
+
+        $nameoptions = [
+            ['firstname' => $term],
+            ['lastname' => $term],
+        ];
+        $nameparts = explode(' ', $term);
+        if (count($nameparts) > 1) {
+            for ($i = 0; $i < count($nameparts) - 1; $i++) {
+                $nameoptions[] = [
+                    'firstname' => implode(' ', array_slice($nameparts, 0, $i + 1)),
+                    'lastname' => implode(' ', array_slice($nameparts, $i + 1)),
+                ];
+            }
+        }
+        foreach ($nameoptions as $i => $option) {
+            $subparams = [];
+            $subsql = [];
+            if (!empty($option['firstname'])) {
+                $paramname = 'usertermfn' . $i;
+                $subsql[] = $this->db->sql_like("u.firstname", ':' . $paramname, false, false);
+                $subparams[$paramname] = $this->db->sql_like_escape($option['firstname']) . '%';
+            }
+            if (!empty($option['lastname'])) {
+                $paramname = 'usertermln' . $i;
+                $subsql[] = $this->db->sql_like("u.lastname", ':' . $paramname, false, false);
+                $subparams[$paramname] = $this->db->sql_like_escape($option['lastname']) . '%';
+            }
+            if (!empty($subsql)) {
+                $wheres[] = '(' . implode(' AND ', $subsql) . ')';
+                $params = array_merge($params, $subparams);
+            }
+        }
+
+        if (empty($wheres)) {
+            return ['1=1', []];
+        }
+
+        return ['((' . implode(') OR (', $wheres) . '))', $params];
     }
 
     /**
@@ -263,8 +324,19 @@ class report_table extends table_sql {
     protected function get_row_actions($row) {
         $actions = [];
 
-        $url = new moodle_url($this->baseurl, ['action' => 'edit', 'userid' => $row->id]);
-        $actions[] = new action_menu_link($url, new pix_icon('t/edit', get_string('edit', 'core')), get_string('edit', 'core'));
+        $actions[] = new action_menu_link(
+            $this->baseurl,
+            new pix_icon('t/edit', get_string('edit', 'core')),
+            get_string('edit', 'core'),
+            false,
+            [
+                'data-action' => 'open-form',
+                'data-form-class' => 'block_xp\form\user_xp',
+                'data-form-args__contextid' => $this->world->get_context()->id,
+                'data-form-args__userid' => $row->id,
+                'data-modal-title' => get_string('edita', 'core', fullname($row)),
+            ]
+        );
 
         if ($this->logaccessperms && $this->logaccessperms->can_access_logs()) {
             $url = $this->urlresolver->reverse('log', ['courseid' => $this->world->get_courseid()]);
@@ -296,6 +368,20 @@ class report_table extends table_sql {
             return '';
         }
         return $this->renderer->control_menu($this->get_row_actions($row));
+    }
+
+    /**
+     * Formats the column.
+     *
+     * @param stdClass $row Table row.
+     * @return string Output produced.
+     */
+    public function col_fullname($row) {
+        $o = parent::col_fullname($row);
+        if ($row->suspended) {
+            $o .= ' (' . get_string('suspended', 'core') . ')';
+        }
+        return $o;
     }
 
     /**
@@ -411,6 +497,18 @@ class report_table extends table_sql {
      */
     public function get_sql_sort() {
         return static::construct_order_by($this->get_sort_columns(), []);
+    }
+
+    /**
+     * Out.
+     *
+     * @param int $pagesize The page size.
+     * @param bool $initialbars Whether to use initial bars.
+     * @param string $downloadhelpbutton What is this?
+     */
+    public function out($pagesize, $initialbars, $downloadhelpbutton = '') {
+        $this->init_sql();
+        return parent::out($pagesize, $initialbars, $downloadhelpbutton);
     }
 
     /**

@@ -39,12 +39,8 @@ $format = course_get_format($course);
 $course = $format->get_course();
 $context = context_course::instance($course->id);
 
+// Variable $displaysection should already be set from course/view.php but we override anyway.
 $displaysection = optional_param('section', 0, PARAM_INT);
-if (!$displaysection) {
-    // Try to get it from url params which may have been added /course/view.php incl from sectionid.
-    // This enables us to respect "permalink" section URLs as AMD format_tiles/course redirects them to &sectionid=xx.
-    $displaysection = $PAGE->url->param('section') ?? null;
-}
 if (!empty($displaysection)) {
     $format->set_sectionnum($displaysection);
 }

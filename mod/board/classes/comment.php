@@ -149,11 +149,11 @@ class comment {
     public function can_delete() {
         global $USER;
 
-        if ($this->userid == $USER->id) {
+        $context = $this->get_context();
+        if ($this->userid == $USER->id && has_capability('mod/board:postcomment', $context)) {
             return true;
         }
 
-        $context = $this->get_context();
         if (has_capability('mod/board:deleteallcomments', $context)) {
             return true;
         }
@@ -170,7 +170,7 @@ class comment {
         global $DB, $USER;
 
         $this->timemodified = time();
-        $this->content = html_to_text($this->content, 5000, false);
+        $this->content = clean_param(html_to_text($this->content, 5000, false), PARAM_TEXT);
 
         if ($this->id > 0) {
             $DB->update_record('board_comments', $this);
@@ -208,6 +208,9 @@ class comment {
      * @return void
      */
     public static function board_add_comment_log($commentid, $context, $noteid, $content) {
+        if (!get_config('mod_board', 'addcommenttolog')) {
+            $content = '';
+        }
         $event = \mod_board\event\add_comment::create(array(
             'objectid' => $commentid,
             'context' => $context,

@@ -206,7 +206,7 @@ As moodle administrator, you can make the following settings:
     </tr>
     <tr>
         <th>HTML entities</th>
-        <td>If this setting is set to <code>true</code>, HTMLentities like "&", "<", etc. are supported within the JavaScript code for JSXGraph.</td>
+        <td>If this setting is set to <code>true</code>, HTML entities like "&", "<", etc. are supported within the JavaScript code for JSXGraph.</td>
     </tr>
     <tr>
         <th>convert encoding</th>
@@ -264,7 +264,7 @@ Within the `<jsxgraph>` tag different attributes can be declared, e.g. `<jsxgrap
     </tr>
     <tr>
         <th><code>entities</code></th>
-        <td>If HTMLentities like "&", "<", etc. should be supported within the JavaScript code set the attribute to <code>"true"</code>. To override a global <code>true</code> type <code>"false"</code>.</td>
+        <td>If HTML entities like "&", "<", etc. should be supported within the JavaScript code set the attribute to <code>"true"</code>. To override a global <code>true</code> type <code>"false"</code>.</td>
     </tr>
     <tr>
         <th><code>useGlobalJS</code></th>
@@ -289,14 +289,20 @@ These attributes can be defined for each board by separating with `,`:
 - box
 - boardid
 
+## Use the JSXGraph filter together with other filters
+
+To avoid conflicts the order of filters should follow this rules:
+
+- `MathJax` is **before** `JSXGraph`
+- `Convert URLs into links and images` is **after** `JSXGraph`
+
 ## Using MathJax within the board
 
-To use the pre-installed `MathJax` notation within the board, your **Moodle admin** first has to make some settings:
+To use e.g. the pre-installed `MathJax` notation within the board, your **Moodle admin** first has to enable the `MathJax` filter
+in `Moodle -> Site administration -> Plugins -> Filters -> Manage filters`. If the `TeX notation` filter is activated, this must be
+arranged below `MathJax`.
 
-1. Go to `Moodle -> Site administration -> Plugins -> Filters -> Manage filters`
-2. If not already done, enable the `MathJax` filter
-3. Arrange the filters so, that `MathJax` is before `JSXGraph`.
-4. If the `TeX notation` filter is activated, this must be arranged below `MathJax`
+Also comply with the above-mentioned filter order.
 
 After this changes **everyone** can use `MathJax` notation `$$(...)$$` within the board of JSXGraph as follows:
 

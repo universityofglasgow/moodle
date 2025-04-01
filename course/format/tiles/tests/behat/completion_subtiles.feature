@@ -98,7 +98,7 @@ Feature: Progress indicators can be used to change progress status and changes a
     And format_tiles progress indicator for tile "1" is "0" out of "2"
     And I click on tile "1"
     And I wait until the page is ready
-
+    And I wait "1" seconds
     And I click format tiles subtile progress indicator for "Test page 1a"
     Then format_tiles progress for "page" called "Test page 1a" in "Course 1" is "1" in the database
     And format_tiles progress indicator for tile "1" is "1" out of "2"

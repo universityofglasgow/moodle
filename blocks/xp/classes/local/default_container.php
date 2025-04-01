@@ -51,6 +51,7 @@ class default_container implements container {
         'base_url' => true,
         'block_class' => true,
         'block_edit_form_class' => true,
+        'cheatguard_form_class' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
         'config' => true,
@@ -65,6 +66,8 @@ class default_container implements container {
         'course_world_navigation_factory' => true,
         'db' => true,
         'file_server' => true,
+        'leaderboard_factory_maker' => true,
+        'leaderboard_form_class' => true,
         'levels_info_factory' => true,
         'levels_info_writer' => true,
         'observer_rules_maker' => true,
@@ -217,6 +220,15 @@ class default_container implements container {
      */
     protected function get_block_edit_form_class() {
         return 'block_xp\form\edit_form';
+    }
+
+    /**
+     * Cheatguard form class.
+     *
+     * @return string
+     */
+    protected function get_cheatguard_form_class() {
+        return \block_xp\form\cheatguard::class;
     }
 
     /**
@@ -374,6 +386,24 @@ class default_container implements container {
     protected function get_levels_info_factory() {
         return new factory\levels_factory($this->get('config'), $this->get('badge_url_resolver'),
             $this->get('badge_url_resolver_course_world_factory'));
+    }
+
+    /**
+     * Get the leaderboard factory maker.
+     *
+     * @return factory\leaderboard_factory_maker
+     */
+    protected function get_leaderboard_factory_maker() {
+        return new factory\default_leaderboard_factory_maker($this->get('db'), $this->get('config'));
+    }
+
+    /**
+     * Get the leaderboard form class.
+     *
+     * @return string
+     */
+    protected function get_leaderboard_form_class() {
+        return \block_xp\form\leaderboard::class;
     }
 
     /**

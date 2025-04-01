@@ -37,7 +37,7 @@ Feature: Mobile compatibility
       | quiz     | Quiz 7  | C1     | quiz7    |
       | quiz     | Quiz 8  | C1     | quiz8    |
       | quiz     | Quiz 9  | C1     | quiz9    |
-      | quiz     | Quiz 10 | C1     | quiz9    |
+      | quiz     | Quiz 10 | C1     | quiz10   |
     And quiz "Quiz 1" contains the following questions:
       | question  | page |
       | singlenum | 1    |
@@ -78,8 +78,8 @@ Feature: Mobile compatibility
     And I set the field "Answer" to "5" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
-    Then I should find "Your answer is correct." in the app
+    And I press "Submit" near "Once you submit" in the app
+    Then I should find "Correct answer, well done." in the app
 
   Scenario: Try to answer a question with one part and two answer fields
     When I press "Quiz 2" in the app
@@ -88,7 +88,7 @@ Feature: Mobile compatibility
     And I set the field "Answer field 2" to "3" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
+    And I press "Submit" near "Once you submit" in the app
     Then I should find "Your answer is correct." in the app
 
   Scenario: Try to answer a question with one combined answer+unit field
@@ -97,8 +97,8 @@ Feature: Mobile compatibility
     And I set the field "Answer" to "5 m/s" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
-    Then I should find "Your answer is correct." in the app
+    And I press "Submit" near "Once you submit" in the app
+    Then I should find "Correct answer, well done." in the app
 
   Scenario: Try to answer a question with one answer + one unit field
     When I press "Quiz 4" in the app
@@ -107,8 +107,8 @@ Feature: Mobile compatibility
     And I set the field "Unit" to "m/s" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
-    Then I should find "Your answer is correct." in the app
+    And I press "Submit" near "Once you submit" in the app
+    Then I should find "Correct answer, well done." in the app
 
   Scenario: Try to answer a question with three parts and one answer field each
     When I press "Quiz 5" in the app
@@ -118,7 +118,7 @@ Feature: Mobile compatibility
     And I set the field "Answer for part 3" to "7" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
+    And I press "Submit" near "Once you submit" in the app
     Then I should find "Part 1 correct feedback." in the app
     And I should find "Part 2 correct feedback." in the app
     And I should find "Part 3 correct feedback." in the app
@@ -129,8 +129,8 @@ Feature: Mobile compatibility
     And I press "Cat" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
-    Then I should find "Your answer is correct." in the app
+    And I press "Submit" near "Once you submit" in the app
+    Then I should find "Correct answer, well done." in the app
 
   Scenario: Try to answer a drowdown multiple choice formula question
     When I press "Quiz 7" in the app
@@ -139,8 +139,8 @@ Feature: Mobile compatibility
     And I set the field "Answer" to "Cat"
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
-    Then I should find "Your answer is correct." in the app
+    And I press "Submit" near "Once you submit" in the app
+    Then I should find "Correct answer, well done." in the app
 
   Scenario: Try to answer a question with two parts, one drowdown multiple choice in each of them
     When I press "Quiz 8" in the app
@@ -149,7 +149,7 @@ Feature: Mobile compatibility
     And I set the field "Answer field 1 for part 2" to "Blue"
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
+    And I press "Submit" near "Once you submit" in the app
     Then I should find "Your first answer is correct." in the app
     And I should find "Your second answer is correct." in the app
 
@@ -160,7 +160,7 @@ Feature: Mobile compatibility
     And I press "Blue" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
+    And I press "Submit" near "Once you submit" in the app
     Then I should find "Your first answer is correct." in the app
     And I should find "Your second answer is correct." in the app
 
@@ -173,6 +173,6 @@ Feature: Mobile compatibility
     And I set the field "Answer field 2 for part 2" to "4" in the app
     And I press "Submit" in the app
     And I press "Submit all and finish" in the app
-    And I press "OK" near "Once you submit" in the app
+    And I press "Submit" near "Once you submit" in the app
     Then I should find "Your answers in part 1 are correct." in the app
     And I should find "Your answers in part 2 are correct." in the app

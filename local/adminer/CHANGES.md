@@ -1,5 +1,23 @@
 ## Release notes
 
+### Version 4.17.2 (2025031700)
+* Switch to new Adminer fork adminneo [Releases notes](https://github.com/adminneo-org/adminneo/releases/tag/v4.17.2) (#23)
+* Remove modal feature to simplify the code
+* Add a "Back to Moodle" button on the left top corner
+
+### Version 4.8.4.2 (2025021700)
+* Fix css problem (#22)
+* Make github actions more restrictive
+
+### Version 4.8.4.1 (20241027)
+* Add missing capability check (#20)
+
+### Version 4.8.4 (20241025)
+* New version of Adminer [Releases notes](https://github.com/adminerevo/adminerevo/releases/tag/v4.8.4)
+* Add option to show a quick link in the navigation bar
+* Add small button to the modal header to open the content in a new tab without frame.
+* Changes the language of the Adminer ui suitable to the language of the current user.
+
 ### Version 4.8.3 (20231219)
 * New version of Adminer [Releases notes](https://github.com/adminerevo/adminerevo/releases/tag/v4.8.3)
 * MBS-8480: Fix modal width on error output (#16)

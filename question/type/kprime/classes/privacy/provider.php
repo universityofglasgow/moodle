@@ -42,7 +42,7 @@ class provider implements \core_privacy\local\metadata\null_provider {
      * file to explain why this plugin stores no data.
      * @return string
      */
-    public static function get_reason() : string {
+    public static function get_reason(): string {
         return 'privacy:metadata';
     }
 }

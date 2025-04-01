@@ -27,7 +27,7 @@ namespace fileconverter_onedrive;
 use stored_file;
 use moodle_exception;
 use moodle_url;
-use \core_files\conversion;
+use core_files\conversion;
 
 /**
  * Class for converting files between different formats using unoconv.
@@ -39,10 +39,10 @@ use \core_files\conversion;
  */
 class converter implements \core_files\converter_interface {
     /** @var array $supported Map of output formats to input formats. */
-    private static $supported = array(
+    private static $supported = [
         'pdf' => ['csv', 'doc', 'docx', 'odp', 'ods', 'odt', 'pot', 'potm', 'potx', 'pps', 'ppsx', 'ppsxm', 'ppt', 'pptm', 'pptx',
             'rtf', 'xls', 'xlsx'],
-    );
+    ];
 
     // Set fragment size to a multiple of 320KiB, ensuring maximum bytes in any request is less than 60MiB.
     // (see https://docs.microsoft.com/en-us/onedrive/developer/rest-api/api/driveitem_createuploadsession?view=odsp-graph-online)
@@ -113,7 +113,7 @@ class converter implements \core_files\converter_interface {
             'filearea' => 'fileconverter_onedrive',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => 'conversion_test.docx'
+            'filename' => 'conversion_test.docx',
         ];
 
         // Get the fixture doc file content and generate and stored_file object.
@@ -168,7 +168,7 @@ class converter implements \core_files\converter_interface {
     private function delete_lingering_remote_file($restservice, $remoteidofuploadedfile) {
         // Cleanup.
         $deleteparams = [
-            'itemid' => $remoteidofuploadedfile
+            'itemid' => $remoteidofuploadedfile,
         ];
 
         try {
@@ -191,7 +191,7 @@ class converter implements \core_files\converter_interface {
      */
     private function extract_named_header($headers, $soughtheader) {
         foreach ($headers as $header) {
-            if (strpos($header, $soughtheader) === 0) {
+            if (stripos($header, $soughtheader) === 0) {
                 return trim(substr($header, strpos($header, ':') + 1));
             }
         }

@@ -58,6 +58,7 @@ $string['movesectiontotheend'] = 'To the end';
 $string['newsectionname'] = 'New name for section {$a}';
 $string['page-course-view-flexsections'] = 'Any course main page in Flexible sections format';
 $string['page-course-view-flexsections-x'] = 'Any course page in Flexible sections format';
+$string['plugin_description'] = 'The course is divided into sections, each section can be displayed on the course page or as a link. Sections can have subsections.';
 $string['pluginname'] = 'Flexible sections format';
 $string['privacy:metadata'] = 'The Flexible sections format plugin does not store any personal data.';
 $string['section0name'] = 'General';

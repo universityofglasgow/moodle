@@ -117,7 +117,7 @@ class qtype_kprime extends question_type {
             $question->options->scoringmethod = $kprimeconfig->scoringmethod;
         }
         if (!isset($question->options->rows)) {
-            $rows = array();
+            $rows = [];
             for ($i = 1; $i <= $question->options->numberofrows; ++$i) {
                 $row = new stdClass();
                 $row->number = $i;
@@ -131,7 +131,7 @@ class qtype_kprime extends question_type {
         }
 
         if (!isset($question->options->columns)) {
-            $columns = array();
+            $columns = [];
             for ($i = 1; $i <= $question->options->numberofcolumns; ++$i) {
                 $column = new stdClass();
                 $column->number = $i;
@@ -160,16 +160,16 @@ class qtype_kprime extends question_type {
         parent::get_question_options($question);
 
         // Retrieve the question options.
-        if($qoptions = $DB->get_record('qtype_kprime_options',
-                array('questionid' => $question->id))) {
+        if ($qoptions = $DB->get_record('qtype_kprime_options',
+                ['questionid' => $question->id])) {
             $question->options = $qoptions;
         } else {
-          return false;
+            return false;
         }
 
         // Retrieve the question rows (kprime options).
-        if($orows = $DB->get_records('qtype_kprime_rows',
-                array('questionid' => $question->id),
+        if ($orows = $DB->get_records('qtype_kprime_rows',
+                ['questionid' => $question->id],
                 'number ASC', '*', 0, $question->options->numberofrows)) {
             $question->options->rows = $orows;
         } else {
@@ -177,17 +177,17 @@ class qtype_kprime extends question_type {
         }
 
         // Retrieve the question columns.
-        if($ocols = $DB->get_records('qtype_kprime_columns',
-                array('questionid' => $question->id),
+        if ($ocols = $DB->get_records('qtype_kprime_columns',
+                ['questionid' => $question->id],
                 'number ASC', '*', 0, $question->options->numberofcolumns)) {
-           $question->options->columns = $ocols;
+            $question->options->columns = $ocols;
         } else {
-           return false;
+            return false;
         }
 
         // Retrieve the question weights.
-        if(!$weightrecords = $DB->get_records('qtype_kprime_weights',
-                array('questionid' => $question->id),
+        if (!$weightrecords = $DB->get_records('qtype_kprime_weights',
+                ['questionid' => $question->id],
                 'rownumber ASC, columnnumber ASC')) {
             return false;
         }
@@ -227,7 +227,7 @@ class qtype_kprime extends question_type {
         $result = new stdClass();
 
         // Insert all the new options.
-        $options = $DB->get_record('qtype_kprime_options', array('questionid' => $question->id));
+        $options = $DB->get_record('qtype_kprime_options', ['questionid' => $question->id]);
 
         if (!$options) {
             $options = new stdClass();
@@ -249,7 +249,7 @@ class qtype_kprime extends question_type {
         $this->save_hints($question, true);
 
         // Insert all the new rows.
-        $oldrows = $DB->get_records('qtype_kprime_rows', array('questionid' => $question->id), 'number ASC');
+        $oldrows = $DB->get_records('qtype_kprime_rows', ['questionid' => $question->id], 'number ASC');
 
         for ($i = 1; $i <= $options->numberofrows; ++$i) {
             $row = array_shift($oldrows);
@@ -280,7 +280,7 @@ class qtype_kprime extends question_type {
             $DB->update_record('qtype_kprime_rows', $row);
         }
 
-        $oldcolumns = $DB->get_records('qtype_kprime_columns', array('questionid' => $question->id), 'number ASC');
+        $oldcolumns = $DB->get_records('qtype_kprime_columns', ['questionid' => $question->id], 'number ASC');
 
         // Insert all new columns.
         for ($i = 1; $i <= $options->numberofcolumns; ++$i) {
@@ -306,7 +306,7 @@ class qtype_kprime extends question_type {
 
         // Set all the new weights.
         $oldweightrecords = $DB->get_records('qtype_kprime_weights',
-                array('questionid' => $question->id),
+                ['questionid' => $question->id],
                 'rownumber ASC, columnnumber ASC');
 
         // Put the old weights into an array.
@@ -351,7 +351,7 @@ class qtype_kprime extends question_type {
         global $DB;
         $context = $formdata->context;
 
-        $oldhints = $DB->get_records('question_hints', array('questionid' => $formdata->id), 'id ASC');
+        $oldhints = $DB->get_records('question_hints', ['questionid' => $formdata->id], 'id ASC');
 
         if (!empty($formdata->hint)) {
             $numhints = max(array_keys($formdata->hint)) + 1;
@@ -416,7 +416,7 @@ class qtype_kprime extends question_type {
 
         foreach ($oldhints as $oldhint) {
             $fs->delete_area_files($context->id, 'question', 'hint', $oldhint->id);
-            $DB->delete_records('question_hints', array('id' => $oldhint->id));
+            $DB->delete_records('question_hints', ['id' => $oldhint->id]);
         }
     }
 
@@ -456,10 +456,10 @@ class qtype_kprime extends question_type {
      */
     public function delete_question($questionid, $contextid) {
         global $DB;
-        $DB->delete_records('qtype_kprime_options', array('questionid' => $questionid));
-        $DB->delete_records('qtype_kprime_rows', array('questionid' => $questionid));
-        $DB->delete_records('qtype_kprime_columns', array('questionid' => $questionid));
-        $DB->delete_records('qtype_kprime_weights', array('questionid' => $questionid));
+        $DB->delete_records('qtype_kprime_options', ['questionid' => $questionid]);
+        $DB->delete_records('qtype_kprime_rows', ['questionid' => $questionid]);
+        $DB->delete_records('qtype_kprime_columns', ['questionid' => $questionid]);
+        $DB->delete_records('qtype_kprime_weights', ['questionid' => $questionid]);
         parent::delete_question($questionid, $contextid);
     }
 
@@ -470,11 +470,11 @@ class qtype_kprime extends question_type {
      * @return Ambigous <multitype:multitype: , unknown>
      */
     private function weight_records_to_array($weightrecords) {
-        $weights = array();
+        $weights = [];
 
         foreach ($weightrecords as $id => $weight) {
             if (!property_exists((object) $weights, $weight->rownumber)) {
-                $weights[$weight->rownumber] = array();
+                $weights[$weight->rownumber] = [];
             }
             $weights[$weight->rownumber][$weight->columnnumber] = $weight;
         }
@@ -510,11 +510,11 @@ class qtype_kprime extends question_type {
     public function get_possible_responses($questiondata) {
         $question = $this->make_question($questiondata);
         $weights = $question->weights;
-        $parts = array();
+        $parts = [];
 
         foreach ($question->rows as $rowid => $row) {
 
-            $choices = array();
+            $choices = [];
             foreach ($question->columns as $columnid => $column) {
                 // Calculate the partial credit.
                 if ($question->scoringmethod == 'subpoints') {
@@ -586,7 +586,7 @@ class qtype_kprime extends question_type {
 
         $fs = get_file_storage();
 
-        $rowids = $DB->get_records_menu('qtype_kprime_rows', array('questionid' => $questionid), 'id', 'id,1');
+        $rowids = $DB->get_records_menu('qtype_kprime_rows', ['questionid' => $questionid], 'id', 'id,1');
 
         foreach ($rowids as $rowid => $notused) {
             $fs->move_area_files_to_new_context($oldcontextid, $newcontextid, 'qtype_kprime', 'optiontext', $rowid);
@@ -603,7 +603,7 @@ class qtype_kprime extends question_type {
         global $DB;
         $fs = get_file_storage();
 
-        $rowids = $DB->get_records_menu('qtype_kprime_rows', array('questionid' => $questionid), 'id', 'id,1');
+        $rowids = $DB->get_records_menu('qtype_kprime_rows', ['questionid' => $questionid], 'id', 'id,1');
 
         foreach ($rowids as $rowid => $notused) {
             $fs->delete_area_files($contextid, 'qtype_kprime', 'optiontext', $rowid);
@@ -698,33 +698,33 @@ class qtype_kprime extends question_type {
         $question = $format->import_headers($data);
         $question->qtype = 'kprime';
 
-        $question->scoringmethod = $format->getpath($data, array('#', 'scoringmethod', 0, '#', 'text', 0, '#'), 'kprime');
-        $question->shuffleanswers = $format->trans_single($format->getpath($data, array('#', 'shuffleanswers', 0, '#'), 1));
+        $question->scoringmethod = $format->getpath($data, ['#', 'scoringmethod', 0, '#', 'text', 0, '#'], 'kprime');
+        $question->shuffleanswers = $format->trans_single($format->getpath($data, ['#', 'shuffleanswers', 0, '#'], 1));
 
         $question->numberofrows = $format->getpath(
-                $data, array('#', 'numberofrows', 0, '#'), QTYPE_KPRIME_NUMBER_OF_OPTIONS);
+                $data, ['#', 'numberofrows', 0, '#'], QTYPE_KPRIME_NUMBER_OF_OPTIONS);
 
         $question->numberofcolumns = $format->getpath(
-                $data, array('#', 'numberofcolumns', 0, '#'), QTYPE_KPRIME_NUMBER_OF_RESPONSES);
+                $data, ['#', 'numberofcolumns', 0, '#'], QTYPE_KPRIME_NUMBER_OF_RESPONSES);
 
         $rows = $data['#']['row'];
         $i = 1;
 
         foreach ($rows as $row) {
-            $number = $format->getpath($row, array('@', 'number'), $i++);
+            $number = $format->getpath($row, ['@', 'number'], $i++);
 
-            $question->{'option_' . $number} = array();
+            $question->{'option_' . $number} = [];
 
             $question->{'option_' . $number}['text'] = $format->getpath(
-                    $row, array('#', 'optiontext', 0, '#', 'text', 0, '#'), '', true);
+                    $row, ['#', 'optiontext', 0, '#', 'text', 0, '#'], '', true);
 
             $question->{'option_' . $number}['format'] = $format->trans_format(
-                    $format->getpath($row, array('#', 'optiontext', 0, '@', 'format'), FORMAT_HTML));
+                    $format->getpath($row, ['#', 'optiontext', 0, '@', 'format'], FORMAT_HTML));
 
-            $question->{'option_' . $number}['files'] = array();
+            $question->{'option_' . $number}['files'] = [];
 
             // Restore files in options (rows).
-            $files = $format->getpath($row, array('#', 'optiontext', 0, '#', 'file'), array(), false);
+            $files = $format->getpath($row, ['#', 'optiontext', 0, '#', 'file'], [], false);
 
             foreach ($files as $file) {
                 $filesdata = new stdclass();
@@ -734,18 +734,18 @@ class qtype_kprime extends question_type {
                 $question->{'option_' . $number}['files'][] = $filesdata;
             }
 
-            $question->{'feedback_' . $number} = array();
+            $question->{'feedback_' . $number} = [];
 
             $question->{'feedback_' . $number}['text'] = $format->getpath(
-                    $row, array('#', 'feedbacktext', 0, '#', 'text', 0, '#'), '', true);
+                    $row, ['#', 'feedbacktext', 0, '#', 'text', 0, '#'], '', true);
 
             $question->{'feedback_' . $number}['format'] = $format->trans_format(
-                    $format->getpath($row, array('#', 'feedbacktext', 0, '@', 'format'), FORMAT_HTML));
+                    $format->getpath($row, ['#', 'feedbacktext', 0, '@', 'format'], FORMAT_HTML));
 
             // Restore files in option feedback.
-            $question->{'feedback_' . $number}['files'] = array();
+            $question->{'feedback_' . $number}['files'] = [];
 
-            $files = $format->getpath($row, array('#', 'feedbacktext', 0, '#', 'file'), array(), false);
+            $files = $format->getpath($row, ['#', 'feedbacktext', 0, '#', 'file'], [], false);
 
             foreach ($files as $file) {
                 $filesdata = new stdclass();
@@ -760,18 +760,18 @@ class qtype_kprime extends question_type {
         $j = 1;
 
         foreach ($columns as $column) {
-            $number = $format->getpath($column, array('@', 'number'), $j++);
+            $number = $format->getpath($column, ['@', 'number'], $j++);
             $question->{'responsetext_' . $number} = $format->getpath(
-                    $column, array('#', 'responsetext', 0, '#', 'text', 0, '#'), '', true);
+                    $column, ['#', 'responsetext', 0, '#', 'text', 0, '#'], '', true);
         }
 
         // Finally, import the weights.
         $weights = $data['#']['weight'];
 
         foreach ($weights as $weight) {
-            $rownumber = $format->getpath($weight, array('@', 'rownumber'), 1);
-            $columnnumber = $format->getpath($weight, array('@', 'columnnumber'), 1);
-            $value = $format->getpath($weight, array('#', 'value', 0, '#'), 0.0);
+            $rownumber = $format->getpath($weight, ['@', 'rownumber'], 1);
+            $columnnumber = $format->getpath($weight, ['@', 'columnnumber'], 1);
+            $value = $format->getpath($weight, ['#', 'value', 0, '#'], 0.0);
 
             if ($value > 0.0) {
                 $question->{'weightbutton_' . $rownumber} = $columnnumber;

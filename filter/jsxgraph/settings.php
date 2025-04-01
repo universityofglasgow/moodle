@@ -153,9 +153,9 @@ if ($ADMIN->fulltree) {
                    ));
 
     $settings->add(new admin_setting_configselect(
-                       'filter_jsxgraph/HTMLentities',
-                       get_string('HTMLentities', 'filter_jsxgraph'),
-                       get_string('HTMLentities_desc', 'filter_jsxgraph'),
+                       'filter_jsxgraph/html_entities',
+                       get_string('html_entities', 'filter_jsxgraph'),
+                       get_string('html_entities_desc', 'filter_jsxgraph'),
                        '1',
                        [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
                    ));

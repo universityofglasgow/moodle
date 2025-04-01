@@ -102,7 +102,8 @@ class mod_assign {
                 $cm = get_coursemodule_from_instance('assign', $assign->id);
                 $context = \context_module::instance($cm->id);
                 if (has_capability('mod/assign:grade', $context)) {
-                    // Assign add_attempt() is protected - use reflection so we don't have to write our own.
+                    // Assign add_attempt() is protected and requires sesskey, use reflection so we don't have to write our own.
+                    $_POST['sesskey'] = sesskey();
                     $r = new \ReflectionMethod('assign', 'add_attempt');
                     $r->setAccessible(true);
                     $r->invoke(new \assign($context, $cm, $course), $userid);

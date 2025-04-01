@@ -150,9 +150,7 @@ function block_grade_me_tree($course) {
 
         $modulelink = $CFG->wwwroot . '/mod/' . $itemmodule . '/view.php?id=' . $coursemoduleid;
         $gradelink = $CFG->wwwroot;
-        if ($itemmodule == 'assignment') {
-            $gradelink .= '/mod/assignment/submissions.php?id=' . $coursemoduleid;
-        } else if ($itemmodule == 'quiz') {
+        if ($itemmodule == 'quiz') {
             $gradelink .= '/mod/quiz/report.php?id=' . $coursemoduleid;
         } else {
             $gradelink = $modulelink;
@@ -183,10 +181,7 @@ function block_grade_me_tree($course) {
             $submissionid = $submission['meta']['submissionid'];
 
             $submissionlink = $CFG->wwwroot;
-            if ($itemmodule == 'assignment') {
-                $submissionlink .= '/mod/assignment/submissions.php?id=' . $coursemoduleid . '&amp;userid=' . $userid .
-                    '&amp;mode=single&amp;filter=0&amp;offset=0';
-            } else if ($itemmodule == 'assign') {
+            if ($itemmodule == 'assign') {
                 $submissionlink .= "/mod/assign/view.php?id=$coursemoduleid&action=grade&userid=$userid";
             } else if ($itemmodule == 'data') {
                 $submissionlink .= '/mod/data/view.php?rid=' . $submissionid . '&amp;mode=single';

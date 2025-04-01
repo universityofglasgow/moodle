@@ -41,6 +41,7 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
         require_once("$CFG->dirroot/backup/util/includes/backup_includes.php");
         \backup_controller_dbops::apply_version_and_release();
         \phpunit_util::bootstrap_init();
+        parent::setUpBeforeClass();
     }
 
     /**
@@ -111,82 +112,73 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
      * @return array
      */
     public static function restore_from_old_format_mbz_provider(): array {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . '/course/format/tiles/tests/helperlib.php');
-        $restoredcourseids = [];
-        $mbzfiles = [
-            "moodle-311-sample.mbz",
-            "moodle-42-pre-2024.mbz",
-            "moodle-43-early-beta.mbz",
-            "moodle-43-late-beta.mbz",
+        return [
+            'mbzfiles' => [
+                "moodle-311-sample.mbz",
+                "moodle-42-pre-2024.mbz",
+                "moodle-43-early-beta.mbz",
+                "moodle-43-late-beta.mbz",
+            ],
         ];
-        foreach ($mbzfiles as $mbzfile) {
-            for ($i = 1; $i <= 5; $i++) {
-                $newcoursename = str_replace('.mbz', '', $mbzfile);
-                $restoredcourseid = helper_restore_test_course($mbzfile, $newcoursename);
-                $expectedphotos = [
-                    1 => 'placeholder_1.jpg',
-                    2 => 'placeholder_2.jpg',
-                    3 => 'placeholder_3.jpg',
-                    4 => 'placeholder_4.jpg',
-                    5 => 'placeholder_5.jpg',
-                    7 => 'placeholder_7.jpg',
-                ];
-                $actualphotos = $DB->get_records_sql(
-                    "SELECT cs.section as sectionnumber, cs.id AS sectionid, fo.optionvalue as value
-                            FROM {format_tiles_tile_options} fo
-                            JOIN {course_sections} cs ON cs.id = fo.elementid AND cs.course = fo.courseid
-                            WHERE fo.optiontype = :optiontype AND fo.courseid = :courseid",
-                    ['courseid' => $restoredcourseid, 'optiontype' => format_option::OPTION_SECTION_PHOTO]
-                );
-                $context = \context_course::instance($restoredcourseid);
-                $files = $DB->get_records_sql(
-                    "SELECT cs.section, f.filename
-                        FROM {files} f
-                        JOIN {course_sections} cs ON cs.id = f.itemid AND cs.course = :courseid
-                        WHERE f.contextid = :contextid
-                        AND f.component = 'format_tiles' AND f.filearea = 'tilephoto'
-                        AND f.filename != '' AND f.filesize > 0",
-                    ['contextid' => $context->id, 'courseid' => $restoredcourseid]
-                );
-                $restoredcourseids[$newcoursename] = [$restoredcourseid, $expectedphotos, $actualphotos, $files];
-            }
-        }
-
-        return $restoredcourseids;
     }
 
     /**
-     * Take an old Moodle 3.11 course MBZ file and restore then check photos.
+     * Take old course MBZ files and restore then check photos.
      * @dataProvider restore_from_old_format_mbz_provider
-     * @param int $restoredcourseid
-     * @param array $expectedphotos
-     * @param array $actualphotos
-     * @param array $files
      * @covers \backup_format_tiles_plugin
      * @covers \restore_format_tiles_plugin
+     * @param string $mbzfile
      * @return void
      * @throws \dml_exception
      */
-    public function test_restore_from_old_format_mbz(int $restoredcourseid, array $expectedphotos, array $actualphotos,
-                                                     array $files): void {
-        global $DB;
+    public function test_restore_from_old_format_mbz(string $mbzfile): void {
+        global $DB, $CFG;
         $this->resetAfterTest();
-        if ($restoredcourseid) {
-            foreach ($expectedphotos as $sectionnumber => $filename) {
-                $option = $actualphotos[$sectionnumber]->value ?? null;
-                if (!$option) {
-                    $this->fail(
-                        "Missing photo option for course ID $restoredcourseid section $sectionnumber - all photos "
-                            . json_encode($actualphotos)
-                    );
-                }
-                $this->assertEquals($option, $filename);
+        require_once($CFG->dirroot . '/course/format/tiles/tests/helperlib.php');
+        $expectedphotos = [
+            1 => 'placeholder_1.jpg',
+            2 => 'placeholder_2.jpg',
+            3 => 'placeholder_3.jpg',
+            4 => 'placeholder_4.jpg',
+            5 => 'placeholder_5.jpg',
+            7 => 'placeholder_7.jpg',
+        ];
+        for ($i = 1; $i <= 5; $i++) {
+            $newcoursename = str_replace('.mbz', '', $mbzfile);
+            $restoredcourseid = helper_restore_test_course($mbzfile, $newcoursename);
+            $actualphotos = $DB->get_records_sql(
+                "SELECT cs.section as sectionnumber, cs.id AS sectionid, fo.optionvalue as value
+                        FROM {format_tiles_tile_options} fo
+                        JOIN {course_sections} cs ON cs.id = fo.elementid AND cs.course = fo.courseid
+                        WHERE fo.optiontype = :optiontype AND fo.courseid = :courseid",
+                ['courseid' => $restoredcourseid, 'optiontype' => format_option::OPTION_SECTION_PHOTO]
+            );
 
-                if (($files[$sectionnumber]->filename ?? null) !== $filename) {
-                    $this->fail("Missing file $filename for section number $sectionnumber - all files " . json_encode($files));
-                }
+            $context = \context_course::instance($restoredcourseid);
+            $actualfiles = $DB->get_records_sql(
+                "SELECT cs.section, f.filename
+                    FROM {files} f
+                    JOIN {course_sections} cs ON cs.id = f.itemid AND cs.course = :courseid
+                    WHERE f.contextid = :contextid
+                    AND f.component = 'format_tiles' AND f.filearea = 'tilephoto'
+                    AND f.filename != '' AND f.filesize > 0",
+                ['contextid' => $context->id, 'courseid' => $restoredcourseid]
+            );
+
+            foreach ($expectedphotos as $sectionnumber => $filename) {
+                $this->assertEquals(
+                    $filename,
+                    $actualphotos[$sectionnumber]->value ?? null,
+                    "Incorrect photo option for course ID $restoredcourseid section $sectionnumber - all photos "
+                        . json_encode($actualphotos)
+                );
+                $this->assertEquals(
+                    $filename,
+                    $actualfiles[$sectionnumber]->filename ?? null,
+                    "Missing file $filename for section number $sectionnumber - all files " . json_encode($actualfiles)
+                );
             }
+
             $sections = $DB->get_records('course_sections', ['course' => $restoredcourseid], 'section');
             foreach ($sections as $section) {
                 if (isset($expectedphotos[$section->section])) {
@@ -195,13 +187,11 @@ final class format_tiles_course_format_options_test extends \advanced_testcase {
                 $photo = format_option::get_db_record(
                     $restoredcourseid, format_option::OPTION_SECTION_PHOTO, $section->id
                 );
-                if ($photo) {
-                    $this->fail("Unexpected photo found for section $section->section $photo->optionvalue");
-                }
+                $this->assertFalse(
+                    $photo,
+                    "Unexpected photo found for section $section->section"
+                );
             }
-        } else {
-            $this->fail('No restored course ID');
         }
     }
-
 }

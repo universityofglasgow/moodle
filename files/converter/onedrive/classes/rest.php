@@ -54,7 +54,7 @@ class rest extends \core\oauth2\rest {
                     'itemid' => PARAM_RAW,
                     'format' => PARAM_ALPHANUM,
                 ],
-                'response' => 'headers'
+                'response' => 'headers',
             ],
             // See: https://docs.microsoft.com/en-gb/graph/api/driveitem-delete?view=graph-rest-1.0 for API doc.
             'delete' => [
@@ -63,7 +63,7 @@ class rest extends \core\oauth2\rest {
                 'args' => [
                     'itemid' => PARAM_RAW,
                 ],
-                'response' => 'headers'
+                'response' => 'headers',
             ],
             // See: https://docs.microsoft.com/en-us/graph/api/driveitem-createuploadsession?view=graph-rest-1.0 for API doc.
             'create_upload' => [
@@ -72,7 +72,7 @@ class rest extends \core\oauth2\rest {
                 'args' => [
                     'filename' => PARAM_RAW,
                 ],
-                'response' => 'json'
+                'response' => 'json',
             ],
         ];
     }

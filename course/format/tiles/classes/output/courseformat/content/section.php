@@ -26,6 +26,7 @@ namespace format_tiles\output\courseformat\content;
 
 use core_courseformat\output\local\content\section as section_base;
 use format_tiles\local\tile_photo;
+use format_tiles\local\util;
 
 /**
  * Base class to render a course section.
@@ -71,6 +72,8 @@ class section extends section_base {
             if (!$data->tileicon) {
                 $formatoptions = $this->format->get_format_options();
                 $data->tileicon = $formatoptions['defaulttileicon'];
+            } else {
+                $data->tilenumber = $data->tileicon ? util::get_tile_number_from_icon_name($data->tileicon) : null;
             }
         }
 

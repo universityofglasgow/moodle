@@ -111,10 +111,10 @@ Feature: Step 1
       | id_option_4 |                 |
     And I press "id_submitbutton"
     Then "#id_name.is-invalid" "css_element" should not exist
-    And "#id_option_1editable.is-invalid" "css_element" should exist
-    And "#id_option_2editable.is-invalid" "css_element" should exist
-    And "#id_option_3editable.is-invalid" "css_element" should exist
-    And "#id_option_4editable.is-invalid" "css_element" should exist
+    And "#id_error_option_1.form-control-feedback.invalid-feedback" "css_element" should exist
+    And "#id_error_option_2.form-control-feedback.invalid-feedback" "css_element" should exist
+    And "#id_error_option_3.form-control-feedback.invalid-feedback" "css_element" should exist
+    And "#id_error_option_4.form-control-feedback.invalid-feedback" "css_element" should exist
 
   # Check if defaultmark is required
     When I set the following fields to these values:
@@ -195,10 +195,9 @@ Feature: Step 1
   Scenario: Testcase 2
 
   # Install the german language pack
-    When I navigate to "Language > Language packs" in site administration
-    And I set the field "Available language packs" to "de"
-    And I press "Install selected language pack(s)"
-    Then the "Installed language packs" select box should contain "de"
+    Given the following "language packs" exist:
+      | language |
+      | de       |
 
   # Create a question and check english language strings
     When I am on "Course 1" course homepage

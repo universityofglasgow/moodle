@@ -33,7 +33,8 @@ class before_footer_html_generation {
      * @param \core\hook\output\before_footer_html_generation $hook
      */
     public static function callback(\core\hook\output\before_footer_html_generation $hook): void {
-        global $OUTPUT;
+        global $OUTPUT, $CFG;
+        require_once($CFG->dirroot.'/course/format/flexsections/lib.php');
 
         if (during_initial_install() || isset($CFG->upgraderunning)) {
             // Do nothing during installation or upgrade.

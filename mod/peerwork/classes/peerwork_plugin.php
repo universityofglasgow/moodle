@@ -25,7 +25,8 @@
 
 namespace mod_peerwork;
 
-defined('MOODLE_INTERNAL') || die();
+use MoodleQuickForm;
+use stdClass;
 
 /**
  * Abstract class for peerwork_plugin (calculator).
@@ -42,9 +43,9 @@ abstract class peerwork_plugin {
     private $type = '';
     /** @var string $error error message */
     private $error = '';
-    /** @var boolean|null $enabledcache Cached lookup of the is_enabled function */
+    /** @var bool|null $enabledcache Cached lookup of the is_enabled function */
     private $enabledcache = null;
-    /** @var boolean|null $enabledcache Cached lookup of the is_visible function */
+    /** @var bool|null $enabledcache Cached lookup of the is_visible function */
     private $visiblecache = null;
 
     /**
@@ -91,10 +92,11 @@ abstract class peerwork_plugin {
     /**
      * This function should be overridden to provide an array of elements that can be added to a moodle
      * form for display in the settings page for the peerwork.
+     *
      * @param MoodleQuickForm $mform The form to add the elements to
      * @return $array
      */
-    public function get_settings(\MoodleQuickForm $mform) {
+    public function get_settings(MoodleQuickForm $mform) {
         return;
     }
 
@@ -102,6 +104,7 @@ abstract class peerwork_plugin {
      * Allows the plugin to update the defaultvalues passed in to
      * the settings form (needed to set up draft areas for editor
      * and filemanager elements)
+     *
      * @param array $defaultvalues
      */
     public function data_preprocessing(&$defaultvalues) {
@@ -115,7 +118,7 @@ abstract class peerwork_plugin {
      * @param stdClass $formdata - the data submitted from the form
      * @return bool - on error the subtype should call set_error and return false.
      */
-    public function save_settings(\stdClass $formdata) {
+    public function save_settings(stdClass $formdata) {
         return true;
     }
 
@@ -284,7 +287,7 @@ abstract class peerwork_plugin {
                 'peerwork' => $this->peerwork->id,
                 'subtype' => $this->get_subtype(),
                 'plugin' => $this->get_type(),
-                'name' => $name
+                'name' => $name,
             ];
             $current = $DB->get_record('peerwork_plugin_config', $dbparams, '*', IGNORE_MISSING);
 
@@ -292,7 +295,7 @@ abstract class peerwork_plugin {
                 $current->value = $value;
                 return $DB->update_record('peerwork_plugin_config', $current);
             } else {
-                $setting = new \stdClass();
+                $setting = new stdClass();
                 $setting->peerwork = $this->peerwork->id;
                 $setting->subtype = $this->get_subtype();
                 $setting->plugin = $this->get_type();
@@ -321,7 +324,7 @@ abstract class peerwork_plugin {
                     'peerwork' => $this->peerwork->id,
                     'subtype' => $this->get_subtype(),
                     'plugin' => $this->get_type(),
-                    'name' => $setting
+                    'name' => $setting,
                 ];
                 $result = $DB->get_record('peerwork_plugin_config', $dbparams, '*', IGNORE_MISSING);
                 if ($result) {
@@ -331,13 +334,13 @@ abstract class peerwork_plugin {
             return false;
         }
 
-        $config = new \stdClass();
+        $config = new stdClass();
 
         if ($this->peerwork) {
             $dbparams = [
                 'peerwork' => $this->peerwork->id,
                 'subtype' => $this->get_subtype(),
-                'plugin' => $this->get_type()
+                'plugin' => $this->get_type(),
             ];
             $results = $DB->get_records('peerwork_plugin_config', $dbparams);
 
@@ -400,6 +403,6 @@ abstract class peerwork_plugin {
      * @since Moodle 3.2
      */
     public function get_config_for_external() {
-        return array();
+        return [];
     }
 }

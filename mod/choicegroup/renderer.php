@@ -32,29 +32,30 @@ define ('CHOICEGROUP_DISPLAY_VERTICAL_LAYOUT', 1);
 class mod_choicegroup_renderer extends plugin_renderer_base {
 
     /**
-     * Returns HTML to display choices of option
+     * Displays the choice group options.
      *
-     * @param array $options
-     * @param int $coursemoduleid
-     * @param bool $vertical
-     * @param bool $publish
-     * @param bool $limitanswers
-     * @param bool $showresults
-     * @param bool $current
-     * @param bool $choicegroupopen
-     * @param bool $disabled
-     * @param bool $multipleenrollmentspossible
-     * @param bool $onlyactive
-     * @return string
-     * @return string
-     * @throws coding_exception
-     * @throws moodle_exception
+     * @param array $options The options to display.
+     * @param int $coursemoduleid The course module ID.
+     * @param bool $vertical Whether to display options vertically.
+     * @param bool $publish Whether to publish the results.
+     * @param bool $limitanswers Whether to limit the number of answers.
+     * @param bool $showresults Whether to show the results.
+     * @param bool $current Whether the current user has answered.
+     * @param bool $choicegroupopen Whether the choice group is open.
+     * @param bool $disabled Whether the options are disabled.
+     * @param bool $multipleenrollmentspossible Whether multiple enrollments are possible.
+     * @param bool $onlyactive Whether to show only active users.
+     * @param bool $groupdescriptionstate The state of the group description.
+     * @return string The HTML to display the options.
      */
     public function display_options($options, $coursemoduleid, $vertical = true, $publish = false, $limitanswers = false,
         $showresults = false, $current = false, $choicegroupopen = false, $disabled = false,
-        $multipleenrollmentspossible = false, $onlyactive = false) {
+        $multipleenrollmentspossible = false, $onlyactive = false, $groupdescriptionstate = false) {
         global $choicegroupgroups;
 
+        if ($groupdescriptionstate === false) {
+            $groupdescriptionstate = get_config('choicegroup', 'defaultgroupdescriptionstate');
+        }
         $target = new moodle_url('/mod/choicegroup/view.php');
         $attributes = ['method' => 'POST', 'action' => $target, 'class' => 'tableform'];
 
@@ -66,9 +67,15 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
         $html .= html_writer::tag('th', get_string('choice', 'choicegroup'), ['class' => 'width10']);
 
         $group = get_string('group').' ';
-        $group .= html_writer::tag('a', get_string('showdescription', 'choicegroup'),
-            ['role' => 'button', 'class' => 'choicegroup-descriptiondisplay choicegroup-descriptionshow btn btn-secondary ml-1',
-                'href' => '#', ]);
+        if ($groupdescriptionstate == CHOICEGROUP_GROUPDESCRIPTIONSTATE_HIDDEN) {
+            $group .= html_writer::tag('a', get_string('showdescription', 'choicegroup'),
+                ['role' => 'button', 'class' => 'choicegroup-descriptiondisplay choicegroup-descriptionshow btn btn-secondary ml-1',
+                    'href' => '#']);
+        } else {
+            $group .= html_writer::tag('a', get_string('hidedescription', 'choicegroup'),
+                ['role' => 'button', 'class' => 'choicegroup-descriptiondisplay choicegroup-descriptionshow btn btn-secondary ml-1',
+                    'href' => '#']);
+        }
         $html .= html_writer::tag('th', $group, ['class' => 'width40']);
 
         if ( $showresults == CHOICEGROUP_SHOWRESULTS_ALWAYS ||
@@ -142,13 +149,14 @@ class mod_choicegroup_renderer extends plugin_renderer_base {
                 $option->attributes->disabled = true;
                 $availableoption--;
             }
+            $hidden = ($groupdescriptionstate == CHOICEGROUP_GROUPDESCRIPTIONSTATE_HIDDEN) ? "hidden" : "";
             $labeltext .= html_writer::tag('div', format_text(file_rewrite_pluginfile_urls($group->description,
             'pluginfile.php',
                 $context->id,
                 'group',
                 'description',
                 $group->id)),
-                ['class' => 'choicegroups-descriptions hidden']);
+                ['class' => "choicegroups-descriptions {$hidden}"]);
             if ($disabled) {
                 $option->attributes->disabled = true;
             }

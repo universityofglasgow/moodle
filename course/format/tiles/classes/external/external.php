@@ -254,12 +254,16 @@ class external extends external_api {
      */
     private static function set_tile_icon($data, $context) {
         global $DB;
-        $availableicons = (new \format_tiles\local\icon_set)->available_tile_icons($data['courseid']);
-        if (!isset($availableicons[$data['image']])) {
-            throw new invalid_parameter_exception('Icon is invalid');
+
+        // If the tile icon is a number icon, it's not a real image so we don't need to validate.
+        $tilenumber = \format_tiles\local\util::get_tile_number_from_icon_name($data['image']);
+        if (!$tilenumber) {
+            $availableicons = (new \format_tiles\local\icon_set)->available_tile_icons($data['courseid']);
+            if (!isset($availableicons[$data['image']])) {
+                throw new invalid_parameter_exception('Icon is invalid');
+            }
         }
 
-        // An icon for a single section or cm - use custom Tiles format options.
         $optiontype = \format_tiles\local\format_option::OPTION_SECTION_ICON;
         $sectionid = $data['sectionid'];
 

@@ -24,15 +24,9 @@
  */
 
 namespace block_xp\local\controller;
-defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
-
-use flexible_table;
 use html_writer;
-use moodle_exception;
 use block_xp\form\instructions;
-use block_xp\local\routing\url;
 
 /**
  * Infos controller class.
@@ -51,31 +45,19 @@ class infos_controller extends page_controller {
     /** @var object */
     protected $form;
 
-    protected function permissions_checks() {
-        parent::permissions_checks();
-        if (!$this->world->get_config()->get('enableinfos')) {
-            throw new moodle_exception('nopermissions', '', '', 'view_infos_page');
-        }
-    }
-
     protected function define_optional_params() {
         return [
             ['edit', false, PARAM_BOOL, true],
         ];
     }
 
-    protected function pre_content() {
-        if ($this->world->get_access_permissions()->can_manage()) {
-            $redirecturl = new url($this->pageurl, ['edit' => false]);
-            $form = $this->get_form();
-            if ($data = $form->get_data()) {
-                $this->world->get_config()->set('instructions', $data->instructions['text']);
-                $this->world->get_config()->set('instructions_format', $data->instructions['format']);
-                $this->redirect($redirecturl);
-            } else if ($form->is_cancelled()) {
-                $this->redirect($redirecturl);
-            }
-        }
+    /**
+     * Is visible to viewers?
+     *
+     * @return bool
+     */
+    protected function is_visible_to_viewers() {
+        return (bool) $this->world->get_config()->get('enableinfos');
     }
 
     protected function get_form() {
@@ -94,6 +76,8 @@ class infos_controller extends page_controller {
     }
 
     protected function page_content() {
+        global $PAGE;
+
         $output = $this->get_renderer();
         $levelsinfo = $this->world->get_levels_info();
         $canmanage = $this->world->get_access_permissions()->can_manage();
@@ -105,42 +89,34 @@ class infos_controller extends page_controller {
         $hasinstructions = !empty($cleanedinstructions);
         $isediting = $this->get_param('edit') && $canmanage;
 
-        if ($isediting) {
-            $form = $this->get_form();
-            $form->set_data((object) ['instructions' => [
-                'text' => $instructions,
-                'format' => $instructionsformat,
-            ], ]);
-            $form->display();
+        if ($canmanage) {
+            echo $output->advanced_heading(get_string('infos', 'block_xp'), [
+                'intro' => new \lang_string('infosintro', 'block_xp'),
+                'help' => new \help_icon('infos', 'block_xp'),
+                'visible' => $this->is_visible_to_viewers(),
+                'menu' => [
+                    [
+                        'label' => get_string('pagesettings', 'block_xp'),
+                        'data-action' => 'open-form',
+                        'data-form-class' => 'block_xp\form\info',
+                        'data-form-args__contextid' => $this->world->get_context()->id,
+                        'href' => '#',
+                    ],
+                    [
+                        'label' => get_string('customizelevels', 'block_xp'),
+                        'href' => $this->urlresolver->reverse('levels', ['courseid' => $this->world->get_courseid()]),
+                    ],
+                ],
+            ]);
+            $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
+        }
 
-        } else if ($hasinstructions) {
+        if ($hasinstructions) {
             // Display the instructions when not editing.
             echo html_writer::div(format_text($instructions, $instructionsformat), 'block_xp-instructions');
         }
 
-        if (!$isediting && $canmanage) {
-            $editurl = new url($this->pageurl, ['edit' => true]);
-            echo html_writer::tag('p',
-                $output->single_button(
-                    $editurl->get_compatible_url(),
-                    get_string($hasinstructions ? 'editinstructions' : 'addinstructions', 'block_xp'),
-                    'get'
-                )
-            );
-        }
-
         echo $output->levels_grid($levelsinfo->get_levels());
-
-        if ($canmanage) {
-            $levelsurl = $this->urlresolver->reverse('levels', ['courseid' => $this->courseid]);
-            echo html_writer::tag('p',
-                $output->single_button(
-                    $levelsurl->get_compatible_url(),
-                    get_string('customizelevels', 'block_xp'),
-                    'get'
-                )
-            );
-        }
     }
 
 }

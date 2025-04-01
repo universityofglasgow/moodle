@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-class mod_hsuforum_mail_testcase extends advanced_testcase {
+class mail_test extends advanced_testcase {
 
     protected $helper;
 
@@ -290,7 +290,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         // And next event should be the 'notification_sent' one.
         $event = $events[1];
-        
+
         $this->assertInstanceOf('\core\event\notification_sent', $event);
         $this->assertEquals($author->id, $event->userid);
         $this->assertEquals($recipient->id, $event->relateduserid);
@@ -980,7 +980,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                             'attachments' => array(
                                 array(
                                     'filename' => 'example.txt',
-                                    'filecontents' => 'Basic information about the course'
+                                    'filecontents' => 'Basic information about the course',
                                 ),
                             ),
                         ),
@@ -995,7 +995,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
                         'Attachments example.txt:\r\n' .
                             $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\r\n',
-                        'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1'
+                        'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1',
                     ),
                 ),
             ),
@@ -1118,7 +1118,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
      * @param array $data provider samples.
      */
     public function test_forum_post_email_templates($data) {
-        $this->markTestSkipped('This test only passes on PHP 8.1. Please unskip once we are fully on PHP 8.1 or greater');
+
         global $DB, $CFG;
         // Disabled to avoid adding footer with Mobile Web Services info on emails.
         $CFG->enablemobilewebservice = 0;
@@ -1173,7 +1173,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                             'filearea'  => 'attachment',
                             'itemid'    => $post->id,
                             'filepath'  => '/',
-                            'filename'  => $attachment['filename']
+                            'filename'  => $attachment['filename'],
                         );
                         $fs->create_file_from_string($filerecord, $attachment['filecontents']);
                     }
@@ -1224,7 +1224,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
             $this->assertNotEmpty($foundexpectation, 'Expectation not found for the mail');
 
             // If we have found the expectation and have contents to match, let's do it.
-            if (isset($foundexpectation) and isset($foundexpectation['contents'])) {
+            if (isset($foundexpectation) && isset($foundexpectation['contents'])) {
                 $mail->body = quoted_printable_decode($mail->body);
                 if (!is_array($foundexpectation['contents'])) { // Accept both string and array.
                     $foundexpectation['contents'] = array($foundexpectation['contents']);

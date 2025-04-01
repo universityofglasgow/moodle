@@ -48,10 +48,10 @@ if (!is_siteadmin()) {
  * @param object $weightrecords
  */
 function weight_records_to_array($weightrecords) {
-    $weights = array();
+    $weights = [];
     foreach ($weightrecords as $weight) {
         if (!property_exists((object) $weights, $weight->rowid)) {
-            $weights[$weight->rowid] = array();
+            $weights[$weight->rowid] = [];
         }
         $weights[$weight->rowid][$weight->colid] = $weight;
     }
@@ -65,7 +65,7 @@ $sql = "SELECT q.*
         FROM {question} q
         WHERE q.qtype = 'matrix'
         ";
-$params = array();
+$params = [];
 
 if (!$all && (!($courseid > 0 || $categoryid > 0))) {
     echo "<br/><font color='red'>You should specify either the 'courseid'
@@ -75,15 +75,15 @@ if (!$all && (!($courseid > 0 || $categoryid > 0))) {
 }
 
 if ($courseid > 0) {
-    if (!$course = $DB->get_record('course', array('id' => $courseid
-    ))) {
+    if (!$course = $DB->get_record('course', ['id' => $courseid,
+    ])) {
         echo "<br/><font color='red'>Course with ID $courseid  not found...!</font><br/>\n";
         die();
     }
     $coursecontext = context_course::instance($courseid);
     $categories = $DB->get_records('question_categories',
-    array('contextid' => $coursecontext->id
-    ));
+    ['contextid' => $coursecontext->id,
+    ]);
 
     $catids = array_keys($categories);
 
@@ -98,12 +98,12 @@ if ($courseid > 0) {
 }
 
 if ($categoryid > 0) {
-    if ($category = $DB->get_record('question_categories', array('id' => $categoryid
-    ))) {
+    if ($category = $DB->get_record('question_categories', ['id' => $categoryid,
+    ])) {
         echo 'Migration restricted to category "' . $category->name . "\".<br/>\n";
         $sql .= ' AND category = :category ';
-        $params = array('category' => $categoryid
-        );
+        $params = ['category' => $categoryid,
+        ];
     } else {
         echo "<br/><font color='red'>Question category with ID $categoryid  not found...!</font><br/>\n";
         die();
@@ -121,7 +121,7 @@ if ($dryrun) {
 }
 
 $counter = 0;
-$notmigrated = array();
+$notmigrated = [];
 foreach ($questions as $question) {
     set_time_limit(60);
 
@@ -130,14 +130,14 @@ foreach ($questions as $question) {
     $oldquestionid = $question->id;
 
     // Retrieve rows and columns and count them.
-    $matrix = $DB->get_record('question_matrix', array('questionid' => $oldquestionid
-    ));
-    $rows = $DB->get_records('question_matrix_rows', array('matrixid' => $matrix->id
-    ), ' id ASC ');
+    $matrix = $DB->get_record('question_matrix', ['questionid' => $oldquestionid,
+    ]);
+    $rows = $DB->get_records('question_matrix_rows', ['matrixid' => $matrix->id,
+    ], ' id ASC ');
     $rowids = array_keys($rows);
     $columns = $DB->get_records('question_matrix_cols',
-    array('matrixid' => $matrix->id
-    ), ' id ASC ');
+    ['matrixid' => $matrix->id,
+    ], ' id ASC ');
 
     if ($dryrun) {
         echo '--------------------------------------------------------------------------------' .

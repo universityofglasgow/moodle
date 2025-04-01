@@ -36,10 +36,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('configintro', '', get_string('configintro', 'qtype_kprime')));
 
     // Scoring methods.
-    $options = array('kprime' => get_string('scoringkprime', 'qtype_kprime'),
+    $options = ['kprime' => get_string('scoringkprime', 'qtype_kprime'),
         'kprimeonezero' => get_string('scoringkprimeonezero', 'qtype_kprime'),
-        'subpoints' => get_string('scoringsubpoints', 'qtype_kprime')
-    );
+        'subpoints' => get_string('scoringsubpoints', 'qtype_kprime'),
+    ];
 
     $settings->add(new admin_setting_configselect('qtype_kprime/scoringmethod',
         get_string('scoringmethod', 'qtype_kprime'),

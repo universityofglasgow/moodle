@@ -24,7 +24,9 @@
 
 namespace mod_peerwork\event;
 
-defined('MOODLE_INTERNAL') || die();
+use coding_exception;
+use core\event\base;
+use moodle_url;
 
 /**
  * The Gradebook update failed event class.
@@ -40,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2019 Amanda Doughty
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradebookupdate_failed extends \core\event\base {
+class gradebookupdate_failed extends base {
 
     /**
      * Init method.
@@ -72,14 +74,14 @@ class gradebookupdate_failed extends \core\event\base {
     /**
      * Get url related to the action.
      *
-     * @return \moodle_url
+     * @return moodle_url
      */
     public function get_url() {
-        return new \moodle_url(
+        return new moodle_url(
             '/mod/peerwork/details.php',
             [
                 'id' => $this->contextinstanceid,
-                'groupid' => $this->other['groupid']
+                'groupid' => $this->other['groupid'],
             ]
         );
     }
@@ -87,14 +89,14 @@ class gradebookupdate_failed extends \core\event\base {
     /**
      * Custom validation.
      *
-     * @throws \coding_exception
      * @return void
+     * @throws coding_exception
      */
     protected function validate_data() {
         parent::validate_data();
 
         if (!isset($this->other['error'])) {
-            throw new \coding_exception('The \'error\' value must be set in other.');
+            throw new coding_exception('The \'error\' value must be set in other.');
         }
     }
 }

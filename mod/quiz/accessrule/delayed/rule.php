@@ -94,6 +94,7 @@ class quizaccess_delayed extends quiz_access_rule_base {
         global $PAGE;
         /** @var core_renderer $output */
         $output = $PAGE->get_renderer('core');
+        $PAGE->requires->jquery();
         if ($this->is_pending() && self::is_enabled_in_instance($this->quizobj)) {
             if (has_capability('mod/quiz:manage', $this->quizobj->get_context())) {
                 // Show a warning if the quiz is resource intensive.
@@ -348,8 +349,16 @@ class quizaccess_delayed extends quiz_access_rule_base {
      * Wheter the quiz is waiting to start for the current user.
      */
     protected function is_pending() {
+        // Check if this user has done the quiz already.
+        // global $USER;
+        // $numattempts = count(quiz_get_user_attempts([$this->quiz->id], $USER->id));
+        // $maxattempts = $this->quizobj->get_num_attempts_allowed();
+        // $maxattempts = $maxattempts == 0 ? PHP_INT_MAX : $maxattempts;
+        // if ($numattempts >= $maxattempts) {
+        //     return false;
+        // }
         $randomdelay = $this->get_user_delay();
-        return ($this->timenow < ($this->quiz->timeopen + $randomdelay));
+        return $this->timenow < ($this->quiz->timeopen + $randomdelay);
     }
     /**
      *  @global moodle_page $PAGE
@@ -392,6 +401,9 @@ class quizaccess_delayed extends quiz_access_rule_base {
             ]
         );
         $PAGE->requires->css('/mod/quiz/accessrule/delayed/styles.css'); // Discouraged.
+
+
+
     }
     /**
      * Determines if this instance should apply the rule.

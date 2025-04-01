@@ -27,10 +27,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/outputcomponents.php');
-
 /**
  * Subclass for generating the bits of output specific to qtype_kprime questions.
  *
@@ -90,19 +86,19 @@ class qtype_kprime_renderer extends qtype_renderer {
         $response = $question->get_response($qa);
 
         $inputname = $qa->get_qt_field_name('option');
-        $inputattributes = array('type' => $this->get_input_type(), 'name' => $inputname);
+        $inputattributes = ['type' => $this->get_input_type(), 'name' => $inputname];
 
         if ($displayoptions->readonly) {
             $inputattributes['disabled'] = 'disabled';
         }
 
         $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa), array('class' => 'qtext'));
+        $result .= html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
 
         $table = new html_table();
         $table->attributes['class'] = 'generaltable';
 
-        $table->head = array();
+        $table->head = [];
 
         // Add the response texts as table headers.
         foreach ($question->columns as $column) {
@@ -134,7 +130,7 @@ class qtype_kprime_renderer extends qtype_renderer {
             $row = $question->rows[$rowid];
 
             // Holds the data for one table row.
-            $rowdata = array();
+            $rowdata = [];
 
             // Add the response radio buttons to the table.
             foreach ($question->columns as $column) {
@@ -185,7 +181,7 @@ class qtype_kprime_renderer extends qtype_renderer {
                                         $question->format_text($row->optionfeedback,
                                                 $row->optionfeedbackformat, $qa, 'qtype_kprime',
                                                 'feedbacktext', $rowid)),
-                                array('class' => 'kprimespecificfeedback')));
+                                ['class' => 'kprimespecificfeedback']));
                 $rowdata[] = $cell;
             } else {
                 $cell = new html_table_cell(html_writer::tag('div', ''));
@@ -199,7 +195,7 @@ class qtype_kprime_renderer extends qtype_renderer {
         if ($qa->get_state() == question_state::$invalid) {
             $result .= html_writer::nonempty_tag('div',
                     $question->get_validation_error($qa->get_last_qt_data()),
-                    array('class' => 'validationerror'));
+                    ['class' => 'validationerror']);
         }
 
         if (!empty(get_config('qtype_kprime')->showscoringmethod)) {
@@ -229,7 +225,7 @@ class qtype_kprime_renderer extends qtype_renderer {
             $label = get_string('scoringmethod', 'qtype_kprime'). ': <b>' . ucfirst($outputscoringmethod) . '</b>';
             $result .= html_writer::tag('div',
                 '<br>'. $label . $this->output->help_icon('scoring' . $question->scoringmethod, 'qtype_kprime'),
-                array('id' => 'scoringmethodinfo_q' . $question->id, 'label' => $label));
+                ['id' => 'scoringmethodinfo_q' . $question->id, 'label' => $label]);
         }
         return $result;
     }
@@ -267,7 +263,7 @@ class qtype_kprime_renderer extends qtype_renderer {
     public function correct_response(question_attempt $qa) {
         $question = $qa->get_question();
 
-        $result = array();
+        $result = [];
         $response = '';
         $correctresponse = $question->get_correct_response(true);
 

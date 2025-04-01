@@ -53,30 +53,117 @@ class block_xp_renderer extends plugin_renderer_base {
      * @param array $options The options.
      */
     public function advanced_heading($heading, $options = []) {
-        $options = array_merge(['level' => 3, 'actions' => [], 'intro' => null, 'help' => null], $options);
+        $options = array_merge(['level' => 3, 'actions' => [], 'intro' => null, 'help' => null, 'visible' => null,
+            'menu' => []], $options);
         $level = (int) $options['level'];
         $actions = (array) $options['actions'];
+        $menu = (array) $options['menu'];
         $intro = !empty($options['intro']) ? $options['intro'] : null;
+        $visible = isset($options['visible']) ? (bool) $options['visible'] : null;
         $help = $options['help'] instanceof \help_icon ? $options['help'] : null;
 
-        $o = '';
-        $o .= html_writer::start_div('xp-flex xp-mb-6 xp-gap-4');
-        $o .= html_writer::start_div('xp-grow');
-        $o .= html_writer::start_div('');
-        $o .= $this->heading($heading, $level, 'xp-m-0');
-        if (!empty($intro)) {
-            $o .= html_writer::start_div('xp-text-sm xp-text-gray-500 xp-mt-2');
-            $o .= $intro . ' ' . (!empty($help) ? $this->render($help) : '');
-            $o .= html_writer::end_div();
-        }
-        $o .= html_writer::end_div();
-        $o .= html_writer::end_div();
-        $o .= html_writer::start_div('xp-flex xp-flex-wrap xp-gap-4 xp-items-start xp-whitespace-nowrap');
-        $o .= implode('', array_map([$this, 'render'], $actions));
-        $o .= html_writer::end_div();
-        $o .= html_writer::end_div();
+        $menuitems = array_values(array_filter(array_map(function($item) {
+            $attrs = [];
+            $classes = [];
+            if (empty($item['label'])) {
+                return ['isdivider' => true];
+            }
+            foreach ($item as $key => $value) {
+                if ($key === 'label' || $key === 'class' || $key === 'disabled' || $key === 'addonrequired') {
+                    continue;
+                } else if ($key === 'danger') {
+                    $classes[] = $value ? 'text-danger' : null;
+                    continue;
+                }
+                $attrs[] = [
+                    'name' => $key,
+                    'value' => $value instanceof moodle_url ? $value->out(false) : (string) $value,
+                ];
+            }
+            return [
+                'label' => $item['label'],
+                'disabled' => !empty($item['disabled']),
+                'addonrequired' => !empty($item['addonrequired']),
+                'attributes' => $attrs,
+                'classes' => array_filter($classes),
+            ];
+        }, $menu)));
 
-        return $o;
+        // Filter out orphan or doubled dividers.
+        $menuitems = array_values(array_filter($menuitems, function($v, $k) use ($menuitems) {
+            if (empty($v['isdivider'])) {
+                return true;
+            }
+            if ($k === 0 || $k === count($menuitems) - 1) {
+                return false;
+            } else if (array_key_exists('isdivider', $menuitems[$k - 1] ?? [])) {
+                return false;
+            }
+            return true;
+        }, ARRAY_FILTER_USE_BOTH));
+
+        return $this->render_from_template('block_xp/advanced-heading', [
+            'title' => $heading,
+            'level' => $level,
+            'islevel2' => $level === 2,
+
+            'hasintro' => !empty($intro),
+            'intro' => $intro,
+            'helpicon' => $help ? $help->export_for_template($this) : null,
+
+            'hasvisibility' => $visible !== null,
+            'isvisible' => $visible,
+
+            'hasactions' => !empty($actions),
+            'actions' => array_map([$this, 'render'], $actions),
+
+            'hasmenu' => !empty($menuitems),
+            'menuitems' => $menuitems,
+        ]);
+    }
+
+    /**
+     * Confirm reset.
+     *
+     * @param string $title The title.
+     * @param string $message The message.
+     * @param \moodle_url $confirmurl The confirm URL.
+     * @param \moodle_url $cancelurl The cancel URL.
+     * @param array $options Some options.
+     * @return string
+     */
+    public function confirm_reset($title, $message, \moodle_url $confirmurl, \moodle_url $cancelurl, $options = []) {
+        return $this->confirm_step($title, $message, $confirmurl, $cancelurl, $options + [
+            'confirmlabel' => get_string('reset', 'core'),
+        ]);
+    }
+
+    /**
+     * Confirm step.
+     *
+     * This supercedes the default confirm renderer to accomodate for variation between versions,
+     * and to set our own sensible defaults. For instance, the confirm button is red by default.
+     *
+     * Note that the parameters are not the same as the {@see \core_renderer::confirm}.
+     *
+     * @param string $title The title.
+     * @param string $message The message.
+     * @param \moodle_url $confirmurl The confirm URL.
+     * @param \moodle_url $cancelurl The cancel URL.
+     * @param array $options Some options.
+     * @return string
+     */
+    public function confirm_step($title, $message, \moodle_url $confirmurl, \moodle_url $cancelurl, $options = []) {
+        global $CFG;
+        if ($CFG->branch < 400) {
+            return parent::confirm($message, $confirmurl, $cancelurl);
+        }
+        return parent::confirm($message, $confirmurl, $cancelurl, [
+            'confirmtitle' => $title,
+            'continuestr' => $options['confirmlabel'] ?? null,
+            'cancelstr' => $options['cancellabel'] ?? null,
+            'type' => defined('single_button::BUTTON_DANGER') ? single_button::BUTTON_DANGER : null,
+        ]);
     }
 
     /**

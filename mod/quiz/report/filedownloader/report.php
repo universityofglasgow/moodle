@@ -19,19 +19,18 @@
  *
  * @package   quiz_filedownloader
  * @copyright 2019 ETH Zurich
- * @author    Martin Hanusch (martin.hanusch@let.ethz.ch)
+ * @author    ETH Zurich (moodle@id.ethz.ch)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/quiz/report/attemptsreport.php');
 require_once($CFG->dirroot . '/mod/quiz/report/filedownloader/filedownloadersettings_form.php');
 
 /**
  * Filedownloader helps teachers to download files submitted within quizattempts
  */
-class quiz_filedownloader_report extends quiz_attempts_report {
+class quiz_filedownloader_report extends mod_quiz\local\reports\attempts_report {
 
     /**
      * Returns the list of qtypes set in the plugin config.
@@ -217,8 +216,8 @@ class quiz_filedownloader_report extends quiz_attempts_report {
                         $quiz,
                         $cm->id,
                         $userattempts,
-                        $data,
-                        $configfileareas);
+                        $configfileareas,
+                        $data);
                 }
             }
         }
@@ -260,7 +259,7 @@ class quiz_filedownloader_report extends quiz_attempts_report {
      * @param array $configfileareas
      * @return bool
      */
-    protected function filedownloader_process_files($course, $quiz, $cmid, $attempts, $data = null, $configfileareas) {
+    protected function filedownloader_process_files($course, $quiz, $cmid, $attempts, $configfileareas, $data = null) {
 
         global $DB, $CFG;
 
@@ -323,7 +322,8 @@ class quiz_filedownloader_report extends quiz_attempts_report {
                     $filename = preg_replace('/[^a-zA-Z0-9.]/', '_', $file->get_filename());
                     $filename  = preg_replace('/_+/', '_', $filename);
                     if (strlen($filename) > 30) {
-                      $filename = substr($filename, 0, 30) . '.zip';
+                      $fileext = '.' . substr($filename, strrpos($filename, '.') + 1);
+                      $filename = substr($filename, 0, 30) . $fileext;
                     }
                     $pathname = clean_param($path[0] . $path[1] . $path[2] . $path[3] . $filename, PARAM_PATH);
                     $zipcontent[$pathname] = $file;

@@ -33,6 +33,7 @@ use advanced_testcase;
  * @copyright  2020 University of Nottingham
  * @author     Neill Magill <neill.magill@nottingham.ac.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \fileconverter_onedrive\converter
  * @group fileconverter_onedrive
  * @group uon
  */
@@ -54,7 +55,7 @@ class converter_test extends advanced_testcase {
      *
      * @return array
      */
-    public function data_supports(): array {
+    public static function data_supports(): array {
         return [
             'lowercase' => ['docx', 'pdf', true],
             'uppercase' => ['DOCX', 'PDF', true],

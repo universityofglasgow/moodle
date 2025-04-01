@@ -224,13 +224,10 @@ final class format_tiles_test extends \advanced_testcase {
 
         // Try updating using callback from mismatching course format.
         try {
-            $tmpl = component_callback('format_weeks', 'inplace_editable', ['sectionname', $section->id, 'New name']);
+            component_callback('format_weeks', 'inplace_editable', ['sectionname', $section->id, 'New name']);
             $this->fail('Exception expected');
         } catch (\moodle_exception $e) {
-            $this->assertTrue(
-                preg_match('/^Can not find data record in database/', $e->getMessage()) === 1
-                || preg_match('/^Can\'t find data record in database/', $e->getMessage()) === 1
-            );
+            $this->assertEquals(1, preg_match('/^Can\'t find data record in database/', $e->getMessage()));
         }
     }
 
@@ -342,9 +339,11 @@ final class format_tiles_test extends \advanced_testcase {
 
         // Add a text file to the PDF existing resource activity.
         $pdfcmcontext = \context_module::instance($instance->cmid);
-        $filerecord = ['component' => $component, 'filearea' => $filearea,
+        $filerecord = [
+            'component' => $component, 'filearea' => $filearea,
             'contextid' => $pdfcmcontext->id, 'itemid' => 0,
-            'filename' => basename('test.txt'), 'filepath' => '/'];
+            'filename' => basename('test.txt'), 'filepath' => '/',
+        ];
         $fs = get_file_storage();
         $fs->create_file_from_pathname($filerecord, $textfilepath);
 
@@ -354,9 +353,11 @@ final class format_tiles_test extends \advanced_testcase {
         );
 
         // Add another PDF to make sure code is not confused by having multiple PDFs.
-        $filerecord = ['component' => $component, 'filearea' => $filearea,
+        $filerecord = [
+            'component' => $component, 'filearea' => $filearea,
             'contextid' => $pdfcmcontext->id, 'itemid' => 0,
-            'filename' => basename('test2.pdf'), 'filepath' => '/'];
+            'filename' => basename('test2.pdf'), 'filepath' => '/',
+        ];
         $fs = get_file_storage();
         $fs->create_file_from_pathname($filerecord, $pdffilepath);
 

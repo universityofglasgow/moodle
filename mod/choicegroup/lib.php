@@ -45,6 +45,9 @@ define('CHOICEGROUP_SORTGROUPS_SYSTEMDEFAULT',    '0');
 define('CHOICEGROUP_SORTGROUPS_CREATEDATE',    '1');
 define('CHOICEGROUP_SORTGROUPS_NAME',    '2');
 
+define('CHOICEGROUP_GROUPDESCRIPTIONSTATE_HIDDEN', 0);
+define('CHOICEGROUP_GROUPDESCRIPTIONSTATE_VISIBLE', 1);
+
 // Ugly hack to make 3.11 and 4.0 work seamlessly.
 if (!defined('FEATURE_MOD_PURPOSE')) {
     define('FEATURE_MOD_PURPOSE', 'mod_purpose');
@@ -204,6 +207,8 @@ function choicegroup_add_instance($choicegroup) {
 
     $groupids = explode(';', $choicegroup->serializedselectedgroups);
     $groupids = array_diff( $groupids, [ '' ] );
+    // Only add unique groups as groups can be in multiple groupings.
+    $groupids = array_unique($groupids);
 
     foreach ($groupids as $groupid) {
         $groupid = trim($groupid);
@@ -256,6 +261,8 @@ function choicegroup_update_instance($choicegroup) {
 
     $groupids = explode(';', $choicegroup->serializedselectedgroups);
     $groupids = array_diff( $groupids, [ '' ] );
+    // Only add unique groups as groups can be in multiple groupings.
+    $groupids = array_unique($groupids);
 
     // Prepare pre-existing selected groups from database.
     $preexistinggroups = $DB->get_records("choicegroup_options", ["choicegroupid" => $choicegroup->id], "id");

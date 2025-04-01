@@ -84,7 +84,7 @@ Feature: Teacher can restrict course modules to groups
 
     And I click on tile "1"
     And I wait until the page is ready
-
+    And I wait "1" seconds
     Then I should see "Visible page" in the "region-main" "region"
     And I should not see "Restricted page" in the "region-main" "region"
     And I should see "I am an unrestricted label" in the "region-main" "region"
@@ -101,7 +101,7 @@ Feature: Teacher can restrict course modules to groups
     And I am on "Course 1" course homepage
     And I click on tile "1"
     And I wait until the page is ready
-
+    And I wait "1" seconds
 #    Now student can see the restricted page too
     Then I should see "Visible page" in the "region-main" "region"
     And I should see "I am an unrestricted label" in the "region-main" "region"

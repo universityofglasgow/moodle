@@ -1,8 +1,8 @@
 @cul @mod @mod_peerwork @mod_peerwork_disable_calculator
 Feature: Disable a calculator which has been used in peerwork
-    In order to test disabling the calculator
-    As a teacher
-    I need to edit the activity before and after submissions are graded
+  In order to test disabling the calculator
+  As a teacher
+  I need to edit the activity before and after submissions are graded
 
   Background:
     Given the following "courses" exist:
@@ -35,13 +35,13 @@ Feature: Disable a calculator which has been used in peerwork
       | calculator | webpa | peerwork |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Peer Assessment" to section "1" and I fill the form with:
+    And I add a "peerwork" activity to course "Course 1" section "1" and I fill the form with:
       | Peer assessment           | Test peerwork name        |
       | Description               | Test peerwork description |
       | Criteria 1 description    | Criteria 1                |
       | Criteria 1 scoring type   | Default competence scale  |
       | Peer assessment weighting | 0                         |
-    And I add a "Peer Assessment" to section "1" and I fill the form with:
+    And I add a "peerwork" activity to course "Course 1" section "1" and I fill the form with:
       | Peer assessment           | Another test peerwork name        |
       | Description               | Another test peerwork description |
       | Criteria 1 description    | Criteria 1                        |

@@ -158,7 +158,7 @@ function local_recompletion_get_config($course) {
         'recompletionschedule' => '',
         'assignevent' => null,
         'archivecompletiondata' => 0,
-        'recompletionemailenable' => 0,
+        'recompletionnotify' => '',
         'recompletionunenrolenable' => 0,
         'recompletionemailbody' => '',
         'recompletionemailbody_format' => FORMAT_HTML,

@@ -37,11 +37,13 @@ Feature: Sections can be edited and deleted in tiles format
     And I wait "1" seconds
 
   Scenario: View the default name of the second section in tiles format
+    And I wait until the page is ready
     And I edit the section "2"
     And I wait until the page is ready
     Then the field "Section name" matches value ""
 
   Scenario: Edit section default name in tiles format
+    And I wait until the page is ready
     And I edit the section "2" and I fill the form with:
       | Section name | This is the second Tile |
     Then I should see "This is the second Tile" in the "li#section-2" "css_element"
@@ -49,7 +51,8 @@ Feature: Sections can be edited and deleted in tiles format
 
   @javascript
   Scenario: Inline edit section name in tiles format
-    When I click on "Edit tile name" "link" in the "li#section-1" "css_element"
+    When I wait until the page is ready
+    When I click on "Edit section name" "link" in the "li#section-1" "css_element"
     And I set the field "New name for section Tile 1" to "Setting up in business"
     And I press the enter key
     Then I should not see "Tile 1" in the "region-main" "region"

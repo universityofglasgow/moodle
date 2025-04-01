@@ -34,6 +34,18 @@ class local_recompletion_recompletion_form extends moodleform {
     /** @var string */
     const RECOMPLETION_TYPE_SCHEDULE = 'schedule';
 
+    /** @var string */
+    const RECOMPLETION_NOTIFY_DISABLED = '';
+
+    /** @var string */
+    const RECOMPLETION_NOTIFY_COMPLETED_USERS = 'completed';
+
+    /** @var string */
+    const RECOMPLETION_NOTIFY_ENROLLED_USERS = 'enrolled';
+
+    /** @var string */
+    const RECOMPLETION_NOTIFY_ACTIVE_ENROLLED_USERS = 'activeenrolled';
+
     /**
      * Defines the form fields.
      */
@@ -67,15 +79,20 @@ class local_recompletion_recompletion_form extends moodleform {
         $mform->setDefault('recompletiontype', self::RECOMPLETION_TYPE_DISABLED);
         $mform->addHelpButton('recompletiontype', 'recompletiontype', 'local_recompletion');
 
-        $mform->addElement('checkbox', 'recompletionemailenable', get_string('recompletionemailenable', 'local_recompletion'));
-        $mform->setDefault('recompletionemailenable', $config->recompletionemailenable);
-        $mform->addHelpButton('recompletionemailenable', 'recompletionemailenable', 'local_recompletion');
-        $mform->hideIf('recompletionemailenable', 'recompletiontype', 'eq', '');
+        $mform->addElement('select', 'recompletionnotify', get_string('recompletionnotify', 'local_recompletion'), [
+            self::RECOMPLETION_NOTIFY_DISABLED => get_string('recompletiontype:disabled', 'local_recompletion'),
+            self::RECOMPLETION_NOTIFY_COMPLETED_USERS => get_string('recompletionnotify:completed', 'local_recompletion'),
+            self::RECOMPLETION_NOTIFY_ENROLLED_USERS => get_string('recompletionnotify:enrolled', 'local_recompletion'),
+            self::RECOMPLETION_NOTIFY_ACTIVE_ENROLLED_USERS => get_string('recompletionnotify:activeenrolled', 'local_recompletion'),
+        ]);
+        $mform->setDefault('recompletionnotify', $config->recompletionnotify ?? '');
+        $mform->addHelpButton('recompletionnotify', 'recompletionnotify', 'local_recompletion');
+        $mform->hideIf('recompletionnotify', 'recompletiontype', 'eq', self::RECOMPLETION_TYPE_DISABLED);
 
         $mform->addElement('checkbox', 'recompletionunenrolenable', get_string('recompletionunenrolenable', 'local_recompletion'));
         $mform->setDefault('recompletionunenrolenable', $config->recompletionunenrolenable);
         $mform->addHelpButton('recompletionunenrolenable', 'recompletionunenrolenable', 'local_recompletion');
-        $mform->hideIf('recompletionunenrolenable', 'recompletiontype', 'eq', '');
+        $mform->hideIf('recompletionunenrolenable', 'recompletiontype', 'eq', self::RECOMPLETION_TYPE_DISABLED);
 
         $options = ['optional' => false, 'defaultunit' => 86400];
         $mform->addElement('duration', 'recompletionduration', get_string('recompletionrange', 'local_recompletion'), $options);
@@ -104,7 +121,7 @@ class local_recompletion_recompletion_form extends moodleform {
         $mform->setType('recompletionemailsubject', PARAM_TEXT);
         $mform->addHelpButton('recompletionemailsubject', 'recompletionemailsubject', 'local_recompletion');
         $mform->disabledIf('recompletionemailsubject', 'recompletiontype', 'eq', '');
-        $mform->disabledIf('recompletionemailsubject', 'recompletionemailenable', 'notchecked');
+        $mform->disabledIf('recompletionemailsubject', 'recompletionnotify', 'eq', self::RECOMPLETION_NOTIFY_DISABLED);
         $mform->setDefault('recompletionemailsubject', $config->recompletionemailsubject);
 
         $mform->addElement('editor', 'recompletionemailbody', get_string('recompletionemailbody', 'local_recompletion'),
@@ -112,7 +129,7 @@ class local_recompletion_recompletion_form extends moodleform {
         $mform->setDefault('recompletionemailbody', ['text' => $config->recompletionemailbody, 'format' => FORMAT_HTML]);
         $mform->addHelpButton('recompletionemailbody', 'recompletionemailbody', 'local_recompletion');
         $mform->disabledIf('recompletionemailbody', 'recompletiontype', 'eq', '');
-        $mform->disabledIf('recompletionemailbody', 'recompletionemailenable', 'notchecked');
+        $mform->disabledIf('recompletionemailbody', 'recompletionnotify', 'eq', self::RECOMPLETION_NOTIFY_DISABLED);
 
         // Advanced recompletion settings.
         // Delete data section.
