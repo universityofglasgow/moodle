@@ -53,11 +53,11 @@
             <div class="col-5">
                 <FormKit
                     type="text"
-                    numer="float"
+                    number="float"
                     outer-class="mb-3"
                     :disabled="(entrytype != 'percentage') || (item.band == 'H')"
                     :validation-rules="{ validate_order }"
-                    validation="required|validate_order|between:0,100"
+                    validation="between:0,100"
                     validation-visibility="blur"
                     :validation-messages="{
                         between: 'Percentage must be between 0 and 100',
@@ -73,7 +73,7 @@
                     outer-class="mb-3"
                     :disabled="(entrytype != 'points') || (item.band == 'H')"
                     :validation-rules="{ validate_points, validate_order }"
-                    validation="required|validate_points|validate_order"
+                    validation="validate_points|validate_order"
                     validation-visibility="blur"
                     :validation-messages="{
                         validate_points: 'Number must be between 0 and ' + maxgrade,
@@ -143,8 +143,8 @@
             items.value.push({
                 band: item.band,
                 grade: item.grade,
-                boundpc: item.bound,
-                boundpoints: precision(item.bound * maxgrade.value / 100, 5),
+                boundpc: ((item.bound !== 0) ? item.bound : null),
+                boundpoints: ((item.bound !== 0) ? precision(item.bound * maxgrade.value / 100, 5) : null),
             });
         });
     }
@@ -155,16 +155,19 @@
      * entrytypeoptions setting
      */
     function recalculate() {
+        // Grade H should always be zero - setting it as such here, prevents the method from messing with the on page value.
+        items.value[0].boundpc = 0;
+        items.value[0].boundpoints = 0;
         items.value.forEach((item) => {
-
+            if (item.band == 'H') return;
             // If percent selected then recalc points
             if (entrytype.value == 'percentage') {
-                item.boundpoints = precision(item.boundpc * maxgrade.value / 100, 5);
+                item.boundpoints = ((item.boundpc !== null && item.boundpc > 0) ? precision(item.boundpc * maxgrade.value / 100, 5) : null);
             }
 
             // If points selected then recalc percent
             if (entrytype.value == 'points') {
-                item.boundpc = precision(item.boundpoints * 100 / maxgrade.value, 5);
+                item.boundpc = ((item.boundpoints !== null && item.boundpoints > 0) ? precision(item.boundpoints * 100 / maxgrade.value, 5) : null);
             }
         })
     }
@@ -218,23 +221,30 @@
     }
 
     /**
-     * computed to check that points/percentages are in order
+     * computed to check that points/percentages are in order.
+     * H will always 0 - therefore we can skip this,
      */
     const ordervalidated = computed(() => {
         let currentpercent = -1;
         let currentpoints = -1;
         let inorder = true;
         items.value.forEach((item) => {
-            if (currentpercent >= Number(item.boundpc)) {
-                inorder = false;
-            } else {
-                currentpercent = Number(item.boundpc);
+            if (item.band == 'H') return;
+
+            if (item.boundpc) {
+                if (currentpercent >= Number(item.boundpc)) {
+                    inorder = false;
+                } else {
+                    currentpercent = Number(item.boundpc);
+                }
             }
-            if (currentpoints >= Number(item.boundpoints)) {
-                window.console.log(currentpoints);
-                inorder = false;
-            } else {
-                currentpoints = Number(item.boundpoints);
+
+            if (item.boundpoints) {
+                if (currentpoints >= Number(item.boundpoints)) {
+                    inorder = false;
+                } else {
+                    currentpoints = Number(item.boundpoints);
+                }
             }
         });
 

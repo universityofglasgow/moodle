@@ -216,7 +216,7 @@ class conversion {
 
             foreach ($map as $item) {
                 if ($value = $DB->get_record('local_gugrades_map_value', ['mapid' => $mapid, 'scalevalue' => $item['grade']])) {
-                    $value->percentage = $item['bound'];
+                    $value->percentage = (($item['bound'] !== null) ? $item['bound'] : 0);
                     $value->scalevalue = $item['grade'];
                     $DB->update_record('local_gugrades_map_value', $value);
                 }
@@ -239,7 +239,7 @@ class conversion {
                 $value = new \stdClass();
                 $value->mapid = $newmapid;
                 $value->band = $item['band'];
-                $value->percentage = $item['bound'];
+                $value->percentage = (($item['bound'] !== null) ? $item['bound'] : 0);
                 $value->scalevalue = $item['grade'];
                 $DB->insert_record('local_gugrades_map_value', $value);
             }
@@ -303,16 +303,55 @@ class conversion {
             throw new \moodle_exception('Schedule A map must have exacly 23 items');
         }
         if (($schedule == 'scheduleb') && (count($map) != 8)) {
-            throw new \moodle_exception('Schedule A map must have exacly 8 items');
+            throw new \moodle_exception('Schedule B map must have exacly 8 items');
         }
 
         if (($map[0]['band'] != 'H') || ($map[0]['bound'] != 0)) {
             throw new \moodle_exception('The first item must be H and must have a bound of 0');
         }
 
+        // Check that the items are indeed in order before we write the map.
+        if (!self::order_validated($map)) {
+            throw new \moodle_exception('The map bound and grade items must be in order.');
+        }
+
         $mapid = self::write_conversion_map($courseid, 0, $mapinfo['name'], $mapinfo['schedule'], $mapinfo['maxgrade'], $map);
 
         return $mapid;
+    }
+
+    /**
+     * Validate the order of the map.
+     * @param array $map - the JSON representation of the conversion map.
+     * @return boolean
+     * @see /ui/src/components/conversion/EditMap.vue for the JS inspiration.
+     */
+    public static function order_validated(array $map) {
+        $currentbound = -1;
+        $currentgrade = -1;
+        $inorder = true;
+
+        foreach ($map as $item) {
+            if ($item['band'] == 'H') continue;
+
+            if ((is_int($item['bound']) || is_float($item['bound'])) && $item['bound'] > 0) {
+                if ($currentbound >= $item['bound']) {
+                    $inorder = false;
+                } else {
+                    $currentbound = $item['bound'];
+                }
+            }
+
+            if ((is_int($item['grade']) || is_float($item['grade'])) && $item['grade'] > 0) {
+                if ($currentgrade >= $item['grade']) {
+                    $inorder = false;
+                } else {
+                    $currentgrade = $item['grade'];
+                }
+            }
+        }
+
+        return $inorder;
     }
 
     /**
