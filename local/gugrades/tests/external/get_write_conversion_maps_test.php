@@ -400,6 +400,417 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
     }
 
     /**
+     * Test incorrect Bound order
+     * Bound values must be in order.
+     * @covers \local_gugrades\external\get_conversion_map::execute
+     * @covers \local_gugrades\external\write_conversion_map::execute
+     */
+    public function test_invalid_bound_order_json(): void {
+
+        // Invalid bound order.
+        $jsonmap = '{
+            "name": "Invalid map - Bound order",
+            "schedule": "schedulea",
+            "maxgrade": 10,
+            "inuse": false,
+            "map": [
+                {
+                    "band": "H",
+                    "bound": 0,
+                    "grade": 0
+                },
+                {
+                    "band": "G2",
+                    "bound": 0,
+                    "grade": 1
+                },
+                {
+                    "band": "G1",
+                    "bound": 15,
+                    "grade": 2
+                },
+                {
+                    "band": "F3",
+                    "bound": 20,
+                    "grade": 3
+                },
+                {
+                    "band": "F2",
+                    "bound": 0,
+                    "grade": 4
+                },
+                {
+                    "band": "F1",
+                    "bound": 27,
+                    "grade": 5
+                },
+                {
+                    "band": "E3",
+                    "bound": 30,
+                    "grade": 6
+                },
+                {
+                    "band": "E2",
+                    "bound": 0,
+                    "grade": 7
+                },
+                {
+                    "band": "E1",
+                    "bound": 37,
+                    "grade": 8
+                },
+                {
+                    "band": "D3",
+                    "bound": 40,
+                    "grade": 9
+                },
+                {
+                    "band": "D2",
+                    "bound": 0,
+                    "grade": 10
+                },
+                {
+                    "band": "D1",
+                    "bound": 47,
+                    "grade": 11
+                },
+                {
+                    "band": "C3",
+                    "bound": 50,
+                    "grade": 12
+                },
+                {
+                    "band": "C2",
+                    "bound": 0,
+                    "grade": 13
+                },
+                {
+                    "band": "C1",
+                    "bound": 57,
+                    "grade": 14
+                },
+                {
+                    "band": "B3",
+                    "bound": 60,
+                    "grade": 15
+                },
+                {
+                    "band": "B2",
+                    "bound": 0,
+                    "grade": 16
+                },
+                {
+                    "band": "B1",
+                    "bound": 67,
+                    "grade": 17
+                },
+                {
+                    "band": "A5",
+                    "bound": 0,
+                    "grade": 18
+                },
+                {
+                    "band": "A4",
+                    "bound": 0,
+                    "grade": 19
+                },
+                {
+                    "band": "A3",
+                    "bound": 79,
+                    "grade": 20
+                },
+                {
+                    "band": "A2",
+                    "bound": 95,
+                    "grade": 21
+                },
+                {
+                    "band": "A1",
+                    "bound": 92,
+                    "grade": 22
+                }
+            ]
+        }';
+
+        $this->expectException('moodle_exception');
+        $mapid = import_conversion_map::execute($this->course->id, $jsonmap);
+    }
+
+    /**
+     * Test incorrect Grade order
+     * Grade values must be in order.
+     * @covers \local_gugrades\external\get_conversion_map::execute
+     * @covers \local_gugrades\external\write_conversion_map::execute
+     */
+    public function test_invalid_grade_order_json(): void {
+
+        // Invalid grade order.
+        $jsonmap = '{
+            "name": "Invalid map - Grade order",
+            "schedule": "schedulea",
+            "maxgrade": 10,
+            "inuse": false,
+            "map": [
+                {
+                    "band": "H",
+                    "bound": 0,
+                    "grade": 0
+                },
+                {
+                    "band": "G2",
+                    "bound": 0,
+                    "grade": 1
+                },
+                {
+                    "band": "G1",
+                    "bound": 15,
+                    "grade": 2
+                },
+                {
+                    "band": "F3",
+                    "bound": 20,
+                    "grade": 3
+                },
+                {
+                    "band": "F2",
+                    "bound": 0,
+                    "grade": 4
+                },
+                {
+                    "band": "F1",
+                    "bound": 27,
+                    "grade": 5
+                },
+                {
+                    "band": "E3",
+                    "bound": 30,
+                    "grade": 6
+                },
+                {
+                    "band": "E2",
+                    "bound": 0,
+                    "grade": 7
+                },
+                {
+                    "band": "E1",
+                    "bound": 37,
+                    "grade": 8
+                },
+                {
+                    "band": "D3",
+                    "bound": 40,
+                    "grade": 9
+                },
+                {
+                    "band": "D2",
+                    "bound": 0,
+                    "grade": 10
+                },
+                {
+                    "band": "D1",
+                    "bound": 47,
+                    "grade": 11
+                },
+                {
+                    "band": "C3",
+                    "bound": 50,
+                    "grade": 12
+                },
+                {
+                    "band": "C2",
+                    "bound": 0,
+                    "grade": 13
+                },
+                {
+                    "band": "C1",
+                    "bound": 57,
+                    "grade": 14
+                },
+                {
+                    "band": "B3",
+                    "bound": 60,
+                    "grade": 15
+                },
+                {
+                    "band": "B2",
+                    "bound": 0,
+                    "grade": 16
+                },
+                {
+                    "band": "B1",
+                    "bound": 67,
+                    "grade": 17
+                },
+                {
+                    "band": "A5",
+                    "bound": 0,
+                    "grade": 18
+                },
+                {
+                    "band": "A4",
+                    "bound": 0,
+                    "grade": 19
+                },
+                {
+                    "band": "A3",
+                    "bound": 79,
+                    "grade": 20
+                },
+                {
+                    "band": "A2",
+                    "bound": 85,
+                    "grade": 18
+                },
+                {
+                    "band": "A1",
+                    "bound": 92,
+                    "grade": 22
+                }
+            ]
+        }';
+
+        $this->expectException('moodle_exception');
+        $mapid = import_conversion_map::execute($this->course->id, $jsonmap);
+    }
+
+    /**
+     * Test incorrect Bound and Grade order
+     * Bound and Grade values must be in order.
+     * @covers \local_gugrades\external\get_conversion_map::execute
+     * @covers \local_gugrades\external\write_conversion_map::execute
+     */
+    public function test_invalid_bound_and_grade_order_json(): void {
+
+        // Invalid bound and grade order.
+        $jsonmap = '{
+            "name": "Invalid map - Bound and Grade order",
+            "schedule": "schedulea",
+            "maxgrade": 10,
+            "inuse": false,
+            "map": [
+                {
+                    "band": "H",
+                    "bound": 0,
+                    "grade": 0
+                },
+                {
+                    "band": "G2",
+                    "bound": 0,
+                    "grade": 1
+                },
+                {
+                    "band": "G1",
+                    "bound": 15,
+                    "grade": 2
+                },
+                {
+                    "band": "F3",
+                    "bound": 20,
+                    "grade": 3
+                },
+                {
+                    "band": "F2",
+                    "bound": 0,
+                    "grade": 4
+                },
+                {
+                    "band": "F1",
+                    "bound": 27,
+                    "grade": 5
+                },
+                {
+                    "band": "E3",
+                    "bound": 30,
+                    "grade": 6
+                },
+                {
+                    "band": "E2",
+                    "bound": 0,
+                    "grade": 7
+                },
+                {
+                    "band": "E1",
+                    "bound": 37,
+                    "grade": 8
+                },
+                {
+                    "band": "D3",
+                    "bound": 40,
+                    "grade": 9
+                },
+                {
+                    "band": "D2",
+                    "bound": 0,
+                    "grade": 10
+                },
+                {
+                    "band": "D1",
+                    "bound": 47,
+                    "grade": 11
+                },
+                {
+                    "band": "C3",
+                    "bound": 50,
+                    "grade": 12
+                },
+                {
+                    "band": "C2",
+                    "bound": 0,
+                    "grade": 13
+                },
+                {
+                    "band": "C1",
+                    "bound": 57,
+                    "grade": 14
+                },
+                {
+                    "band": "B3",
+                    "bound": 60,
+                    "grade": 15
+                },
+                {
+                    "band": "B2",
+                    "bound": 0,
+                    "grade": 16
+                },
+                {
+                    "band": "B1",
+                    "bound": 67,
+                    "grade": 17
+                },
+                {
+                    "band": "A5",
+                    "bound": 0,
+                    "grade": 18
+                },
+                {
+                    "band": "A4",
+                    "bound": 0,
+                    "grade": 19
+                },
+                {
+                    "band": "A3",
+                    "bound": 79,
+                    "grade": 20
+                },
+                {
+                    "band": "A2",
+                    "bound": 78,
+                    "grade": 18
+                },
+                {
+                    "band": "A1",
+                    "bound": 92,
+                    "grade": 22
+                }
+            ]
+        }';
+
+        $this->expectException('moodle_exception');
+        $mapid = import_conversion_map::execute($this->course->id, $jsonmap);
+    }
+
+    /**
      * Check selecting a default map
      * @covers \local_gugrades\external\get_conversion_map::execute
      * @covers \local_gugrades\external\write_conversion_map::execute
@@ -598,6 +1009,242 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         $this->assertEquals('A1', $fredgrades[1]['displaygrade']);
         $this->assertEquals('CONVERTED', $fredgrades[1]['gradetype']);
         $this->assertEquals('A5', $fredgrades[2]['displaygrade']);
+        $this->assertEquals('SECOND', $fredgrades[2]['gradetype']);
+
+        // Check columns.
+        $columns = $page['columns'];
+        $this->assertCount(4, $columns);
+        $this->assertEquals('FIRST', $columns[0]['gradetype']);
+        $this->assertEquals(true, $columns[0]['points']);
+        $this->assertEquals('CONVERTED', $columns[2]['gradetype']);
+        $this->assertEquals(false, $columns[2]['points']);
+        $this->assertEquals('PROVISIONAL', $columns[3]['gradetype']);
+        $this->assertEquals(false, $columns[3]['points']);
+
+        // Get the add grade form and make sure unconverted columns have been removed from list of gradetypes.
+        $form = get_add_grade_form::execute($this->course->id, $this->gradeitemidassign1, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+    }
+
+    /**
+     * Now that maps can have empty values - check the conversion still works as expected.
+     * @covers \local_gugrades\external\get_conversion_map::execute
+     * @covers \local_gugrades\external\write_conversion_map::execute
+     * @covers \local_gugrades\external\select_conversion::execute
+     */
+    public function test_do_conversion_with_missing_values(): void {
+        global $DB;
+
+        // Fake a map with empty values for certain bands.
+        $map = [
+            [
+                "band" => "H",
+                "bound" => 0,
+                "grade" => 0
+            ],
+            [
+                "band" => "G2",
+                "bound" => 0,
+                "grade" => 1
+            ],
+            [
+                "band" => "G1",
+                "bound" => 15,
+                "grade" => 2
+            ],
+            [
+                "band" => "F3",
+                "bound" => 20,
+                "grade" => 3
+            ],
+            [
+                "band" => "F2",
+                "bound" => 0,
+                "grade" => 4
+            ],
+            [
+                "band" => "F1",
+                "bound" => 27,
+                "grade" => 5
+            ],
+            [
+                "band" => "E3",
+                "bound" => 30,
+                "grade" => 6
+            ],
+            [
+                "band" => "E2",
+                "bound" => 0,
+                "grade" => 7
+            ],
+            [
+                "band" => "E1",
+                "bound" => 37,
+                "grade" => 8
+            ],
+            [
+                "band" => "D3",
+                "bound" => 40,
+                "grade" => 9
+            ],
+            [
+                "band" => "D2",
+                "bound" => 0,
+                "grade" => 10
+            ],
+            [
+                "band" => "D1",
+                "bound" => 47,
+                "grade" => 11
+            ],
+            [
+                "band" => "C3",
+                "bound" => 50,
+                "grade" => 12
+            ],
+            [
+                "band" => "C2",
+                "bound" => 0,
+                "grade" => 13
+            ],
+            [
+                "band" => "C1",
+                "bound" => 57,
+                "grade" => 14
+            ],
+            [
+                "band" => "B3",
+                "bound" => 60,
+                "grade" => 15
+            ],
+            [
+                "band" => "B2",
+                "bound" => 0,
+                "grade" => 16
+            ],
+            [
+                "band" => "B1",
+                "bound" => 67,
+                "grade" => 17
+            ],
+            [
+                "band" => "A5",
+                "bound" => 0,
+                "grade" => 18
+            ],
+            [
+                "band" => "A4",
+                "bound" => 0,
+                "grade" => 19
+            ],
+            [
+                "band" => "A3",
+                "bound" => 79,
+                "grade" => 20
+            ],
+            [
+                "band" => "A2",
+                "bound" => 0,
+                "grade" => 21
+            ],
+            [
+                "band" => "A1",
+                "bound" => 92,
+                "grade" => 22
+            ]
+        ];
+
+        // Write the map back.
+        $name = 'Test conversion map';
+        $schedule = 'schedulea';
+        $maxgrade = 100.0;
+        $mapida = write_conversion_map::execute($this->course->id, 0, $name, $schedule, $maxgrade, $map);
+        $mapida = external_api::clean_returnvalue(
+            write_conversion_map::execute_returns(),
+            $mapida
+        );
+        $mapida = $mapida['mapid'];
+
+        // Next step is to import some grades for some test students.
+        $userlist = [
+            $this->student->id,
+            $this->student2->id,
+        ];
+
+        // Assign1 (which is useing points).
+        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, false, $userlist);
+        $status = external_api::clean_returnvalue(
+            import_grades_users::execute_returns(),
+            $status
+        );
+
+        // Apply the test conversion map to Assign1.
+        $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapida);
+        $nothing = external_api::clean_returnvalue(
+            select_conversion::execute_returns(),
+            $nothing
+        );
+
+        // What's in the grades table?
+        $grades = array_values($DB->get_records('local_gugrades_grade', ['gradeitemid' => $this->gradeitemidassign1], 'id'));
+
+        $this->assertCount(4, $grades);
+        $this->assertEquals(1, $grades[0]->points);
+        $this->assertEquals('CONVERTED', $grades[2]->gradetype);
+        $this->assertEquals('A1', $grades[2]->displaygrade);
+        $this->assertEquals('CONVERTED', $grades[3]->gradetype);
+        $this->assertEquals('E3', $grades[3]->displaygrade);
+        $this->assertEquals(0, $grades[3]->points);
+
+        // Get the add grade form and make sure it reflects the converted grade.
+        $form = get_add_grade_form::execute($this->course->id, $this->gradeitemidassign1, $this->student->id);
+        $form = external_api::clean_returnvalue(
+            get_add_grade_form::execute_returns(),
+            $form
+        );
+
+        $this->assertEquals(true, $form['usescale']);
+        $scalemenu = $form['scalemenu'];
+        $this->assertCount(23, $scalemenu);
+        $this->assertEquals(17, $scalemenu[2]['value']);
+        $this->assertEquals('A4', $scalemenu[19]['label']);
+
+        // Write a grade back using the scale.
+        $nothing = write_additional_grade::execute(
+            $this->course->id,
+            $this->gradeitemidassign1,
+            $this->student->id,
+            'SECOND',
+            '',
+            '',
+            17,
+            0,
+            'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get capture page.
+        $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign1, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_capture_page::execute_returns(),
+            $page
+        );
+
+        // Check grades.
+        $fredgrades = $page['users'][0]['grades'];
+        $this->assertCount(4, $fredgrades);
+        $this->assertEquals('95.5', $fredgrades[0]['displaygrade']);
+        $this->assertEquals('FIRST', $fredgrades[0]['gradetype']);
+        $this->assertEquals('A1', $fredgrades[1]['displaygrade']);
+        $this->assertEquals('CONVERTED', $fredgrades[1]['gradetype']);
+        $this->assertEquals('B1', $fredgrades[2]['displaygrade']);
         $this->assertEquals('SECOND', $fredgrades[2]['gradetype']);
 
         // Check columns.
