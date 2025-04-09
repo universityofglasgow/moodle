@@ -36,8 +36,8 @@ class backup_local_gugrades_plugin extends backup_local_plugin {
      */
     protected function define_course_plugin_structure() {
 
-        // Are we including usercompletion info in this backup.
-        $usercompletion = $this->get_setting_value('users');
+        // Are we including user data info in this backup.
+        $userdata = $this->get_setting_value('users');
 
         $plugin = $this->get_plugin_element();
         $gugrades = new backup_nested_element($this->get_recommended_name());
@@ -69,6 +69,69 @@ class backup_local_gugrades_plugin extends backup_local_plugin {
         $mapsvalue->add_child($gmvalues);
         $gmvalue->set_source_table('local_gugrades_map_value', ['mapid' => backup::VAR_PARENTID]);
         $gugrades->add_child($mapsvalues);
+
+        // Add map items (converted items or categories).
+        $mapitems = new backup_nested_element('gugrades_map_items');
+        $mapitem = new backup_nested_element('gugrades_map_item', null, ['mapid', 'gradeitemid', 'gradecategoryid', 'userid', 'timemodified']);
+        $mapitem->annotate_ids('user', 'userid');
+        $mapitems->add_child($mapitem);
+        $mapitem->set_source_table('local_gugrades_map_item', ['courseid' => backup::VAR_COURSEID]);
+        $gugrades->add_child($mapitems);
+
+        // If userdata is included (pretty much everything).
+        if ($userdata) {
+
+            // Backup columns
+            $columns = new backup_nested_element('gugrades_columns');
+            $column = new backup_nested_element('gugrades_column', ['id'], ['gradeitemid', 'gradetype', 'other', 'points']);
+            $columns->add_child($column);
+            $column->set_source_table('local_gugrades_column', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($columns);
+
+            // Backup grades
+            $grades = new backup_nested_element('gugrades_grades');
+            $grade = new backup_nested_element('gugrades_grade', null, 
+                ['gradeitemid', 'userid', 'points', 'rawgrade', 'convertedgrade', 'admingrade', 'displaygrade', 'weightedgrade', 'gradetype', 'columnid', 'iscurrent',
+                'iserror', 'auditby', 'audittimecreated', 'auditcomment', 'dropped', 'catoverride', 'normalisedweight']);
+            $grade->annotate_ids('user', 'userid');
+            $grade->annotate_ids('user', 'auditby');
+            $grades->add_child($grade);
+            $grade->set_source_table('local_gugrades_grade', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($grades);
+
+            // Backup altered weight.
+            $weights = new backup_nested_element('gugrades_weights');
+            $weight = new backup_nested_element('gugrades_weight', null, ['categoryid', 'gradeitemid', 'userid', 'weight', 'timealtered']);
+            $weight->annotate_ids('user', 'userid');
+            $weights->add_child($weight);
+            $weight->set_source_table('local_gugrades_altered_weight', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($weights);
+
+            // Backup audit trail.
+            $audits = new backup_nested_element('gugrades_audits');
+            $audit = new backup_nested_element('gugrades_audit', null, ['userid', 'relateduserid', 'gradeitemid', 'timecreated', 'message']);
+            $audit->annotate_ids('user', 'userid');
+            $audit->annotate_ids('user', 'relateduserid');
+            $audits->add_child($audit);
+            $audit->set_source_table('local_gugrades_audit', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($audits);
+
+            // Backup hidden
+            $hiddens = new backup_nested_element('gugrades_hiddens');
+            $hidden = new backup_nested_element('gugrades_hidden', null, ['gradeitemid', 'userid']);
+            $hidden->annotate_ids('user', 'userid');
+            $hiddens->add_child($hidden);
+            $hidden->set_source_table('local_gugrades_hidden', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($hiddens);
+
+            // Backup resit required
+            $resits = new backup_nested_element('gugrades_resits');
+            $resit = new backup_nested_element('gugrades_resit', null, ['userid']);
+            $resit->annotate_ids('user', 'userid');
+            $resits->add_child($resit);
+            $resits->set_source_table('local_gugrades_resitrequired', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($resits);
+        }
 
         // Finally
         $plugin->add_child($gugrades);
