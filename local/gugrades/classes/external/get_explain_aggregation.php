@@ -114,6 +114,7 @@ class get_explain_aggregation extends external_api {
                     'available' => new external_value(PARAM_BOOL, 'Is grade item available to this user?'),
                     'weight' => new external_value(PARAM_FLOAT, 'Item weighting'),
                     'normalisedweight' => new external_value(PARAM_FLOAT, '(Normalised) item weighting'),
+                    'alteredweight' => new external_value(PARAM_FLOAT, 'Altered weight (if applicable)'),
                 ])
             ),
         ]);

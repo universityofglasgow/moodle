@@ -51,6 +51,7 @@ $string['aggregationnotsupported'] = 'Aggregation is not possible for this grade
 $string['all'] = 'All';
 $string['allnone'] = 'All/none';
 $string['allparticipants'] = 'All participants';
+$string['alteredweight'] = 'Altered weight';
 $string['alteredweights'] = 'Altered weights';
 $string['altertitle'] = 'Alter weights';
 $string['alteredweights'] = 'Altered weights';

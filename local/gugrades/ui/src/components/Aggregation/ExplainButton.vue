@@ -78,6 +78,7 @@
                                     <li v-if="field.overridden">{{ mstrings.overridden }}</li>
                                     <li v-if="user.showweights">{{ mstrings.weight }}: {{ field.weight }}%</li>
                                     <li v-if="user.showweights && field.normalisedweight">{{ mstrings.normalisedweight }}: {{ field.normalisedweight }}&percnt;</li>
+                                    <li v-if="user.showweights && user.alteredweight">{{ mstrings.alteredweight }}: {{ field.alteredweight }}&percnt;</li>
                                 </ul>
                             </td>
                         </tr>

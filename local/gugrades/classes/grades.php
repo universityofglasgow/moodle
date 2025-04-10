@@ -1105,6 +1105,8 @@ class grades {
         $DB->delete_records('local_gugrades_audit', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_column', ['gradeitemid' => $gradeitemid]);
         $DB->delete_records('local_gugrades_hidden', ['gradeitemid' => $gradeitemid]);
+        $DB->delete_records('local_gugrades_altered_weight', ['gradeitemid' => $gradeitemid]);
+        $DB->delete_records('local_gugrades_map_item', ['gradeitemid' => $gradeitemid]);
 
         \local_gugrades\aggregation::invalidate_cache($courseid);
     }

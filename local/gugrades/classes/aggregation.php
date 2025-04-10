@@ -431,6 +431,7 @@ class aggregation {
                 'overridden' => false,
                 'available' => true,
                 'normalisedweight' => null,
+                'alteredweight' => 100 * self::get_altered_weight($column->gradeitemid, $user->id),
                 'iscategory' => $column->categoryid != 0,
             ];
 
