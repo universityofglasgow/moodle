@@ -372,21 +372,17 @@ class block_xp_renderer extends plugin_renderer_base {
             [
                 static::NOTICE_FLAG_QUEST,
                 function() {
-                    $questblogurl = new moodle_url('https://www.levelup.plus/blog/quest-moodle-gamification-plugin?ref=xp_notice');
                     $questurl = new moodle_url('https://www.levelup.plus/quest?ref=xp_notice');
-                    return strip_tags(markdown_to_html(get_string('questreleasenotice', 'block_xp', (object) [
-                        'questblogurl' => $questblogurl->out(false),
+                    return strip_tags(markdown_to_html(get_string('questpromonotice', 'block_xp', (object) [
                         'questurl' => $questurl->out(false),
                     ])), '<a><em><strong>');
                 },
             ], [
                 $this->noticesflag,
                 function() {
-                    $moodleorgurl = new moodle_url('https://moodle.org/plugins/view.php?plugin=block_xp');
-                    $githuburl = new moodle_url('https://github.com/FMCorz/moodle-block_xp');
+                    $moodleorgurl = new moodle_url('https://moodle.org/plugins/block_xp');
                     return get_string('likenotice', 'block_xp', (object) [
                         'moodleorg' => $moodleorgurl->out(),
-                        'github' => $githuburl->out(),
                     ]);
                 },
             ],
@@ -1125,7 +1121,7 @@ EOT
      * @param moodle_url $moreurl The URL to view more (deprecated).
      * @return string
      */
-    public function recent_activity(array $activity, moodle_url $moreurl = null) {
+    public function recent_activity(array $activity, ?moodle_url $moreurl = null) {
         return $this->render_from_template('block_xp/recent-activity', [
             'hasrecentactivities' => !empty($activity),
             'recentactivities' => array_values(array_map(function($entry) {
@@ -1259,7 +1255,7 @@ EOT
      * @param moodle_url|null $link The link.
      * @return string
      */
-    public function user_avatar(moodle_url $url = null, moodle_url $link = null) {
+    public function user_avatar(?moodle_url $url = null, ?moodle_url $link = null) {
         if (!$url) {
             $url = user_utils::default_picture();
         }

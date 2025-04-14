@@ -28,7 +28,7 @@ namespace block_xp\local\controller;
 use block_xp\di;
 use block_xp\local\division\division;
 use block_xp\local\division\group_division;
-use moodle_exception;
+use html_writer;
 
 /**
  * Ladder controller class.
@@ -82,7 +82,8 @@ class ladder_controller extends page_controller {
      * @return division|null
      */
     protected function get_division(): ?division {
-        if ($this->get_groupid()) {
+        $groupid = $this->get_groupid();
+        if ($groupid || $groupid === 0) {
             return new group_division($this->get_groupid());
         }
         return null;
@@ -114,8 +115,7 @@ class ladder_controller extends page_controller {
             $this->get_renderer(),
             [
                 'context' => $this->world->get_context(),
-                'identitymode' => $this->world->get_config()->get('identitymode'),
-                'rankmode' => $this->world->get_config()->get('rankmode'),
+                'config' => $this->world->get_config(),
             ],
             $USER->id
         );
@@ -183,11 +183,20 @@ class ladder_controller extends page_controller {
                 'visible' => $this->is_visible_to_viewers(),
                 'menu' => $this->get_page_menu_items(),
             ]);
-            $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
         }
 
+        $this->page_ranking();
+    }
+
+    /**
+     * Page ranking.
+     */
+    protected function page_ranking() {
         $this->print_group_menu();
+
+        echo html_writer::start_div('xp-cancel-overflow');
         echo $this->get_table()->out($this->get_page_size(), false);
+        echo html_writer::end_div();
     }
 
     /**
@@ -201,7 +210,7 @@ class ladder_controller extends page_controller {
         return array_filter([
             [
                 'label' => get_string('pagesettings', 'block_xp'),
-                'data-action' => 'open-form',
+                'data-xp-action' => 'open-form',
                 'data-form-class' => di::get('leaderboard_form_class'),
                 'data-form-args__contextid' => $this->world->get_context()->id,
                 'href' => '#',

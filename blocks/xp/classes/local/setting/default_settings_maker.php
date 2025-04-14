@@ -66,7 +66,7 @@ class default_settings_maker implements settings_maker {
      * @param url_resolver $urlresolver The URL resolver.
      * @param config|null $configlocked The repository of locked config.
      */
-    public function __construct(config $defaults, url_resolver $urlresolver, config $configlocked = null) {
+    public function __construct(config $defaults, url_resolver $urlresolver, ?config $configlocked = null) {
         $this->defaults = $defaults;
         $this->urlresolver = $urlresolver;
         $this->configlocked = $configlocked;
@@ -197,6 +197,21 @@ class default_settings_maker implements settings_maker {
                 '1' => get_string('yes', 'core'),
             ]
         ));
+
+        // Whether to enable state provisioning.
+        $setting = (new admin_setting_configselect('block_xp/provisionstates',
+            get_string('provisionstates', 'block_xp'),
+            get_string('provisionstates_desc', 'block_xp'),
+            $this->defaults->get('provisionstates'), [
+                '0' => get_string('no', 'core'),
+                '1' => get_string('yes', 'core'),
+            ]
+        ));
+        $setting->set_updatedcallback(function() {
+            $isenabled = (bool) get_config('block_xp', 'provisionstates');
+            \block_xp\task\state_provisioner::set_enabled($isenabled);
+        });
+        $settings[] = $setting;
 
         // Keeps logs for.
         $settings[] = (new admin_setting_configselect('block_xp/keeplogs',

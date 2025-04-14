@@ -83,9 +83,7 @@ class admin_notices extends \core\task\scheduled_task {
         }
 
         // Only send once per major version pair.
-        $xpversion = (string) floor((int) $blockxp->versiondb / 100);
-        $xppversion = (string) floor((int) $localxp->versiondb / 100);
-        $key = "{$xpversion}:{$xppversion}";
+        $key = static::get_version_pair_key($blockxp, $localxp);
         if ($config->get('lastoutofsyncnoticekey') === $key) {
             return;
         }
@@ -118,6 +116,19 @@ class admin_notices extends \core\task\scheduled_task {
         }
 
         $config->set('lastoutofsyncnoticekey', $key);
+    }
+
+    /**
+     * Get a version pair key.
+     *
+     * @param \core\plugininfo\base $blockxp The info.
+     * @param \core\plugininfo\base $localxp The info.
+     * @return string
+     */
+    public static function get_version_pair_key($blockxp, $localxp) {
+        $xpversion = (string) floor((int) $blockxp->versiondb / 100);
+        $xppversion = (string) floor((int) $localxp->versiondb / 100);
+        return "{$xpversion}:{$xppversion}";
     }
 
     /**

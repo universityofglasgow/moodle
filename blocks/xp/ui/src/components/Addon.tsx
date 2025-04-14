@@ -19,11 +19,14 @@ export const AddonRequired = () => {
       href="#"
       role="button"
       onClick={handleClick} /** Older popovers cause a scroll up. */
+      data-bs-toggle="popover"
       data-toggle="popover"
       data-placement="top"
       data-container="body"
       data-content={getStr("unlockfeaturewithxpplus", promourl)}
+      data-bs-content={getStr("unlockfeaturewithxpplus", promourl)}
       data-html="true"
+      data-bs-html="true"
       className="xp-py-1 xp-px-1.5 xp-normal-case xp-text-2xs xp-inline-block xp-bg-black xp-text-white xp-rounded xp-no-underline"
     >
       {getStr("xpplusrequired")}

@@ -41,14 +41,19 @@ function open(node) {
     const formArgs = extractNodeData(node, 'formArgs');
     const modalConfig = extractNodeData(node, 'modal');
 
+    const finalModalConfig = {
+        title: modalConfig.title ?? node.textContent.slice(0, 100),
+    };
+    if ('large' in modalConfig) {
+        finalModalConfig.large = Boolean(modalConfig.large);
+    }
+
     var modalForm = new ModalForm({
         formClass: formClass,
         args: formArgs,
         returnFocus: node,
         saveButtonText: modalConfig.saveButtonText,
-        modalConfig: {
-            title: modalConfig.title ?? node.textContent.slice(0, 100),
-        }
+        modalConfig: finalModalConfig
     });
     modalForm.addEventListener(modalForm.events.LOADED, () => {
         const root = modalForm.modal.getRoot();
@@ -63,6 +68,9 @@ function open(node) {
             if (modalConfig.buttons.save?.danger) {
                 saveBtn.classList.remove('btn-primary');
                 saveBtn.classList.add('btn-danger');
+            }
+            if (modalConfig.buttons.save?.disabled) {
+                saveBtn.setAttribute('disabled', '');
             }
         }
     });
@@ -157,4 +165,25 @@ function setAtDepth(obj, keys, value) {
     currentObj[lastKey] = value;
 
     return obj;
+}
+
+let simpleOpenFormActionObserverRegistered = false;
+const simpleOpenFormActionObserverSelector = '[data-xp-action="open-form"][data-form-class]';
+
+/**
+ * Register simple open form action observer.
+ */
+export function registerSimpleOpenFormActionObserver() {
+    if (simpleOpenFormActionObserverRegistered) {
+        return;
+    }
+    simpleOpenFormActionObserverRegistered = true;
+    document.body.addEventListener('click', (e) => {
+        const node = e.target.closest(simpleOpenFormActionObserverSelector);
+        if (!node) {
+            return;
+        }
+        e.preventDefault();
+        open(node);
+    });
 }

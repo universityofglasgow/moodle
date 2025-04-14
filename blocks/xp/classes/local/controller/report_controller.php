@@ -115,10 +115,20 @@ class report_controller extends page_controller {
         if ($this->get_param('delete')) {
             if ($this->get_param('confirm') && confirm_sesskey()) {
                 $nexturl = new url($this->pageurl, ['userid' => null]);
-                $this->world->get_store()->delete($userid);
+                $this->perform_user_deletion($userid);
                 $this->redirect($nexturl);
             }
         }
+    }
+
+    /**
+     * Perform the user deletion.
+     *
+     * @param int $userid The user ID.
+     * @return void
+     */
+    protected function perform_user_deletion(int $userid): void {
+        $this->world->get_store()->delete($userid);
     }
 
     protected function get_page_html_head_title() {
@@ -288,8 +298,6 @@ class report_controller extends page_controller {
                 return $output->render($button);
             }, $actions)));
         }
-
-        $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
     }
 
     protected function page_user_filter() {

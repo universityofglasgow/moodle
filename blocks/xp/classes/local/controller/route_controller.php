@@ -249,7 +249,11 @@ abstract class route_controller implements controller {
      * @return void
      */
     final protected function end() {
+        global $PAGE;
         echo html_writer::end_div();
+
+        $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerSimpleOpenFormActionObserver');
+
         echo $this->get_renderer()->footer();
     }
 
@@ -260,7 +264,7 @@ abstract class route_controller implements controller {
      * @param string $message The redirect message.
      * @return void
      */
-    final protected function redirect(url $url = null, $message = '') {
+    final protected function redirect(?url $url = null, $message = '') {
         if ($url === null) {
             $url = $this->pageurl;
         }

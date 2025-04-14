@@ -1,0 +1,20 @@
+<style type='text/css'>
+    .modal-backdrop {
+        z-index:-1;
+    }
+</style>
+<div id="mod_helixmedia_modal_{{preid}}{{extraid}}" class="modal fade mod_helixmedia_modal_custom" role="dialog" data-backdrop="false" >
+  <div class="modal-dialog" style="max-width:1000px" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{text}}</h4>
+        <button type="button" class="close text-right" data-dismiss="modal" aria-label="Close" id="mod_helixmedia_closemodal_{{preid}}{{extraid}}">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-0 pt-2" id="mod_helixmedia_modal_body">
+          {{>mod_helixmedia/modalinner}}
+      </div>
+    </div>
+  </div>
+</div>

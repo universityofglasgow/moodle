@@ -29,7 +29,29 @@ $string['activityname_help'] = 'The text that the activity name must contain or 
 $string['activityoresourceis'] = 'The activity or resource is {$a}';
 $string['addacondition'] = 'Add a condition';
 $string['addarule'] = 'Add a rule';
+$string['addondeactivated'] = 'XP+ disabled';
+$string['addondeactivatedinfo'] = 'The XP plugins are incompatible with one another, which resulted in XP+ being disabled. The version {$a->localxpversion} of Level Up XP+ (local_xp) is expected.';
 $string['addonnotactivated'] = 'The addon is not activated.';
+$string['adminnoticeaddondeactivatedsubject'] = "XP+ plugin disabled!";
+$string['adminnoticeaddondeactivatedmessage'] = 'Level Up XP+ has been disabled!
+
+You are receiving this notice as a warning because Level Up XP+ was disabled to prevent potential issues. The two plugins Level Up XP (block_xp) and Level Up XP+ (local_xp) are currently incompatible with each other. This issue occurs when XP has been upgraded to a new major version while XP+ remains outdated.
+
+This mismatch can lead to loss of functionality, bugs, and other unexpected consequences. To resolve this, you must upgrade Level Up XP+.
+
+- Level Up XP (block_xp) version: {$a->blockxpversion}
+- Level Up XP+ (local_xp) version: {$a->localxpversion}
+- Level Up XP+ expected version: {$a->localxpversionexpected}
+
+Additional resources:
+
+- [Upgrading documentation](https://docs.levelup.plus/xp/docs/upgrade)
+- [XP+ deactivated documentation](https://docs.levelup.plus/xp/docs/addon-deactivated)
+- [Compatibility documentation](https://docs.levelup.plus/xp/docs/requirements-compatibility)
+
+--
+
+This notice was sent to all administrators. To disable all admin notices, please visit Level Up XP\'s admin settings.';
 $string['adminnoticeoutofsyncmessage'] = 'Level Up XP and Level Up XP+ incompatibility notice!
 
 You are receiving this notice as a warning because the two plugins Level Up XP (block_xp) and Level Up XP+ (local_xp) are currently "out of sync" and incompatible with each other. This issue occurs when XP has been upgraded to a new major version while XP+ remains outdated.
@@ -74,7 +96,9 @@ $string['basepointsrelativedesc'] = 'The number of points to start with.';
 $string['blockappearance'] = 'Block appearance';
 $string['blockappearancemovedtopluginsettings'] = 'The block appearance settings were moved to the plugin\'s settings page.';
 $string['cachedef_filters'] = 'Level filters';
+$string['cachedef_metadata'] = 'Metadata';
 $string['cachedef_ruleevent_eventslist'] = 'List of some events';
+$string['canjoinfromdatex'] = 'You will be able to join from {$a}.';
 $string['cannotbesetindefaults'] = 'This cannot be set in the default values.';
 $string['cannotearnpoints'] = 'Cannot earn points.';
 $string['cannotshowblockconfig'] = 'I would usually display the appearance settings here, but I could not find your block. To change the block\'s appearance, head back [here]({$a}) (or where you added the block), turn editing mode on, and follow the "Configure" option in the block\'s dropdown. If you cannot find the block, add it to your course again.';
@@ -84,12 +108,14 @@ $string['changetocourse'] = 'Change to course';
 $string['changetositewide'] = 'Back to sitewide';
 $string['cheatguard'] = 'Cheat guard';
 $string['cheatguardsettingsmovednotice'] = 'The cheat guard settings were moved to the [event rules page]({$a->url}).';
+$string['checkaddoncompatibility'] = 'Level Up XP addon compatibility';
 $string['chooseacondition'] = 'Choose a condition';
 $string['clearfilter'] = 'Clear filter';
 $string['clicktoselectcm'] = 'Click to select an activity or resource';
 $string['cmselector'] = 'Course module selector';
 $string['coefxp'] = 'Algorithm coefficient';
 $string['colon'] = '{$a->a}: {$a->b}';
+$string['comparisonmethod'] = 'Comparison method';
 $string['compatibilitycheck'] = 'Compatibility check';
 $string['completionrules'] = 'Completion rules';
 $string['completionrules_help'] = '
@@ -191,6 +217,8 @@ $string['enablexpgain_help'] = 'When set to \'No\', nobody will earn points in t
 
 Please note that this can also be controlled more granularity using the capability _block/xp:earnxp_.';
 $string['entersearchterm'] = 'Enter a search term';
+$string['envcheckaddonincompatibilitymessage'] = 'The plugin Level Up XP+ (local_xp) is incompatible with Level Up XP (block_xp). This will result in XP+ being disabled. To prevent this, please upgrade both plugins. For more information, please visit https://docs.levelup.plus/xp/docs/compatibility.';
+$string['erroraddondeactivated'] = 'Level Up XP+ has been disabled. Please consult the [documentation]({$a->docsurl}) for more information.';
 $string['errorcontextcoursemismatchforwholesite'] = 'The URL of this <em>Level Up XP</em> page does not match the current plugin configuration. Your current configuration declares <em>Level Up XP</em> to be used \'Sitewide\', however this page expected it to be used \'Per course\'. Please <a href="{$a->nexturl}">click here</a> to navigate to the right page. Search for the admin setting \'block_xp_context\' if you wish to change your configuration.';
 $string['errorcontextcoursemismatchpercourse'] = 'The URL of this <em>Level Up XP</em> page does not match the current plugin configuration. Your current configuration declares <em>Level Up XP</em> to be used \'Per course\', but this page expects it to be used \'Sitewide\'. It most likely originates from a <em>block</em> that was added to the dashboard or front page while in a different configuration. You should remove the block from the latter pages, and only use the block from within individual courses.';
 $string['errorformvalues'] = 'There are some issues in the form values, please fix them.';
@@ -263,6 +291,12 @@ $string['installed'] = 'Installed';
 $string['instructions'] = 'Instructions';
 $string['instructions_help'] = 'The instructions will be displayed on the information page. You may use them to share information and instructions regarding the levels, how to obtain points, etc.';
 $string['invalidxp'] = 'Invalid points value';
+$string['join'] = 'Join';
+$string['joinleadeboardconfirmnote'] = 'Fantastic, we\'re thrilled to have you on board!
+
+Please note that once you join there\'s a waiting period before you can leave the leaderboard if you change your mind.';
+$string['joinleadeboardlockednote'] = 'You cannot join the leaderboard.';
+$string['joinleaderboard'] = 'Join leaderboard';
 $string['keeplogs'] = 'Keep logs';
 $string['ladder'] = 'Leaderboard';
 $string['ladder_help'] = 'The leaderboard ranks students based on their points. When used in a course with groups, it can create a ranking for each group of student.
@@ -281,8 +315,30 @@ $string['ladderiso_help'] = "Create separate leaderboards for different groups o
 - Using cohorts: Only members of the same cohort will appear in a person's leaderboard.
 
 [More info](https://docs.levelup.plus/xp/docs/leaderboard-isolation)";
+$string['ladderparticipation'] = 'Participation';
+$string['ladderparticipation_help'] = 'Defines if users are expected to participate in the leaderboard, or if they can join or leave as per their preference.
+
+- Automatic, no opt-out: All users join the leaderboard automatically and cannot leave it.
+- Automatic, opt-out available: All users automatically join the leaderboard but can choose to leave it.
+- Optional, by opt-in: Users must explicitly join the leaderboard to participate in it.
+
+Users can change their mind and leave or rejoin the leaderboard after opting in or out. However, to prevent unintended behaviour, users joining the leaderboard cannot opt-out for 3 days.
+
+[More info](https://docs.levelup.plus/xp/docs/leaderboard-opt-out)';
+$string['ladderparticipationforced'] = 'Automatic, no opt-out';
+$string['ladderparticipationoptin'] = 'Optional, by opt-in';
+$string['ladderparticipationoptout'] = 'Automatic, opt-out available';
+$string['ladderparticipationreset'] = "Remove everyone's recorded participation status.";
+$string['ladderparticipationreset_help'] = 'When checked, the participation status of all users will be erased, and all users will need to opt-in or out again.';
 $string['laddersettingsmovednotice'] = 'The leaderboard settings were moved to the [leaderboard page]({$a->url}).';
 $string['learnmore'] = 'Learn more';
+$string['leave'] = 'Leave';
+$string['leaveleadeboardconfirmnote'] = 'Are you sure that you would like to leave the leaderboard?
+
+Once you leave, you lose access to the rankings, but you can always rejoin later if you change your mind.';
+$string['leaveleadeboardlockednote'] = 'You cannot leave the leaderboard.';
+$string['leaveleadeboardlockeduntilnote'] = 'You cannot leave the leaderboard until {$a}.';
+$string['leaveleaderboard'] = 'Leave leaderboard';
 $string['level'] = 'Level';
 $string['levelbadge'] = 'Level badge';
 $string['levelbadges'] = 'Level badges';
@@ -301,7 +357,7 @@ $string['levelup'] = 'Level up!'; // The action, not the brand!
 $string['levelupoptionsunavailableforlevelone'] = 'Options related to attaining the level are unavailable for the first level.';
 $string['levelupplus'] = 'Level Up XP+';
 $string['levelx'] = 'Level #{$a}';
-$string['likenotice'] = '<strong>Do you like the plugin?</strong> Please take a moment to <a href="{$a->moodleorg}" target="_blank">add it to your favourites</a> on Moodle.org and <a href="{$a->github}" target="_blank">star it on GitHub</a>.';
+$string['likenotice'] = 'Are you enjoying Level Up XP? Please take a moment to <a href="{$a->moodleorg}" target="_blank">add it to your favourite</a> plugins on Moodle.org.';
 $string['limitparticipants'] = 'Limit participants';
 $string['limitparticipants_help'] = 'This setting controls who is displayed in the leaderboard. Neighbours are the participants ranked above and below the current user. For instance, when choosing \'Display 2 neighbours\', only the two participants ranked directly higher and lower than the current user will be displayed.';
 $string['logging'] = 'Logging';
@@ -334,6 +390,7 @@ $string['navpromo'] = 'XP+';
 $string['navreport'] = 'Report';
 $string['navsettings'] = 'Settings';
 $string['navvisuals'] = 'Appearance';
+$string['newversioninstallednotice'] = 'A new version was installed! Discover what\'s new in the [release notes]({$a->releasenotesurl}).';
 $string['nextlevelin'] = 'next level in';
 $string['noconditionsyet'] = 'No conditions, yet!';
 $string['noconditionsyetintro'] = 'Get started by adding a condition.';
@@ -345,8 +402,11 @@ $string['noneareavailable'] = 'None are available.';
 $string['notecompatibilityissues'] = 'Please note the compatibility issues identified below:';
 $string['notesomesettingslocked'] = 'Note that some settings may not be editable when they have been locked by an administrator.';
 $string['nothingmatchesfilter'] = 'Nothing matches the filter.';
+$string['notparticipating'] = 'Not participating';
+$string['notranked'] = 'Not ranked';
 $string['numberoflevels'] = 'Number of levels';
 $string['occasionally'] = 'Occasionally';
+$string['onlyparticipantscanaccessranking'] = 'Only those participating in the leaderboard can access the rankings.';
 $string['outofsync'] = 'XP plugins incompatibility';
 $string['outofsyncinfo'] = 'The XP plugins are incompatible with one another which can lead to unexpected issues. In the future, XP+ will automatically disable itself. The version {$a->localxpversion} of Level Up XP+ (local_xp) is expected.';
 $string['pagecurrentnotvisibletoviewers'] = 'This page is not currently visible to students.';
@@ -354,7 +414,10 @@ $string['pagecurrentvisibletoviewers'] = 'This page is currently visible to stud
 $string['pagesettings'] = 'Page settings';
 $string['participant'] = 'Participant';
 $string['participants'] = 'Participants';
+$string['participatesinleaderboard'] = 'Participates in the leaderboard.';
+$string['participatesnotinleaderboard'] = 'Does not participate in the leaderboard.';
 $string['participatetolevelup'] = 'Participate in the course to gain experience points and level up!';
+$string['participating'] = 'Participating';
 $string['perpagecolon'] = 'Per page:';
 $string['pickaconditiontype'] = 'Pick a condition type';
 $string['pluginavailabilityxpdesc'] = 'This plugin lets instructors restrict access to activities based on students\' levels.';
@@ -402,9 +465,12 @@ $string['promogetnow'] = 'Get XP+ now!';
 $string['promointro'] = 'Become the game master! Unlock additional features and take gamification to a whole new level with Level Up XP+!';
 $string['promointroinstalled'] = 'The add-on _Level Up XP+_ is installed on your system and all of its features have been enabled.';
 $string['promorulesdidyouknow'] = 'Did you know that with <em>Level Up XP+</em> students can receive points for <em>completing courses</em> and <em>activities</em>, or even receive points according to their <em>grades</em>? <a href="{$a->url}">Discover more here</a>.';
-$string['questreleasenotice'] = '🎉 We are excited to announce our **new gamification plugin** called **Level Up Quest** 🥳. Turn your courses into **exciting adventures**, filled with **re-engagement strategies** and **celebrations** 🤯! Check out [Quest\'s website]({$a->questurl}) and our [launch post here]({$a->questblogurl}). 👈';
+$string['provisionstates'] = 'Automatic user provisioning';
+$string['provisionstates_desc'] = 'By default, users only appear in the leaderboard (and the report in sitewide mode), after they have been detected by XP. User provisioning is an advanced feature that automatically creates entries for missing users loosely identified by their role. This is done periodically via a scheduled task that runs daily by default. [Learn mode](https://docs.levelup.plus/xp/docs/automatic-user-provisioning)';
+$string['questpromonotice'] = 'Take gamification to the next level, discover [Level Up Quest]({$a->questurl}).';
 $string['quickeditpoints'] = 'Quick edit points';
 $string['rank'] = 'Rank';
+$string['ranked'] = 'Ranked';
 $string['ranking'] = 'Ranking';
 $string['ranking_help'] = 'The rank is the absolute position of the current user in the leaderboard. The relative rank is the difference in experience points between a user and their neighbours.';
 $string['reallydeleteuserstate'] = 'Deleting a user is only useful to remove them from the leaderboard. For any other reasons, we recommend setting their points to 0 instead. Note that deleting them does not affect their ability to earn points in the future.
@@ -440,6 +506,7 @@ $string['resetcoursedata'] = 'Reset course data';
 $string['resetallcoursestodefaults'] = 'Reset all courses to defaults';
 $string['resetallcoursestodefaultsintro'] = 'Click the button below to reset all courses to the above defaults.';
 $string['resetgroupdata'] = 'Reset group data';
+$string['resetladderparticiptionofeveryone'] = 'Reset the participation status of everyone';
 $string['resettodefaults'] = 'Reset to defaults';
 $string['resultsfilteredforn'] = 'Results filtered for {$a}.';
 $string['reward'] = 'Reward';
@@ -601,6 +668,7 @@ $string['someoneelse'] = 'Someone else';
 $string['somethinghappened'] = 'Something happened';
 $string['taskadminnotices'] = 'Admin notices';
 $string['taskcollectionloggerpurge'] = 'Purge collection logs';
+$string['taskstateprovisioner'] = 'State provisioner';
 $string['taskusagereport'] = 'Usage report';
 $string['teamleaderboard'] = 'Team leaderboard';
 $string['teamleaderboard_help'] = 'The team leaderboard shows a ranking of teams based on the total cumulated points of their members.
@@ -630,6 +698,10 @@ $string['unavailable'] = 'Unavailable';
 $string['unstableversioninstalledinfo'] = 'This version of Level Up XP (block_xp) is still in development and considered unstable, please use an official release.';
 $string['upgradingplugins'] = 'Upgrading the plugins';
 $string['unstableversioninstalled'] = 'Unstable version installed';
+$string['userladderparticipation'] = 'Leaderboard participation';
+$string['userladderparticipation_help'] = 'Determines whether the user is currently participating in the leaderboard. This does not affect the team leaderboard.';
+$string['userladderparticipationlocked'] = 'Lock participation until';
+$string['userladderparticipationlocked_help'] = 'The date from which the user is free to change their participation preference.';
 $string['value'] = 'Value';
 $string['visualsintro'] = 'Customise the appearance of the levels, and the meaning of the points.';
 $string['wherearexpused'] = 'Where are points used?';
@@ -735,3 +807,6 @@ $string['outofsyncexcessiveinfo'] = 'XP+ is excessively older than XP which can 
 $string['resetcourserulestodefaults'] = 'Reset course rules to defaults';
 $string['resetlevelstodefaults'] = 'Reset levels to defaults';
 $string['resetvisualstodefaults'] = 'Reset appearance to defaults';
+
+// Deprecated since XP 18
+$string['questreleasenotice'] = 'Take gamification to the next level, discover **Level Up Quest** 🥳. Turn your courses into **exciting adventures**, filled with **re-engagement strategies** and **celebrations** 🤯! Check out [Quest\'s website]({$a->questurl}) and our [launch post here]({$a->questblogurl}). 👈';

@@ -14,23 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_recompletion;
-
 /**
- * Class dialogue_test.
+ * Post-install code for the submission_helixassign module.
  *
- * @package    local_recompletion
- * @copyright  2021 Dan Marsden
+ * @package assignsubmission_helixassign
+ * @copyright Streaming LTD 2013
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class recompletion_test extends \advanced_testcase {
 
-    /**
-     * Basic test for creating dialogue.
-     */
-    public function test_local_recompletion() {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-        $course = $this->getDataGenerator()->create_course();
-    }
+defined('MOODLE_INTERNAL') || die();
+
+
+/**
+ * Code run after the assignsubmission_helixassign module database tables have been created.
+ * Moves the plugin to the top of the list (of 3)
+ * @return bool
+ */
+function xmldb_assignsubmission_helixassign_install() {
+    global $CFG;
+
+    require_once($CFG->dirroot . '/mod/assign/adminlib.php');
+    $pluginmanager = new assign_plugin_manager('assignsubmission');
+
+    $pluginmanager->move_plugin('helixassign', 'up');
+    $pluginmanager->move_plugin('helixassign', 'up');
+
+    return true;
 }
+
+
