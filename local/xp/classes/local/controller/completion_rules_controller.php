@@ -1,22 +1,20 @@
 <?php
-/**
- * This file is part of Level Up XP+.
- *
- * Level Up XP+ is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Level Up XP+ is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Level Up XP+.  If not, see <https://www.gnu.org/licenses/>.
- *
- * https://levelup.plus
- */
+// This file is part of Level Up XP+.
+//
+// Level Up XP+ is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Level Up XP+ is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Level Up XP+.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Rules controller.
@@ -226,11 +224,6 @@ class completion_rules_controller extends page_controller {
                 'courseid' => $this->world->get_courseid(),
             ],
             'childcontext' => $childcontextdata,
-            'currentcontext' => [
-                'id' => (int) $currentcontext->id,
-                'contextlevel' => (int) $currentcontext->contextlevel,
-                'instanceid' => (int) $currentcontext->instanceid,
-            ],
             'ruletypes' => $ruletypes,
             'rulefilters' => $filters,
             'addon' => [

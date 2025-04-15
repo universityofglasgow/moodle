@@ -166,7 +166,6 @@ class default_course_world_grouped_leaderboard_factory implements
                 $this->iomadfacade->get_viewing_companyid(), [], $columns, $levelsinfo, $orderby);
 
         } else {
-            debugging('Unknown source for the group leaderboard: ' . $source, DEBUG_DEVELOPER);
             $leaderboard = new empty_leaderboard($columns);
         }
 

@@ -32,6 +32,7 @@ require_once(__DIR__ . '/base_testcase.php');
 use block_xp\di;
 use block_xp\local\sql\limit;
 use local_xp\local\leaderboard\course_group_leaderboard;
+use local_xp\tests\base_testcase;
 
 /**
  * Group leaderboard testcase.
@@ -42,7 +43,7 @@ use local_xp\local\leaderboard\course_group_leaderboard;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_xp\local\leaderboard\course_group_leaderboard
  */
-class course_group_leaderboard_test extends base_testcase {
+final class course_group_leaderboard_test extends base_testcase {
 
     protected function get_world($courseid) {
         $world = di::get('course_world_factory')->get_world($courseid);
@@ -51,7 +52,7 @@ class course_group_leaderboard_test extends base_testcase {
         return $world;
     }
 
-    public function test_leaderboard_with_no_groups() {
+    public function test_leaderboard_with_no_groups(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -63,7 +64,7 @@ class course_group_leaderboard_test extends base_testcase {
         $this->assertSame(0, $l->get_count());
     }
 
-    public function test_leaderboard_with_groups_but_no_scores() {
+    public function test_leaderboard_with_groups_but_no_scores(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $u1 = $dg->create_user();
@@ -88,7 +89,7 @@ class course_group_leaderboard_test extends base_testcase {
         $this->assertSame(0, $l->get_count());
     }
 
-    public function test_leaderboard_with_groups_and_scores() {
+    public function test_leaderboard_with_groups_and_scores(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
         $c2 = $dg->create_course();
@@ -146,7 +147,7 @@ class course_group_leaderboard_test extends base_testcase {
         $this->assertSame(2, $l->get_count());
     }
 
-    public function test_leaderboard_with_groups_and_intricacies() {
+    public function test_leaderboard_with_groups_and_intricacies(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
 
@@ -232,7 +233,7 @@ class course_group_leaderboard_test extends base_testcase {
         $this->assertSame(4, $l->get_count());
     }
 
-    public function test_leaderboard_with_group_compensation() {
+    public function test_leaderboard_with_group_compensation(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
 
@@ -385,4 +386,88 @@ class course_group_leaderboard_test extends base_testcase {
 
         $this->assertSame(4, $l->get_count());
     }
+
+    public function test_leaderboard_with_groups_and_deleted_users(): void {
+        $dg = $this->getDataGenerator();
+        $c1 = $dg->create_course();
+
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+        $u4 = $dg->create_user();
+
+        $dg->enrol_user($u1->id, $c1->id);
+        $dg->enrol_user($u2->id, $c1->id);
+        $dg->enrol_user($u3->id, $c1->id);
+        $dg->enrol_user($u4->id, $c1->id);
+
+        $g1 = $dg->create_group(['courseid' => $c1->id]);
+        $g2 = $dg->create_group(['courseid' => $c1->id]);
+
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u1->id]);
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u2->id]);
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u4->id]);
+        $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u3->id]);
+
+        $w1 = $this->get_world($c1->id);
+        $s1 = $w1->get_store();
+
+        $s1->set($u1->id, 10);
+        $s1->set($u2->id, 500);
+        $s1->set($u3->id, 30);
+        $s1->set($u4->id, 3);
+
+        delete_user($u2);
+
+        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info());
+        $ranking = $l->get_ranking(new limit(100));
+        $this->assertCount(2, $ranking);
+        $this->assertEquals(1, $ranking[0]->get_rank());
+        $this->assertEquals(30, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals(2, $ranking[1]->get_rank());
+        $this->assertEquals(13, $ranking[1]->get_state()->get_xp());
+    }
+
+    public function test_leaderboard_with_groups_and_suspended_users(): void {
+        $dg = $this->getDataGenerator();
+        $c1 = $dg->create_course();
+
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+        $u4 = $dg->create_user();
+
+        $dg->enrol_user($u1->id, $c1->id);
+        $dg->enrol_user($u2->id, $c1->id);
+        $dg->enrol_user($u3->id, $c1->id);
+        $dg->enrol_user($u4->id, $c1->id);
+
+        $g1 = $dg->create_group(['courseid' => $c1->id]);
+        $g2 = $dg->create_group(['courseid' => $c1->id]);
+
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u1->id]);
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u2->id]);
+        $dg->create_group_member(['groupid' => $g1->id, 'userid' => $u4->id]);
+        $dg->create_group_member(['groupid' => $g2->id, 'userid' => $u3->id]);
+
+        $w1 = $this->get_world($c1->id);
+        $s1 = $w1->get_store();
+
+        $s1->set($u1->id, 10);
+        $s1->set($u2->id, 500);
+        $s1->set($u3->id, 30);
+        $s1->set($u4->id, 3);
+
+        $u2->suspended = 1;
+        user_update_user($u2, false);
+
+        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info());
+        $ranking = $l->get_ranking(new limit(100));
+        $this->assertCount(2, $ranking);
+        $this->assertEquals(1, $ranking[0]->get_rank());
+        $this->assertEquals(30, $ranking[0]->get_state()->get_xp());
+        $this->assertEquals(2, $ranking[1]->get_rank());
+        $this->assertEquals(13, $ranking[1]->get_state()->get_xp());
+    }
+
 }

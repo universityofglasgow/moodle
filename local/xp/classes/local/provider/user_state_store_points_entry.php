@@ -44,7 +44,7 @@ class user_state_store_points_entry implements entry {
     /** @var array|null The errors. */
     protected $errors;
 
-    public function __construct($reference, user_state_store_points $object = null, array $errors = null) {
+    public function __construct($reference, ?user_state_store_points $object = null, ?array $errors = null) {
         $this->reference = $reference;
         $this->object = $object;
         $this->errors = $errors;

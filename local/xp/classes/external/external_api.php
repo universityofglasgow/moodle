@@ -236,7 +236,7 @@ class external_api extends \block_xp\external\external_api {
      * @param block_base|null $bi The block instance.
      * @return config
      */
-    public static function make_block_config(block_base $bi = null) {
+    public static function make_block_config(?block_base $bi = null) {
         // TODO All of this method would be better in block_xp.
         $adminconfig = di::get('config');
 
@@ -334,7 +334,7 @@ class external_api extends \block_xp\external\external_api {
     public static function serialize_levels_info(levels_info $info) {
         return [
             'count' => $info->get_count(),
-            'levels' => array_values(array_map('local_xp\external::serialize_level', $info->get_levels())),
+            'levels' => array_values(array_map([self::class, 'serialize_level'], $info->get_levels())),
         ];
     }
 
@@ -350,6 +350,7 @@ class external_api extends \block_xp\external\external_api {
     public static function serialize_state(state $state, $withuser = false, $anonymously = false, array $myids = []) {
         global $PAGE;
 
+        $pc = $state->get_ratio_in_level() * 100;
         $data = [
             'id' => $state->get_id(),
             'level' => static::serialize_level($state->get_level()),
@@ -357,6 +358,14 @@ class external_api extends \block_xp\external\external_api {
             'totalxpinlevel' => $state->get_total_xp_in_level(),
             'xp' => $state->get_xp(),
             'xpinlevel' => $state->get_xp_in_level(),
+
+            'progress' => [
+                'atmaxlevel' => $pc >= 100,
+                'nonfull' => $pc < 100,
+                'nonzero' => $pc != 0,
+                'percentage' => $pc,
+                'percentagehuman' => $pc > 0 ? floor($pc) : ceil($pc),
+            ],
         ];
 
         if ($state instanceof state_with_subject) {
@@ -407,7 +416,7 @@ class external_api extends \block_xp\external\external_api {
      * @param moodle_url|null $url The URL.
      * @return array
      */
-    public static function serialize_url(moodle_url $url = null) {
+    public static function serialize_url(?moodle_url $url = null) {
         global $CFG;
         $baseurl = (!empty($CFG->httpswwwroot) ? $CFG->httpswwwroot : $CFG->wwwroot) . '/webservice';
         $url = is_object($url) ? (string) $url : null;
@@ -435,6 +444,14 @@ class external_api extends \block_xp\external\external_api {
             'totalxpinlevel' => new external_value(PARAM_INT),
             'xp' => new external_value(PARAM_INT),
             'xpinlevel' => new external_value(PARAM_INT),
+
+            'progress' => new external_single_structure([
+                'atmaxlevel' => new external_value(PARAM_BOOL),
+                'nonfull' => new external_value(PARAM_BOOL),
+                'nonzero' => new external_value(PARAM_BOOL),
+                'percentage' => new external_value(PARAM_FLOAT),
+                'percentagehuman' => new external_value(PARAM_RAW),
+            ]),
         ];
 
         if ($withuser !== false) {

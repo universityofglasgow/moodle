@@ -63,7 +63,7 @@ class user_state_store_points {
      * @param reason|null $reason The reason.
      * @param string|null $message A message.
      */
-    public function __construct($user, $points, $action, reason $reason = null, $message = null) {
+    public function __construct($user, $points, $action, ?reason $reason = null, $message = null) {
         $this->user = $user;
         $this->points = $points;
         $this->action = $action;

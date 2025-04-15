@@ -31,8 +31,6 @@ require_once($CFG->dirroot . '/blocks/xp/classes/form/itemspertime.php');
 require_once($CFG->dirroot . '/cohort/lib.php');
 require_once($CFG->libdir . '/grouplib.php');
 
-use context_course;
-use context_system;
 use block_xp\local\config\course_world_config;
 use local_xp\local\config\default_course_world_config;
 
@@ -55,57 +53,9 @@ class config extends \block_xp\form\config {
         parent::definition();
         $mform = $this->_form;
         $world = $this->_customdata['world'];
-        $config = \block_xp\di::get('config');
+        $renderer = \block_xp\di::get('renderer');
+        $urlresolver = \block_xp\di::get('url_resolver');
         $iomad = \block_xp\di::get('iomad_facade');
-        $forwholesite = $config->get('context') == CONTEXT_SYSTEM;
-
-        // Re-implement to include additional option.
-        $mform->removeElement('identitymode');
-        $el = $mform->createElement('select', 'identitymode', get_string('anonymity', 'block_xp'), [
-            course_world_config::IDENTITY_OFF => get_string('hideparticipantsidentity', 'block_xp'),
-            course_world_config::IDENTITY_ON => get_string('displayparticipantsidentity', 'block_xp'),
-            default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME =>
-                get_string('displayfirstnameinitiallastname', 'local_xp'),
-        ]);
-        $mform->insertElementBefore($el, 'neighbours');
-        unset($el);
-        $mform->addHelpButton('identitymode', 'anonymity', 'block_xp');
-        $mform->disabledIf('identitymode', 'enableladder', 'eq', 0);
-
-        // Change the help text of the cheat guard.
-        $mform->addHelpButton('enablecheatguard', 'enablecheatguard', 'local_xp');
-
-        // Re-implement those to extend the units allowed.
-        $mform->removeElement('maxactionspertime');
-        $el = $mform->createElement('block_xp_form_itemspertime', 'maxactionspertime',
-            get_string('maxactionspertime', 'block_xp'), [
-                'maxunit' => DAYSECS,
-                'itemlabel' => get_string('actions', 'block_xp'),
-            ]
-        );
-        $mform->insertElementBefore($el, 'timebetweensameactions');
-        unset($el);
-        $mform->addHelpButton('maxactionspertime', 'maxactionspertime', 'block_xp');
-
-        $mform->removeElement('timebetweensameactions');
-        $el = $mform->createElement('block_xp_form_duration', 'timebetweensameactions',
-            get_string('timebetweensameactions', 'block_xp'), [
-                'maxunit' => DAYSECS,
-                'optional' => false,        // We must set this...
-            ]
-        );
-        $mform->insertElementBefore($el, '__cheatguardend');
-        unset($el);
-        $mform->addHelpButton('timebetweensameactions', 'timebetweensameactions', 'block_xp');
-
-        // Local plugin specific option.
-        $el = $mform->createElement('block_xp_form_itemspertime', 'maxpointspertime', get_string('maxpointspertime', 'local_xp'), [
-            'itemlabel' => get_string('points', 'local_xp'),
-        ]);
-        $mform->insertElementBefore($el, '__cheatguardend');
-        unset($el);
-        $mform->addHelpButton('maxpointspertime', 'maxpointspertime', 'local_xp');
-        $mform->disabledIf('maxpointspertime', 'enablecheatguard', 'eq', 0);
 
         // Progress bar.
         $el = $mform->createElement('header', 'progressbarhdr', get_string('progressbar', 'block_xp'));
@@ -120,58 +70,16 @@ class config extends \block_xp\form\config {
         unset($el);
 
         // Group ladder.
-        $el = $mform->createElement('header', 'groupladderhdr', get_string('groupladder', 'local_xp'));
+        $el = $mform->createElement('header', 'groupladderhdr', get_string('teamleaderboard', 'block_xp'));
         $mform->insertElementBefore($el, 'hdrcheating');
-        unset($el);
-        $sources = [
-            default_course_world_config::GROUP_LADDER_NONE => get_string('groupsourcenone', 'local_xp'),
-            default_course_world_config::GROUP_LADDER_COURSE_GROUPS => get_string('groupsourcecoursegroups', 'local_xp'),
-            default_course_world_config::GROUP_LADDER_COHORTS => get_string('groupsourcecohorts', 'local_xp'),
-        ];
-        if ($iomad->exists()) {
-            $sources[default_course_world_config::GROUP_LADDER_IOMAD_COMPANIES] = get_string(
-                'groupsourceiomadcompanies', 'local_xp');
-            $sources[default_course_world_config::GROUP_LADDER_IOMAD_DEPARTMENTS] = get_string(
-                'groupsourceiomaddepartments', 'local_xp');
-        }
-        $el = $mform->createElement('select', 'enablegroupladder', get_string('groupladdersource', 'local_xp'), $sources);
-        $mform->insertElementBefore($el, 'hdrcheating');
-        $mform->addHelpButton('enablegroupladder', 'groupladdersource', 'local_xp');
         unset($el);
 
-        // Group ladder identity mode.
-        $el = $mform->createElement('select', 'groupidentitymode', get_string('groupanonymity', 'local_xp'), [
-            course_world_config::IDENTITY_OFF => get_string('hidegroupidentity', 'local_xp'),
-            course_world_config::IDENTITY_ON => get_string('displaygroupidentity', 'local_xp'),
-        ]);
+        $el = $mform->createElement('html', \html_writer::div($renderer->notification_without_close(
+            strip_tags(markdown_to_html(get_string('teamladdersettingsmovednotice', 'local_xp', [
+                'url' => ($urlresolver->reverse('group_ladder', ['courseid' => $world->get_courseid()]))->out(false),
+            ])), '<a>'), 'info'),
+            'xp-my-4'));
         $mform->insertElementBefore($el, 'hdrcheating');
-        $mform->addHelpButton('groupidentitymode', 'groupanonymity', 'local_xp');
-        $mform->disabledIf('groupidentitymode', 'enablegroupladder', 'eq', 0);
-        unset($el);
-
-        // Group ladder order by.
-        $el = $mform->createElement('select', 'grouporderby', get_string('grouporderby', 'local_xp'), [
-            default_course_world_config::GROUP_ORDER_BY_POINTS => get_string('grouppoints', 'local_xp'),
-            default_course_world_config::GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG =>
-                get_string('grouppointswithcompensation', 'local_xp'),
-            default_course_world_config::GROUP_ORDER_BY_PROGRESS => get_string('progress', 'block_xp'),
-        ]);
-        $mform->insertElementBefore($el, 'hdrcheating');
-        $mform->addHelpButton('grouporderby', 'grouporderby', 'local_xp');
-        $mform->disabledIf('grouporderby', 'enablegroupladder', 'eq', 0);
-        unset($el);
-
-        // Group ladder progress column.
-        $options = [
-            'xp' => get_string('grouppoints', 'local_xp'),
-            'progress' => get_string('progress', 'block_xp'),
-        ];
-        $el = $mform->createElement('select', 'groupladdercols', get_string('groupladdercols', 'local_xp'), $options,
-            ['style' => 'height: 4em;']);
-        $el->setMultiple(true);
-        $mform->insertElementBefore($el, 'hdrcheating');
-        $mform->addHelpButton('groupladdercols', 'groupladdercols', 'local_xp');
-        $mform->disabledIf('groupladdercols', 'enablegroupladder', 'eq', 0);
         unset($el);
     }
 
@@ -186,29 +94,6 @@ class config extends \block_xp\form\config {
             return $data;
         }
 
-        // Convert back from itemspertime.
-        if (!isset($data->maxpointspertime) || !is_array($data->maxpointspertime)) {
-            $data->maxpointspertime = 0;
-            $data->timeformaxpoints = 0;
-
-        } else {
-            $data->timeformaxpoints = (int) $data->maxpointspertime['time'];
-            $data->maxpointspertime = (int) $data->maxpointspertime['points'];
-        }
-
-        // When the cheat guard is disabled, we remove the config fields so that
-        // we can keep the defaults and the data previously submitted by the user.
-        if (empty($data->enablecheatguard)) {
-            unset($data->timeformaxpoints);
-            unset($data->maxpointspertime);
-        }
-
-        // When not selecting any, the data is not sent.
-        if (!isset($data->groupladdercols)) {
-            $data->groupladdercols = [];
-        }
-        $data->groupladdercols = implode(',', $data->groupladdercols);
-
         return $data;
     }
 
@@ -219,20 +104,6 @@ class config extends \block_xp\form\config {
      */
     public function set_data($data) {
         $data = (array) $data;
-
-        if (isset($data['groupladdercols'])) {
-            $data['groupladdercols'] = explode(',', $data['groupladdercols']);
-        }
-
-        // Convert to itemspertime.
-        if (isset($data['maxpointspertime']) && isset($data['timeformaxpoints'])) {
-            $data['maxpointspertime'] = [
-                'points' => (int) $data['maxpointspertime'],
-                'time' => (int) $data['timeformaxpoints'],
-            ];
-            unset($data['timeformaxpoints']);
-        }
-
         parent::set_data($data);
     }
 

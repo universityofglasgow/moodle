@@ -89,7 +89,7 @@ class course_world_leaderboard_factory extends default_course_world_leaderboard_
      * @return \block_xp\local\leaderboard\leaderboard
      */
     protected function get_leaderboard_instance_with_config(course_world $world, $groupid, array $columns,
-            config $config, ranker $ranker = null) {
+            config $config, ?ranker $ranker = null) {
 
         $userstatefactory = null;
         $levelsinfo = $world->get_levels_info();

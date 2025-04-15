@@ -140,7 +140,7 @@ class section_completion extends block_xp_rule {
 
         // Append the value to the list if we cannot find it any more.
         if (!array_key_exists($this->sectionnum, $sections)) {
-            $sections[$this->sectionnum] = get_string('unknownsectiona', 'local_xp', $this->sectionnum);
+            $sections[$this->sectionnum] = get_string('unknownsectiona', 'block_xp', $this->sectionnum);
         }
 
         $select = html_writer::select($sections, $basename . '[sectionnum]', $this->sectionnum, '',
@@ -183,7 +183,7 @@ class section_completion extends block_xp_rule {
         } catch (\moodle_exception $e) {
             throw $e;
         }
-        $name = $name === '' ? get_string('unknownsection', 'local_xp', $sectionnum) : $name;
+        $name = $name === '' ? get_string('unknownsectiona', 'block_xp', $sectionnum) : $name;
 
         return get_string('colon', 'block_xp', [
             'a' => '#' . $sectionnum,

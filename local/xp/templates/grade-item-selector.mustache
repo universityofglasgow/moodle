@@ -17,7 +17,7 @@
 {{!
     Grade item selector.
 }}
-<div class="local_xp-grade-item-selector-widget" id="local_xp-grade-item-selector-widget-{{uniqid}}">
+<div class="block_xp local_xp-grade-item-selector-widget" id="local_xp-grade-item-selector-widget-{{uniqid}}">
     {{#canchangecourse}}
     <div class="course-search">
         <div class="course-selected" style="display: none">
@@ -27,17 +27,17 @@
             <button class="btn btn-sm btn-small btn-secondary course-selection-change">{{#str}}change, core_admin{{/str}}</button>
         </div>
         <div class="course-not-selected">
-            <div class="form-group">
+            <div>
                 <label for="local_xp-grade-item-selector-widget-{{uniqid}}-course-field">{{#str}}searchandselectcourse, block_xp{{/str}}</label>
                 <input id="local_xp-grade-item-selector-widget-{{uniqid}}-course-field" style="margin: 0; width: 95%" type="text" class="form-control search-term-course" placeholder={{#quote}}{{#str}}entersearchterm, block_xp{{/str}}{{/quote}}>
             </div>
         </div>
     </div>
     {{/canchangecourse}}
-    <div class="cm-search" style="display: none">
+    <div class="xp-mt-4 cm-search" style="display: none">
         <input style="margin: 0; width: 95%" type="text" class="form-control search-term-grade-item" placeholder={{#quote}}{{#str}}filtergradeitems, local_xp{{/str}}{{/quote}}>
     </div>
-    <div class="m-t-1 search-result-contents">
+    <div class="xp-mt-4 search-result-contents">
         {{> block_xp/resource-selector-contents }}
     </div>
 </div>

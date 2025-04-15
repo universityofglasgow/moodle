@@ -58,6 +58,9 @@ class default_admin_config extends immutable_config {
             'maxpointspertime' => 0,
             'timeformaxpoints' => 0,
 
+            'ladderiso' => default_course_world_config::LEADERBOARD_ISO_DEFAULT,
+            'ladderparticipation' => default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED,
+
             'enablegroupladder' => default_course_world_config::GROUP_LADDER_NONE,
             'groupidentitymode' => course_world_config::IDENTITY_ON,
             'groupladdercols' => 'xp',

@@ -43,7 +43,22 @@ class log_controller extends \block_xp\local\controller\log_controller {
     protected function define_optional_params() {
         $params = parent::define_optional_params();
         $params[] = ['download', '', PARAM_ALPHA, false];
+        $params[] = ['downloadfilename', '', PARAM_NOTAGS, false];
         return $params;
+    }
+
+    protected function get_download_filename(): string {
+        $userid = $this->get_user_id();
+        $groupid = $this->is_supporting_groups() ? $this->get_groupid() : null;
+        $defaultfilename = 'xp-log-' . $this->world->get_context()->id;
+        if ($userid) {
+            $defaultfilename .= '-u' . (string) (int) $userid;
+        }
+        if ($groupid) {
+            $defaultfilename .= '-' . (string) (int) $groupid;
+        }
+        $defaultfilename .= '-'. userdate(time(), '%Y-%m-%d');
+        return $this->get_param('downloadfilename') ?: $defaultfilename;
     }
 
     protected function get_table() {
@@ -57,11 +72,12 @@ class log_controller extends \block_xp\local\controller\log_controller {
             $table = new \local_xp\output\log_table(
                 $this->world->get_context(),
                 $this->get_groupid(),
-                $this->get_param('download'),
+                [$this->get_param('download'), $this->get_download_filename()],
                 $teamresolver,
                 $this->get_user_id()
             );
             $table->define_baseurl($this->pageurl->get_compatible_url());
+            $table->set_filterset($this->get_filterset());
             $this->table = $table;
         }
         return $this->table;
@@ -76,6 +92,21 @@ class log_controller extends \block_xp\local\controller\log_controller {
         }
 
         parent::pre_content();
+    }
+
+    protected function get_page_menu_items() {
+        return array_merge(parent::get_page_menu_items(), [
+            [
+                'label' => get_string('exportdata', 'block_xp'),
+                'data-xp-action' => 'open-form',
+                'data-form-class' => 'local_xp\\form\\table_download',
+                'data-form-args__contextid' => $this->world->get_context()->id,
+                'data-form-args__filename' => $this->get_download_filename(),
+                'data-form-args__pageurl' => $this->pageurl->out_as_local_url(false),
+                'data-modal-buttons__save__label' => get_string('export', 'block_xp'),
+                'href' => '#',
+            ],
+        ]);
     }
 
 }

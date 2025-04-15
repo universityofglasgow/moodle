@@ -234,6 +234,11 @@ class handler {
             $limit = new limit($count + min(0, $pos - $before), $offset);
         }
 
+        // Prepare the page.
+        if (!$PAGE->has_set_url() && defined('WS_SERVER') && WS_SERVER) {
+            $PAGE->set_url(di::get('url_resolver')->reverse('ladder', ['courseid' => $world->get_courseid()]));
+        }
+
         // Output the table.
         $baseurl = $PAGE->url;
         $table = new \local_xp\output\group_leaderboard_table(
@@ -264,8 +269,20 @@ class handler {
                 'xp-link-to-full-ladder'
             );
         }
+
+        // Mobile quick fix.
+        $customstyles = '';
+        if (defined('WS_SERVER') && WS_SERVER) {
+            $customstyles = \html_writer::tag('style', <<<EOT
+                .shortcode-xpteamladder table { width: 100%; }
+                .shortcode-xpteamladder table th,
+                .shortcode-xpteamladder table td { padding: .25rem; text-align: left; vertical-align: middle; }
+                .shortcode-xpteamladder table img { width: var(--core-avatar-size); }
+            EOT);
+        }
+
         return \html_writer::div(
-            $html . $link,
+            $html . $link . $customstyles,
             'shortcode-xpteamladder'
         );
     }

@@ -25,10 +25,9 @@
 
 namespace local_xp\form;
 
-defined('MOODLE_INTERNAL') || die();
-require_once($CFG->libdir . '/formslib.php');
-
-use moodleform;
+use block_xp\di;
+use block_xp\form\dynamic_world_trait;
+use core_form\dynamic_form;
 
 /**
  * Add user points form.
@@ -38,7 +37,54 @@ use moodleform;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class user_xp_add extends moodleform {
+class user_xp_add extends dynamic_form {
+
+    use dynamic_world_trait;
+
+    protected $routename = 'report';
+
+    /**
+     * Get the state.
+     *
+     * This will throw an exception if the state does not already exist for the user.
+     *
+     * @return \block_xp\local\xp\state
+     */
+    protected function get_state() {
+        $userid = $this->optional_param('userid', 0, PARAM_INT);
+        return $this->get_world()->get_store()->get_state($userid);
+    }
+
+    public function process_dynamic_submission() {
+        global $USER;
+
+        $this->get_state(); // Acts as validation.
+        $userid = $this->optional_param('userid', 0, PARAM_INT);
+        $data = $this->get_data();
+
+        $store = $this->get_world()->get_store();
+        $reason = new \local_xp\local\reason\manual_reason($USER->id);
+
+        if ($store instanceof \block_xp\local\xp\state_store_with_reason) {
+            $store->increase_with_reason($userid, $data->xp, $reason);
+        } else {
+            $store->increase($userid, $data->xp);
+        }
+
+        if ($data->sendnotification) {
+            $notifier = new \local_xp\local\notification\award_notifier(di::get('config'), $this->world, $USER);
+            $notifier->notify($userid, $data->points, $data->message ?? null);
+        }
+    }
+
+    public function set_data_for_dynamic_submission(): void {
+        $userid = $this->optional_param('userid', 0, PARAM_INT);
+        $state = $this->world->get_store()->get_state($userid);
+        $this->set_data([
+            'userid' => $userid,
+            'total' => $state->get_xp(),
+        ]);
+    }
 
     /**
      * Form definintion.
@@ -48,6 +94,11 @@ class user_xp_add extends moodleform {
     public function definition() {
         $mform = $this->_form;
         $mform->setDisableShortforms(true);
+
+        if ($this->_ajaxformdata) {
+            $mform->addElement('hidden', 'contextid', $this->get_world()->get_context()->id);
+            $mform->setType('contextid', PARAM_INT);
+        }
 
         $mform->addElement('hidden', 'userid');
         $mform->setType('userid', PARAM_INT);
@@ -69,7 +120,9 @@ class user_xp_add extends moodleform {
         $mform->addHelpButton('message', 'increasemsg', 'local_xp');
         $mform->disabledIf('message', 'sendnotification', 'eq', 0);
 
-        $this->add_action_buttons(true, get_string('confirm'));
+        if (!$this->_ajaxformdata) {
+            $this->add_action_buttons(true, get_string('confirm'));
+        }
     }
 
     /**

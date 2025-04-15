@@ -28,22 +28,19 @@
                 <%/state.level.name%>
 
                 <div class="ion-padding">
-                    <%#state.xp%>
-                        <%> local_xp/mobile-xp %>
-                    <%/state.xp%>
+                    <div style="display: flex; justify-content: center">
+                    <div class="mma-xp-xp-showcase">
+                        <div>
+                        <%#state.xp%>
+                            <%> local_xp/mobile-xp %>
+                        <%/state.xp%>
+                        </div>
+                    </div>
+                    </div>
                 </div>
 
-                <div class="mma-xp-progress">
-                    <progress min="0" max="100" value="<% percentage %>" class="mma-xp-progress-bar">
-                        <div class="progress-bar-fallback" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<% percentage %>">
-                            <span style="width: <% percentage %>%;"></span>
-                        </div>
-                    </progress>
-                    <div class="togo">
-                        <%#xptogo%>
-                            <%> local_xp/mobile-xp %>
-                        <%/xptogo%>
-                    </div>
+                <div>
+                    <%# state.progress %><%> local_xp/mobile-progress %><%/ state.progress %>
                 </div>
 
             </div>
@@ -60,20 +57,22 @@
 
     <%#showactivity%>
     <ion-card>
-        <ion-list-header><%#str%>recentrewards, block_xp<%/str%></ion-list-header>
-
-        <%#activity%>
-            <ion-item class="mma-xp-item-activity">
-                <div slot="start">
-                    <%#xp%>
-                        <%> local_xp/mobile-xp %>
-                    <%/xp%>
-                </div>
-                <p><% desc %></p>
-                <ion-note slot="end"><% timeago %></ion-note>
-            </ion-item>
-        <%/activity%>
-
+        <ion-card-header>
+            <ion-card-title><%#str%>recentrewards, block_xp<%/str%></ion-card-title>
+        </ion-card-header>
+        <ion-list>
+            <%#activity%>
+                <ion-item class="mma-xp-item-activity">
+                    <div slot="start">
+                        <%#xp%>
+                            <%> local_xp/mobile-xp %>
+                        <%/xp%>
+                    </div>
+                    <ion-label><% desc %></ion-label>
+                    <ion-note slot="end"><% timeago %></ion-note>
+                </ion-item>
+            <%/activity%>
+        </ion-list>
     </ion-card>
     <%/showactivity%>
 </div>

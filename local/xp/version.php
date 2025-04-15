@@ -25,14 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$localxpdistro = 'Pro';
+$localxpdistro = 'Premium';
 
-$plugin->version      = 2024042104;
-$plugin->requires     = 2021051700;   // Moodle 3.11.0.
+$plugin->version      = 2025041300;
+$plugin->requires     = 2022112800;   // Moodle 4.1.0.
 $plugin->component    = 'local_xp';
 $plugin->maturity     = MATURITY_STABLE;
-$plugin->release      = "1.16.0 ($localxpdistro)";
-$plugin->supported    = [311, 404];
+$plugin->release      = "18.0 ($localxpdistro)";
+$plugin->supported    = [401, 500];
 $plugin->dependencies = [
-    'block_xp' => 2024042104,
+    'block_xp' => 2025041300,
 ];

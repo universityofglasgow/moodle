@@ -136,7 +136,7 @@ class drops_controller extends page_controller {
         if ($setupid > 0) {
             $drop = $this->get_drop_record($setupid);
             if (!empty($drop->id)) {
-                $editurl = new url($this->pageurl, ['editid' => $drop->id]);
+                $editurl = new url($this->pageurl, ['dropid' => $drop->id]);
                 $name = format_string($drop->name, true, ['context' => $this->world->get_context()]);
                 $setupdivid = html_writer::random_id();
                 echo html_writer::div('', 'xp-hidden', [
@@ -151,7 +151,12 @@ class drops_controller extends page_controller {
 
         echo $output->advanced_heading(get_string('drops', 'block_xp'), [
             'actions' => $this->hasdependencies ? [
-                new action_link($url, get_string('adddrop', 'local_xp'), null, ['class' => 'btn btn-secondary btn-default']),
+                new action_link($url, get_string('adddrop', 'local_xp'), null, [
+                    'class' => 'btn btn-secondary btn-default',
+                    'data-xp-action' => 'open-form',
+                    'data-form-class' => 'local_xp\form\drop',
+                    'data-form-args__contextid' => $this->world->get_context()->id,
+                ]),
             ] : [],
             'intro' => new \lang_string('dropsintro', 'block_xp'),
             'help' => new \help_icon('drops', 'block_xp'),
@@ -168,7 +173,6 @@ class drops_controller extends page_controller {
         } else {
             echo $this->get_table()->out(20, true);
         }
-
     }
 
     /**

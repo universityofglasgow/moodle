@@ -30,8 +30,11 @@ use block_xp\external\external_function_parameters;
 use block_xp\external\external_multiple_structure;
 use block_xp\external\external_single_structure;
 use block_xp\external\external_value;
+use block_xp\local\division\all_division;
+use block_xp\local\division\group_division;
 use block_xp\local\iterator\map_iterator;
 use block_xp\local\sql\limit;
+use local_xp\local\config\default_course_world_config;
 use moodle_exception;
 
 /**
@@ -90,9 +93,21 @@ class get_course_world_ladder extends external_api {
             }
         }
 
-        // Check access to group.
-        self::require_group_access($userid, $courseid, $groupid);
-        $isgroupmember = $groupid && groups_is_member($groupid, $userid);
+        // Check participation.
+        $state = di::get(\local_xp\local\leaderboard\participation\service_factory::class)
+            ->get_for_context($world->get_context())
+            ->get_state($userid);
+        if (!$state->is_participating() && !$perms->can_manage()) {
+            throw new moodle_exception('nopermissions', '', '', 'not_participating');
+        }
+
+        $division = null;
+
+        // Division can be picked in default mode.
+        if ((int) $config->get('ladderiso') === default_course_world_config::LEADERBOARD_ISO_DEFAULT) {
+            self::require_group_access($userid, $courseid, $groupid);
+            $division = $groupid ? new group_division($groupid) : new all_division();
+        }
 
         // Config.
         $neighbours = $config->get('neighbours');
@@ -100,7 +115,12 @@ class get_course_world_ladder extends external_api {
         $identitymode = $config->get('identitymode');
 
         // Leaderboard.
-        $leaderboard = \block_xp\di::get('course_world_leaderboard_factory')->get_course_leaderboard($world, $groupid);
+        $lf = \block_xp\di::get('leaderboard_factory_maker')->get_leaderboard_factory($world);
+        if ($division) {
+            $leaderboard = $lf->get_leaderboard_for_division($division);
+        } else {
+            $leaderboard = $lf->get_leaderboard();
+        }
 
         // Determine what page to show first.
         if (!$neighbours && !$page) {
@@ -123,9 +143,10 @@ class get_course_world_ladder extends external_api {
             'ranking' => iterator_to_array(new map_iterator(
                     $leaderboard->get_ranking($limit),
                     function($rank) {
+                        global $USER;
                         return [
                             'rank' => $rank->get_rank(),
-                            'state' => self::serialize_state($rank->get_state(), true),
+                            'state' => self::serialize_state($rank->get_state(), true, false, [$USER->id]),
                         ];
                     }
             ), false),

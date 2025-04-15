@@ -25,6 +25,7 @@
 
 namespace local_xp\local\controller;
 
+use help_icon;
 use moodle_exception;
 use local_xp\local\config\default_course_world_config;
 
@@ -50,15 +51,12 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
     protected function define_optional_params() {
         return [
             ['download', '', PARAM_ALPHA, false],
+            ['downloadfilename', '', PARAM_NOTAGS, false],
         ];
     }
 
-    protected function permissions_checks() {
-        parent::permissions_checks();
-        $config = \block_xp\di::get('config');
-        if ($this->world->get_config()->get('enablegroupladder') == default_course_world_config::GROUP_LADDER_NONE) {
-            throw new moodle_exception('nopermissions', '', '', 'view_group_ladder_page');
-        }
+    protected function is_visible_to_viewers() {
+        return $this->world->get_config()->get('enablegroupladder') != default_course_world_config::GROUP_LADDER_NONE;
     }
 
     protected function page_setup() {
@@ -78,6 +76,10 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
             $table->out(0, false);   // Page size is irrelevant when downloading.
             die();
         }
+    }
+
+    protected function get_download_filename(): string {
+        return $this->get_param('downloadfilename') ?: 'xp-team-leaderboard-' . $this->world->get_context()->id;
     }
 
     protected function get_highlighted_ids() {
@@ -104,23 +106,72 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
         $canmanage = $this->world->get_access_permissions()->can_manage();
         if ($canmanage) {
             $table->is_downloadable(true);
-            $table->is_downloading($this->get_param('download'), 'xp_team_ladder_' . $this->world->get_courseid());
-            $table->show_download_buttons_at([TABLE_P_BOTTOM]);
+            $table->is_downloading($this->get_param('download'), $this->get_download_filename());
+            $table->show_download_buttons_at([]);
         }
 
         return $table;
     }
 
     protected function get_page_html_head_title() {
-        return get_string('groupladder', 'local_xp');
+        return get_string('teamleaderboard', 'block_xp');
     }
 
     protected function get_page_heading() {
-        return get_string('groupladder', 'local_xp');
+        return get_string('teamleaderboard', 'block_xp');
     }
 
     protected function page_content() {
+        global $PAGE;
+        $output = $this->get_renderer();
+        $canmanage = $this->world->get_access_permissions()->can_manage();
+
+        if ($canmanage) {
+            echo $output->advanced_heading(get_string('teamleaderboard', 'block_xp'), [
+                'intro' => new \lang_string('teamleaderboardintro', 'block_xp'),
+                'help' => new help_icon('teamleaderboard', 'block_xp'),
+                'visible' => $this->is_visible_to_viewers(),
+                'menu' => $this->get_page_menu_items(),
+            ]);
+
+            if ($this->world->get_config()->get('enablegroupladder') == default_course_world_config::GROUP_LADDER_NONE) {
+                echo $output->notification_without_close(get_string('leaderboardnotsetup', 'local_xp'), 'info');
+                return;
+            }
+        }
+
         echo $this->get_table()->out(20, false);
     }
 
+    /**
+     * Get page menu items.
+     *
+     * @return array
+     */
+    protected function get_page_menu_items() {
+        if (method_exists(parent::class, 'get_page_menu_items')) {
+            $items = parent::get_page_menu_items();
+        } else {
+            $items = [];
+        }
+        return array_merge($items, [
+            [
+                'label' => get_string('pagesettings', 'block_xp'),
+                'data-xp-action' => 'open-form',
+                'data-form-class' => 'local_xp\form\team_leaderboard',
+                'data-form-args__contextid' => $this->world->get_context()->id,
+                'href' => '#',
+            ],
+            [
+                'label' => get_string('export', 'block_xp'),
+                'data-xp-action' => 'open-form',
+                'data-form-class' => 'local_xp\form\table_download',
+                'data-form-args__contextid' => $this->world->get_context()->id,
+                'data-form-args__filename' => $this->get_download_filename(),
+                'data-form-args__pageurl' => $this->pageurl->out_as_local_url(false),
+                'data-modal-buttons__save__label' => get_string('export', 'block_xp'),
+                'href' => '#',
+            ],
+        ]);
+    }
 }

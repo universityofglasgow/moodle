@@ -44,7 +44,7 @@ class award_notifier {
     protected $awardedby;
     /** @var config The admin config. */
     protected $config;
-    /** @var int The course ID. */
+    /** @var course_world The world. */
     protected $world;
 
     /**

@@ -27,6 +27,7 @@ namespace local_xp;
 defined('MOODLE_INTERNAL') || die();
 
 use context_course;
+use local_xp\tests\base_testcase;
 
 global $CFG;
 require_once($CFG->dirroot . '/blocks/xp/tests/fixtures/events.php');
@@ -40,9 +41,9 @@ require_once($CFG->dirroot . '/blocks/xp/tests/fixtures/events.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_xp\local\course_world
  */
-class course_world_test extends base_testcase {
+final class course_world_test extends base_testcase {
 
-    public function test_delete_user_state() {
+    public function test_delete_user_state(): void {
         global $DB;
 
         $c1 = $this->getDataGenerator()->create_course();

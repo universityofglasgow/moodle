@@ -90,10 +90,10 @@ class local_xp_collection_logger_mock implements
         return $this->hasreasonhappenedsince >= $since->getTimestamp();
     }
 
-    public function log($userid, $points, $signature, DateTime $time = null) {
+    public function log($userid, $points, $signature, ?DateTime $time = null) {
     }
 
-    public function log_reason($id, $points, reason $reason, DateTime $time = null) {
+    public function log_reason($id, $points, reason $reason, ?DateTime $time = null) {
     }
 
     public function reset() {

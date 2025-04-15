@@ -53,7 +53,7 @@ class course_user_leaderboard extends \block_xp\local\leaderboard\course_user_le
      * @param int $courseid The course ID.
      * @param string[] $columns The name of the columns.
      * @param ranker $ranker An alternative ranker.
-     * @param int $groupid The group ID.
+     * @param int $groupd The group ID, do not use anymore.
      * @param Closure $userstatefactory The user state factory.
      */
     public function __construct(
@@ -61,7 +61,7 @@ class course_user_leaderboard extends \block_xp\local\leaderboard\course_user_le
             levels_info $levelsinfo,
             $courseid,
             array $columns,
-            ranker $ranker = null,
+            ?ranker $ranker = null,
             $groupid = 0,
             $userstatefactory = null) {
 

@@ -26,6 +26,7 @@
 namespace local_xp;
 
 use block_xp\di;
+use local_xp\tests\base_testcase;
 
 /**
  * Course world config testcase.
@@ -36,9 +37,9 @@ use block_xp\di;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_xp\local\course_world::get_config
  */
-class course_world_config_test extends base_testcase {
+final class course_world_config_test extends base_testcase {
 
-    public function test_default_config() {
+    public function test_default_config(): void {
         global $DB;
 
         $config = di::get('config');

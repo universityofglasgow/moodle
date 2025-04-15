@@ -16,11 +16,10 @@
 
 namespace local_xp\form;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/formslib.php');
-
-use moodleform;
+use block_xp\di;
+use block_xp\form\dynamic_world_trait;
+use core_form\dynamic_form;
+use moodle_url;
 
 /**
  * Drop edit form.
@@ -30,7 +29,66 @@ use moodleform;
  * @author     Peter Dias
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class drop extends moodleform {
+class drop extends dynamic_form {
+
+    use dynamic_world_trait;
+
+    protected $routename = 'drops';
+
+    protected function get_drop_record() {
+        $db = di::get('db');
+        $id = $this->optional_param('id', -1, PARAM_INT);
+        $courseid = $this->get_world()->get_courseid();
+        if ($id > 0) {
+            return $db->get_record('local_xp_drops', ['courseid' => $courseid, 'id' => $id], '*', MUST_EXIST);
+        }
+        return (object) ['courseid' => $courseid];
+    }
+
+    public function process_dynamic_submission() {
+        $db = di::get('db');
+        $urlresolver = di::get('url_resolver');
+        $data = $this->get_data();
+        $record = $this->get_drop_record();
+        $iscreating = empty($record->id);
+
+        if (!$iscreating) {
+            $record->name = $data->name;
+            $record->points = $data->points;
+            $record->enabled = $data->enabled;
+            $db->update_record('local_xp_drops', $record);
+
+        } else {
+            do {
+                $secret = substr(bin2hex(random_bytes(128)), 0, 7);
+            } while ($db->record_exists('local_xp_drops', ['secret' => $secret]));
+            $record->secret = $secret;
+            $record->name = $data->name;
+            $record->points = $data->points;
+            $record->enabled = $data->enabled;
+            $record->id = $db->insert_record('local_xp_drops', $record);
+        }
+
+        $listurl = $urlresolver->reverse('drops', ['courseid' => $this->get_world()->get_courseid()]);
+        $redirecturl = new moodle_url($listurl);
+        if ($iscreating) {
+            $redirecturl = new moodle_url($listurl, ['setupid' => $record->id]);
+        }
+
+        return ['id' => $record->id, 'redirecturl' => $redirecturl->out_as_local_url()];
+    }
+
+    public function set_data_for_dynamic_submission(): void {
+        $droprecord = $this->get_drop_record();
+
+        $data = ['contextid' => $this->get_world()->get_context()->id];
+        if (!empty($droprecord->id)) {
+            $data += (array) $droprecord;
+        } else {
+            $data += ['points' => 50];
+        }
+        $this->set_data($data);
+    }
 
     /**
      * Form definition.
@@ -40,6 +98,13 @@ class drop extends moodleform {
     public function definition() {
         $mform = $this->_form;
         $mform->setDisableShortforms(true);
+
+        if ($this->_ajaxformdata) {
+            $mform->addElement('hidden', 'id');
+            $mform->setType('id', PARAM_INT);
+            $mform->addElement('hidden', 'contextid', $this->get_world()->get_context()->id);
+            $mform->setType('contextid', PARAM_INT);
+        }
 
         $mform->addElement('text', 'name', get_string('dropname', 'local_xp'));
         $mform->setType('name', PARAM_TEXT);
@@ -58,7 +123,10 @@ class drop extends moodleform {
         $mform->addHelpButton('enabled', 'dropenabled', 'local_xp');
         $mform->setDefault('enabled', 1);
 
-        $this->add_action_buttons();
+        if (!$this->_ajaxformdata) {
+            $this->add_action_buttons();
+        }
+
     }
 
     /**

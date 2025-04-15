@@ -71,12 +71,14 @@
 
 .mma-xp-level.xsmall {
     width: 54px;
+    width: var(--core-avatar-size);
 }
 .mma-xp-level.xsmall .level {
     background-size: 54px 54px;
+    background-size: var(--core-avatar-size) var(--core-avatar-size);
 }
 .mma-xp-level.xsmall .level .level-nb {
-    height: 54px;
+    height: var(--core-avatar-size);
     padding-top: 12px;
     font-size: 28px;
 }
@@ -106,25 +108,50 @@
     line-height: 1px;
 }
 
-.mma-xp-progress progress {
-    margin-bottom: 0;
-    width: 100%;
-}
-.mma-xp-progress .togo {
-    color: #9e9e9e;
-    text-align: right;
-    font-size: 85%;
+.mma-xp-xp-showcase {
+   background-color: #e5e7eb;
+   border-radius: 9999px;
+   padding-left: 0.75rem;
+   padding-right: 0.75rem;
+   padding-top: 0.25rem;
+   padding-bottom: 0.25rem;
+   overflow: hidden;
 }
 
-.mma-xp-tabs-bar {
-    background-color: #fff;
+.mma-xp-xp-showcase div {
+   max-width: 100%;
+   font-size: 1.25rem;
+   line-height: 1;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.mma-xp-progressbar {
+    width: 100%;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    height: 0.75rem;
     position: relative;
+    overflow: hidden;
 }
-.mma-xp-tabs-bar button {
-    contain: none;
-    padding: 8px 0;
+
+.mma-xp-progressbar div {
+    height: 100%;
+    background-color: #34d399;
 }
-.mma-xp-tabs-bar ion-button[active] {
-    border-bottom: 2px solid #41c2ff;
+.mma-xp-progressbar .nonzero {
+    min-width: 0.25rem;
 }
+.mma-xp-progressbar .nonfull {
+    max-width: 99%;
+}
+
+@media (min-width: 768px) {
+    .mma-xp-level-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 </style>

@@ -224,7 +224,7 @@ class course_world_collection_strategy implements action_collection_strategy, ev
 
         if ($maxtime > 0 && $maxactions > 0) {
             $since = new DateTime('@' . (time() - $maxtime));
-            if ($this->collectioncountsindicator->count_collections_since($userid, $since) > $maxactions) {
+            if ($this->collectioncountsindicator->count_collections_since($userid, $since) >= $maxactions) {
                 return false;
             }
         }

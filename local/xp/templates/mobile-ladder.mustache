@@ -81,4 +81,28 @@
         <%/hasmore%>
     </ion-list>
 </div>
+<%#leavedata%>
+    <%#showleave%>
+    <div style="margin: 2rem 0 1rem; background: var(--secondary); height: 1px; width: 100%;"></div>
+    <div style="display: flex; gap: .25rem 1rem; padding: 0 1rem; align-items: center; flex-wrap: wrap">
+        <div>
+        <ion-button
+            size="small"
+            fill="outline"
+            class="ion-no-margin"
+            core-site-plugins-call-ws
+            name="local_xp_leave_leaderboard"
+            [params]="{contextid: <% contextid %>}"
+            [preSets]="{getFromCache: 0, saveToCache: 0}"
+            confirmMessage="<%#str%>leaveleadeboardconfirmnote, block_xp<%/str%>"
+            refreshOnSuccess="true"
+            <%^canleave%>disabled<%/canleave%>
+        ><%#str%>leaveleaderboard, block_xp<%/str%></ion-button>
+        </div>
+        <%# leavedateformatted %>
+            <div style="color: var(--medium)"><small><%#str%> leaveleadeboardlockeduntilnote, block_xp, <% leavedateformatted %> <%/str%></small></div>
+        <%/ leavedateformatted %>
+    <div>
+    <%/showleave%>
+<%/leavedata%>
 <%/ladder%>

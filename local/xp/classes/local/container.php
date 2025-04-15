@@ -43,6 +43,7 @@ class container implements \block_xp\local\container {
         'badge_url_resolver' => true,
         'badge_url_resolver_course_world_factory' => true,
         'block_class' => true,
+        'cheatguard_form_class' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
         'config' => true,
@@ -61,6 +62,8 @@ class container implements \block_xp\local\container {
         'drop_repository' => true,
         'grouped_leaderboard_helper' => true,
         'iomad_facade' => true,
+        'leaderboard_factory_maker' => true,
+        'leaderboard_form_class' => true,
         'levels_info_factory' => true,
         'levels_info_writer' => true,
         'renderer' => true,
@@ -78,6 +81,9 @@ class container implements \block_xp\local\container {
         'theme_updater' => true,
         'url_resolver' => true,
         'usage_reporter' => true,
+
+        leaderboard\participation\service_factory::class => 'leaderboard_participation_service_factory',
+        userflag\deletion_service::class => 'userflag_deletion_service',
     ];
 
     /** @var array Object instances. */
@@ -109,7 +115,8 @@ class container implements \block_xp\local\container {
         }
 
         if (!isset($this->instances[$id])) {
-            $method = 'get_' . $id;
+            $alias = static::$supports[$id] !== true ? static::$supports[$id] : $id;
+            $method = 'get_' . $alias;
             $this->instances[$id] = $this->{$method}();
         }
 
@@ -180,6 +187,15 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Cheatguard form class.
+     *
+     * @return string
+     */
+    protected function get_cheatguard_form_class() {
+        return \local_xp\form\cheatguard::class;
+    }
+
+    /**
      * Get the global collection logger.
      *
      * @return logger
@@ -235,6 +251,8 @@ class container implements \block_xp\local\container {
         return new \block_xp\local\config\config_stack([
             new \block_xp\local\config\mdl_locked_config('local_xp', [
                 'groupidentitymode',
+                'ladderiso',
+                'ladderparticipation',
             ]),
             $this->subcontainer->get('config_locked'),
         ]);
@@ -421,6 +439,31 @@ class container implements \block_xp\local\container {
      */
     protected function get_iomad_facade() {
         return new \local_xp\local\iomad\facade($this->get('db'));
+    }
+
+    /**
+     * Get the leaderboard factory maker.
+     *
+     * @return \block_xp\local\factory\leaderboard_factory_maker
+     */
+    protected function get_leaderboard_factory_maker() {
+        return new factory\leaderboard_factory_maker($this->get('db'), $this->get('config'));
+    }
+
+    /**
+     * Get the leaderboard form class.
+     *
+     * @return string
+     */
+    protected function get_leaderboard_form_class() {
+        return \local_xp\form\leaderboard::class;
+    }
+
+    /**
+     * Get object.
+     */
+    protected function get_leaderboard_participation_service_factory() {
+        return new leaderboard\participation\service_factory($this->get_context_world_factory());
     }
 
     /**
@@ -620,6 +663,15 @@ class container implements \block_xp\local\container {
             $this->usercollectiontargetresolver = new \local_xp\local\strategy\user_collection_target_resolver();
         }
         return $this->usercollectiontargetresolver;
+    }
+
+    /**
+     * Get the user flag deletion service.
+     *
+     * @return userflag\deletion_service
+     */
+    protected function get_userflag_deletion_service() {
+        return new userflag\deletion_service($this->get('db'));
     }
 
     /**

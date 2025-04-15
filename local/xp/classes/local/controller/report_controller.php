@@ -25,11 +25,9 @@
 
 namespace local_xp\local\controller;
 
-use core_user;
-use single_button;
 use block_xp\di;
-use block_xp\local\routing\url;
 use local_xp\local\config\default_course_world_config;
+use local_xp\local\userflag\deletion_service;
 
 /**
  * Report controller class.
@@ -47,6 +45,7 @@ class report_controller extends \block_xp\local\controller\report_controller {
     protected function define_optional_params() {
         $params = parent::define_optional_params();
         $params[] = ['download', '', PARAM_ALPHA, false];
+        $params[] = ['downloadfilename', '', PARAM_NOTAGS, false];
         return $params;
     }
 
@@ -55,6 +54,7 @@ class report_controller extends \block_xp\local\controller\report_controller {
      *
      * @param int $userid The target ID.
      * @return moodleform
+     * @deprecated Since XP+ 1.17
      */
     protected function get_add_form($userid) {
         if (!$this->addform) {
@@ -64,6 +64,16 @@ class report_controller extends \block_xp\local\controller\report_controller {
             $this->addform = $form;
         }
         return $form;
+    }
+
+    protected function get_download_filename(): string {
+        $groupid = $this->is_supporting_groups() ? $this->get_groupid() : null;
+        $defaultfilename = 'xp-report-' . $this->world->get_context()->id;
+        if ($groupid !== null) {
+            $defaultfilename .= '-' . (string) (int) $groupid;
+        }
+        $defaultfilename .= '-'. userdate(time(), '%Y-%m-%d');
+        return $this->get_param('downloadfilename') ?: $defaultfilename;
     }
 
     protected function get_table() {
@@ -80,78 +90,78 @@ class report_controller extends \block_xp\local\controller\report_controller {
                 $this->get_renderer(),
                 $this->world->get_store(),
                 $this->get_groupid(),
-                $this->get_param('download'),
+                [$this->get_param('download'), $this->get_download_filename()],
                 $teamresolver
             );
             // We must use a compatible URL for the download button to work.
             $this->table->define_baseurl($this->pageurl->get_compatible_url());
+
+            $filterset = $this->get_filterset();
+            if ($filterset) {
+                $this->table->set_filterset($filterset);
+            }
         }
         return $this->table;
     }
 
     protected function pre_content() {
-        global $USER;
-
-        $canmanage = $this->world->get_access_permissions()->can_manage();
-
-        // Check for our actions.
-        $userid = $this->get_param('userid');
-        $action = $this->get_param('action');
-        if ($canmanage && $action === 'add' && !empty($userid)) {
-            $form = $this->get_add_form($userid);
-            $nexturl = new url($this->pageurl, ['userid' => null]);
-            if ($data = $form->get_data()) {
-                $store = $this->world->get_store();
-                $reason = new \local_xp\local\reason\manual_reason($USER->id);
-                if ($store instanceof \block_xp\local\xp\state_store_with_reason) {
-                    $store->increase_with_reason($userid, $data->xp, $reason);
-                } else {
-                    $store->increase($userid, $data->xp);
-                }
-                if ($data->sendnotification) {
-                    $this->send_award_notification($userid, $data->xp, !empty($data->message) ? $data->message : null);
-                }
-                $this->redirect($nexturl);
-            } else if ($form->is_cancelled()) {
-                $this->redirect($nexturl);
-            }
-        }
-
         // We must send the table before the output starts.
         $table = $this->get_table();
         if ($table->is_downloading()) {
             $table->send_file();
         }
-
         parent::pre_content();
     }
 
-    /**
-     * Get the bottom action buttons.
-     *
-     * @return single_button[]
-     */
-    protected function get_bottom_action_buttons() {
-        $actions = parent::get_bottom_action_buttons();
+    protected function perform_user_deletion(int $userid): void {
+        parent::perform_user_deletion($userid);
 
-        $importurl = $this->urlresolver->reverse('import', ['courseid' => $this->courseid]);
-        $actions[] = new single_button($importurl->get_compatible_url(), get_string('importpoints', 'local_xp'), 'get');
-
-        return $actions;
+        di::get(deletion_service::class)->delete_for_user_in_context($userid, $this->world->get_context()->id);
     }
 
-    protected function page_content() {
-        $canmanage = $this->world->get_access_permissions()->can_manage();
-        $output = $this->get_renderer();
+    /**
+     * Get the advanced heading options.
+     *
+     * @return array
+     */
+    protected function get_advanced_heading_options() {
+        $options = parent::get_advanced_heading_options();
+        $options['menu'] = array_values($options['menu'] ?? []);
 
-        // Add points form.
-        if ($canmanage && !empty($this->addform)) {
-            $user = core_user::get_user($this->get_param('userid'));
-            echo $output->heading(fullname($user), 3);
-            $this->addform->display();
+        $addatkey = 0;
+        foreach ($options['menu'] as $key => $item) {
+            if (empty($item)) {
+                $addatkey = $key;
+                break;
+            } else if (($item['danger'] ?? false) === true) {
+                $addatkey = max(0, $key - 1);
+                break;
+            }
         }
 
-        return parent::page_content();
+        $importurl = $this->urlresolver->reverse('import', ['courseid' => $this->courseid]);
+        $options['menu'] = array_merge(
+            array_slice($options['menu'], 0, $addatkey),
+            [
+                [
+                    'label' => get_string('importpoints', 'block_xp'),
+                    'href' => $importurl,
+                ],
+                [
+                    'label' => get_string('exportdata', 'block_xp'),
+                    'data-xp-action' => 'open-form',
+                    'data-form-class' => 'local_xp\\form\\table_download',
+                    'data-form-args__contextid' => $this->world->get_context()->id,
+                    'data-form-args__filename' => $this->get_download_filename(),
+                    'data-form-args__pageurl' => $this->pageurl->out_as_local_url(false),
+                    'data-modal-buttons__save__label' => get_string('export', 'block_xp'),
+                    'href' => '#',
+                ],
+            ],
+            array_slice($options['menu'], $addatkey),
+        );
+
+        return $options;
     }
 
     /**
@@ -160,10 +170,9 @@ class report_controller extends \block_xp\local\controller\report_controller {
      * @param int $userid The user to send to.
      * @param int $points The number of points they received.
      * @param string|null $message The message, if any.
+     * @deprecated Since XP+ 1.17
      */
     protected function send_award_notification($userid, $points, $message) {
-        global $USER;
-        $notifier = new \local_xp\local\notification\award_notifier(di::get('config'), $this->world, $USER);
-        $notifier->notify($userid, $points, $message);
     }
+
 }

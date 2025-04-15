@@ -52,6 +52,7 @@ class backup_local_xp_plugin extends backup_local_plugin {
         $config = new backup_nested_element('xp_config', null, [
             'maxpointspertime', 'timeformaxpoints', 'currencystate', 'badgetheme', 'enablegroupladder',
             'groupidentitymode', 'progressbarmode', 'groupladdercols', 'grouporderby', 'currencytheme',
+            'ladderiso', 'ladderparticipation',
         ]);
         $config->set_source_table('local_xp_config', ['courseid' => backup::VAR_COURSEID]);
         $pluginwrapper->add_child($config);

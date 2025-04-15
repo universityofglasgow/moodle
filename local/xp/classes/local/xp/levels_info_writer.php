@@ -83,7 +83,7 @@ class levels_info_writer extends \block_xp\local\xp\levels_info_writer {
      * @param array $metadata The metadata before processing.
      * @param world|null $world The world, if any.
      */
-    protected function get_metadata_for_level($level, $metadata, world $world = null) {
+    protected function get_metadata_for_level($level, $metadata, ?world $world = null) {
         global $USER;
 
         $finaldata = parent::get_metadata_for_level($level, $metadata, $world);
@@ -133,7 +133,7 @@ class levels_info_writer extends \block_xp\local\xp\levels_info_writer {
      * @param array $metadata The metadata before processing.
      * @param world|null $world The world, if any.
      */
-    protected function get_metadata_for_level_after_restore(restore_context $restore, $level, $metadata, world $world = null) {
+    protected function get_metadata_for_level_after_restore(restore_context $restore, $level, $metadata, ?world $world = null) {
         $metadata = parent::get_metadata_for_level_after_restore($restore, $level, $metadata, $world);
 
         // No badges, nothing to do!

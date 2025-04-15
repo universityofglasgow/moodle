@@ -40,6 +40,7 @@ use moodle_url;
 use restore_controller;
 use restore_dbops;
 use local_xp\local\reason\manual_reason;
+use local_xp\tests\base_testcase;
 
 /**
  * Test backup and retore.
@@ -51,9 +52,9 @@ use local_xp\local\reason\manual_reason;
  * @covers     \backup_local_xp_plugin
  * @covers     \restore_local_xp_plugin
  */
-class backup_test extends base_testcase {
+final class backup_test extends base_testcase {
 
-    public function test_restore_in_new_course() {
+    public function test_restore_in_new_course(): void {
         global $DB;
 
         $data = $this->setup_courses();
@@ -74,7 +75,7 @@ class backup_test extends base_testcase {
         $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $newid]));
     }
 
-    public function test_restore_merge_in_other() {
+    public function test_restore_merge_in_other(): void {
         global $DB;
 
         $data = $this->setup_courses();
@@ -94,7 +95,7 @@ class backup_test extends base_testcase {
         $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c2->id]));
     }
 
-    public function test_restore_delete_and_merge_in_other() {
+    public function test_restore_delete_and_merge_in_other(): void {
         global $DB;
 
         $data = $this->setup_courses();
@@ -120,7 +121,7 @@ class backup_test extends base_testcase {
         $this->assertEquals(1, $DB->count_records('local_xp_drops', ['courseid' => $c1->id]));
     }
 
-    public function test_restore_merge_in_same_without_change() {
+    public function test_restore_merge_in_same_without_change(): void {
         global $DB;
 
         $data = $this->setup_courses();
@@ -139,7 +140,7 @@ class backup_test extends base_testcase {
         $this->assertEquals(2, $DB->count_records('local_xp_drops', ['courseid' => $c1->id]));
     }
 
-    public function test_restore_merge_in_same_with_changes() {
+    public function test_restore_merge_in_same_with_changes(): void {
         global $DB;
 
         $data = $this->setup_courses();
@@ -166,7 +167,7 @@ class backup_test extends base_testcase {
         $this->assertTrue($DB->record_exists('local_xp_drops', ['secret' => 'abcdef2']));
     }
 
-    public function test_restore_delete_and_merge_in_same() {
+    public function test_restore_delete_and_merge_in_same(): void {
         global $DB;
 
         $data = $this->setup_courses();
@@ -195,7 +196,7 @@ class backup_test extends base_testcase {
         $this->assertFalse($DB->record_exists('local_xp_drops', ['secret' => 'abcdef2']));
     }
 
-    public function test_restore_delete_and_merge_in_same_without_overwrite_conf() {
+    public function test_restore_delete_and_merge_in_same_without_overwrite_conf(): void {
         global $DB;
 
         $data = $this->setup_courses();

@@ -56,7 +56,7 @@ class local_xp_state_store_mock implements state_store, state_store_with_reason,
      *
      * @param reason_collection_logger|null $logger The logger.
      */
-    public function __construct(reason_collection_logger $logger = null) {
+    public function __construct(?reason_collection_logger $logger = null) {
         $this->logger = !empty($logger) ? $logger : new local_xp_collection_logger_mock();
         $this->state = [];
     }

@@ -29,6 +29,7 @@ use admin_setting_configmultiselect;
 use admin_setting_configselect;
 use admin_setting_configtext;
 use admin_setting_heading;
+use block_xp\di;
 use block_xp\local\config\config;
 use block_xp\local\config\course_world_config;
 use block_xp\local\routing\url_resolver;
@@ -118,8 +119,36 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
         // We loop over each setting to inject what more when we need.
         foreach ($parentsettings as $setting) {
 
-            // Replace the setting identity mode.
             if ($setting->name == 'identitymode') {
+
+                // Leaderboard isolation.
+                if (di::get('addon')->supports_leaderboard_isolation()) {
+                    $settings[] = (new admin_setting_configselect('local_xp/ladderiso',
+                        get_string('ladderiso', 'block_xp'), get_string('ladderiso_help', 'block_xp'),
+                        $defaults['ladderiso'], [
+                            default_course_world_config::LEADERBOARD_ISO_DEFAULT => get_string('ladderisodefault', 'block_xp'),
+                            default_course_world_config::LEADERBOARD_ISO_COHORTS => get_string('ladderisocohorts', 'block_xp'),
+                        ]
+                    ));
+                }
+
+                // Leaderboard participation.
+                if (di::get('addon')->supports_leaderboard_participation()) {
+                    $settings[] = new admin_setting_configselect('local_xp/ladderparticipation',
+                        get_string('ladderparticipation', 'block_xp'),
+                        get_string('ladderparticipation_help', 'block_xp'),
+                        $defaults['ladderparticipation'], [
+                            default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED =>
+                                get_string('ladderparticipationforced', 'block_xp'),
+                            default_course_world_config::LEADERBOARD_PARTICIPATION_OPTOUT =>
+                                get_string('ladderparticipationoptout', 'block_xp'),
+                            default_course_world_config::LEADERBOARD_PARTICIPATION_OPTIN =>
+                                get_string('ladderparticipationoptin', 'block_xp'),
+                        ]
+                    );
+                }
+
+                // Replace the setting identity mode.
                 $setting = new admin_setting_configselect(
                     $setting->plugin . '/' . $setting->name,
                     $setting->visiblename,
@@ -130,6 +159,7 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                             'displayfirstnameinitiallastname', 'local_xp'),
                     ])
                 );
+
             }
 
             if ($setting->name == 'hdrcheatguard') {
@@ -147,7 +177,7 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                 ));
 
                 // Group ladder settings.
-                $settings[] = (new admin_setting_heading('local_xp/hdrgroupladder', get_string('groupladder', 'local_xp'), ''));
+                $settings[] = (new admin_setting_heading('local_xp/hdrgroupladder', get_string('teamleaderboard', 'block_xp'), ''));
 
                 // Group ladder source.
                 $sources = [

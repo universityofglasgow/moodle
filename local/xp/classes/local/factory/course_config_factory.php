@@ -25,11 +25,13 @@
 
 namespace local_xp\local\factory;
 
+use block_xp\di;
 use moodle_database;
 use block_xp\local\config\config;
 use block_xp\local\config\config_stack;
 use block_xp\local\config\immutable_config;
 use block_xp\local\config\filtered_config;
+use block_xp\local\config\static_config;
 use block_xp\local\config\table_row_config;
 
 use local_xp\local\config\default_course_world_config;
@@ -91,11 +93,17 @@ class course_config_factory {
             array_keys($remotedefaultadminconfig->get_all())
         );
 
-        // The overrides for a course config are based on the admin settings, for those admin settings that have
-        // had their locked status set to true. The whole config is immutable to prevent writes on the admin settings.
-        $this->configoverrides = new immutable_config(
-            new filtered_config($this->adminconfig, array_keys(array_filter($adminconfiglocked->get_all())))
-        );
+        // Overrides to take precedence on the course config. Must be immutable to prevent unexpected writes!
+        $this->configoverrides = new immutable_config(new config_stack([
+            // Avoid config conflicts for parameters only available in certain plans.
+            new filtered_config(new static_config([
+                'ladderiso' => default_course_world_config::LEADERBOARD_ISO_DEFAULT,
+            ]), array_keys(array_filter([
+                'ladderiso' => !di::get('addon')->supports_leaderboard_isolation(),
+            ]))),
+            // Admin settings that have had their locked status set to true.
+            new filtered_config($this->adminconfig, array_keys(array_filter($adminconfiglocked->get_all()))),
+        ]));
     }
 
     /**

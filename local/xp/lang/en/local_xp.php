@@ -52,7 +52,6 @@ $string['currencysignoverride'] = 'Custom symbol';
 $string['currencysignoverride_help'] = 'Upload an image to select another symbol.
 
 We recommend images with a height of 18 pixels, in any of the following types: JPEG, PNG and SVG.';
-$string['custom'] = 'Custom';
 $string['dropcollected'] = 'Drop collected';
 $string['dropherea'] = 'Drop: {$a}';
 $string['dropenabled'] = 'Enabled';
@@ -82,7 +81,6 @@ $string['gradeitemtypeis'] = 'The grade is a {$a} grade';
 $string['gradereceived'] = 'Grade received';
 $string['groupanonymity'] = 'Anonymity';
 $string['groupanonymity_help'] = 'This setting controls whether participants can see the names of the teams they do not belong to.';
-$string['groupladder'] = 'Team leaderboard';
 $string['groupladdercols'] = 'Columns';
 $string['groupladdercols_help'] = 'This setting determines which columns are displayed aside from the teams ranks and names.
 
@@ -140,6 +138,7 @@ $string['increaseby_help'] = 'The amount of points to award the student.';
 $string['increasemsg'] = 'Optional message';
 $string['increasemsg_help'] = 'When a message is provided, it is added to the notification.';
 $string['invalidpointscannotbenegative'] = 'Points cannot be negative.';
+$string['leaderboardnotsetup'] = 'The leaderboard has not yet been set up.';
 $string['levelup'] = 'Level up!'; // The action, not the brand!
 $string['manualawardsubject'] = 'You were awarded {$a->points} points!';
 $string['manualawardnotification'] = 'You were awarded {$a->points} points by {$a->fullname}.';
@@ -149,11 +148,11 @@ $string['maxn'] = 'Max: {$a}';
 $string['maxpointspertime'] = 'Max. points in time frame';
 $string['maxpointspertime_help'] = 'The maxmimum number of points that can be earned during the time frame given. When this value is empty, or equals to zero, it does not apply.';
 $string['messageprovider:manualaward'] = 'Level Up XP points manually awarded';
-$string['missingpermssionsmessage'] = 'You do not have the required permissions to access this content.';
 $string['mylevel'] = 'My level';
 $string['navgroupladder'] = 'Team leaderboard';
 $string['pluginname'] = 'Level Up XP+';
 $string['points'] = 'Points';
+$string['pointswithsymbol'] = 'Points with symbol';
 $string['previewmore'] = 'Preview more';
 $string['privacy:metadata:log'] = 'Stores a log of events';
 $string['privacy:metadata:log:points'] = 'The points awarded for the event';
@@ -161,6 +160,7 @@ $string['privacy:metadata:log:signature'] = 'Some event data';
 $string['privacy:metadata:log:time'] = 'The date at which it happened';
 $string['privacy:metadata:log:type'] = 'The event type';
 $string['privacy:metadata:log:userid'] = 'The user who gained the points';
+$string['privacy:metadata:prefdataformat'] = 'Download format';
 $string['progressbarmode'] = 'Display progress towards';
 $string['progressbarmode_help'] = '
 When set to _The next level_, the progress bar displays the progress of the user towards the next level.
@@ -271,16 +271,16 @@ $string['sectioncompleted'] = 'Section completed';
 $string['sectiontocompleteis'] = 'The section to complete is {$a}';
 $string['setastotal'] = 'Set as total';
 $string['studentsearnpointsforgradeswhen'] = 'Students earn points for grades when:';
+$string['teamladdersettingsmovednotice'] = 'The team leaderboard settings were moved to the [team leaderboard page]({$a->url}).';
 $string['unabletoidentifyuser'] = 'Unable to identify user.';
 $string['unknowngradeitemtype'] = 'Unknown type ({$a})';
-$string['unknownsectiona'] = 'Unknown section ({$a})';
 $string['uptoleveln'] = 'Up to level {$a}';
 $string['team'] = 'Team';
-$string['teams'] = 'Teams';
 $string['themestandard'] = 'Standard';
 $string['theyleftthefollowingmessage'] = 'They left the following message:';
 $string['timeformaxpoints'] = 'Time frame for max. points';
 $string['timeformaxpoints_help'] = 'The time frame (in seconds) during which the user cannot receive more than a certain amount of points.';
+$string['xpparticipants'] = 'XP participants';
 
 // Deprecated since v1.7.
 $string['enablegroupladder'] = 'Enable group ladder';
@@ -339,3 +339,7 @@ $string['visualsintro'] = 'Customise the appearance of the levels, and the point
 
 // Deprecated since v1.16.0
 $string['unknownsectiona'] = 'Unknown section ({$a})';
+
+// Deprecated since v1.17.0
+$string['groupladder'] = 'Team leaderboard';
+$string['teams'] = 'Teams';

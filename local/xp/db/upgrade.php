@@ -313,5 +313,62 @@ function xmldb_local_xp_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024042101, 'local', 'xp');
     }
 
+    if ($oldversion < 2024082501) {
+
+        // Define field ladderiso to be added to local_xp_config.
+        $table = new xmldb_table('local_xp_config');
+        $field = new xmldb_field('ladderiso', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'badgetheme');
+
+        // Conditionally launch add field ladderiso.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2024082501, 'local', 'xp');
+    }
+
+    if ($oldversion < 2025032801) {
+
+        // Define field ladderparticipation to be added to local_xp_config.
+        $table = new xmldb_table('local_xp_config');
+        $field = new xmldb_field('ladderparticipation', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'ladderiso');
+
+        // Conditionally launch add field ladderparticipation.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2025032801, 'local', 'xp');
+    }
+
+    if ($oldversion < 2025032802) {
+
+        // Define table local_xp_user_flag to be created.
+        $table = new xmldb_table('local_xp_user_flag');
+
+        // Adding fields to table local_xp_user_flag.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('ladderparticipation', XMLDB_TYPE_INTEGER, '2', null, null, null, null);
+        $table->add_field('ladderparticipationlocked', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table local_xp_user_flag.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table local_xp_user_flag.
+        $table->add_index('contextuser', XMLDB_INDEX_UNIQUE, ['contextid', 'userid']);
+
+        // Conditionally launch create table for local_xp_user_flag.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Xp savepoint reached.
+        upgrade_plugin_savepoint(true, 2025032802, 'local', 'xp');
+    }
+
     return true;
 }

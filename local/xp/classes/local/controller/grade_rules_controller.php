@@ -147,7 +147,8 @@ class grade_rules_controller extends page_controller {
         $output = $this->get_renderer();
 
         if ($this->get_param('reset')) {
-            echo $output->confirm(
+            echo $output->confirm_reset(
+                get_string('resettodefaults', 'block_xp'),
                 get_string('reallyresetcourserulestodefaults', 'block_xp'),
                 new url($this->pageurl->get_compatible_url(), ['reset' => 1, 'confirm' => 1, 'sesskey' => sesskey()]),
                 new url($this->pageurl->get_compatible_url())
@@ -158,6 +159,13 @@ class grade_rules_controller extends page_controller {
         echo $output->advanced_heading(get_string('graderules', 'block_xp'), [
             'intro' => new \lang_string('graderulesintro', 'block_xp'),
             'help' => new \help_icon('graderules', 'block_xp'),
+            'menu' => [
+                [
+                    'label' => get_string('resettodefaults', 'block_xp'),
+                    'danger' => true,
+                    'href' => new url($this->pageurl, ['reset' => 1, 'sesskey' => sesskey()]),
+                ],
+            ],
         ]);
         echo $output->render($this->get_widget_group());
 
@@ -165,17 +173,6 @@ class grade_rules_controller extends page_controller {
     }
 
     protected function page_danger_zone_content() {
-        $output = $this->get_renderer();
-
-        echo $output->heading_with_divider(get_string('dangerzone', 'block_xp'));
-
-        $url = new url($this->pageurl, ['reset' => 1, 'sesskey' => sesskey()]);
-        echo html_writer::tag('p',
-            $output->render($output->make_single_button(
-                $url->get_compatible_url(),
-                get_string('resetcourserulestodefaults', 'block_xp'),
-                ['danger' => true]
-            ))
-        );
     }
+
 }

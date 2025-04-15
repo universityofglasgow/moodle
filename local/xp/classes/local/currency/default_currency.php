@@ -42,7 +42,7 @@ class default_currency implements currency {
     /** @var \moodle_url|null */
     protected $url;
 
-    public function __construct(currency_sign_url_resolver $urlresolver = null) {
+    public function __construct(?currency_sign_url_resolver $urlresolver = null) {
         $this->urlresolver = $urlresolver;
     }
 

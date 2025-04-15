@@ -117,8 +117,8 @@ abstract class grouped_leaderboard implements
     protected function prepare_sql() {
         $teamjoin = $this->get_team_join();
 
-        $this->from = "{{$this->table}} x " . $teamjoin->joins;
-        $this->where = "x.courseid = :courseid";
+        $this->from = "{{$this->table}} x JOIN {user} u ON u.id = x.userid " . $teamjoin->joins;
+        $this->where = "u.deleted = 0 AND u.suspended = 0 AND x.courseid = :courseid";
         if (!empty($teamjoin->wheres)) {
             $this->where .= " AND ({$teamjoin->wheres})";
         }

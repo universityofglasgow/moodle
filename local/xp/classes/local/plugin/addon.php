@@ -117,4 +117,31 @@ class addon extends \block_xp\local\plugin\addon {
         return $this->get_version_diff() !== 0;
     }
 
+    /**
+     * Whether the feature is supported.
+     *
+     * @return bool
+     */
+    public function supports_leaderboard_isolation(): bool {
+        return true;
+    }
+
+    /**
+     * Whether the feature is supported.
+     *
+     * @return bool
+     */
+    public function supports_leaderboard_participation(): bool {
+        return true;
+    }
+
+    /**
+     * Whether the feature is supported.
+     *
+     * @return bool
+     */
+    public function supports_report_builder(): bool {
+        return true;
+    }
+
 }

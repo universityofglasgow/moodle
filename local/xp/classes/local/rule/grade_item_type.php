@@ -102,7 +102,7 @@ class grade_item_type extends block_xp_rule_base {
         }
 
         $itemtypes = html_writer::select($list, $basename . '[value]', $this->value, '',
-            ['id' => '', 'class' => '', 'style' => 'max-width: 150px;']);
+            ['id' => '', 'class' => 'xp-inline-block', 'style' => 'max-width: 150px;']);
         $o .= get_string('gradeitemtypeis', 'local_xp', $itemtypes);
         $o .= $output->help_icon('rulegradeitemtype', 'local_xp');
         return $o;

@@ -49,17 +49,7 @@ class routes_config implements routes_config_interface {
      * @param routes_config_interface $altconfig Alternative config.
      */
     public function __construct(routes_config_interface $altconfig) {
-        $this->routes = [
-            'group_ladder' => new route_definition(
-                'group_ladder',
-                '/group/ladder/:courseid',
-                '~^/group/ladder/(\d+)$~',
-                'group_ladder',
-                [
-                    1 => 'courseid',
-                ]
-            ),
-        ];
+        $this->routes = [];
         $this->altconfig = $altconfig;
     }
 

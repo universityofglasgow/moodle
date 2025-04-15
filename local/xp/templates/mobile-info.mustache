@@ -32,24 +32,42 @@
 <%#instructions%>
 <ion-card>
     <ion-card-content class="ion-text-wrap">
-            <%{.}%>
+        <%{.}%>
     </ion-card-content>
 </ion-card>
 <%/instructions%>
 
-<ion-list class="mma-xp-list ion-margin-bottom">
+<div class="mma-xp-level-list">
     <%#levelsinfo.levels%>
-    <ion-card>
-    <ion-item class="mma-xp-item-level ion-text-wrap">
-        <ion-thumbnail slot="start" class="badge">
-            <%> local_xp/mobile-level-small %>
-        </ion-thumbnail>
-        <ion-label class="mma-xp-item-content">
-            <%#name%><p class="name"><% . %></p><%/name%>
-            <%#xprequired%><p><%#str%>requires, block_xp<%/str%> <%> local_xp/mobile-xp %></p><%/xprequired%>
-            <p class="desc"><% description %>&nbsp;</p>
-        </ion-label>
-    </ion-item>
+    <ion-card class="<%# description %>with-description<%/ description %>">
+        <ion-card-content>
+            <div style="display: flex; flex-direction: column; align-items:center;">
+            <div>
+                <%> local_xp/mobile-level-small %>
+            </div>
+
+            <%#name%>
+            <div style="text-align: center; font-size: 1rem; font-weight: bold;">
+                <% . %>
+            </div>
+            <%/name%>
+
+            <div>
+                <%# xprequired %>
+                <%> local_xp/mobile-xp %>
+                <%/ xprequired %>
+            </div>
+
+            <%# description %>
+            <div style="display: flex; align-items: center">
+                <div style="margin-top: 0.5rem; max-width: 500px;">
+                    <p><% . %></p>
+                </div>
+            </div>
+            <%/ description %>
+
+            </div>
+        </ion-card-content>
     </ion-card>
     <%/levelsinfo.levels%>
-</ion-list>
+</div>

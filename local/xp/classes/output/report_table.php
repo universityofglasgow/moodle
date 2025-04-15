@@ -35,6 +35,7 @@ use renderer_base;
 use block_xp\local\course_world;
 use block_xp\local\xp\course_state_store;
 use context_system;
+use local_xp\local\config\default_course_world_config;
 use local_xp\local\team\team_membership_resolver;
 
 /**
@@ -49,8 +50,12 @@ class report_table extends \block_xp\output\report_table {
 
     /** @var string Download format. */
     private $downloadformat;
+    /** @var string Download filename. */
+    private $downloadfilename;
     /** @var team_membership_resolver Team resolver. */
     protected $teamresolver;
+    /** @var int */
+    protected $ladderparticipation = default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED;
 
     /**
      * Constructor.
@@ -60,7 +65,7 @@ class report_table extends \block_xp\output\report_table {
      * @param renderer_base $renderer The renderer.
      * @param course_state_store $store The store.
      * @param int $groupid The group ID.
-     * @param string|null $downloadformat The download format.
+     * @param string|null|array $downloadformat The download format, when array a tuple with format and filename.
      * @param team_membership_resolver|null $teamresolver The team resolver.
      */
     public function __construct(
@@ -70,11 +75,18 @@ class report_table extends \block_xp\output\report_table {
             course_state_store $store,
             $groupid,
             $downloadformat = null,
-            team_membership_resolver $teamresolver = null
+            ?team_membership_resolver $teamresolver = null
         ) {
 
+        if (is_array($downloadformat)) {
+            [$downloadformat, $downloadfilename] = $downloadformat;
+        }
         $this->downloadformat = $downloadformat;
+        $this->downloadfilename = $downloadfilename;
         $this->teamresolver = $teamresolver;
+        if (di::get('addon')->supports_leaderboard_participation()) {
+            $this->ladderparticipation = (int) $world->get_config()->get('ladderparticipation');
+        }
         parent::__construct($db, $world, $renderer, $store, $groupid);
     }
 
@@ -84,11 +96,25 @@ class report_table extends \block_xp\output\report_table {
      * @return void
      */
     protected function init() {
-        $this->is_downloading($this->downloadformat, 'xp_report_' . $this->world->get_courseid());
+        $this->is_downloading($this->downloadformat, $this->downloadfilename ?: 'xp_report_' . $this->world->get_courseid());
         parent::init();
         $this->no_sorting('team');
         $this->is_downloadable(true);
-        $this->show_download_buttons_at([TABLE_P_BOTTOM]);
+        $this->show_download_buttons_at([]);
+    }
+
+    /**
+     * Initialise the SQL bits.
+     *
+     * @return void
+     */
+    protected function init_sql() {
+        parent::init_sql();
+
+        $this->sql->fields .= ', uf.ladderparticipation';
+        $this->sql->from .= "LEFT JOIN {local_xp_user_flag} uf
+                                    ON (uf.userid = u.id AND uf.contextid = :ufcontextid)";
+        $this->sql->params['ufcontextid'] = $this->world->get_context()->id;
     }
 
     /**
@@ -141,6 +167,11 @@ class report_table extends \block_xp\output\report_table {
                 'xp' => true,
                 'progress' => true,
             ]));
+
+            // Add ranked column.
+            if ($this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED) {
+                $cols['ranked'] = get_string('ranked', 'block_xp');
+            }
         }
 
         if (!$this->teamresolver) {
@@ -165,15 +196,75 @@ class report_table extends \block_xp\output\report_table {
     protected function get_row_actions($row) {
         $actions = parent::get_row_actions($row);
 
-        $actions = array_merge([
+        $leaderboardentry = null;
+        if ($this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED) {
+            $leaderboardentry = new action_menu_link(
+                $this->baseurl,
+                new pix_icon('i/stats', get_string('ladder', 'block_xp')),
+                get_string('ladder', 'block_xp'),
+                false,
+                [
+                    'data-xp-action' => 'open-form',
+                    'data-form-class' => 'local_xp\form\user_leaderboard_participation',
+                    'data-form-args__contextid' => $this->world->get_context()->id,
+                    'data-form-args__userid' => $row->id,
+                    'data-modal-title' => fullname($row),
+                ]
+            );
+        }
+
+        $actions = array_merge(array_filter([
             new action_menu_link(
-                new moodle_url($this->baseurl, ['action' => 'add', 'userid' => $row->id]),
+                $this->baseurl,
                 new pix_icon('t/add', get_string('add', 'core')),
-                get_string('awardpoints', 'local_xp')
+                get_string('awardpoints', 'local_xp'),
+                false,
+                [
+                    'data-xp-action' => 'open-form',
+                    'data-form-class' => 'local_xp\form\user_xp_add',
+                    'data-form-args__contextid' => $this->world->get_context()->id,
+                    'data-form-args__userid' => $row->id,
+                    'data-modal-save-button-text' => get_string('confirm', 'core'),
+                    'data-modal-title' => fullname($row),
+                ]
             ),
-        ], $actions);
+            $leaderboardentry,
+        ]), $actions);
 
         return $actions;
+    }
+
+    /**
+     * Formats the column.
+     *
+     * @param stdClass $row Table row.
+     * @return string Output produced.
+     */
+    public function col_fullname($row) {
+        $o = parent::col_fullname($row);
+
+        if (!$this->is_downloading()
+                && $this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED) {
+            $mode = $this->ladderparticipation;
+            $ladderparticipation = $row->ladderparticipation !== null ? (int) $row->ladderparticipation : null;
+            if ($mode === default_course_world_config::LEADERBOARD_PARTICIPATION_OPTIN && $ladderparticipation === 1) {
+                $o .= \html_writer::div(get_string('ranked', 'block_xp'), 'xp-ml-2 xp-inline-block xp-font-bold xp-bg-gray-200 '
+                        . 'xp-text-gray-700 xp-text-xs xp-rounded xp-px-1 xp-py-0.5', [
+                    'data-toggle' => 'tooltip',
+                    'data-bs-toggle' => 'tooltip',
+                    'title' => get_string('participatesinleaderboard', 'block_xp'),
+                ]);
+            } else if ($mode === default_course_world_config::LEADERBOARD_PARTICIPATION_OPTOUT && $ladderparticipation === 0) {
+                $o .= \html_writer::div(get_string('notranked', 'block_xp'), 'xp-ml-2 xp-inline-block xp-font-bold xp-bg-gray-200 '
+                        . 'xp-text-gray-700 xp-text-xs xp-rounded xp-px-1 xp-py-0.5', [
+                    'data-toggle' => 'tooltip',
+                    'data-bs-toggle' => 'tooltip',
+                    'title' => get_string('participatesnotinleaderboard', 'block_xp'),
+                ]);
+            }
+        }
+
+        return $o;
     }
 
     /**
@@ -201,6 +292,26 @@ class report_table extends \block_xp\output\report_table {
             return sprintf("%d / %d", $state->get_xp_in_level(), $state->get_total_xp_in_level());
         }
         return parent::col_progress($row);
+    }
+
+    /**
+     * Formats the column.
+     *
+     * @param stdClass $row Table row.
+     * @return string Output produced.
+     */
+    protected function col_ranked($row) {
+        $mode = $this->ladderparticipation;
+        $ladderparticipation = $row->ladderparticipation !== null ? (int) $row->ladderparticipation : null;
+        $yes = get_string('yes', 'core');
+        $no = get_string('no', 'core');
+
+        if ($mode === default_course_world_config::LEADERBOARD_PARTICIPATION_OPTIN) {
+            return $ladderparticipation === 1 ? $yes : $no;
+        } else if ($mode === default_course_world_config::LEADERBOARD_PARTICIPATION_OPTOUT) {
+            return $ladderparticipation === 0 ? $no : $yes;
+        }
+        return $yes;
     }
 
     /**

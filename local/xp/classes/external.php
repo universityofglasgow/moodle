@@ -366,7 +366,7 @@ class external extends \block_xp\external\external_api {
      * @param block_base|null $bi The block instance.
      * @return config
      */
-    public static function make_block_config(block_base $bi = null) {
+    public static function make_block_config(?block_base $bi = null) {
         debugging('Method deprecated, use local_xp\external_api::make_block_config instead.', DEBUG_DEVELOPER);
         return external\external_api::make_block_config($bi);
     }
@@ -450,7 +450,7 @@ class external extends \block_xp\external\external_api {
      * @param moodle_url|null $url The URL.
      * @return array
      */
-    public static function serialize_url(moodle_url $url = null) {
+    public static function serialize_url(?moodle_url $url = null) {
         debugging('Method deprecated, use local_xp\external_api::serialize_url instead.', DEBUG_DEVELOPER);
         return external\external_api::serialize_url($url);
     }

@@ -60,7 +60,7 @@ class csv_user_state_store_points_provider implements user_state_store_points_pr
      * @param reason $defaultreason The default reason.
      */
     public function __construct(csv_import_reader $cir, user_resolver $userresolver,
-            $defaultaction = user_state_store_points::ACTION_INCREASE, reason $defaultreason = null) {
+            $defaultaction = user_state_store_points::ACTION_INCREASE, ?reason $defaultreason = null) {
         $this->cir = $cir;
         $this->userresolver = $userresolver;
         $this->defaultaction = $defaultaction;

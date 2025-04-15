@@ -14,22 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Base testcase.
- *
- * @package    local_xp
- * @copyright  2018 Frédéric Massart
- * @author     Frédéric Massart <fred@branchup.tech>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_xp;
-
-use block_xp\tests\setup_trait;
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
 
 /**
  * Base testcase class.
@@ -38,22 +23,7 @@ global $CFG;
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Since XP+ 1.17.1, use local_xp\tests\base_testcase instead.
  */
-abstract class base_testcase extends \advanced_testcase {
-
-    use setup_trait;
-
-    public function setup_test() {
-        $this->resetAfterTest();
-        $this->reset_container();
-    }
-
-    protected function get_world($courseid) {
-        return \block_xp\di::get('course_world_factory')->get_world($courseid);
-    }
-
-    protected function reset_container() {
-        \block_xp\di::set_container(new \local_xp\local\container());
-    }
-
+abstract class base_testcase extends \local_xp\tests\base_testcase {
 }

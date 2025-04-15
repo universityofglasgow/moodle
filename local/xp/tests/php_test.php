@@ -1,22 +1,20 @@
 <?php
-/**
- * This file is part of Level Up XP+.
- *
- * Level Up XP+ is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Level Up XP+ is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Level Up XP+.  If not, see <https://www.gnu.org/licenses/>.
- *
- * https://levelup.plus
- */
+// This file is part of Level Up XP+.
+//
+// Level Up XP+ is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Level Up XP+ is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Level Up XP+.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Test case.
@@ -28,6 +26,9 @@
  */
 
 namespace local_xp;
+
+use Generator;
+use local_xp\tests\base_testcase;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -48,7 +49,7 @@ final class php_test extends base_testcase {
      *
      * @return array
      */
-    public static function php_files_provider() {
+    public static function php_files_provider(): Generator {
         global $CFG;
 
         $xproot = $CFG->dirroot . '/local/xp';
@@ -82,7 +83,7 @@ final class php_test extends base_testcase {
      * @dataProvider php_files_provider
      * @covers \local_xp\di
      */
-    public function test_file_inclusion($relpath) {
+    public function test_file_inclusion($relpath): void {
         global $CFG, $DB;
         try {
             require_once($CFG->dirroot . '/local/xp' . $relpath);

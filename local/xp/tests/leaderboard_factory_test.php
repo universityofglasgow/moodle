@@ -30,6 +30,7 @@ use block_xp\local\config\config_stack;
 use block_xp\local\config\static_config;
 use block_xp\local\sql\limit;
 use local_xp\local\config\default_course_world_config;
+use local_xp\tests\base_testcase;
 
 /**
  * Leaderboard factory testcase.
@@ -40,7 +41,7 @@ use local_xp\local\config\default_course_world_config;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_xp\local\factory\course_world_leaderboard_factory
  */
-class leaderboard_factory_test extends base_testcase {
+final class leaderboard_factory_test extends base_testcase {
 
     protected function get_world($courseid) {
         return di::get('course_world_factory')->get_world($courseid);
@@ -49,7 +50,7 @@ class leaderboard_factory_test extends base_testcase {
     /**
      * Test the plain factory.
      */
-    public function test_plain_factory_without_groups() {
+    public function test_plain_factory_without_groups(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
 
@@ -126,7 +127,7 @@ class leaderboard_factory_test extends base_testcase {
     /**
      * Test the config factory.
      */
-    public function test_config_factory_without_groups() {
+    public function test_config_factory_without_groups(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
 

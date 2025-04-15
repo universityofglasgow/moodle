@@ -36,7 +36,9 @@ use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\writer;
 use block_xp\di;
 use block_xp\local\config\course_world_config;
+use context_system;
 use local_xp\privacy\provider;
+use local_xp\tests\base_testcase;
 
 /**
  * Privacy provider testcase.
@@ -47,7 +49,7 @@ use local_xp\privacy\provider;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_xp\privacy\provider
  */
-class privacy_addon_provider_test extends base_testcase {
+final class privacy_addon_provider_test extends base_testcase {
 
     public function setup_test() {
         if (!class_exists('core_privacy\manager')) {
@@ -64,12 +66,12 @@ class privacy_addon_provider_test extends base_testcase {
         return $world;
     }
 
-    public function test_get_metadata() {
+    public function test_get_metadata(): void {
         $data = provider::get_metadata(new collection('block_xp'));
         $this->assertCount(1, $data->get_collection());
     }
 
-    public function test_add_addon_context_for_userid() {
+    public function test_add_addon_context_for_userid(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
         $c2 = $dg->create_course();
@@ -113,7 +115,7 @@ class privacy_addon_provider_test extends base_testcase {
         ]);
     }
 
-    public function test_export_addon_user_data() {
+    public function test_export_addon_user_data(): void {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
         $c2 = $dg->create_course();
@@ -159,7 +161,23 @@ class privacy_addon_provider_test extends base_testcase {
         }
     }
 
-    public function test_delete_addon_data_for_all_users_in_context() {
+    public function test_export_addon_user_prefs(): void {
+        $dg = $this->getDataGenerator();
+        $u1 = $dg->create_user();
+
+        set_user_preference('local_xp_dataformat', 'csv', $u1->id);
+
+        provider::export_addon_user_preferences($u1->id);
+
+        $writer = writer::with_context(context_system::instance());
+        $prefs = $writer->get_user_preferences('local_xp');
+        $prefkeys = array_keys((array) $prefs);
+
+        $this->assertTrue(in_array('local_xp_dataformat', $prefkeys));
+
+    }
+
+    public function test_delete_addon_data_for_all_users_in_context(): void {
         $db = di::get('db');
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
@@ -200,7 +218,7 @@ class privacy_addon_provider_test extends base_testcase {
         $this->assertTrue($db->record_exists('local_xp_log', ['contextid' => $c2ctx->id, 'userid' => $u2->id]));
     }
 
-    public function test_delete_addon_data_user() {
+    public function test_delete_addon_data_user(): void {
         $db = di::get('db');
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();

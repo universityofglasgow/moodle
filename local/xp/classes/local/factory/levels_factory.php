@@ -47,7 +47,7 @@ class levels_factory extends \block_xp\local\factory\levels_factory {
      * @param badge_url_resolver $badgeurlresolver The badge URL resolver.
      * @return \block_xp\local\xp\level
      */
-    public function make_level($level, $xp, array $metadata = [], badge_url_resolver $badgeurlresolver = null) {
+    public function make_level($level, $xp, array $metadata = [], ?badge_url_resolver $badgeurlresolver = null) {
         return new static_level($level, $xp, $badgeurlresolver, $metadata);
     }
 

@@ -25,6 +25,9 @@
 
 namespace local_xp\local\iomad;
 
+use company;
+use context_system;
+use iomad;
 use moodle_database;
 
 /**
@@ -55,6 +58,10 @@ class facade {
      * Init the things.
      */
     public function init() {
+        if (!$this->initialised) {
+            $this->load_libraires();
+            $this->initialised = true;
+        }
     }
 
     /**
@@ -63,7 +70,8 @@ class facade {
      * @return bool
      */
     public function exists() {
-        return false;
+        $this->init();
+        return class_exists('iomad');
     }
 
     /**
@@ -73,7 +81,9 @@ class facade {
      * @return string
      */
     public function get_company_name($id) {
-        return '?';
+        $this->init();
+        $company = new company($id);
+        return $company->get_name();
     }
 
     /**
@@ -83,7 +93,9 @@ class facade {
      * @return string
      */
     public function get_department_name($id) {
-        return '?';
+        $this->init();
+        $dept = company::get_departmentbyid($id);
+        return $dept->name;
     }
 
     /**
@@ -96,7 +108,8 @@ class facade {
      * @return array
      */
     public function get_user_company_ids($user) {
-        return [];
+        $this->init();
+        return $this->db->get_fieldset_select('company_users', 'companyid', 'userid = ?', [$user->id]);
     }
 
     /**
@@ -109,7 +122,8 @@ class facade {
      * @return array
      */
     public function get_user_department_ids($user) {
-        return [];
+        $this->init();
+        return $this->db->get_fieldset_select('company_users', 'departmentid', 'userid = ?', [$user->id]);
     }
 
     /**
@@ -118,7 +132,8 @@ class facade {
      * @return int
      */
     public function get_viewing_companyid() {
-        return 0;
+        $this->init();
+        return iomad::get_my_companyid(context_system::instance(), false);
     }
 
     /**
@@ -127,7 +142,24 @@ class facade {
      * @return int
      */
     public function get_viewing_departmentid() {
-        return 0;
+        global $USER;
+        $this->init();
+        $company = new company($this->get_viewing_companyid());
+        $department = $company->get_userlevel($USER);
+        return $department['id'];
+    }
+
+    /**
+     * Attempt to load libraries.
+     *
+     * @return void
+     */
+    protected function load_libraires() {
+        global $CFG, $DB, $SESSION, $USER;
+        if (!class_exists('iomad') && file_exists($CFG->dirroot . '/local/iomad/lib/iomad.php')) {
+            require_once($CFG->dirroot . '/local/iomad/lib/iomad.php');
+            require_once($CFG->dirroot . '/local/iomad/lib/company.php');
+        }
     }
 
     /**
@@ -136,6 +168,8 @@ class facade {
      * @return void
      */
     public function redirect_for_company_if_needed() {
+        $this->init();
+        iomad::get_my_companyid(context_system::instance(), true);
     }
 
 }

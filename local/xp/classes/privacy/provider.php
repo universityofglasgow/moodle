@@ -101,6 +101,11 @@ class provider implements
      * @param int $userid The userid of the user whose data is to be exported.
      */
     public static function export_addon_user_preferences($userid) {
+        writer::export_user_preference(
+            'local_xp',
+            'local_xp_dataformat',
+            get_user_preferences('local_xp_dataformat', '', $userid),
+            get_string('privacy:metadata:prefdataformat', 'local_xp'));
     }
 
     /**

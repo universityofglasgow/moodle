@@ -132,7 +132,13 @@ class drop_table extends table_sql {
         $actions = [];
 
         $url = new moodle_url($this->baseurl, ['dropid' => $row->id]);
-        $actions[] = $this->renderer->action_icon($url, new pix_icon('t/edit', get_string('edit', 'core')));
+        $actions[] = $this->renderer->action_icon($url, new pix_icon('t/edit', get_string('edit', 'core')), null, [
+            'data-xp-action' => 'open-form',
+            'data-form-class' => 'local_xp\form\drop',
+            'data-form-args__contextid' => $this->world->get_context()->id,
+            'data-form-args__id' => $row->id,
+            'data-modal-title' => get_string('edit', 'core'),
+        ]);
 
         $url = new moodle_url($this->baseurl, ['deleteid' => $row->id, 'sesskey' => sesskey(), 'confirm' => 1]);
         $actions[] = $this->renderer->action_icon($url, new pix_icon('t/delete', get_string('delete', 'core')),

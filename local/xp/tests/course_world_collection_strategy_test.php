@@ -43,6 +43,7 @@ use local_xp\local\reason\unknown_reason;
 use local_xp\local\rule\static_result;
 use local_xp\local\strategy\course_world_collection_strategy;
 use local_xp\local\strategy\user_collection_target_resolver;
+use local_xp\tests\base_testcase;
 
 /**
  * Course world collection strategy testcase.
@@ -53,7 +54,7 @@ use local_xp\local\strategy\user_collection_target_resolver;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_xp\local\strategy\course_world_collection_strategy
  */
-class course_world_collection_strategy_test extends base_testcase {
+final class course_world_collection_strategy_test extends base_testcase {
 
     protected function get_world($courseid) {
         $world = di::get('course_world_factory')->get_world($courseid);
@@ -88,7 +89,7 @@ class course_world_collection_strategy_test extends base_testcase {
         return compact('collectforuser', 'calculator', 'logger', 'store');
     }
 
-    public function test_collect_basic() {
+    public function test_collect_basic(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -101,7 +102,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(10, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_disabled() {
+    public function test_collect_disabled(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -115,7 +116,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(0, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_action_happened() {
+    public function test_collect_action_happened(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -150,7 +151,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(30, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_max_actions_in_time() {
+    public function test_collect_max_actions_in_time(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -186,7 +187,31 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(30, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_max_points_in_time() {
+    public function test_collect_max_actions_in_time_one(): void {
+        $dg = $this->getDataGenerator();
+        $c = $dg->create_course();
+        $w = $this->get_world($c->id);
+
+        extract($this->get_collection_strategy($w)); // @codingStandardsIgnoreLine
+
+        $w->get_config()->set('maxactionspertime', 1);
+        $w->get_config()->set('timeformaxactions', 1000);
+
+        $this->assertEquals(0, $store->get_state(1)->get_xp());
+
+        $logger->collectionssince = 0;
+        $calculator->result = new static_result(10, true);
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
+        $this->assertEquals(10, $store->get_state(1)->get_xp());
+
+        // No changes from here.
+        $logger->collectionssince = 1;
+        $calculator->result = new static_result(10, true);
+        $collectforuser(1, new \local_xp_subject_mock(), new unknown_reason());
+        $this->assertEquals(10, $store->get_state(1)->get_xp());
+    }
+
+    public function test_collect_max_points_in_time(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -234,7 +259,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(26, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_activity_completion() {
+    public function test_collect_activity_completion(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -291,7 +316,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(50, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_course_completed() {
+    public function test_collect_course_completed(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -355,7 +380,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(38, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_graded() {
+    public function test_collect_graded(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);
@@ -427,7 +452,7 @@ class course_world_collection_strategy_test extends base_testcase {
         $this->assertEquals(87, $store->get_state(1)->get_xp());
     }
 
-    public function test_collect_manual() {
+    public function test_collect_manual(): void {
         $dg = $this->getDataGenerator();
         $c = $dg->create_course();
         $w = $this->get_world($c->id);

@@ -1,6 +1,92 @@
 Changelog
 =========
 
+v18.0
+-----
+
+We dropped the `v1.` prefix of our version number, XP+ `v18` is the version following `v1.17`. From this release, XP and its compatible XP+ version will have the same number.
+
+New features
+
+- Leaderboard can be configured to allow users to opt-out (Premium)
+- Administrators can enforce that all leaderboards support opt-out (Premium)
+
+Bug fixes
+
+- XP data source in custom reports was not available in Moodle pre-4.4
+- The drop form was not declaring the type of some fields
+
+Technical changes
+
+- XP+ will be disabled if its version does not match XP
+- Great expansion of our automated tests
+- Compatibility with Moodle 5.0
+
+v1.17.1
+-------
+
+Quality of life
+
+- Suspended users are marked as such in the logs
+
+Bug fixes
+
+- Cheat guard allowed one extra action per time frame than intended
+- Team scores now exclude the points of deleted and suspended users
+- Logs of deleted users are no longer displayed in the logs
+
+v1.17.0
+-------
+
+New features
+
+- Leaderboard participants can be isolated from each other using cohorts (Premium)
+- Support creation of reports through Moodle's custom reports feature (Premium)
+- File name can be set when exporting data
+- Preferred export format is remembered
+
+Quality of life
+
+- Export actions have been moved the page contextual menu
+- Improved appearance of XP in the mobile app
+- Most action and setting forms open without leaving the page
+- Other UX and quality of life improvements
+
+Bug fixes
+
+- Prevent debugging notices when using shortcodes with the mobile app
+- Fixed rendering issues of some shortcodes in the mobile app
+
+Technical changes
+
+- Compatibility with Moodle 4.5
+- Raised minimum required version to Moodle 4.1
+
+Acknowledgements
+
+- We would like to thank [Barclay Jones](https://www.barclayjones.com/) for sponsoring some features in this release.
+
+Read our [release blog post](https://www.levelup.plus/blog/xp-quest-release-oct-2024/) to learn more.
+
+v1.16.2
+-------
+
+Quality of life
+
+- Renamed Multi package to Premium
+
+Technical changes
+
+- House keeping of certain mobile features (Pro)
+
+v1.16.1
+-------
+
+Bug fixes
+
+- Unexpected exception when used in IOMAD installations (Multi)
+- Invalid SQL query when fetching leaderboard in IOMAD (Multi)
+
 v1.16.0
 -------
 
@@ -26,7 +112,7 @@ Technical changes
 
 Acknowledgements
 
-- We would like to thank the [University of Oulu](https:/oulu.fi) for providing the Finnish translation.
+- We would like to thank the [University of Oulu](https://oulu.fi) for providing the Finnish translation.
 
 Read our [release blog post](https://www.levelup.plus/blog/xp-release-3-16/) to learn more.
 

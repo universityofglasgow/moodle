@@ -75,7 +75,28 @@ $functions = [
         'type' => 'read',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
     ],
+    'local_xp_join_leaderboard' => [
+        'classname' => 'local_xp\external\join_leaderboard',
+        'methodname' => 'execute',
+        'description' => 'Join the leaderboard',
+        'type' => 'write',
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+    ],
+    'local_xp_leave_leaderboard' => [
+        'classname' => 'local_xp\external\leave_leaderboard',
+        'methodname' => 'execute',
+        'description' => 'Leave the leaderboard',
+        'type' => 'write',
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE, 'local_mobile'],
+    ],
 
+    'local_xp_award_points' => [
+        'classname' => 'local_xp\external\award_points',
+        'methodname' => 'execute',
+        'description' => 'Award points to a user',
+        'type' => 'write',
+        'ajax' => true,
+    ],
     'local_xp_search_grade_items' => [
         'classname' => 'local_xp\external\search_grade_items',
         'methodname' => 'execute',

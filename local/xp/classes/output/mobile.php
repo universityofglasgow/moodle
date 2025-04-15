@@ -31,6 +31,7 @@ use block_xp\local\config\course_world_config;
 use block_xp\local\course_world;
 use block_xp\local\utils\external_utils;
 use block_xp\local\world;
+use DateTimeImmutable;
 use local_xp\external\external_api;
 use local_xp\external\get_course_group_info;
 use local_xp\external\get_course_world_group_ladder;
@@ -120,6 +121,7 @@ class mobile {
         $currencyfactory = di::get('course_currency_factory');
         $courseid = $world->get_courseid();
         return array_merge($data, [
+            'contextid' => $world->get_context()->id,
             'courseid' => $courseid,
             'css' => static::get_css_data(),
             'currency' => external_api::serialize_currency($currencyfactory->get_currency($courseid)),
@@ -145,17 +147,23 @@ class mobile {
     /**
      * Get the group selector data for template.
      *
-     * @param int $courseid The course ID.
+     * @param world $world The world.
      * @param int $currentgroupid The current group ID (-1 for undefined).
      * @param int $userid The user ID.
      * @return array
      */
-    protected static function get_group_selector_data($courseid, $currentgroupid, $userid) {
+    protected static function get_group_selector_data(world $world, $currentgroupid, $userid) {
         $data = [
             'enabled' => false,
             'currentgroupid' => max(0, $currentgroupid),
         ];
 
+        // No group selection when we're not in default mode.
+        if ((int) $world->get_config()->get('ladderiso') !== default_course_world_config::LEADERBOARD_ISO_DEFAULT) {
+            return $data;
+        }
+
+        $courseid = $world instanceof course_world ? $world->get_courseid() : SITEID;
         $modinfo = get_fast_modinfo($courseid, $userid);
         if (groups_get_course_groupmode($modinfo->get_course()) != NOGROUPS) {
             $groupinfo = get_course_group_info::execute($courseid);
@@ -251,14 +259,13 @@ class mobile {
         $ladder['nextpage'] = $ladder['page'] + 1;
         $ladder['hasbefore'] = $ladder['page'] > 1;
         $ladder['hasmore'] = $ladder['page'] * $perpage < $ladder['total'];
-        $ladder['ranking'] = array_map(function($entry) use ($userid) {
+        $ladder['ranking'] = array_map(function($entry) use ($renderer) {
             $state = $entry['state'];
             return array_merge($entry, [
                 'rankpositive' => $entry['rank'] > 0,
                 'state' => $state,
 
                 // Custom.
-                'percentage' => $state['ratioinlevel'] * 100,
                 'xptogo' => $state['totalxpinlevel'] - $state['xpinlevel'],
             ]);
         }, $ladder['ranking']);
@@ -362,9 +369,37 @@ class mobile {
         $worldfactory = di::get('course_world_factory');
         $renderer = di::get('renderer');
         $world = $worldfactory->get_world($courseid);
+        $perms = $world->get_access_permissions();
+        $optinorout = ((int) $world->get_config()->get('ladderparticipation'))
+            !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED;
+
+        // Check participation.
+        $state = di::get(\local_xp\local\leaderboard\participation\service_factory::class)
+            ->get_for_context($world->get_context())
+            ->get_state($USER->id);
+        if ($optinorout && !$state->is_participating() && !$perms->can_manage()) {
+            $canjoin = !$state->is_state_locked();
+            $lockeduntil = $state->get_state_locked_until();
+            $showjoin = $canjoin || ($lockeduntil && $lockeduntil < (new DateTimeImmutable("+2 weeks")));
+            $dateformat = get_string('strftimedayshort', 'core_langconfig');
+            $infodata = static::enhance_page_data($world, [
+                'showjoin' => $showjoin,
+                'canjoin' => $canjoin,
+                'joindateformatted' => $lockeduntil ? userdate($lockeduntil->getTimestamp(), $dateformat) : '',
+            ], 'ladder');
+            return [
+                'templates' => [[
+                    'id' => 'page',
+                    'html' => $renderer->render_from_template('local_xp/mobile-ladder-not-participating', $infodata),
+                ], ],
+                'javascript' => null,
+                'otherdata' => [],
+                'files' => [],
+            ];
+        }
 
         // Group stuff.
-        $groupselector = static::get_group_selector_data($courseid, $groupid, $userid);
+        $groupselector = static::get_group_selector_data($world, $groupid, $userid);
         $groupid = $groupselector['currentgroupid'];
 
         // Ladder.
@@ -382,10 +417,24 @@ class mobile {
             ]);
         }, $ladder['ranking']);
 
+        $leavedata = [];
+        if ($optinorout) {
+            $canleave = !$participant->is_state_locked();
+            $lockeduntil = $participant->get_state_locked_until();
+            $showleave = $canleave || !$participant->is_state_locked_until(new \DateTimeImmutable('+2 weeks'));
+            $dateformat = get_string('strftimedayshort', 'core_langconfig');
+            $leavedata = array_merge($leavedata, [
+                'showleave' => $showleave,
+                'canleave' => $canleave,
+                'leavedateformatted' => $lockeduntil ? userdate($lockeduntil->getTimestamp(), $dateformat) : '',
+            ]);
+        }
+
         // Permissions are handled in the external functions.
         $infodata = static::enhance_page_data($world, [
             'ladder' => $ladder,
             'groupselector' => $groupselector,
+            'leavedata' => $leavedata,
         ], 'ladder');
 
         return [
@@ -445,7 +494,6 @@ class mobile {
             'state' => $state,
 
             // Custom.
-            'percentage' => $state['ratioinlevel'] * 100,
             'xptogo' => $state['totalxpinlevel'] - $state['xpinlevel'],
         ], 'state');
 

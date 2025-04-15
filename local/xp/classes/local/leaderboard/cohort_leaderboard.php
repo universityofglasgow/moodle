@@ -75,7 +75,9 @@ class cohort_leaderboard extends grouped_leaderboard {
             $sql = '';
             $params = [];
             if (!empty($this->cohortids)) {
-                list($sql, $params) = $this->db->get_in_or_equal($this->cohortids);
+                [$insql, $inparams] = $this->db->get_in_or_equal($this->cohortids, SQL_PARAMS_NAMED);
+                $sql = "id $insql";
+                $params = $params += $inparams;
             }
             $this->cohortcache = $this->db->get_records_select('cohort', $sql, $params);
         }

@@ -87,23 +87,13 @@ class course_world_navigation_factory implements course_world_navigation_factory
      */
     protected function make_course_navigation(course_world $world) {
         $parentlinks = $this->parentfactory->get_course_navigation($world);
+        $accessperms = $world->get_access_permissions();
+        $canmanage = $accessperms->can_manage();
         $courseid = $world->get_courseid();
         $urlresolver = $this->resolver;
 
         $links = [];
         $toadd = [];
-
-        if ($world->get_config()->get('enablegroupladder') != default_course_world_config::GROUP_LADDER_NONE) {
-            $toadd[] = [
-                'in' => ['ladder'],
-                'after' => [],
-                'link' => [
-                    'id' => 'group_ladder',
-                    'url' => $urlresolver->reverse('group_ladder', ['courseid' => $courseid]),
-                    'text' => get_string('teams', 'local_xp'),
-                ],
-            ];
-        }
 
         $links = $parentlinks;
         while ($add = array_shift($toadd)) {

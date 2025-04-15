@@ -171,7 +171,7 @@ class context_collection_logger implements
         );
     }
 
-    public function log($userid, $points, $signature, DateTime $time = null) {
+    public function log($userid, $points, $signature, ?DateTime $time = null) {
         $record = (object) [
             'contextid' => $this->context->id,
             'userid' => $userid,
@@ -192,7 +192,7 @@ class context_collection_logger implements
      * @param DateTime|null $time When that happened.
      * @return void
      */
-    public function log_reason($id, $points, reason $reason, DateTime $time = null) {
+    public function log_reason($id, $points, reason $reason, ?DateTime $time = null) {
         $record = (object) [
             'contextid' => $this->context->id,
             'userid' => $id,

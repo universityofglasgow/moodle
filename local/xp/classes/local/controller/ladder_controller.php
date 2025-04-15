@@ -25,6 +25,11 @@
 
 namespace local_xp\local\controller;
 
+use block_xp\di;
+use block_xp\local\division\division;
+use DateTimeImmutable;
+use local_xp\local\config\default_course_world_config;
+
 /**
  * Ladder controller class.
  *
@@ -35,10 +40,25 @@ namespace local_xp\local\controller;
  */
 class ladder_controller extends \block_xp\local\controller\ladder_controller {
 
+    /** @var bool */
+    protected $isdefaultiso = true;
+
     protected function define_optional_params() {
         $params = parent::define_optional_params();
         $params[] = ['download', '', PARAM_ALPHA, false];
+        $params[] = ['downloadfilename', '', PARAM_NOTAGS, false];
         return $params;
+    }
+
+    protected function post_login() {
+        parent::post_login();
+
+        $ladderiso = (int) $this->world->get_config()->get('ladderiso');
+        $this->isdefaultiso = $ladderiso === default_course_world_config::LEADERBOARD_ISO_DEFAULT;
+    }
+
+    protected function is_supporting_groups() {
+        return $this->isdefaultiso;
     }
 
     protected function pre_content() {
@@ -58,6 +78,20 @@ class ladder_controller extends \block_xp\local\controller\ladder_controller {
         }
     }
 
+    protected function get_division(): ?division {
+        return $this->isdefaultiso ? parent::get_division() : null;
+    }
+
+    protected function get_download_filename(): string {
+        $filename = $this->get_param('downloadfilename');
+        if ($filename) {
+            return $filename;
+        }
+
+        $division = $this->get_division();
+        return 'xp-leaderboard-' . $this->world->get_context()->id . ($division ? ('-' . $division->get_id()) : '');
+    }
+
     /**
      * Get the table.
      *
@@ -71,8 +105,7 @@ class ladder_controller extends \block_xp\local\controller\ladder_controller {
             $this->get_renderer(),
             [
                 'context' => $this->world->get_context(),
-                'identitymode' => $this->world->get_config()->get('identitymode'),
-                'rankmode' => $this->world->get_config()->get('rankmode'),
+                'config' => $this->world->get_config(),
             ],
             $USER->id
         );
@@ -83,12 +116,68 @@ class ladder_controller extends \block_xp\local\controller\ladder_controller {
         $canmanage = $this->world->get_access_permissions()->can_manage();
         if ($canmanage) {
             $table->is_downloadable(true);
-            $table->is_downloading($this->get_param('download'), 'xp_ladder_' . $this->world->get_courseid()
-                . '_' . $this->get_groupid());
-            $table->show_download_buttons_at([TABLE_P_BOTTOM]);
+            $table->is_downloading($this->get_param('download'), $this->get_download_filename());
+            $table->show_download_buttons_at([]);
         }
 
         return $table;
+    }
+
+    protected function print_group_menu() {
+        if (!$this->is_supporting_groups()) {
+            return;
+        }
+        parent::print_group_menu();
+    }
+
+    /**
+     * Get the menu items.
+     *
+     * @return array
+     */
+    protected function get_page_menu_items() {
+        $items = parent::get_page_menu_items();
+        return array_merge($items, [
+            [
+                'label' => get_string('export', 'block_xp'),
+                'data-xp-action' => 'open-form',
+                'data-form-class' => 'local_xp\\form\\table_download',
+                'data-form-args__contextid' => $this->world->get_context()->id,
+                'data-form-args__filename' => $this->get_download_filename(),
+                'data-form-args__pageurl' => $this->pageurl->out_as_local_url(false),
+                'data-modal-buttons__save__label' => get_string('export', 'block_xp'),
+                'href' => '#',
+            ],
+        ]);
+    }
+
+    protected function page_ranking() {
+        global $USER;
+
+        $output = $this->get_renderer();
+        $canmanage = $this->world->get_access_permissions()->can_manage();
+        $state = di::get(\local_xp\local\leaderboard\participation\service_factory::class)
+            ->get_for_context($this->world->get_context())
+            ->get_state($USER->id);
+
+        if (!$state->is_participating()) {
+            if (!$canmanage) {
+                $canjoin = !$state->is_state_locked();
+                $lockeduntil = $state->get_state_locked_until();
+                $showjoin = $canjoin || ($lockeduntil && $lockeduntil < (new DateTimeImmutable("+2 weeks")));
+                $dateformat = get_string('strftimedayshort', 'core_langconfig');
+                echo $output->render_from_template('local_xp/leaderboard-not-participating', [
+                    'contextid' => $this->world->get_context()->id,
+                    'showjoin' => $showjoin,
+                    'canjoin' => $canjoin,
+                    'joindateformatted' => $lockeduntil ? userdate($lockeduntil->getTimestamp(), $dateformat) : '',
+                ]);
+                return;
+            }
+            // Managers who opt-out are presently not being informated that they have left the leaderboard.
+        }
+
+        parent::page_ranking();
     }
 
 }

@@ -251,7 +251,7 @@ class local_xp_renderer extends block_xp_renderer {
         echo html_writer::end_tag('div');
     }
 
-    public function xp($points, currency $currency = null) {
+    public function xp($points, ?currency $currency = null) {
         if (!$currency) {
             $courseid = $this->page->course->id;
             $currency = $this->get_course_currency_factory()->get_currency($courseid);

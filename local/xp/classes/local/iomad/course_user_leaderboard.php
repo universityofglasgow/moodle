@@ -39,6 +39,9 @@ use block_xp\local\xp\levels_info;
  */
 class course_user_leaderboard extends \local_xp\local\leaderboard\course_user_leaderboard {
 
+    /** @var int The company ID. */
+    protected $companyid;
+
     /**
      * Constructor.
      *
@@ -56,20 +59,28 @@ class course_user_leaderboard extends \local_xp\local\leaderboard\course_user_le
             levels_info $levelsinfo,
             $courseid,
             array $columns,
-            ranker $ranker = null,
+            ?ranker $ranker = null,
             $groupid = 0,
             $userstatefactory = null,
             $companyid = 0) {
 
         parent::__construct($db, $levelsinfo, $courseid, $columns, $ranker, $groupid, $userstatefactory);
 
-        // Filter per company.
-        $this->where .= "AND x.userid IN (
-                                SELECT userid
-                                  FROM {company_users}
-                                 WHERE companyid = :companyid
-                             )";
-        $this->params['companyid'] = $companyid;
+        $this->companyid = (int) $companyid;
+    }
+
+    protected function get_user_ids_sql($useridalias) {
+        [$psql, $pparams] = parent::get_user_ids_sql($useridalias);
+
+        $sql = "$useridalias IN (SELECT userid
+                                   FROM {company_users}
+                                  WHERE companyid = :iomadcompanyid)";
+        $params = ['iomadcompanyid' => $this->companyid];
+
+        $finalsql = '(' . implode(') AND (', [$psql, $sql]) . ')';
+        $finalparams = $pparams + $params;
+
+        return [$finalsql, $finalparams];
     }
 
 }

@@ -49,6 +49,18 @@ class default_course_world_config extends immutable_config {
     /** The progress bar progresses towards the ultimate level. */
     const PROGRESS_BAR_MODE_OVERALL = 1;
 
+    /** The leaderboard isolation by default. */
+    const LEADERBOARD_ISO_DEFAULT = 0;
+    /** The leaderboard isolation from cohorts. */
+    const LEADERBOARD_ISO_COHORTS = 1;
+
+    /** The leaderboard participation is forced. */
+    const LEADERBOARD_PARTICIPATION_FORCED = 0;
+    /** The leaderboard participation is opt-out. */
+    const LEADERBOARD_PARTICIPATION_OPTOUT = 1;
+    /** The leaderboard participation is opt-in. */
+    const LEADERBOARD_PARTICIPATION_OPTIN = 2;
+
     /** The group ladder disabled. */
     const GROUP_LADDER_NONE = 0;
     /** The group ladder using course groups. */
@@ -80,6 +92,9 @@ class default_course_world_config extends immutable_config {
             'badgetheme' => '',
             'currencystate' => self::CURRENCY_USE_DEFAULT,
             'currencytheme' => '',
+
+            'ladderiso' => self::LEADERBOARD_ISO_DEFAULT,
+            'ladderparticipation' => self::LEADERBOARD_PARTICIPATION_FORCED,
 
             // This is the legacy name that we've kept to simpligy upgrades and restores, however now it
             // no longer only represents whether the group ladder is enabled, it also determines the source

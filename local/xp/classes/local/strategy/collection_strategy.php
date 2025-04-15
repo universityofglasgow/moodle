@@ -66,7 +66,7 @@ class collection_strategy implements event_collection_strategy {
      * @param maker|null $actionmaker The action maker.
      */
     public function __construct(course_world_factory $worldfactory, $contextmode,
-            collection_target_resolver_from_event $targetresolver, maker $actionmaker = null) {
+            collection_target_resolver_from_event $targetresolver, ?maker $actionmaker = null) {
 
         $allowedcontexts = [CONTEXT_COURSE, CONTEXT_MODULE];
         if (!empty($contextmode) && $contextmode == CONTEXT_SYSTEM) {

@@ -53,8 +53,12 @@ class log_table extends table_sql {
     /** @var string The key of the user ID column. */
     public $useridfield = 'userid';
 
+    /** @var \moodle_database The DB. */
+    protected $db;
     /** @var context The context. */
     protected $context;
+    /** @var int Group ID. */
+    protected $groupid;
     /** @var int Filter by user ID, falsy means not filtering. */
     protected $filterbyuserid;
     /** @var renderer_base The renderer. */
@@ -71,30 +75,44 @@ class log_table extends table_sql {
      *
      * @param context $context The context.
      * @param int $groupid The group ID.
-     * @param string|null $downloadformat The download format.
+     * @param string|null|array $downloadformat The download format, or a tuple with format and filename.
      * @param team_membership_resolver|null $teamresolver The team resolver.
      * @param int|null $userid The user ID to filter by.
      */
     public function __construct(context $context, $groupid, $downloadformat = null,
-            team_membership_resolver $teamresolver = null, $userid = null) {
+            ?team_membership_resolver $teamresolver = null, $userid = null) {
 
-                $userid = max(0, (int) $userid);
+        $userid = max(0, (int) $userid);
         parent::__construct('block_xp_log_' . $userid);
 
         $this->context = $context;
+        $this->groupid = $groupid;
         $this->filterbyuserid = $userid;
         $this->renderer = \block_xp\di::get('renderer');
+        $this->db = \block_xp\di::get('db');
         $this->reasonmaker = new \local_xp\local\reason\maker_from_type_and_signature();
         $this->teamresolver = $teamresolver;
 
         // Downloadable things.
-        $this->is_downloading($downloadformat, 'xp_log_' . $context->id);
+        if (is_array($downloadformat)) {
+            [$downloadformat, $downloadfilename] = $downloadformat;
+        }
+        $this->is_downloading($downloadformat, $downloadfilename ?: 'xp_log_' . $context->id);
         $this->is_downloadable(true);
-        $this->show_download_buttons_at([TABLE_P_BOTTOM]);
+        $this->show_download_buttons_at([]);
 
         // Define columns.
         $this->define_columns($this->get_columns());
         $this->define_headers($this->get_headers());
+
+        // Define various table settings.
+        $this->sortable(true, 'time', SORT_DESC);
+        $this->collapsible(false);
+    }
+
+    protected function init_sql() {
+        $context = $this->context;
+        $groupid = $this->groupid;
 
         // Define SQL.
         $sqlfrom = '';
@@ -113,20 +131,20 @@ class log_table extends table_sql {
                         ON x.userid = u.id';
         }
 
+        // User filter.
+        [$usersql, $userparams] = $this->generate_user_filter_sql();
+
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u') . ', u.email, u.idnumber, u.username';
+        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u') . ', u.email, u.idnumber, u.username, u.suspended';
         $this->sql->from = $sqlfrom;
-        $this->sql->where = 'contextid = :contextid';
-        $this->sql->params = array_merge(['contextid' => $context->id], $sqlparams);
+        $this->sql->where = "u.deleted = 0 AND x.contextid = :contextid AND $usersql";
+        $this->sql->params = array_merge(['contextid' => $context->id], $userparams, $sqlparams);
         if ($this->filterbyuserid) {
-            $this->sql->where .= ' AND userid = :userid';
+            $this->sql->where .= ' AND x.userid = :userid';
             $this->sql->params = array_merge($this->sql->params, ['userid' => $this->filterbyuserid]);
         }
 
-        // Define various table settings.
-        $this->sortable(true, 'time', SORT_DESC);
-        $this->collapsible(false);
     }
 
     /**
@@ -199,6 +217,64 @@ class log_table extends table_sql {
     }
 
     /**
+     * Generate the user filter SQL.
+     *
+     * @return array
+     */
+    protected function generate_user_filter_sql() {
+        $filterset = $this->get_filterset();
+        if (!$filterset || !$filterset->has_filter('term')) {
+            return ['1=1', []];
+        }
+
+        $term = trim($filterset->get_filter('term')->current());
+        if (empty($term)) {
+            return ['1=1', []];
+        }
+
+        $wheres = [];
+        $params = [];
+
+        $nameoptions = [
+            ['firstname' => $term],
+            ['lastname' => $term],
+        ];
+        $nameparts = explode(' ', $term);
+        if (count($nameparts) > 1) {
+            for ($i = 0; $i < count($nameparts) - 1; $i++) {
+                $nameoptions[] = [
+                    'firstname' => implode(' ', array_slice($nameparts, 0, $i + 1)),
+                    'lastname' => implode(' ', array_slice($nameparts, $i + 1)),
+                ];
+            }
+        }
+        foreach ($nameoptions as $i => $option) {
+            $subparams = [];
+            $subsql = [];
+            if (!empty($option['firstname'])) {
+                $paramname = 'usertermfn' . $i;
+                $subsql[] = $this->db->sql_like("u.firstname", ':' . $paramname, false, false);
+                $subparams[$paramname] = $this->db->sql_like_escape($option['firstname']) . '%';
+            }
+            if (!empty($option['lastname'])) {
+                $paramname = 'usertermln' . $i;
+                $subsql[] = $this->db->sql_like("u.lastname", ':' . $paramname, false, false);
+                $subparams[$paramname] = $this->db->sql_like_escape($option['lastname']) . '%';
+            }
+            if (!empty($subsql)) {
+                $wheres[] = '(' . implode(' AND ', $subsql) . ')';
+                $params = array_merge($params, $subparams);
+            }
+        }
+
+        if (empty($wheres)) {
+            return ['1=1', []];
+        }
+
+        return ['((' . implode(') OR (', $wheres) . '))', $params];
+    }
+
+    /**
      * Get the columns.
      *
      * @return array
@@ -237,14 +313,17 @@ class log_table extends table_sql {
      * @return string Output produced.
      */
     public function col_fullname($row) {
-        $fullname = parent::col_fullname($row);
+        $o = parent::col_fullname($row);
+        if ($row->suspended) {
+            $o .= ' (' . get_string('suspended', 'core') . ')';
+        }
         if (!$this->filterbyuserid && !$this->is_downloading()) {
-            $fullname .= ' ' . $this->renderer->action_icon(
+            $o .= ' ' . $this->renderer->action_icon(
                 new moodle_url($this->baseurl, ['userid' => $row->userid]),
                 new pix_icon('i/search', get_string('filterbyuser', 'block_xp'))
             );
         }
-        return $fullname;
+        return $o;
     }
 
     /**
@@ -349,6 +428,18 @@ class log_table extends table_sql {
             return $row->points;
         }
         return $this->renderer->xp($row->points);
+    }
+
+    /**
+     * Out.
+     *
+     * @param int $pagesize The page size.
+     * @param bool $initialbars Whether to use initial bars.
+     * @param string $downloadhelpbutton What is this?
+     */
+    public function out($pagesize, $initialbars, $downloadhelpbutton = '') {
+        $this->init_sql();
+        return parent::out($pagesize, $initialbars, $downloadhelpbutton);
     }
 
     /**
