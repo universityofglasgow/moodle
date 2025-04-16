@@ -25,6 +25,7 @@
  */
 
 $string['pluginname'] = 'Manage optional plugins';
+$string['dependencies'] = 'Depends on';
 $string['pagetitle'] = 'Manage optional plugins';
 $string['exportfiles'] = 'Export optional plugins';
 $string['exportpluginsstring'] = 'Export plugin list';
