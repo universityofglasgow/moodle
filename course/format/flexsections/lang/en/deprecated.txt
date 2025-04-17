@@ -1,0 +1,4 @@
+addsubsectionfor,format_flexsections
+cancelmoving,format_flexsections
+removemarker,format_flexsections
+setmarker,format_flexsections

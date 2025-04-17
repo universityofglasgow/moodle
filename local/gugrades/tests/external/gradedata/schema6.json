@@ -1,0 +1,68 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Summer exam",
+                "category": true,
+                "weight": 1.0,
+                "droplow": 2,
+                "children": [
+                    {
+                        "name": "Question 1",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 100
+                    },
+                    {
+                        "name": "Question 2",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 50
+                    },
+                    {
+                        "name": "Question 3",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 75
+                    },
+                    {
+                        "name": "Question 4",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 15
+                    },
+                    {
+                        "name": "Question 5",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 15
+                    },
+                    {
+                        "name": "Question 6",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 15
+                    },
+                    {
+                        "name": "Question 7",
+                        "category": false,
+                        "type": "points",
+                        "weight": 1.0,
+                        "grademax": 15
+                    }
+                ]
+            }
+
+        ]
+    }
+]

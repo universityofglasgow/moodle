@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <keysignature-identify-random>
+    <mode-random>
+      <mode>M</mode>
+      <mode>m</mode>
+    </mode-random>
+    <clef-random>
+      <clef>treble</clef>
+      <clef>bass</clef>
+    </clef-random>
+  </keysignature-identify-random>
+</options>

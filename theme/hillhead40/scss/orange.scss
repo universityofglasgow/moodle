@@ -1,0 +1,57 @@
+$brand-color: #9A3A06;
+$brand-dark: darken($brand-color, 10%);
+$brand-light: lighten($brand-color, 10%);
+$login-band: lighten($brand-color, 55%);
+$login-text: #fff;
+
+body#page-login-index {
+  background-image: none !important;
+  background-color: $brand-color !important;
+}
+
+nav.navbar.fixed-top {
+  background-color: $brand-color !important;
+  border-color: $brand-dark;
+}
+
+nav.navbar button.navbar-toggler {
+  background-color: $brand-dark;
+  border-color: $brand-dark;
+}
+
+#searchform-navbar {
+  background-color: $brand-color;
+}
+
+.primary-navigation .moremenu .nav-link.active, .primary-navigation .moremenu .nav-link:hover, .primary-navigation .moremenu .nav-link:visited {
+  background-color: $brand-light;
+  border-bottom-color: $brand-dark;
+}
+
+.courseindex .courseindex-item.pageitem {
+  background-color: $brand-light;
+}
+
+.courseindex .courseindex-item.pageitem:hover {
+  background-color: $brand-dark;
+}
+
+.gu-login .rememberpass {
+  border-top-color: $login-band !important;
+}
+
+.btn-primary {
+  background-color: $brand-color !important;
+  border-color: $brand-dark !important;
+}
+
+.btn-primary:hover {
+  background-color: $brand-light !important;
+  border-color: $brand-dark !important;
+}
+
+// :active needs to come after :hover...
+.btn-primary:active {
+  background-color: $brand-color !important;
+  border-color: $brand-dark !important;
+}

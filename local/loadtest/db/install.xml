@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/loadtest/db" VERSION="20180720" COMMENT="XMLDB file for Moodle local/loadtest"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_loadtest" COMMENT="Default comment for local_loadtest, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="host" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="host machine tested"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="load1" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="2" COMMENT="1 minute load average"/>
+        <FIELD NAME="load5" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="2" COMMENT="5 minute load averagd"/>
+        <FIELD NAME="load15" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="2" COMMENT="15 minute load average"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

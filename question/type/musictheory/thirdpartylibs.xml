@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>yui/src/musictheoryui/</location>
+        <name>Music Theory GUI</name>
+        <version>1.1.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
+    <library>
+        <location>yui/src/musictheorykeyboardui/</location>
+        <name>Keyboard Input</name>
+        <version>1.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
+    <library>
+        <location>lib/MusicTheory/</location>
+        <name>Music Theory PHP library</name>
+        <version>1.0.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
+</libraries>

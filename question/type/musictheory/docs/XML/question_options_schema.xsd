@@ -1,0 +1,456 @@
+<?xml version="1.0"?>
+
+<xs:schema version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- ELEMENTS -->
+
+  <xs:element name="options">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="note-write" type="note-write-identify" />
+        <xs:element name="note-write-random" type="note-write-identify-random" />
+        <xs:element name="note-identify" type="note-write-identify" />
+        <xs:element name="note-identify-random" type="note-write-identify-random" />
+        <xs:element name="keyboard-input" type="keyboard-input-identify" />
+        <xs:element name="keysignature-write" type="keysignature-write-identify" />
+        <xs:element name="keysignature-write-random" type="keysignature-write-identify-random" />
+        <xs:element name="keysignature-identify" type="keysignature-write-identify" />
+        <xs:element name="keysignature-identify-random" type="keysignature-write-identify-random" />
+        <xs:element name="interval-write" type="interval-write-identify" />
+        <xs:element name="interval-write-random" type="interval-write-random" />
+        <xs:element name="interval-identify" type="interval-write-identify" />
+        <xs:element name="interval-identify-random" type="interval-identify-random" />
+        <xs:element name="scale-write" type="scale-write" />
+        <xs:element name="scale-write-random" type="scale-write-random" />
+        <xs:element name="scale-identify" type="scale-identify" />
+        <xs:element name="scale-identify-random" type="scale-identify-random" />
+        <xs:element name="chordquality-write" type="chordquality-write-identify" />
+        <xs:element name="chordquality-write-random" type="chordquality-write-identify-random" />
+        <xs:element name="chordquality-identify" type="chordquality-write-identify" />
+        <xs:element name="chordquality-identify-random" type="chordquality-write-identify-random" />
+        <xs:element name="harmonicfunction-write" type="harmonic-function-write" />
+        <xs:element name="harmonicfunction-write-random" type="harmonic-function-write-identify-random" />
+        <xs:element name="harmonicfunction-identify" type="harmonic-function-identify" />
+        <xs:element name="harmonicfunction-identify-random" type="harmonic-function-write-identify-random" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- TYPES -->
+
+  <!-- Complex types -->
+
+  <xs:complexType name="note-write-identify">
+    <xs:all>
+      <xs:element name="considerregister" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="includealterations" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="note" type="note-regoptional" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="note-write-identify-random">
+    <xs:all>
+      <xs:element name="considerregister" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="includealterations" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-note-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="keyboard-input-identify">
+    <xs:all>
+      <xs:element name="includestaticnote" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="staticnote" type="note-regoptional" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="considerregister" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="note" type="note-regoptional" minOccurs="1" maxOccurs="1"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="keysignature-write-identify">
+    <xs:all>
+      <xs:element name="key" type="key" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="keysignature-write-identify-random">
+    <xs:all>
+      <xs:element name="mode-random" type="mode-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-keysign-mode">
+          <xs:selector xpath="mode"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-keysign-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="interval-write-identify">
+    <xs:all>
+      <xs:element name="givennote" type="notereg" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="direction" type="direction" minOccurs="1" maxOccurs="1" />
+      <xs:element name="quality" type="quality" minOccurs="1" maxOccurs="1" />
+      <xs:element name="size" type="size" minOccurs="1" maxOccurs="1" />
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="interval-write-random">
+    <xs:all>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="direction-random" type="direction-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-write-direction">
+          <xs:selector xpath="direction"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="size-random" type="size-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-write-size">
+          <xs:selector xpath="size"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="quality-random" type="quality-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-write-quality">
+          <xs:selector xpath="quality"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="interval-identify-random">
+    <xs:all>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-identify-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="size-random" type="size-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-identify-size">
+          <xs:selector xpath="size"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="quality-random" type="quality-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-interval-identify-quality">
+          <xs:selector xpath="quality"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="scale-write">
+    <xs:sequence>
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="1" />
+      <xs:element name="tonic" type="notereg" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="displaykeysignature" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="scaletype" type="scaletype" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="scale-write-random">
+    <xs:sequence>
+      <xs:element name="displaykeysignature" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-scale-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="scaletype-random" type="scaletype-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-scale-scaletype">
+          <xs:selector xpath="scaletype"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="scale-identify">
+    <xs:complexContent>
+      <xs:extension base="scale-write">
+        <xs:sequence>
+          <xs:element name="possiblescalesinresponse" type="possible-scale-types" minOccurs="1" maxOccurs="1">
+            <xs:unique name="unique-scaleid-possiblescalesinresponse">
+              <xs:selector xpath="scaletype"/>
+              <xs:field xpath="."/>
+            </xs:unique>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="scale-identify-random">
+    <xs:complexContent>
+      <xs:extension base="scale-write-random">
+        <xs:sequence>
+          <xs:element name="possiblescalesinresponse" type="possible-scale-types" minOccurs="1" maxOccurs="1">
+            <xs:unique name="unique-scaleidrandom-possiblescalesinresponse">
+              <xs:selector xpath="scaletype"/>
+              <xs:field xpath="."/>
+            </xs:unique>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="chordquality-write-identify">
+    <xs:all>
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="1" />
+      <xs:element name="chordroot" type="note-regoptional" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="chordquality" type="chordquality" minOccurs="1" maxOccurs="1" />
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="harmonic-function-write">
+    <xs:sequence>
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="1" />
+      <xs:element name="key" type="key" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="displaykeysignature" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="harmonicfunction" type="harmonicfunction" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="chordquality-write-identify-random">
+    <xs:all>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-chordquality-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="chordquality-random" type="chordquality-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-chordquality-chordquality">
+          <xs:selector xpath="chordquality"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="harmonic-function-write-identify-random">
+    <xs:all>
+      <xs:element name="clef-random" type="clef-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-harmonicfunction-clef">
+          <xs:selector xpath="clef"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="mode-random" type="mode-random-choice" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-harmonicfunction-mode">
+          <xs:selector xpath="mode"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+      <xs:element name="displaykeysignature" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="harmonicfunction-random" type="harmonicfunction-types" minOccurs="1" maxOccurs="1">
+        <xs:unique name="unique-harmonicfunction-harmonicfunction">
+          <xs:selector xpath="harmonicfunctiontype"/>
+          <xs:field xpath="."/>
+        </xs:unique>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="harmonic-function-identify">
+    <xs:complexContent>
+      <xs:extension base="harmonic-function-write">
+        <xs:sequence>
+          <xs:element name="harmonicfunction-responsetypes" type="harmonicfunction-types" minOccurs="1" maxOccurs="1">
+            <xs:unique name="unique-harmonicfunction-harmonicfunctionresponsetypes">
+              <xs:selector xpath="harmonicfunctiontype"/>
+              <xs:field xpath="."/>
+            </xs:unique>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="note">
+    <xs:sequence>
+      <xs:element name="letter" type="lettername"/>
+      <xs:element name="accidental" type="accidental"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="notereg">
+    <xs:complexContent>
+      <xs:extension base="note">
+        <xs:sequence>
+          <xs:element name="register" type="register"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="note-regoptional">
+    <xs:complexContent>
+      <xs:extension base="note">
+        <xs:sequence>
+          <xs:element name="register" type="register" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="mode-random-choice">
+    <xs:sequence>
+      <xs:element name="mode" type="mode" minOccurs="1" maxOccurs="2" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="clef-random-choice">
+    <xs:sequence>
+      <xs:element name="clef" type="clef" minOccurs="1" maxOccurs="4" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="direction-random-choice">
+    <xs:sequence>
+      <xs:element name="direction" type="direction" minOccurs="1" maxOccurs="2" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="size-random-choice">
+    <xs:sequence>
+      <xs:element name="size" type="size" minOccurs="1" maxOccurs="12" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="quality-random-choice">
+    <xs:sequence>
+      <xs:element name="quality" type="quality" minOccurs="1" maxOccurs="5" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="scaletype-random-choice">
+    <xs:sequence>
+      <xs:element name="scaletype" type="scaletype" minOccurs="1" maxOccurs="4" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="possible-scale-types">
+    <xs:sequence>
+      <xs:element name="possiblescaletype" type="scaletype" minOccurs="1" maxOccurs="4" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="chordquality-random-choice">
+    <xs:sequence>
+      <xs:element name="chordquality" type="chordquality" minOccurs="1" maxOccurs="4" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="harmonicfunction">
+    <xs:sequence>
+      <xs:element name="hfprimary" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="hfinvext" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="hfsecondary" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="harmonicfunction-types">
+    <xs:sequence>
+      <xs:element name="harmonicfunctiontype" type="harmonicfunctiontype" minOccurs="1" maxOccurs="15" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Simple types -->
+
+  <xs:simpleType name="lettername">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-G]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="accidental">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="n|#|b|x|bb"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="register">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="clef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="treble|bass|alto|tenor"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="mode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="M|m"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="key">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CnM|GnM|dnM|AnM|EnM|BnM|F\#M|C\#M|FnM|BbM|EbM|AbM|dbM|GbM|CbM|Anm|Enm|Bnm|F\#m|C\#m|G\#m|d\#m|A\#m|dnm|Gnm|Cnm|Fnm|Bbm|Ebm|Abm"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="direction">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="above|below"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="quality">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="M|m|P|A|d"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="size">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="2"/>
+      <xs:maxInclusive value="8"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="scaletype">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="major|natural|harmonic|melodic"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="chordquality">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="major|minor|augmented|diminished"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="harmonicfunctiontype">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="diatonictriad|dom7th|nondom7th|leadingtone7thhalfdim|leadingtone7thfullydim|secdomtriad|secdom7th|secnondomtriad|secnondom7th|seclthalfdim|secltfullydim|neapolitan|aug6th|extendeddom"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <interval-identify>
+    <givennote>
+      <letter>A</letter>
+      <accidental>n</accidental>
+      <register>2</register>
+    </givennote>
+    <direction>above</direction>
+    <quality>M</quality>
+    <size>2</size>
+    <clef>treble</clef>
+  </interval-identify>
+</options>
