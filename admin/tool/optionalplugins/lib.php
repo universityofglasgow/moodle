@@ -82,10 +82,23 @@ function export_optional_plugins() {
         'version' => get_string('version', 'core_plugin'),
         'release' => get_string('release', 'core_plugin'),
         'versionrequires' => get_string('requires', 'core_plugin'),
+        'dependencies' => get_string('dependencies', 'core_ptool_optionalpluginslugin'),
     );
 
     $filename = 'optionalplugins-moodle-' . $CFG->version;
-    return \core\dataformat::download_data($filename, 'json', $columns, $data);
+    $payload = \core\dataformat::download_data(
+        $filename,
+        'json',
+        $columns,
+        $data,
+        function($record) {
+            if (!array_key_exists('dependencies', $record)) {
+                $record['dependencies'] = null;
+            }
+            return $record;
+        }
+    );
+    return $payload;
 }
 
 /**
@@ -255,7 +268,7 @@ function validate_source_plugin_list($filecontents, $updateminmaturity, $cfgvers
 
                         // If the plugin doesn't exist, check that it can be installed into this environment...
                         $pluginisinstallable = $pluginman->is_remote_plugin_installable($sourceplugin->pluginname,
-                            $sourceplugin->version, $reason);
+                            $sourceplugin->version, $reagitson);
 
                         if ($pluginisinstallable == true) {
 
