@@ -61,64 +61,36 @@
 }
 
 .format-grid .thegrid .grid-section {
-    box-sizing: content-box;
     width: 210px;
-}
-
-.format-grid .thegrid .grid-section.card {
-    border-width: 2px;
 }
 
 .format-grid .thegrid .grid-section.currentgridsection {
     border: 2px solid var(--primary);
 }
 
-.format-grid .thegrid .grid-section-inner .card-body {
-    min-height: 0;
-}
-
-.format-grid .thegrid .grid-image-container {
-    height: 140px;
+.format-grid .thegrid .grid-current-section .grid-section-inner {
+    border: 2px solid #183404;
+    border-radius: .5rem;
 }
 
 .format-grid .thegrid .grid-image {
+    height: 140px;
     position: relative;
-}
-
-.format-grid .thegrid .grid-image.grid-scaled {
-    height: 100%;
-}
-
-/*rtl:begin:ignore*/
-.format-grid .thegrid .grid-image.grid-scaled img {
-    left: 50%;
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%,-50.25%);
-}
-/*rtl:end:ignore*/
-
-.format-grid .thegrid .grid-image .grid-badge-middle {
-    bottom: 0;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-}
-
-.format-grid .thegrid .grid-image .grid-badge-bottom {
-    bottom: 1.5rem;
-    left: 0;
-    position: absolute;
-    right: 0;
 }
 
 .format-grid .thegrid .grid-generatedimage {
     background-size: contain;
-    height: 100%;
-    position: relative;
-    width: 100%;
+    height: 140px;
 }
+
+/*rtl:begin:ignore*/
+.format-grid .thegrid .grid-image img {
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%,-50%);
+}
+/*rtl:end:ignore*/
 
 .format-grid #gridPopup .modal-dialog {
     max-width: 100%;
@@ -140,14 +112,14 @@
     border-radius: 45px;
     border-style: solid;
     border-width: 3px;
-    bottom: 1rem;
+    bottom: 8%;
     display: flex;
     flex-direction: column;
     height: 42px;
     justify-content: center;
     padding: 4px;
     position: absolute;
-    right: 0.5rem;
+    right: 8%;
     width: 42px;
 }
 

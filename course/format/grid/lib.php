@@ -56,16 +56,10 @@ class format_grid extends core_courseformat\base {
         parent::__construct($format, $courseid);
 
         if ($courseid != 1) {
-            global $USER;
-            $context = context_course::instance($courseid);
-            if (!empty($USER->editing) && has_capability('moodle/course:update', $context)) {
-                $this->coursedisplay = COURSE_DISPLAY_SINGLEPAGE;
-            } else {
-                $currentsettings = $this->get_settings();
-                if (!empty($currentsettings['popup'])) {
-                    if ($currentsettings['popup'] == 2) {
-                        $this->coursedisplay = COURSE_DISPLAY_SINGLEPAGE;
-                    }
+            $currentsettings = $this->get_settings();
+            if (!empty($currentsettings['popup'])) {
+                if ($currentsettings['popup'] == 2) {
+                    $this->coursedisplay = COURSE_DISPLAY_SINGLEPAGE;
                 }
             }
         }
@@ -330,8 +324,8 @@ class format_grid extends core_courseformat\base {
      * @return null|moodle_url
      */
     public function get_view_url($section, $options = []) {
-        global $PAGE;
         $course = $this->get_course();
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
 
         if (array_key_exists('sr', $options)) {
             $sectionno = $options['sr'];
@@ -340,17 +334,11 @@ class format_grid extends core_courseformat\base {
         } else {
             $sectionno = $section;
         }
-
-        $context = context_course::instance($course->id);
-        if (!($PAGE->user_is_editing() && has_capability('moodle/course:update', $context))) {
-            if (!empty($options['navigation']) && $sectionno !== null) {
-                // Display section on separate page when not editing.
-                $sectioninfo = $this->get_section($sectionno);
-                return new moodle_url('/course/section.php', ['id' => $sectioninfo->id]);
-            }
+        if (!empty($options['navigation']) && $sectionno !== null) {
+            // Display section on separate page.
+            $sectioninfo = $this->get_section($sectionno);
+            return new moodle_url('/course/section.php', ['id' => $sectioninfo->id]);
         }
-
-        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
         if ($this->uses_sections() && $sectionno !== null) {
             $url->set_anchor('section-'.$sectionno);
         }
@@ -421,14 +409,6 @@ class format_grid extends core_courseformat\base {
                     'type' => PARAM_INT,
                 ],
                 'sectionzeroingrid' => [
-                    'default' => 0,
-                    'type' => PARAM_INT,
-                ],
-                'sectiontitleingridbox' => [
-                    'default' => 0,
-                    'type' => PARAM_INT,
-                ],
-                'sectionbadgeingridbox' => [
                     'default' => 0,
                     'type' => PARAM_INT,
                 ],
@@ -560,38 +540,6 @@ class format_grid extends core_courseformat\base {
                 'help_component' => 'format_grid',
                 'element_type' => 'select',
                 'element_attributes' => [$sectionzeroingridvalues],
-            ];
-
-            $sectiontitleingridboxvalues = $this->generate_default_entry(
-                'sectiontitleingridbox',
-                0,
-                [
-                    1 => new lang_string('no'),
-                    2 => new lang_string('yes'),
-                ],
-            );
-            $courseformatoptionsedit['sectiontitleingridbox'] = [
-                'label' => new lang_string('sectiontitleingridbox', 'format_grid'),
-                'help' => 'sectiontitleingridbox',
-                'help_component' => 'format_grid',
-                'element_type' => 'select',
-                'element_attributes' => [$sectiontitleingridboxvalues],
-            ];
-
-            $sectionbadgeingridboxvalues = $this->generate_default_entry(
-                'sectionbadgeingridbox',
-                0,
-                [
-                    1 => new lang_string('no'),
-                    2 => new lang_string('yes'),
-                ],
-            );
-            $courseformatoptionsedit['sectionbadgeingridbox'] = [
-                'label' => new lang_string('sectionbadgeingridbox', 'format_grid'),
-                'help' => 'sectionbadgeingridbox',
-                'help_component' => 'format_grid',
-                'element_type' => 'select',
-                'element_attributes' => [$sectionbadgeingridboxvalues],
             ];
 
             $showcompletionvalues = $this->generate_default_entry(
@@ -1041,11 +989,10 @@ class format_grid extends core_courseformat\base {
      * @param bool $add Add a section or delete if false.
      */
     protected function change_gnumsections($add) {
-        $currentsettings = $this->get_settings();
         if ($add) {
-            $newgnumsetions = $currentsettings['gnumsections'] + 1;
+            $newgnumsetions = $this->settings['gnumsections'] + 1;
         } else {
-            $newgnumsetions = $currentsettings['gnumsections'] - 1;
+            $newgnumsetions = $this->settings['gnumsections'] - 1;
         }
         $data = ['gnumsections' => $newgnumsetions];
         $this->update_format_options($data);

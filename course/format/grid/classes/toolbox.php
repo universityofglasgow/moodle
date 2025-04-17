@@ -210,7 +210,7 @@ class toolbox {
             $tmpfilepath = $tmproot . '/' . $sectionfile->get_contenthash();
             $sectionfile->copy_content_to($tmpfilepath);
 
-            $crop = ($settings['imageresizemethod'] == 1) ? false : true;
+            $crop = (get_config('format_grid', 'defaultimageresizemethod') == 1) ? false : true;
 
             $newmime = $mime;
             $isdisplayedwebponly = false;
@@ -698,8 +698,7 @@ class toolbox {
             foreach ($coursesectionimages as $coursesectionimage) {
                 if ($courseid != $coursesectionimage->courseid) {
                     $courseid = $coursesectionimage->courseid;
-                    // Instead of course_get_format() for CLI usage.
-                    $format = \core_courseformat\base::instance($courseid);
+                    $format = course_get_format($courseid);
                     if (get_class($format) != 'format_grid') {
                         // Not currently in the Grid format, but was.
                         $format = null;

@@ -154,15 +154,6 @@ class content extends content_base {
             // Justification.
             $data->gridjustification = $coursesettings['gridjustification'];
 
-            // Image resize is crop.
-            $data->imageresizemethodcrop = ($coursesettings['imageresizemethod'] == 2);
-
-            // Section title in grid box.
-            $data->sectiontitleingridbox = ($coursesettings['sectiontitleingridbox'] == 2);
-
-            // Section badge in grid box.
-            $data->sectionbadgeingridbox = ($coursesettings['sectionbadgeingridbox'] == 2);
-
             // Popup.
             if (!$editing) {
                 $data->popup = false;
@@ -194,14 +185,6 @@ class content extends content_base {
                 foreach ($data->sections as $datasectionkey => $datasection) {
                     $datasectionmap[$datasection->id] = $datasectionkey;
                 }
-            } else {
-                // Visibility info for grid.
-                $sectionvisiblity = [];
-                foreach ($sections as $section) {
-                    $sectionvisiblity[$section->id] = new stdClass;
-                    $sectionvisiblity[$section->id]->ishidden = (!empty($section->ishidden));
-                    $sectionvisiblity[$section->id]->visibility = $section->visibility;
-                }
             }
             foreach ($sectionsforgrid as $section) {
                 // Do we have an image?
@@ -232,9 +215,7 @@ class content extends content_base {
 
                 // Current section?
                 if ((!empty($currentsectionid)) && ($currentsectionid == $section->id)) {
-                    $sectionimages[$section->id]->iscurrent = true;
-                    $sectionimages[$section->id]->hasbadge = true;
-                    $sectionimages[$section->id]->highlightedlabel = $format->get_section_highlighted_name();
+                    $sectionimages[$section->id]->currentsection = true;
                 }
 
                 if ($editing) {
@@ -254,13 +235,10 @@ class content extends content_base {
                     // Section name.
                     $sectionimages[$section->id]->sectionname = $section->name;
 
-                    // Visibility information.
-                    $sectionimages[$section->id]->ishidden = $sectionvisiblity[$section->id]->ishidden;
-                    if ($sectionimages[$section->id]->ishidden) {
-                        $sectionimages[$section->id]->visibility = $sectionvisiblity[$section->id]->visibility;
-                        $sectionimages[$section->id]->hiddenfromstudents = (!empty($sectionimages[$section->id]->visibility->hiddenfromstudents));
-                        $sectionimages[$section->id]->notavailable = (!empty($sectionimages[$section->id]->visibility->notavailable));
-                        $sectionimages[$section->id]->hasbadge = true;
+                    /* User visible.  For more info, see: $format->is_section_visible($thissection) method in relation
+                       to 'hiddensections' course format setting. */
+                    if (!$section->uservisible) {
+                        $sectionimages[$section->id]->notavailable = true;
                     }
 
                     // Section break.

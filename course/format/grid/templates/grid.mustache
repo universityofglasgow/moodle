@@ -26,10 +26,7 @@
     * sectionbreak - There is a section break for this section.
     * sectionbreakheading - Section break heading.
     * number - Section number.
-    * imageresizemethodcrop - Image resize method is crop.
-    * sectiontitleingridbox - Show the section title?
-    * sectionbadgeingridbox - Show the section bagde if any?
-    * iscurrent - Current section?
+    * currentsection - Current section?
     * sectionurl - Section URL.
     * sectionname - Section name.
     * imageuri - Image URI.
@@ -55,7 +52,7 @@
                 "sectionbreak": true,
                 "sectionbreakheading": "This is the section heading",
                 "number": 42,
-                "iscurrent": true,
+                "currentsection": true,
                 "sectionurl": "https://mymoodle/course/view.php?id=4&section=2",
                 "sectionname": "The second section",
                 "imageuri": "https://mymoodle/pluginfile.php/358/format_grid/displayedsectionimage/42/1/ducking.jpg.webp",
@@ -64,9 +61,6 @@
                 "sectioncompletionmarkup": ""
             }
         ],
-        "imageresizemethodcrop": true,
-        "sectiontitleingridbox": true,
-        "sectionbadgeingridbox": true,
         "showcompletion": true
     }
 }}
@@ -79,61 +73,38 @@
     {{/sectionbreakheading}}
     <div class="thegrid d-flex flex-wrap grid-justify-{{gridjustification}}">
     {{/sectionbreak}}
-    <div id="section-{{number}}" class="grid-section card{{#iscurrent}} currentgridsection{{/iscurrent}}" title="{{sectionname}}">
+    <div id="section-{{number}}" class="grid-section card{{#currentsection}} currentgridsection{{/currentsection}}">
         {{^popup}}
-        {{#notavailable}}<div class="grid-section-inner d-flex flex-column h-100">{{/notavailable}}
-        {{^notavailable}}<a class="grid-section-inner d-flex flex-column h-100" href="{{sectionurl}}">{{/notavailable}}
+        {{#notavailable}}<div class="grid-section-inner">{{/notavailable}}
+        {{^notavailable}}<a class="grid-section-inner" href="{{sectionurl}}">{{/notavailable}}
         {{/popup}}
         {{#popup}}
-        <div class="grid-modal grid-section-inner d-flex flex-column h-100" data-toggle="modal" data-target="#gridPopup" data-section="{{number}}" tabindex="0">
+        <div class="grid-modal grid-section-inner" data-toggle="modal" data-target="#gridPopup" data-section="{{number}}" tabindex="0">
         {{/popup}}
-            <div class="card-body p-0">
-                {{#sectiontitleingridbox}}
-                <div class="card-header h-100">
-                    <h3 class="h4 text-truncate">{{{sectionname}}}</h3>
-                    {{#sectionbadgeingridbox}}{{#hasbadge}}
-                    <div data-region="sectionbadges" class="sectionbadges d-flex">
-                        {{$ core_courseformat/local/content/section/badges }}
-                            {{> core_courseformat/local/content/section/badges }}
-                        {{/ core_courseformat/local/content/section/badges }}
-                    </div>
-                    {{/hasbadge}}{{/sectionbadgeingridbox}}
+            <div class="card-header text-truncate" title="{{sectionname}}">{{{sectionname}}}{{#notavailable}}
+                <div data-region="sectionbadges" class="sectionbadges d-flex">
+                    {{$ core_courseformat/local/content/section/badges }}
+                        {{> core_courseformat/local/content/section/badges }}
+                    {{/ core_courseformat/local/content/section/badges }}
                 </div>
-                {{/sectiontitleingridbox}}
+            {{/notavailable}}</div>
+            {{#imageuri}}
+            <div class="grid-image card-img-bottom text-center">
+                <img src="{{imageuri}}" alt="{{imagealttext}}" loading="lazy">
+                {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
             </div>
-            <div class="grid-image-container">
-                {{#imageuri}}
-                <div class="grid-image{{^imageresizemethodcrop}} grid-scaled{{/imageresizemethodcrop}} text-center">
-                    <img{{#imageresizemethodcrop}} class="card-img-bottom{{^sectiontitleingridbox}} card-img-top{{/sectiontitleingridbox}}"{{/imageresizemethodcrop}} src="{{imageuri}}" alt="{{imagealttext}}" loading="lazy">
-                    {{^sectiontitleingridbox}}{{#sectionbadgeingridbox}}{{#hasbadge}}
-                    <div data-region="sectionbadges" class="sectionbadges d-flex {{^sectioncompletionmarkup}}justify-content-center align-items-center grid-badge-middle{{/sectioncompletionmarkup}}{{#sectioncompletionmarkup}}ml-2 align-items-end grid-badge-bottom{{/sectioncompletionmarkup}}">
-                        {{$ core_courseformat/local/content/section/badges }}
-                            {{> core_courseformat/local/content/section/badges }}
-                        {{/ core_courseformat/local/content/section/badges }}
-                    </div>
-                    {{/hasbadge}}{{/sectionbadgeingridbox}}{{/sectiontitleingridbox}}
-                    {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
-                </div>
-                {{/imageuri}}
-                {{#generatedimageuri}}
-                <div class="grid-generatedimage card-img-bottom{{^sectiontitleingridbox}} card-img-top{{/sectiontitleingridbox}} text-center" style="background-image: url('{{generatedimageuri}}');">
-                    {{^sectiontitleingridbox}}{{#sectionbadgeingridbox}}{{#hasbadge}}
-                    <div data-region="sectionbadges" class="sectionbadges d-flex justify-content-center align-items-center h-100">
-                        {{$ core_courseformat/local/content/section/badges }}
-                            {{> core_courseformat/local/content/section/badges }}
-                        {{/ core_courseformat/local/content/section/badges }}
-                    </div>
-                    {{/hasbadge}}{{/sectionbadgeingridbox}}{{/sectiontitleingridbox}}
-                    {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
-                </div>
-                {{/generatedimageuri}}
-                {{#imageerror}}
-                <div class="grid-image-error text-center">
-                    <p><small>{{imageerror}}</small></p>
-                    {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
-                </div>
-                {{/imageerror}}
+            {{/imageuri}}
+            {{#generatedimageuri}}
+            <div class="grid-generatedimage card-img-bottom text-center" style="background-image: url('{{generatedimageuri}}');">
+                {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
             </div>
+            {{/generatedimageuri}}
+            {{#imageerror}}
+            <div class="grid-image-error card-img-bottom text-center">
+                <p><small>{{imageerror}}</small></p>
+                {{#sectioncompletionmarkup}}{{{sectioncompletionmarkup}}}{{/sectioncompletionmarkup}}
+            </div>
+            {{/imageerror}}
         {{^popup}}
         {{#notavailable}}</div>{{/notavailable}}
         {{^notavailable}}</a>{{/notavailable}}
@@ -150,7 +121,7 @@
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title h4" id="gridPopupLabel">Section X</h2>
+                <h5 class="modal-title" id="gridPopupLabel">Section X</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{#str}}close, form{{/str}}">
                     <span class="fa fa-times" aria-hidden="true"></span>
                 </button>
