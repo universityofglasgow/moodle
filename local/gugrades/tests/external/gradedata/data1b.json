@@ -1,0 +1,30 @@
+[
+    {
+        "item": "Item 1",
+        "grade": 55
+    },
+    {
+        "item": "Item 3",
+        "grade": 70
+    },
+    {
+        "item": "Question 1",
+        "grade": 35.6
+    },
+    {
+        "item": "Question 2",
+        "grade": 42.8
+    },
+    {
+        "item": "Question 3",
+        "grade": 63.3
+    },
+    {
+        "item": "Item B1",
+        "grade": "B0"
+    },
+    {
+        "item": "Item B2",
+        "grade": "C0"
+    }
+]

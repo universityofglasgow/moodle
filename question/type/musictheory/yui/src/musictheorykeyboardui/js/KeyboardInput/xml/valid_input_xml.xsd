@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<xs:schema version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!-- ELEMENTS -->
+
+  <xs:element name="keyboardinput" type="keyboardinput"/>
+
+  <!-- COMPLEX TYPES -->
+
+  <xs:complexType name="keyboardinput">
+    <xs:all>
+      <xs:element name="givenkeys" type="givenkeys" minOccurs="0" />
+      <xs:element name="selectedkeys" type="selectedkeys" minOccurs="0" />
+    </xs:all>
+    <xs:attribute name="maxkeys" type="maxkeys" use="required" />
+    <xs:attribute name="canvasEditable" type="xs:boolean" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="givenkeys">
+    <xs:sequence>
+      <xs:element name="givenkey" type="key" minOccurs="0" maxOccurs="87" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="selectedkeys">
+    <xs:sequence>
+      <xs:element name="selectedkey" type="key" minOccurs="0" maxOccurs="88" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="key">
+    <xs:attribute name="pitchclass" type="pitchclass" use="required" />
+    <xs:attribute name="register" type="register" use="required" />
+  </xs:complexType>
+
+  <!-- SIMPLE TYPES -->
+
+  <xs:simpleType name="maxkeys">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="88"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="pitchclass">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="11"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="register">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="8"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

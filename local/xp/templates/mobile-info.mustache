@@ -1,0 +1,73 @@
+{{=<% %>=}}
+<%> local_xp/mobile-css %>
+
+<style>
+.mma-xp-list ion-thumbnail img {
+    max-width: 80px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    margin: auto;
+}
+
+.mma-xp-item-content {
+    align-self: flex-start;
+}
+.mma-xp-item-level p + p {
+    margin-top: 10px;
+}
+.mma-xp-item-level .name {
+    font-weight: bold;
+}
+.mma-xp-item-level .badge {
+    width: 70px;
+    height: 70px;
+}
+</style>
+
+<%#tabs%>
+    <%> local_xp/mobile-tabs %>
+<%/tabs%>
+
+<%#instructions%>
+<ion-card>
+    <ion-card-content class="ion-text-wrap">
+        <%{.}%>
+    </ion-card-content>
+</ion-card>
+<%/instructions%>
+
+<div class="mma-xp-level-list">
+    <%#levelsinfo.levels%>
+    <ion-card class="<%# description %>with-description<%/ description %>">
+        <ion-card-content>
+            <div style="display: flex; flex-direction: column; align-items:center;">
+            <div>
+                <%> local_xp/mobile-level-small %>
+            </div>
+
+            <%#name%>
+            <div style="text-align: center; font-size: 1rem; font-weight: bold;">
+                <% . %>
+            </div>
+            <%/name%>
+
+            <div>
+                <%# xprequired %>
+                <%> local_xp/mobile-xp %>
+                <%/ xprequired %>
+            </div>
+
+            <%# description %>
+            <div style="display: flex; align-items: center">
+                <div style="margin-top: 0.5rem; max-width: 500px;">
+                    <p><% . %></p>
+                </div>
+            </div>
+            <%/ description %>
+
+            </div>
+        </ion-card-content>
+    </ion-card>
+    <%/levelsinfo.levels%>
+</div>

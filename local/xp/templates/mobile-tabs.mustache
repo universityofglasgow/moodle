@@ -1,0 +1,30 @@
+{{=<% %>=}}
+<%#enabled%>
+<div class="mma-xp-tabs-bar" margin-bottom>
+  <ion-tab-bar>
+
+    <ion-tab-button tab="state" core-site-plugins-new-content component="local_xp" method="state_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#stateactive%>selected<%/stateactive%>>
+      <ion-label><%#str%>mylevel, local_xp<%/str%></ion-label>
+    </ion-tab-button>
+
+    <%#hasinfo%>
+    <ion-tab-button tab="info" core-site-plugins-new-content component="local_xp" method="info_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#infoactive%>selected<%/infoactive%>>
+      <ion-label><%#str%>navinfos, block_xp<%/str%></ion-label>
+    </ion-tab-button>
+    <%/hasinfo%>
+
+    <%#hasladder%>
+    <ion-tab-button tab="ladder" core-site-plugins-new-content component="local_xp" method="ladder_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#ladderactive%>selected<%/ladderactive%>>
+      <ion-label><%#str%>ladder, block_xp<%/str%></ion-label>
+    </ion-tab-button>
+    <%/hasladder%>
+
+    <%#hasgroupladder%>
+    <ion-tab-button tab="groupladder" core-site-plugins-new-content component="local_xp" method="group_ladder_page" samePage="true" [args]="{courseid: <% courseid %>}" <%#groupladderactive%>selected<%/groupladderactive%>>
+      <ion-label><%#str%>navgroupladder, local_xp<%/str%></ion-label>
+    </ion-tab-button>
+    <%/hasgroupladder%>
+
+  </ion-tab-bar>
+</div>
+<%/enabled%>

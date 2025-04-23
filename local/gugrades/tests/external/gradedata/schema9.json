@@ -1,0 +1,100 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Item 1",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 2",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 3",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Category 1",
+                "category": true,
+                "weight": 0.5,
+                "children": [
+                    {
+                        "name": "Item 4",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Item 5",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Item 6",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Item 7",
+                        "category": false,
+                        "type": "schedulea"
+                    }
+                ]
+            },
+            {
+                "name": "Category 2",
+                "category": true,
+                "weight": 0.5,
+                "children": [
+                    {
+                        "name": "Item 8",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Item 9",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Item 10",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Item 11",
+                        "category": false,
+                        "type": "schedulea"
+                    }
+                ]
+            },
+            {
+                "name": "Item 4",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 5",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            },
+            {
+                "name": "Item 6",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.5
+            }
+        ]
+    }
+]

@@ -1,0 +1,46 @@
+{{=<% %>=}}
+
+<%> local_xp/mobile-css %>
+
+<style>
+</style>
+
+<%#tabs%>
+    <%> local_xp/mobile-tabs %>
+<%/tabs%>
+
+<div class="mma-xp-state ion-margin-bottom">
+    <ion-card>
+        <ion-card-header>
+            <ion-card-title><%#str%>notparticipating, block_xp<%/str%></ion-card-title>
+        </ion-card-header>
+        <ion-list>
+            <ion-item class="">
+                <ion-label><%#str%>onlyparticipantscanaccessranking, block_xp<%/str%></ion-label>
+            </ion-item>
+            <%#showjoin%>
+                <ion-item>
+                    <ion-label>
+                        <ion-button
+                            class="ion-no-margin"
+                            core-site-plugins-call-ws
+                            name="local_xp_join_leaderboard"
+                            [params]="{contextid: <% contextid %>}"
+                            [preSets]="{getFromCache: 0, saveToCache: 0}"
+                            confirmMessage="<%#str%>joinleadeboardconfirmnote, block_xp<%/str%>"
+                            refreshOnSuccess="true"
+                            <%^canjoin%>disabled<%/canjoin%>
+                        ><%#str%>joinleaderboard, block_xp<%/str%></ion-button>
+                    </ion-label>
+                </ion-item>
+                <%# joindateformatted %>
+                    <ion-item>
+                        <ion-label color="medium">
+                            <%#str%> canjoinfromdatex, block_xp, <% joindateformatted %> <%/str%>
+                        </ion-label>
+                    </ion-item>
+                <%/ joindateformatted %>
+            <%/showjoin%>
+        </ion-list>
+    </ion-card>
+</div>

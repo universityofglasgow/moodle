@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<options
+  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+  xsi:noNamespaceSchemaLocation='question_options_schema.xsd'>
+  <note-identify-random>
+    <considerregister>false</considerregister>
+    <includealterations>true</includealterations>
+    <clef-random>
+      <clef>bass</clef>
+      <clef>treble</clef>
+    </clef-random>
+  </note-identify-random>
+</options>

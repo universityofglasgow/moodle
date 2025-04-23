@@ -1,0 +1,43 @@
+#page-mod-zoom-view a .btn-primary .icon {
+    color: white;
+}
+
+#mod-zoom-old-meetings-header {
+    float: left;
+}
+
+#mod-zoom-meeting-room-participants,
+#mod-zoom-meeting-room-participant-groups {
+    list-style-type: none;
+}
+
+#mod-zoom-meeting-rooms-list .empty-alert {
+    margin: auto;
+    width: 80%;
+    padding: 40% 0;
+}
+
+#mod-zoom-breakout-rooms-table {
+    width: 100%;
+    height: 400px;
+}
+
+#mod-zoom-breakout-rooms-table td:first-child {
+    width: 20%;
+}
+
+#mod-zoom-breakout-rooms-table td:nth-child(2) {
+    width: 80%;
+}
+
+#mod-zoom-breakout-rooms-table .delete-room {
+    margin: -34px 5px;
+    background: transparent;
+    border: none;
+}
+
+#page-mod-zoom-participants .mimetypeicon {
+    width: 24px;
+    height: 24px;
+}
+

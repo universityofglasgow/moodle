@@ -1,0 +1,687 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Container.
+ *
+ * @package    local_xp
+ * @copyright  2017 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace local_xp\local;
+
+/**
+ * Container.
+ *
+ * @package    local_xp
+ * @copyright  2017 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class container implements \block_xp\local\container {
+
+    /** @var array The objects supported by this container. */
+    protected static $supports = [
+        'addon' => true,
+        'backup_content_manager' => true,
+        'badge_manager' => true,
+        'badge_url_resolver' => true,
+        'badge_url_resolver_course_world_factory' => true,
+        'block_class' => true,
+        'cheatguard_form_class' => true,
+        'collection_logger' => true,
+        'collection_strategy' => true,
+        'config' => true,
+        'config_locked' => true,
+        'context_world_factory' => true,
+        'course_collection_logger_factory' => true,
+        'course_currency_factory' => true,
+        'course_world_factory' => true,
+        'course_world_grouped_leaderboard_factory' => true,
+        'course_world_leaderboard_factory' => true,
+        'course_world_leaderboard_factory_with_config' => true,
+        'course_world_navigation_factory' => true,
+        'currency' => true,
+        'currency_repository' => true,
+        'file_server' => true,
+        'drop_repository' => true,
+        'grouped_leaderboard_helper' => true,
+        'iomad_facade' => true,
+        'leaderboard_factory_maker' => true,
+        'leaderboard_form_class' => true,
+        'levels_info_factory' => true,
+        'levels_info_writer' => true,
+        'renderer' => true,
+        'router' => true,
+        'routes_config' => true,
+        'rule_dictator' => true,
+        'rule_event_lister' => true,
+        'rule_filter_handler' => true,
+        'rule_type_resolver' => true,
+        'serializer_factory' => true,
+        'settings_maker' => true,
+        'tasks_definition_maker' => true,
+        'team_membership_resolver_factory' => true,
+        'theme_repository' => true,
+        'theme_updater' => true,
+        'url_resolver' => true,
+        'usage_reporter' => true,
+
+        leaderboard\participation\service_factory::class => 'leaderboard_participation_service_factory',
+        userflag\deletion_service::class => 'userflag_deletion_service',
+    ];
+
+    /** @var array Object instances. */
+    protected $instances = [];
+    /** @var container Sub container. */
+    protected $subcontainer;
+
+    /** @var object The collection target resolver. */
+    private $usercollectiontargetresolver;
+    /** @var course_config_factory The course config factory. */
+    private $courseconfigfactory;
+
+    /**
+     * Constructor.
+     */
+    public function __construct() {
+        $this->subcontainer = new \block_xp\local\default_container();
+    }
+
+    /**
+     * Get a thing.
+     *
+     * @param string $id The thing's name.
+     * @return mixed
+     */
+    public function get($id) {
+        if (!$this->has($id)) {
+            return $this->subcontainer->get($id);
+        }
+
+        if (!isset($this->instances[$id])) {
+            $alias = static::$supports[$id] !== true ? static::$supports[$id] : $id;
+            $method = 'get_' . $alias;
+            $this->instances[$id] = $this->{$method}();
+        }
+
+        return $this->instances[$id];
+    }
+
+    /**
+     * Get the addon.
+     *
+     * @return plugin\addon
+     */
+    protected function get_addon() {
+        return new plugin\addon();
+    }
+
+    /**
+     * Get the content manager.
+     *
+     * @return backup\content_manager
+     */
+    protected function get_backup_content_manager() {
+        return new backup\content_manager();
+    }
+
+    /**
+     * Get the badge manager.
+     *
+     * @return badge\badge_manager
+     */
+    protected function get_badge_manager() {
+        return new badge\badge_manager($this->get('db'));
+    }
+
+    /**
+     * Get the default badge URL resolver.
+     *
+     * @return \block_xp\local\xp\badge_url_resolver
+     */
+    protected function get_badge_url_resolver() {
+        return new \local_xp\local\xp\badge_url_resolver_stack([
+            $this->subcontainer->get('badge_url_resolver'),
+            new \local_xp\local\xp\theme_badge_url_resolver(
+                $this->get('theme_repository'),
+                $this->get('config')->get('badgetheme')
+            ),
+        ]);
+    }
+
+    /**
+     * Get the badge URL resolver factory.
+     *
+     * @return \block_xp\local\factory\badge_url_resolver_course_world_factory
+     */
+    protected function get_badge_url_resolver_course_world_factory() {
+        return new factory\badge_url_resolver_course_world_factory(
+            $this->get('badge_url_resolver'),
+            $this->get('theme_repository')
+        );
+    }
+
+    /**
+     * Block class.
+     *
+     * @return string
+     */
+    protected function get_block_class() {
+        return 'local_xp\local\block\course_block';
+    }
+
+    /**
+     * Cheatguard form class.
+     *
+     * @return string
+     */
+    protected function get_cheatguard_form_class() {
+        return \local_xp\form\cheatguard::class;
+    }
+
+    /**
+     * Get the global collection logger.
+     *
+     * @return logger
+     */
+    protected function get_collection_logger() {
+        return new \local_xp\local\logger\global_collection_logger($this->get('db'));
+    }
+
+    /**
+     * Collection strategy.
+     *
+     * @return collection_strategy
+     */
+    protected function get_collection_strategy() {
+        $st = new \local_xp\local\strategy\collection_strategy(
+            $this->get('course_world_factory'),
+            $this->get('config')->get('context'),
+            $this->get_user_collection_target_resolver(),
+            new action\event_action_maker()
+        );
+        $st->set_context_world_factory($this->get('context_world_factory'));
+        return $st;
+    }
+
+    /**
+     * Get the global config object.
+     *
+     * @return config
+     */
+    protected function get_config() {
+        return new \block_xp\local\config\config_stack([
+            new \block_xp\local\config\mdl_config(
+                'local_xp',
+                // We must filter the defaults that are stored in the parent's config
+                // object, just as keeplogs. The reason why keeplogs is in local_xp's defaults
+                // is to change the recommended, not to prevail over the saved value.
+                new \block_xp\local\config\filtered_config(
+                    new \local_xp\local\config\default_admin_config(),
+                    null,
+                    ['keeplogs']
+                )
+            ),
+            $this->subcontainer->get('config'),
+        ]);
+    }
+
+    /**
+     * Get global config about locked settings.
+     *
+     * @return config
+     */
+    protected function get_config_locked() {
+        return new \block_xp\local\config\config_stack([
+            new \block_xp\local\config\mdl_locked_config('local_xp', [
+                'groupidentitymode',
+                'ladderiso',
+                'ladderparticipation',
+            ]),
+            $this->subcontainer->get('config_locked'),
+        ]);
+    }
+
+    /**
+     * Context world factory.
+     *
+     * @return \block_xp\local\factory\context_world_factory
+     */
+    protected function get_context_world_factory() {
+        $factory = new \block_xp\local\factory\default_context_world_factory($this->get('config'));
+        $factory->set_course_world_factory($this->get('course_world_factory'));
+        return $factory;
+    }
+
+    /**
+     * Get the course config factory.
+     *
+     * @return factory\course_config_factory
+     */
+    private function get_course_config_factory() {
+        if (!$this->courseconfigfactory) {
+            $this->courseconfigfactory = new \local_xp\local\factory\course_config_factory(
+                $this->get('config'), $this->get('db'), $this->get('config_locked'));
+        }
+        return $this->courseconfigfactory;
+    }
+
+    /**
+     * Get the course collection logger factory.
+     *
+     * @return factory\course_collection_logger_factory
+     */
+    protected function get_course_collection_logger_factory() {
+        return new factory\course_collection_logger_factory(
+            $this->get('config'),
+            $this->get('db')
+        );
+    }
+
+    /**
+     * Get the course currency factory.
+     *
+     * @return course_currency_factory
+     */
+    protected function get_course_currency_factory() {
+        return new \local_xp\local\factory\course_currency_factory(
+            $this->get('course_world_factory'),
+            $this->get('currency')
+        );
+    }
+
+    /**
+     * Get the course world grouped leaderboard factory.
+     *
+     * @return course_world_group_leaderboard_factory
+     */
+    protected function get_course_world_grouped_leaderboard_factory() {
+        return new \local_xp\local\factory\default_course_world_grouped_leaderboard_factory(
+            $this->get('db'),
+            $this->get('renderer'),
+            $this->get('iomad_facade'),
+            $this->get('grouped_leaderboard_helper')
+        );
+    }
+
+    /**
+     * Get the course world leaderboard factory.
+     *
+     * @return \block_xp\local\factory\course_world_leaderboard_factory
+     */
+    protected function get_course_world_leaderboard_factory() {
+        return $this->get('course_world_leaderboard_factory_with_config');
+    }
+
+    /**
+     * Get the course world leaderboard factory with config.
+     *
+     * @return \block_xp\local\factory\course_world_leaderboard_factory_with_config
+     */
+    protected function get_course_world_leaderboard_factory_with_config() {
+        return new \local_xp\local\factory\course_world_leaderboard_factory(
+            $this->get('db'),
+            $this->get('iomad_facade')
+        );
+    }
+
+    /**
+     * Course world factory.
+     *
+     * @return factory\course_world_factory
+     */
+    protected function get_course_world_factory() {
+        $db = $this->get('db');
+        $config = $this->get('config');
+        return new \local_xp\local\factory\course_world_factory(
+            $config->get('context'),
+            $db,
+            $this->get_course_config_factory(),
+            $this->get_user_collection_target_resolver(),
+            $this->get('badge_url_resolver_course_world_factory'),
+            $this->get('course_collection_logger_factory'),
+            $this->get('levels_info_factory')
+        );
+    }
+
+    /**
+     * Get the course world navigation factory.
+     *
+     * @return factory\course_world_navigation_factory
+     */
+    protected function get_course_world_navigation_factory() {
+        return new \local_xp\local\factory\course_world_navigation_factory(
+            $this->get('url_resolver'),
+            // We need this to pass our own admin config.
+            new \block_xp\local\factory\default_course_world_navigation_factory(
+                $this->get('url_resolver'),
+                $this->get('config')
+            ),
+            $this->get('config')
+        );
+    }
+
+    /**
+     * Get the default currency.
+     *
+     * @return currency
+     */
+    protected function get_currency() {
+        return new \local_xp\local\currency\default_currency(
+            new \local_xp\local\currency\admin_sign_url_resolver()
+        );
+    }
+
+    /**
+     * Get the currency repository.
+     *
+     * @return currency\currency_repository
+     */
+    protected function get_currency_repository() {
+        global $CFG;
+        $dir = $CFG->dirroot . '/local/xp/pix/sign';
+        return new \local_xp\local\currency\currency_repository(new \DirectoryIterator($dir));
+    }
+
+    /**
+     * Get the drop repository.
+     *
+     * @return drop\drop_repository
+     */
+    protected function get_drop_repository() {
+        return new drop\db_drop_repository($this->get('db'));
+    }
+
+    /**
+     * Get router.
+     *
+     * @return routing\router
+     */
+    protected function get_file_server() {
+        return new file\file_server(
+            get_file_storage(),
+            $this->get('config')->get('context')
+        );
+    }
+
+    /**
+     * Get the grouped leaderboard helper.
+     *
+     * @return grouped_leaderboard_helper
+     */
+    protected function get_grouped_leaderboard_helper() {
+        return new \local_xp\local\leaderboard\grouped_leaderboard_helper(
+            $this->get('db'),
+            $this->get('iomad_facade')
+        );
+    }
+
+    /**
+     * Get the IOMAD facade.
+     *
+     * @return local_xp\local\iomad\facade
+     */
+    protected function get_iomad_facade() {
+        return new \local_xp\local\iomad\facade($this->get('db'));
+    }
+
+    /**
+     * Get the leaderboard factory maker.
+     *
+     * @return \block_xp\local\factory\leaderboard_factory_maker
+     */
+    protected function get_leaderboard_factory_maker() {
+        return new factory\leaderboard_factory_maker($this->get('db'), $this->get('config'));
+    }
+
+    /**
+     * Get the leaderboard form class.
+     *
+     * @return string
+     */
+    protected function get_leaderboard_form_class() {
+        return \local_xp\form\leaderboard::class;
+    }
+
+    /**
+     * Get object.
+     */
+    protected function get_leaderboard_participation_service_factory() {
+        return new leaderboard\participation\service_factory($this->get_context_world_factory());
+    }
+
+    /**
+     * Get the levels info factory.
+     *
+     * @return factory\levels_info_factory
+     */
+    protected function get_levels_info_factory() {
+        return new factory\levels_factory($this->get('config'), $this->get('badge_url_resolver'),
+            $this->get('badge_url_resolver_course_world_factory'));
+    }
+
+    /**
+     * Get the levels info writer.
+     *
+     * @return xp\levels_info_writer
+     */
+    protected function get_levels_info_writer() {
+        $writer = new xp\levels_info_writer($this->get('config'));
+        $writer->set_badge_manager($this->get('badge_manager'));
+        return $writer;
+    }
+
+    /**
+     * Get renderer.
+     *
+     * @return renderer_base
+     */
+    protected function get_renderer() {
+        global $PAGE;
+        if (!$PAGE->has_set_url() && !WS_SERVER && !CLI_SCRIPT) {
+            debugging('The renderer was requested too early in the process.', DEBUG_DEVELOPER);
+        }
+        $renderer = $PAGE->get_renderer('local_xp');
+        return $renderer;
+    }
+
+    /**
+     * Get router.
+     *
+     * @return routing\router
+     */
+    protected function get_router() {
+        return new routing\router(
+            $this->get('url_resolver')
+        );
+    }
+
+    /**
+     * Get the routes config.
+     *
+     * @return routes_config
+     */
+    protected function get_routes_config() {
+        return new \local_xp\local\routing\routes_config(
+            new \block_xp\local\routing\default_routes_config()
+        );
+    }
+
+    /**
+     * Get the rule dictator.
+     *
+     * @return \block_xp\local\rule\dictator
+     */
+    protected function get_rule_dictator() {
+        return new \block_xp\local\rule\the_dictator($this->get('db'), $this->get('rule_filter_handler'));
+    }
+
+    /**
+     * Get the rule event lister.
+     *
+     * @return event_lister
+     */
+    protected function get_rule_event_lister() {
+        // Feature toggle off for now, by default users do not have the permission to earn anything
+        // in the system context. Which means that those events would not work unless users are given
+        // the permission in the system context. This is going to be a configuration nightmare for
+        // endusers, or we need to change the defaults, which will make everyone earn points everywhere,
+        // this is not a valid option. so holding off this feature for now.
+        // @codingStandardsIgnoreLine
+        // return new \local_xp\local\rule\event_lister($this->get('config'));
+        return $this->subcontainer->get('rule_event_lister');
+    }
+
+    /**
+     * Get the rule filter handler.
+     *
+     * @return rulefilter\handler
+     */
+    protected function get_rule_filter_handler() {
+        return new rulefilter\handler();
+    }
+
+    /**
+     * Get the rule type resolver.
+     *
+     * @return ruletype\resolver
+     */
+    protected function get_rule_type_resolver() {
+        return new ruletype\resolver();
+    }
+
+    /**
+     * Get the serializer factory.
+     *
+     * @return factory\serializer_factory
+     */
+    protected function get_serializer_factory() {
+        return new factory\serializer_factory();
+    }
+
+    /**
+     * Get the settings maker.
+     *
+     * @return settings_maker
+     */
+    protected function get_settings_maker() {
+        return new \local_xp\local\setting\settings_maker(
+            new \block_xp\local\config\config_stack([
+                new \local_xp\local\config\default_admin_config(),
+                new \block_xp\local\config\default_admin_config(),
+            ]),
+            $this->get('url_resolver'),
+            $this->get('iomad_facade'),
+            $this->get('config_locked')
+        );
+    }
+
+    /**
+     * Get the tasks definition maker.
+     *
+     * @return tasks_definition_maker
+     * @deprecated Overridding block_xp tasks is not advised.
+     */
+    protected function get_tasks_definition_maker() {
+        return new \local_xp\local\task\tasks_definition_maker();
+    }
+
+    /**
+     * Get the team membership resolver factory.
+     *
+     * @return factory\course_world_team_membership_resolver_factory
+     */
+    protected function get_team_membership_resolver_factory() {
+        return $this->get('course_world_grouped_leaderboard_factory');
+    }
+
+    /**
+     * Get the theme repository.
+     *
+     * @return theme\theme_repository
+     */
+    protected function get_theme_repository() {
+        return new \local_xp\local\theme\theme_repository($this->get('db'));
+    }
+
+    /**
+     * Get the theme updater.
+     *
+     * @return theme\theme_updater
+     */
+    protected function get_theme_updater() {
+        global $CFG;
+        $themedir = $CFG->dirroot . '/local/xp/pix/theme';
+        return new \local_xp\local\theme\theme_updater($this->get('db'), new \DirectoryIterator($themedir));
+    }
+
+    /**
+     * Get URL resolver.
+     *
+     * @return url_resolver
+     */
+    protected function get_url_resolver() {
+        return new \block_xp\local\routing\default_url_resolver(
+            $this->get('base_url'),
+            $this->get('routes_config')
+        );
+    }
+
+    /**
+     * Get usage reporter.
+     *
+     * @return plugin\usage_reporter
+     */
+    protected function get_usage_reporter() {
+        $config = $this->get('config');
+        return new \block_xp\local\plugin\usage_reporter($config, new plugin\usage_report_maker($this->get('db'), $config));
+    }
+
+    /**
+     * Get user collection target resolver.
+     *
+     * @return strategy\collection_target_resolver_from_event
+     */
+    private function get_user_collection_target_resolver() {
+        if (!$this->usercollectiontargetresolver) {
+            $this->usercollectiontargetresolver = new \local_xp\local\strategy\user_collection_target_resolver();
+        }
+        return $this->usercollectiontargetresolver;
+    }
+
+    /**
+     * Get the user flag deletion service.
+     *
+     * @return userflag\deletion_service
+     */
+    protected function get_userflag_deletion_service() {
+        return new userflag\deletion_service($this->get('db'));
+    }
+
+    /**
+     * Whether this container can return an entry for the given identifier.
+     *
+     * @param string $id The thing's name.
+     * @return bool
+     */
+    public function has($id) {
+        return array_key_exists($id, static::$supports);
+    }
+
+}

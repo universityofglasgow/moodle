@@ -1,0 +1,91 @@
+#block-massaction {
+    max-width: 400px;
+}
+
+.block-massaction-select-containing-div {
+    display: flex;
+    align-items: center;
+}
+
+/* The following adaptions of colors are needed because option elements of select cannot be styled due to
+ * browser limitations.
+ */
+#block-massaction-control-section-list-select,
+#block-massaction-control-section-list-moveto,
+#block-massaction-control-section-list-duplicateto {
+    background-color: transparent;
+    width: 100%;
+}
+
+.block-massaction-section-select-help-icon {
+    padding-left: 0.3em;
+}
+
+#block-massaction-control-section-list-select option {
+    color: var(--dark);
+}
+
+#block-massaction-control-section-list-select option:disabled {
+    color: var(--gray);
+}
+
+#block-massaction-control-section-list-moveto option,
+#block-massaction-control-section-list-duplicateto option {
+    color: var(--dark);
+}
+
+#block-massaction-control-section-list-moveto option:disabled,
+#block-massaction-control-section-list-duplicateto option:disabled {
+    color: var(--gray);
+}
+
+#block-massaction-control-deselectlist {
+    position: relative;
+    float: right;
+}
+
+.block-massaction .block-massaction-action {
+    position: relative;
+    margin-left: 0.5em;
+}
+
+.block-massaction-action > div:hover {
+    cursor: pointer;
+    background-color: var(--light);
+}
+
+.block-massaction-action > form {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#block-massaction-help-icon {
+    text-align: center;
+    padding: 0.2em;
+}
+
+#block-massaction-module-list {
+    margin-top: 3em;
+}
+
+.block-massaction-checkbox {
+    /* In case the checkbox is overlapping with another element, let's make sure the checkbox is still clickable */
+    z-index: 1;
+}
+
+.block-massaction-checkbox-legacy {
+    position: absolute;
+    transform: translate(0.4rem, 1.4rem);
+}
+
+.block-massaction-courseselectbox,
+.block-massaction-sectionselectbox {
+    display: flex;
+    justify-content: center;
+    min-height: 60vh;
+}
+
+.block-massaction-courseselectbox form,
+.block-massaction-sectionselectbox form {
+    max-width: 600px;
+}

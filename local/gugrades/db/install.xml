@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/gugrades/db" VERSION="20241112" COMMENT="XMLDB file for Moodle local/gugrades"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_gugrades" COMMENT="Default comment for local_gugrades, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_gugrades_scalevalue" COMMENT="Contains mappings of scale items to value.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="scaleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Map to mdl_scale.id"/>
+        <FIELD NAME="item" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="item in scale"/>
+        <FIELD NAME="value" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Numeric value represented by item"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="column_si" UNIQUE="false" FIELDS="scaleid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_column" COMMENT="Grade columns on import table (because there can be multiple OTHER columns)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="gradetype" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="SECOND, THIRD, OTHER and so on"/>
+        <FIELD NAME="other" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="points" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = points, 0 = scale"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="gc_gi" UNIQUE="false" FIELDS="gradeitemid"/>
+        <INDEX NAME="column_gigt" UNIQUE="false" FIELDS="gradeitemid, gradetype"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_grade" COMMENT="Contains each grade instance">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Course id"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to grade_items.id"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to user.id"/>
+        <FIELD NAME="points" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = points, 0 = scale"/>
+        <FIELD NAME="rawgrade" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="Point value or scale index as read from core Moodle"/>
+        <FIELD NAME="convertedgrade" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="(Typically) 22 point scale, 0 - 22. Once the grade is converted."/>
+        <FIELD NAME="admingrade" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="displaygrade" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Grade to display (numeric or scale)"/>
+        <FIELD NAME="weightedgrade" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="Grade after any weighting applied"/>
+        <FIELD NAME="gradetype" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="FIRST, SECOND and so on"/>
+        <FIELD NAME="columnid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to column table"/>
+        <FIELD NAME="iscurrent" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="is this the latest grade?"/>
+        <FIELD NAME="iserror" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Applies to categories than cannot be aggregated for some reason"/>
+        <FIELD NAME="auditby" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Who did this? Link to user.id"/>
+        <FIELD NAME="audittimecreated" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Unix timestamp"/>
+        <FIELD NAME="auditcomment" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Any additional auditing information/comments"/>
+        <FIELD NAME="dropped" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Dropped in aggregation"/>
+        <FIELD NAME="catoverride" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Indicates an overridden category."/>
+        <FIELD NAME="normalisedweight" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="The weight used in the final calculation"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="locguggra_cogrus" UNIQUE="false" FIELDS="courseid, gradeitemid, userid"/>
+        <INDEX NAME="logugradesgigtuiic" UNIQUE="false" FIELDS="gradeitemid, gradetype, userid, iscurrent"/>
+        <INDEX NAME="localgugrade_cigiuici" UNIQUE="false" FIELDS="courseid, gradeitemid, userid, columnid"/>
+        <INDEX NAME="local_gugrades_giuiic" UNIQUE="false" FIELDS="id, gradeitemid, userid, iscurrent"/>
+        <INDEX NAME="local_gugrades_prov" UNIQUE="false" FIELDS="gradeitemid, userid, iscurrent"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_audit" COMMENT="Contains audit trail of errors, warnings and info">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="relateduserid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="lga_cous" UNIQUE="false" FIELDS="courseid, userid" COMMENT="courseid, userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_config" COMMENT="Config settings for individual courses">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="25" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="value" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_gugrades_scaletype" COMMENT="Type of scale - 'schedulea', 'scheduleb' and so on. Loads helper class in MyGrades.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="scaleid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="25" NOTNULL="true" SEQUENCE="false" COMMENT="Probably 'schedulea', 'scheduleb' (or possibly empty)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="uq_sid" UNIQUE="false" FIELDS="scaleid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_map" COMMENT="List of conversion table maps">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Which course does this belong to"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Descriptive name of map"/>
+        <FIELD NAME="scale" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="schedulea" SEQUENCE="false" COMMENT="schedulea, scheduleb (per the factory in the code)"/>
+        <FIELD NAME="maxgrade" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="5" COMMENT="maximum points grade"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="User who created this"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_gugrades_map_item" COMMENT="Associate conversion map with grade item or grade category">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Which course is this used in"/>
+        <FIELD NAME="mapid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to local_gugrades_map table"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="Which grade item is this linked to (if grade item)"/>
+        <FIELD NAME="gradecategoryid" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="Link to grade category table (if it is)"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="user who linked this"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="gugrades_giid" UNIQUE="false" FIELDS="gradeitemid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_map_value" COMMENT="The map percentage points">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="mapid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to local_gugrades_map"/>
+        <FIELD NAME="percentage" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="5"/>
+        <FIELD NAME="scalevalue" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="scale value"/>
+        <FIELD NAME="band" TYPE="char" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="A1, A2 and so on"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ixmapid" UNIQUE="false" FIELDS="mapid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_hidden" COMMENT="Hide individual user grades for gradeitemid. Existence of record means hide.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ux_grus" UNIQUE="true" FIELDS="gradeitemid, userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_resitrequired" COMMENT="An entry in the table indicates that a resit is required.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="uq_co_us" UNIQUE="true" FIELDS="courseid, userid" COMMENT="unique: courseid and userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_agg_conversion" COMMENT="Links grade categories aggregated in points to their live conversion map.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to course table"/>
+        <FIELD NAME="gradecategoryid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to grade_categories table"/>
+        <FIELD NAME="mapid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to local_gugrades_map table"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="logu_gugid" UNIQUE="true" FIELDS="gradecategoryid" COMMENT="Index gradecategoryid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_gugrades_altered_weight" COMMENT="Altered individual weights">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="gradeitemid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="weight" TYPE="number" LENGTH="11" NOTNULL="true" SEQUENCE="false" DECIMALS="5"/>
+        <FIELD NAME="timealtered" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="gradeitemid-userid" UNIQUE="true" FIELDS="gradeitemid, userid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
