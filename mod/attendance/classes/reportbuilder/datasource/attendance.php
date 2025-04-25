@@ -93,7 +93,7 @@ class attendance extends datasource {
                 'attendance:sessiondate',
                 'attendance:timetaken',
                 'attendance:status',
-                'attendance:grade'];
+                'attendance:grade', ];
     }
 
     /**

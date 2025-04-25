@@ -73,9 +73,9 @@ class attendance_taken extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/attendance/take.php', array('id' => $this->contextinstanceid,
+        return new \moodle_url('/mod/attendance/take.php', ['id' => $this->contextinstanceid,
                                                                  'sessionid' => $this->other['sessionid'],
-                                                                 'grouptype' => $this->other['grouptype']));
+                                                                 'grouptype' => $this->other['grouptype']]);
     }
 
     /**
@@ -84,7 +84,7 @@ class attendance_taken extends \core\event\base {
      * @return array of parameters for object mapping.
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'attendance', 'restore' => 'attendance');
+        return ['db' => 'attendance', 'restore' => 'attendance'];
     }
 
     /**
