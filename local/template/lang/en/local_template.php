@@ -89,9 +89,19 @@ $string['fullname'] = 'Full Name';
 $string['username'] = 'Username';
 $string['edit'] = 'Edit';
 
-$string['idcreated'] = 'Created Course ID Number';
-$string['fullnamecreated'] = 'Created Course Full name';
-$string['shortnamecreated'] = 'Created Course Short Name';
+$string['idorigin'] = 'Original ID Number';
+$string['fullnameorigin'] = 'Original Full name';
+$string['shortnameorigin'] = 'Original Short Name';
+$string['categoryorigin'] = 'Original Category';
+
+$string['idimported'] = 'Imported ID Number';
+$string['fullnameimported'] = 'Imported Full name';
+$string['shortnameimported'] = 'Imported Short Name';
+
+$string['idtemplate'] = 'Template ID Number';
+$string['fullnametemplate'] = 'Template Full name';
+$string['shortnametemplate'] = 'Template Short Name';
+$string['categorytemplate'] = 'Template Category';
 
 $string['shortname'] = 'Short Name';
 

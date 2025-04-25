@@ -24,6 +24,7 @@ use core_reportbuilder\local\helpers\format;
 use core_reportbuilder\local\report\filter;
 use core_reportbuilder\local\filters\text;
 use core_reportbuilder\local\filters\date;
+use core_reportbuilder\local\filters\boolean_select;
 
 use lang_string;
 
@@ -51,6 +52,8 @@ class template  extends base {
     protected function get_default_tables(): array {
         return [
             'local_template',
+            'course',
+            'course_categories',
         ];
     }
 
@@ -98,10 +101,25 @@ class template  extends base {
 
         $templatealias = $this->get_table_alias('local_template');
 
-        // Full Name column.
+        $templcoursejoin = "LEFT JOIN {course} templcoursealias ON templcoursealias.id = {$templatealias}.templatecourseid";
+        $templcoursecatjoin = "LEFT JOIN {course_categories} templcoursecatalias
+                                ON templcoursecatalias.id = templcoursealias.category";
+
+        $impcoursejoin = "LEFT JOIN {course} impcoursealias ON impcoursealias.id = {$templatealias}.importcourseid";
+        $impcoursecatjoin = "LEFT JOIN {course_categories} impcoursecatalias ON impcoursecatalias.id = impcoursealias.category";
+
+        $joins = [
+            $templcoursejoin,
+            $templcoursecatjoin,
+            $impcoursejoin,
+            $impcoursecatjoin,
+        ];
+        $this->add_joins($joins);
+
+        // Full Name when created column.
         $columns[] = (new column(
-            'fullname',
-            new lang_string('fullnamecreated', 'local_template'),
+            'fullnameorigin',
+            new lang_string('fullnameorigin', 'local_template'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -109,10 +127,32 @@ class template  extends base {
             ->add_fields("{$templatealias}.fullname")
             ->set_is_sortable(true);
 
+        // Full Name of used template column.
+        $columns[] = (new column(
+            'fullnametemplate',
+            new lang_string('fullnametemplate', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("templcoursealias.fullname")
+            ->set_is_sortable(true);
+
+        // Full Name of imported course column.
+        $columns[] = (new column(
+            'fullnameimported',
+            new lang_string('fullnameimported', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("impcoursealias.fullname")
+            ->set_is_sortable(true);
+
         // Short Name column.
         $columns[] = (new column(
-            'shortname',
-            new lang_string('shortnamecreated', 'local_template'),
+            'shortnameorigin',
+            new lang_string('shortnameorigin', 'local_template'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -120,15 +160,140 @@ class template  extends base {
             ->add_fields("{$templatealias}.shortname")
             ->set_is_sortable(true);
 
+        // Short Name of used template column.
+        $columns[] = (new column(
+            'shortnametemplate',
+            new lang_string('shortnametemplate', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("templcoursealias.shortname")
+            ->set_is_sortable(true);
+
+        // Short Name of imported course column.
+        $columns[] = (new column(
+            'shortnameimported',
+            new lang_string('shortnameimported', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("impcoursealias.shortname")
+            ->set_is_sortable(true);
+
         // ID number column.
         $columns[] = (new column(
-            'idnumber',
-            new lang_string('idcreated', 'local_template'),
+            'idorigin',
+            new lang_string('idorigin', 'local_template'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
             ->set_type(column::TYPE_TEXT)
             ->add_fields("{$templatealias}.idnumber")
+            ->set_is_sortable(true);
+
+        // ID number of used template column.
+        $columns[] = (new column(
+            'idtemplate',
+            new lang_string('idtemplate', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("templcoursealias.idnumber")
+            ->set_is_sortable(true);
+
+        // ID number of imported course column.
+        $columns[] = (new column(
+            'idimported',
+            new lang_string('idimported', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("impcoursealias.idnumber")
+            ->set_is_sortable(true);
+
+        // Used template category column.
+        $columns[] = (new column(
+            'categorytemplate',
+            new lang_string('categorytemplate', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("templcoursecatalias.name")
+            ->set_is_sortable(true);
+
+        // Original course category column.
+        $columns[] = (new column(
+            'categoryorigin',
+            new lang_string('categoryorigin', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("{$templatealias}.category")
+            ->set_is_sortable(true);
+
+        // Add auto enrolment column.
+        $columns[] = (new column(
+            'gudbenrolment',
+            new lang_string('gudbenrolment', 'local_template'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_BOOLEAN)
+            ->add_fields("{$templatealias}.gudbenrolment")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'boolean_as_text']);
+
+        // Enable existing enrolments column.
+        $columns[] = (new column(
+            'gudbstatus',
+            new lang_string('status', 'enrol_gudatabase'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_BOOLEAN)
+            ->add_fields("{$templatealias}.gudbstatus")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'boolean_as_text']);
+
+        // Enable codes in course settings column.
+        $columns[] = (new column(
+            'gudbsettingscodes',
+            new lang_string('settingscodes', 'enrol_gudatabase'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_BOOLEAN)
+            ->add_fields("{$templatealias}.gudbsettingscodes")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'boolean_as_text']);
+
+        // Allow hidden course column.
+        $columns[] = (new column(
+            'gudballowhidden',
+            new lang_string('allowhidden', 'enrol_gudatabase'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_BOOLEAN)
+            ->add_fields("{$templatealias}.gudballowhidden")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'boolean_as_text']);
+
+        // More codes (one per line) column.
+        $columns[] = (new column(
+            'gudbcodelist',
+            new lang_string('codesettings', 'enrol_gudatabase'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TEXT)
+            ->add_fields("{$templatealias}.gudbcodelist")
             ->set_is_sortable(true);
 
         // Time created column.
@@ -141,7 +306,9 @@ class template  extends base {
             ->set_type(column::TYPE_TIMESTAMP)
             ->add_fields("{$templatealias}.timecreated")
             ->set_is_sortable(true)
-            ->set_callback([format::class, 'userdate']);
+            ->add_callback(function($value) {
+                return self::format_date($value);
+            });
 
         // Time modified column.
         $columns[] = (new column(
@@ -153,11 +320,39 @@ class template  extends base {
             ->set_type(column::TYPE_TIMESTAMP)
             ->add_fields("{$templatealias}.timemodified")
             ->set_is_sortable(true)
-            ->set_callback([format::class, 'userdate']);
+            ->add_callback(function($value) {
+                return self::format_date($value);
+            });
 
         return $columns;
 
     }
+
+    /**
+     * Format the date for better CSV download.
+     *
+     * @param int $value
+     * @return string
+     */
+    private static function format_date($value) {
+
+        $screen = userdate($value, '');
+        $downloadcsv = userdate($value, '%Y-%m-%d %H:%M');
+        $downloadexcel = userdate($value, get_string('strftimedatetimeshort', 'core_langconfig'));
+
+        if (!isset($_GET['download'])) {
+            return $screen;
+        } else {
+            if ($_GET['download'] == 'csv') {
+                return $downloadcsv;
+            } else {
+                return $downloadexcel;
+            }
+        }
+
+    }
+
+
     /**
      * Return list of all available filters
      *
@@ -170,20 +365,160 @@ class template  extends base {
         // Created course fullname filter.
         $filters[] = (new filter(
             text::class,
-            'fullnameselect',
-            new lang_string('fullnamecreated', 'local_template'),
+            'fullnameorigin',
+            new lang_string('fullnameorigin', 'local_template'),
             $this->get_entity_name(),
             "{$templatealias}.fullname"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Used template fullname filter.
+        $filters[] = (new filter(
+            text::class,
+            'fullnametemplate',
+            new lang_string('fullnametemplate', 'local_template'),
+            $this->get_entity_name(),
+            "templcoursealias.fullname"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Imported course fullname filter.
+        $filters[] = (new filter(
+            text::class,
+            'fullnameimported',
+            new lang_string('fullnameimported', 'local_template'),
+            $this->get_entity_name(),
+            "impcoursealias.fullname"
         ))
             ->add_joins($this->get_joins());
 
         // Created course shortname filter.
         $filters[] = (new filter(
             text::class,
-            'shortnameselect',
-            new lang_string('shortnamecreated', 'local_template'),
+            'shortnameorigin',
+            new lang_string('shortnameorigin', 'local_template'),
             $this->get_entity_name(),
             "{$templatealias}.shortname"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Used template shortname filter.
+        $filters[] = (new filter(
+            text::class,
+            'shortnametemplate',
+            new lang_string('shortnametemplate', 'local_template'),
+            $this->get_entity_name(),
+            "templcoursealias.shortname"
+        ))
+            ->add_joins($this->get_joins());
+
+            // Imported course shortname filter.
+        $filters[] = (new filter(
+            text::class,
+            'shortnameimported',
+            new lang_string('shortnameimported', 'local_template'),
+            $this->get_entity_name(),
+            "impcoursealias.shortname"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Created course ID number filter.
+        $filters[] = (new filter(
+            text::class,
+            'idorigin',
+            new lang_string('idorigin', 'local_template'),
+            $this->get_entity_name(),
+            "{$templatealias}.idnumber"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Used template ID number filter.
+        $filters[] = (new filter(
+            text::class,
+            'idtemplate',
+            new lang_string('idtemplate', 'local_template'),
+            $this->get_entity_name(),
+            "templcoursealias.idnumber"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Imported course ID number filter.
+        $filters[] = (new filter(
+            text::class,
+            'idimported',
+            new lang_string('idimported', 'local_template'),
+            $this->get_entity_name(),
+            "impcoursealias.idnumber"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Used template category filter.
+        $filters[] = (new filter(
+            text::class,
+            'categorytemplate',
+            new lang_string('categorytemplate', 'local_template'),
+            $this->get_entity_name(),
+            "templcoursecatalias.name"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Original course category filter.
+        $filters[] = (new filter(
+            text::class,
+            'categoryorigin',
+            new lang_string('categoryorigin', 'local_template'),
+            $this->get_entity_name(),
+            "{$templatealias}.category"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Auto enrolment filter.
+        $filters[] = (new filter(
+            boolean_select::class,
+            'gudbenrolment',
+            new lang_string('gudbenrolment', 'local_template'),
+            $this->get_entity_name(),
+            "{$templatealias}.gudbenrolment"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Enable existing enrolments filter.
+        $filters[] = (new filter(
+            boolean_select::class,
+            'gudbstatus',
+            new lang_string('status', 'enrol_gudatabase'),
+            $this->get_entity_name(),
+            "{$templatealias}.gudbstatus"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Enable codes in course settings filter.
+        $filters[] = (new filter(
+            boolean_select::class,
+            'gudbsettingscodes',
+            new lang_string('settingscodes', 'enrol_gudatabase'),
+            $this->get_entity_name(),
+            "{$templatealias}.gudbsettingscodes"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Allow hidden course filter.
+        $filters[] = (new filter(
+            boolean_select::class,
+            'gudballowhidden',
+            new lang_string('allowhidden', 'enrol_gudatabase'),
+            $this->get_entity_name(),
+            "{$templatealias}.gudballowhidden"
+        ))
+            ->add_joins($this->get_joins());
+
+        // More codes (one per line) filter.
+        $filters[] = (new filter(
+            text::class,
+            'gudbcodelist',
+            new lang_string('codesettings', 'enrol_gudatabase'),
+            $this->get_entity_name(),
+            "{$templatealias}.gudbcodelist"
         ))
             ->add_joins($this->get_joins());
 
