@@ -32,11 +32,12 @@ Feature: Step 8
       | enableasyncbackup | 0 |
 
   @javascript @qtype_kprime_8_sc_20
-  Scenario: Testcase 20
+  Scenario: Testcase 20 for Moodle ≤ 4.4
+    Given the site is running Moodle version 4.4 or lower
 
   # Solving the exam as students
   # Student 1 (100% correct)
-    Given I log in as "student1"
+    And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Quiz 1"
     And I press "Attempt quiz"
@@ -104,6 +105,169 @@ Feature: Step 8
     And I navigate to "Results" in current page administration
     And I click on "#mod-quiz-report-overview-report-selectall-attempts" "css_element"
     And I press "Regrade selected attempts"
+    And I press "Continue"
+    And I log out
+
+  # Change first exam Question content
+    When I log in as "teacher"
+    And I am on "Course 1" course homepage
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Questions" in current page administration
+    And I click on "Edit question Kprime Question 001" "link" in the "Kprime Question 001" "list_item"
+    And I set the following fields to these values:
+      | id_questiontext | Edited Kprime Questiontext |
+    And I press "id_submitbutton"
+    And I log out
+
+  # Change quiz title of original quiz
+    When I log in as "admin"
+    And I am on "Course 1" course homepage
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Settings" in current page administration
+    And I set the following fields to these values:
+      | id_name | Quiz_original |
+    And I press "id_submitbutton"
+
+  # Testcase 22
+  # 1st Restore
+    When I am on the "Quiz_original" "quiz activity" page
+    And I navigate to "Restore" in current page administration
+    And I restore "test_backup.mbz" backup into "Course 1" course using this options:
+    Then I should see "Course 1"
+    And I should see "Quiz_original"
+    And I should see "Quiz 1"
+
+  # Check if grades are different
+    When I am on the "Quiz_original" "quiz activity" page
+    And I navigate to "Results" in current page administration
+      ### this was broken due to regrading bug (script fails at this point)
+    Then "tr:contains('student1@moodle.com') .c8:contains('75.00')" "css_element" should exist
+    And "tr:contains('student2@moodle.com') .c8:contains('75.00')" "css_element" should exist
+      ###
+    When I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+#    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Results" in current page administration
+    Then "tr:contains('student1@moodle.com') .c8:contains('100.00')" "css_element" should exist
+    And "tr:contains('student2@moodle.com') .c8:contains('50.00')" "css_element" should exist
+
+  # Change quiz title of restored quiz
+    When I am on "Course 1" course homepage
+    And I turn editing mode on
+    And I open "Quiz 1" actions menu
+    And I click on "Edit settings" "link" in the "Quiz 1" activity
+    And I set the following fields to these values:
+      | id_name | Quiz_restored |
+    And I press "id_submitbutton2"
+    Then I should see "Quiz_restored"
+    And I turn editing mode off
+
+  # Testcase 23
+  # 2nd Restore
+    When I am on the "Quiz_original" "quiz activity" page
+    And I navigate to "Restore" in current page administration
+    And I restore "test_backup.mbz" backup into "Course 1" course using this options:
+    Then I should see "Course 1"
+    And I should see "Quiz_original"
+    And I should see "Quiz_restored"
+    And I should see "Quiz 1"
+
+  # Check if grades are different
+    When I am on "Course 1" course homepage
+    And I am on the "Quiz_restored" "quiz activity" page
+    And I navigate to "Results" in current page administration
+    Then "tr:contains('student1@moodle.com') .c8:contains('100.00')" "css_element" should exist
+    And "tr:contains('student2@moodle.com') .c8:contains('50.00')" "css_element" should exist
+
+  # Testcase 24:
+    And I navigate to "Questions" in current page administration
+    And I click on "Edit question Kprime Question 001" "link" in the "Kprime Question 001" "list_item"
+    And I set the following fields to these values:
+      | id_questiontext | Edited Kprime Questiontext |
+      | id_option_1     | questiontext 1 edited      |
+      | id_option_2     | questiontext 2 edited      |
+      | id_option_3     | questiontext 3 edited      |
+      | id_option_4     | questiontext 4 edited      |
+    And I press "id_submitbutton"
+    And I navigate to "Results" in current page administration
+    Then "tr:contains('student1@moodle.com') .c8:contains('100.00')" "css_element" should exist
+    And "tr:contains('student2@moodle.com') .c8:contains('50.00')" "css_element" should exist
+
+  @javascript @qtype_kprime_8_sc_20
+  Scenario: Testcase 20 for Moodle ≥ 4.5
+    Given the site is running Moodle version 4.5 or higher
+
+  # Solving the exam as students
+  # Student 1 (100% correct)
+    And I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I press "Attempt quiz"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Next page"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+
+  # Solving the exam as students
+  # Student 1 (50% correct)
+    Given I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I press "Attempt quiz"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Next page"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+
+  # Backup Exam as admin
+    Given I log in as "admin"
+    # And I am on "Course 1" course homepage
+    And I am on the "Quiz 1" "quiz activity" page
+    And I navigate to "Backup" in current page administration
+    And I click on "input[id='id_setting_root_grade_histories']" "css_element"
+    And I press "Next"
+    And I press "Next"
+    And I set the field "Filename" to "test_backup.mbz"
+    And I press "Perform backup"
+    Then I should see "The backup file was successfully created."
+    And I press "Continue"
+
+  # Testcase 21
+  # change correct answers
+    And I follow "Quiz 1"
+    And I navigate to "Questions" in current page administration
+    And I click on "Edit question Kprime Question 001" "link" in the "Kprime Question 001" "list_item"
+    And I set the following fields to these values:
+      | id_weightbutton_1_1 | checked |
+      | id_weightbutton_2_1 | checked |
+      | id_weightbutton_3_1 | checked |
+      | id_weightbutton_4_1 | checked |
+    And I press "id_submitbutton"
+
+  # Regrade first exam
+    And I follow "Quiz 1"
+    And I navigate to "Results" in current page administration
+    And I click on "#mod-quiz-report-overview-report-selectall-attempts" "css_element"
+    And I press "Regrade attempts..."
+    And I press "Regrade now"
     And I press "Continue"
     And I log out
 

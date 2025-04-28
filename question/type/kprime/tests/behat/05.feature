@@ -80,7 +80,9 @@ Feature: Step 5
     And "tr[class='gradedattempt']:contains('33.00')" "css_element" should exist
 
   @javascript @_switch_window @qtype_kprime_5_sc_22b
-  Scenario: Testcase 22 b
+  Scenario: Testcase 22 b for Moodle ≤ 4.4
+    Given the site is running Moodle version 4.4 or lower
+
   # Change scoringmethod after test has been submitted
   # Check grades. Manual applied grades should not be overwritten
 
@@ -140,8 +142,74 @@ Feature: Step 5
     Then ".gradedattempt:contains('student1@moodle.com'):contains('86.00')" "css_element" should exist
     And ".gradedattempt:contains('student2@moodle.com'):contains('0.00')" "css_element" should exist
 
+  @javascript @_switch_window @qtype_kprime_5_sc_22b
+  Scenario: Testcase 22 b for Moodle ≥ 4.5
+    Given the site is running Moodle version 4.5 or higher
+
+  # Change scoringmethod after test has been submitted
+  # Check grades. Manual applied grades should not be overwritten
+
+  # Solving quiz as student1: 50% correct options
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I press "Attempt quiz"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+
+  # Solving quiz as student2: 50% correct options
+    When I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I press "Attempt quiz"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+
+  # Login as teacher1 and grade student1 manually
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I navigate to "Results" in current page administration
+    And I click on "tr:contains('student1@moodle.com') a:contains('Review attempt')" "css_element"
+    And I click on "Make comment or override mark" "link"
+    And I switch to "commentquestion" window
+    And I set the field "Mark" to "0.86"
+    And I press "Save" and switch to main window
+
+  # Set Scoring Method to KPrime1/0
+    And I navigate to "Questions" in current page administration
+    And I click on "Edit question Kprime Question 2" "link" in the "Kprime Question 2" "list_item"
+    And I click on "Scoring method" "link"
+    And I click on "id_scoringmethod_kprimeonezero" "radio"
+    And I press "id_submitbutton"
+
+  # Regrade
+    And I click on "Results" "link"
+    And I click on "#mod-quiz-report-overview-report-selectall-attempts" "css_element"
+    And I press "Regrade attempts..."
+    And I press "Regrade now"
+    And I press "Continue"
+
+  # Check if grades are correct
+    Then ".gradedattempt:contains('student1@moodle.com'):contains('86.00')" "css_element" should exist
+    And ".gradedattempt:contains('student2@moodle.com'):contains('0.00')" "css_element" should exist
+
   @javascript @_switch_window
-  Scenario: Testcase 22 c
+  Scenario: Testcase 22 c for Moodle ≤ 4.4
+    Given the site is running Moodle version 4.4 or lower
+
   # Change correct answer after test has been submitted.
   # Regrade the test and check the results
 
@@ -191,6 +259,67 @@ Feature: Step 5
     And I navigate to "Results" in current page administration
     And I click on "#mod-quiz-report-overview-report-selectall-attempts" "css_element"
     And I press "Regrade selected attempts"
+    And I press "Continue"
+
+  # Check if grades are correct
+    Then ".gradedattempt:contains('student1@moodle.com'):contains('50.00')" "css_element" should exist
+    And ".gradedattempt:contains('student2@moodle.com'):contains('0.00')" "css_element" should exist
+
+
+  @javascript @_switch_window
+  Scenario: Testcase 22 c for Moodle ≥ 4.5
+    Given the site is running Moodle version 4.5 or higher
+
+  # Change correct answer after test has been submitted.
+  # Regrade the test and check the results
+
+  # Solving quiz as student1: 100% (Post: 50%) correct options
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I press "Attempt quiz"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+
+  # Solving quiz as student2: 50% (Post 100%) correct options
+    When I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I press "Attempt quiz"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+
+  # Changing the correct answer from 1 1 0 0 to 1 1 1 1
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Quiz 1"
+    And I navigate to "Questions" in current page administration
+    And I click on "Edit question Kprime Question 2" "link" in the "Kprime Question 2" "list_item"
+    And I set the following fields to these values:
+      | id_weightbutton_1_1 | checked |
+      | id_weightbutton_2_1 | checked |
+      | id_weightbutton_3_1 | checked |
+      | id_weightbutton_4_1 | checked |
+    And I press "id_submitbutton"
+
+  # Regrade
+    And I follow "Quiz 1"
+    And I navigate to "Results" in current page administration
+    And I click on "#mod-quiz-report-overview-report-selectall-attempts" "css_element"
+    And I press "Regrade attempts..."
+    And I press "Regrade now"
     And I press "Continue"
 
   # Check if grades are correct
