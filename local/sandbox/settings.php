@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\output\html_writer;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/locallib.php');
@@ -42,7 +44,7 @@ if ($hassiteconfig) {
         $html .= html_writer::tag('p', get_string('cronruntimescheduledtasksstandardtime', 'local_sandbox', null, true));
         $html .= html_writer::start_tag('p');
         $html .= html_writer::link(
-                new moodle_url('/admin/tool/task/scheduledtasks.php'), get_string('scheduledtasks', 'tool_task', null, true));
+                new \core\url('/admin/tool/task/scheduledtasks.php'), get_string('scheduledtasks', 'tool_task', null, true));
         $html .= html_writer::end_tag('p');
         $page->add(new admin_setting_heading('local_sandbox/cronruntimehint', '', $html));
 
