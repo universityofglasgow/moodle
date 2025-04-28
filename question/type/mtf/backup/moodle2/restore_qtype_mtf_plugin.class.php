@@ -18,7 +18,7 @@
  * Restore code for the qtype_mtf plugin.
  *
  * @package     qtype_mtf
- * @author      Amr Hourani (amr.hourani@id.ethz.ch)
+ * @author      ETH Zurich (moodle@ethz.ch)
  * @author      Martin Hanusch (martin.hanusch@let.ethz.ch)
  * @copyright   2016 ETHZ {@link http://ethz.ch/}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -238,5 +238,112 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
         $contents[] = new restore_decode_content('qtype_mtf_rows', $fields, 'qtype_mtf_rows');
 
         return $contents;
+    }
+
+    /**
+     * Convert the backup structure of the MTF question type into a structure matching its
+     * question data. This data will then be used to produce an identity hash for comparison with
+     * questions in the database. We have to override the parent function, because we use a special
+     * structure during backup.
+     *
+     * @param array $backupdata
+     * @return stdClass
+     */
+    public static function convert_backup_to_questiondata(array $backupdata): stdClass {
+        // First, convert standard data via the parent function.
+        $questiondata = parent::convert_backup_to_questiondata($backupdata);
+        /**
+        * Convert the row data. An array of all rows (as objects) is stored in $questiondata->options.
+        * Furthermore, there is the property $questiondata->option which contains an array of objects
+        * with the properties text (= row's optiontext field) and format (= row's optiontextformat field).
+        * And finally, there is the property $questiondata->feedback containing an array of objects with
+        * the properties text (= row's optionfeedback field) and format (= row's optionfeedbackformat field).
+        */
+        $questiondata->option = [];
+        $questiondata->feedback = [];
+        foreach ($backupdata['plugin_qtype_mtf_question']['rows']['row'] as $row) {
+            $questiondata->options->rows[] = (object) $row;
+            $questiondata->option[] = (object)[
+                'text' => $row['optiontext'],
+                'format' => $row['optiontextformat'],
+            ];
+            $questiondata->feedback[] = (object)[
+                'text' => $row['optionfeedback'],
+                'format' => $row['optionfeedbackformat'],
+            ];
+        }
+        /**
+        * Next step is the column data. An array of all columns (as objects) is stored in $questiondata->columns.
+        * Furthermore, for every column N, a property $questiondata->responsetext_N must be created that holds the
+        * content of the column's responstext field.
+        */
+        foreach ($backupdata['plugin_qtype_mtf_question']['columns']['column'] as $column) {
+            $questiondata->options->columns[] = (object) $column;
+            $field = 'responsetext_' . $column['number'];
+            $questiondata->$field = $column['responsetext'];
+        }
+        /**
+        * Finally, we have to store all weights in the $questiondata->weights property. That is a
+        * two-dimensional array, built like in qtype_mtf::weight_records_to_array(). Also, for every
+        * row, we store the number of the column that has a weight > 1.
+        */
+        $weights = [];
+        $questiondata->weightbutton = [];
+        foreach ($backupdata['plugin_qtype_mtf_question']['weights']['weight'] as $weight) {
+            $weight = (object) $weight;
+            if (!array_key_exists($weight->rownumber, $weights)) {
+                $weights[$weight->rownumber] = [];
+            }
+            $weights[$weight->rownumber][$weight->columnnumber] = $weight;
+            $index = $weight->rownumber - 1;
+            if ($weight->weight > 0.0) {
+                $questiondata->weightbutton[$index] = $weight->columnnumber;
+            }
+        }
+        $questiondata->options->weights = $weights;
+
+        return $questiondata;
+    }
+
+    /**
+     * Return a list of paths to fields to be removed from questiondata before creating an identity hash.
+     * We have to remove the id and questionid property from all rows, columns and weights.
+     *
+     * @return array
+     */
+    protected function define_excluded_identity_hash_fields(): array {
+        return [
+            '/options/rows/id',
+            '/options/rows/questionid',
+            '/options/columns/id',
+            '/options/columns/questionid',
+            '/options/weights/id',
+            '/options/weights/questionid',
+        ];
+    }
+
+    /**
+     * Remove excluded fields from the questiondata structure. We use this function to remove the
+     * id and questionid fields for the weights, because they cannot be removed via the default
+     * mechanism due to the two-dimensional array. Once this is done, we call the parent function
+     * to remove the necessary fields.
+     *
+     * @param stdClass $questiondata
+     * @param array $excludefields Paths to the fields to exclude.
+     * @return stdClass The $questiondata with excluded fields removed.
+     */
+    public static function remove_excluded_question_data(stdClass $questiondata, array $excludefields = []): stdClass {
+        foreach ($questiondata->options->weights as $weightset) {
+            foreach ($weightset as $weight) {
+                if (isset($weight->id)) {
+                    unset($weight->id);
+                }
+                if (isset($weight->questionid)) {
+                    unset($weight->questionid);
+                }
+            }
+        }
+
+        return restore_qtype_plugin::remove_excluded_question_data($questiondata, $excludefields);
     }
 }

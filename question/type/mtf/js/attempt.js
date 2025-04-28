@@ -1,4 +1,4 @@
-require(['jquery'], function($) {
+jQuery(function ($) {
     $.noConflict();
     (function ($) {
         $(document).ready(function () {
@@ -19,7 +19,7 @@ require(['jquery'], function($) {
                 }
             });
         });
-    })(jQuery);
+    });
 });
 // Qtype_mtf : END.
 

@@ -93,7 +93,7 @@ class qtype_mtf_renderer extends qtype_renderer {
         if ($displayoptions->readonly) {
             $inputattributes['disabled'] = 'disabled';
         }
-
+        $this->page->requires->js(new moodle_url($CFG->wwwroot . '/lib/jquery/jquery-3.7.1.min.js'));
         $this->page->requires->js(new moodle_url($CFG->wwwroot . '/question/type/mtf/js/attempt.js'));
         $this->page->requires->js(new moodle_url($CFG->wwwroot . '/question/type/mtf/js/clear.js'));
 
