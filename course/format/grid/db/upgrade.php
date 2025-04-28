@@ -211,6 +211,19 @@ function xmldb_format_grid_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2023051001, 'format', 'grid');
     }
 
+    if ($oldversion < 2024032904) {
+        // Has the upgrade already happened?  Thus in versions for Moodle 4.1+ ?
+        $codebase = get_config('format_grid', 'codebase');
+        if ((empty($codebase)) || ((!empty($codebase)) && ($codebase < 2024092900))) {
+            // No!
+            \format_grid\task\update_displayed_images_task::update_displayed_images_imageresizemethod();
+            set_config('codebase', 2024092900, 'format_grid');
+        }
+
+        // Grid savepoint reached.
+        upgrade_plugin_savepoint(true, 2024032904, 'format', 'grid');
+    }
+
     // Automatic 'Purge all caches'....
     purge_all_caches();
 

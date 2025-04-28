@@ -1,6 +1,85 @@
 History
 =============
 
+Version 405.0.3 - 19/03/2025
+----------------------------
+1. Fix 'Issue with Expanding/Collapsing Sections in Edit Mode' - #232.
+2. Take into account sub-sections when calculating completion.
+3. Add 'defaultcompletionlowpercentagevalue' and 'defaultcompletionmediumpercentagevalue' settings to set
+   a site level the percentage value should be below in order to be that colour.  You can set the colours
+   in CSS, the values as supplied are:
+
+        .format-grid .grid-completion.grid-completion-colour-low {
+            background-color: magenta;
+            color: white;
+        }
+
+        .format-grid .grid-completion.grid-completion-colour-middle {
+            background-color: yellow;
+            color: black;
+        }
+
+        .format-grid .grid-completion.grid-completion-colour-high{
+            background-color: green;
+            color: white;
+        }
+
+        .format-grid .grid-completion.grid-completion-percentagequarter-1 {
+            border-right-color: lightgreen;
+        }
+
+        .format-grid .grid-completion.grid-completion-percentagequarter-2 {
+            border-bottom-color: lightgreen;
+            border-right-color: lightgreen;
+        }
+
+        .format-grid .grid-completion.grid-completion-percentagequarter-3 {
+            border-bottom-color: lightgreen;
+            border-left-color: lightgreen;
+            border-right-color: lightgreen;
+        }
+
+        .format-grid .grid-completion.grid-completion-percentagequarter-4 {
+            border-color: lightgreen;
+        }
+
+4. Fix 'Hidden sections are shown as not available' are not shown at all to student.
+5. Fix 'allow_stealth_module_visibility' still using 'gnumsections'.
+
+Version 405.0.2 - 14/03/2025
+----------------------------
+1. Fix 'Decrease of section title font size' - #226.
+2. Fix 'Issue with Subsections in Grid Format Displayed as 'Orphaned Activities' in Moodle 4.5+' - #230.
+3. Improvements to subsection support.
+
+Version 405.0.1 - 24/10/2024
+----------------------------
+1. Release candidate version for Moodle 4.5.
+2. Fix 'Generated images not showing when editing'.
+3. Impact of MDL-81920 and MDL-81960.
+
+Version 404.1.3 - 03/10/2024
+----------------------------
+1. Fix 'Orphaned sections problem when adding sections', a regression caused by
+   'Use section anchors in links when editing - pt 2' - #223.
+2. Add site default and course 'sectiontitleingridbox' and 'sectionbadgeingridbox' settings, to show
+   the section title and section badges inside the grid box respectively.  Both 'Yes' by default.
+
+Version 404.1.2.5 - 28/09/2024
+------------------------------
+1. Fix 'Version 404.1.2 adhoc task fails' - #222.
+
+Version 404.1.2 - 23/09/2024
+----------------------------
+1. Update to 'Fix not using course image resize method' update task.
+
+Version 404.1.1 - 21/09/2024
+----------------------------
+1. Use section anchors in links when editing.
+2. Add badges to grid - #215.
+3. Adjust section titles in grid and move 'title' attribute to cover whole grid box.
+4. Fix not using course image resize method.
+
 Version 404.1.0 - 11/04/2024
 ----------------------------
 1. Fix updating of course when adding or removing sections.  Note: Known issue of the section not looking as it should.

@@ -26,7 +26,13 @@
 
 namespace format_grid\output\courseformat;
 
+use completion_info;
+use context_course;
 use core_courseformat\output\local\content as content_base;
+use core\output\renderer_base;
+use core\url;
+use format_grid\toolbox;
+use moodle_exception;
 use stdClass;
 
 /**
@@ -63,7 +69,7 @@ class content extends content_base {
      * @param renderer_base $output typically, the renderer that's calling this method.
      * @return string Mustache template name.
      */
-    public function get_template_name(\renderer_base $renderer): string {
+    public function get_template_name(renderer_base $renderer): string {
         return 'format_grid/local/content';
     }
 
@@ -73,7 +79,7 @@ class content extends content_base {
      * @param renderer_base $output typically, the renderer that's calling this method.
      * @return stdClass data context for a Mustache template.
      */
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template(renderer_base $output) {
         global $DB, $PAGE;
         $format = $this->format;
         $editing = $PAGE->user_is_editing();
@@ -125,13 +131,13 @@ class content extends content_base {
             $data->hasnavigation = true;
             $data->singlesection = array_shift($data->sections);
             $data->sectionreturn = $singlesectionno;
-            $data->maincoursepage = new \moodle_url('/course/view.php', ['id' => $course->id]);
+            $data->maincoursepage = new url('/course/view.php', ['id' => $course->id]);
         } else {
-            $toolbox = \format_grid\toolbox::get_instance();
+            $toolbox = toolbox::get_instance();
             $coursesectionimages = $DB->get_records('format_grid_image', ['courseid' => $course->id]);
             if (!empty($coursesectionimages)) {
                 $fs = get_file_storage();
-                $coursecontext = \context_course::instance($course->id);
+                $coursecontext = context_course::instance($course->id);
                 foreach ($coursesectionimages as $coursesectionimage) {
                     try {
                         $replacement = $toolbox->check_displayed_image(
@@ -145,7 +151,7 @@ class content extends content_base {
                         if (!empty($replacement)) {
                             $coursesectionimages[$coursesectionimage->id] = $replacement;
                         }
-                    } catch (\moodle_exception $me) {
+                    } catch (moodle_exception $me) {
                         $coursesectionimages[$coursesectionimage->id]->imageerror = $me->getMessage();
                     }
                 }
@@ -153,6 +159,15 @@ class content extends content_base {
 
             // Justification.
             $data->gridjustification = $coursesettings['gridjustification'];
+
+            // Image resize is crop.
+            $data->imageresizemethodcrop = ($coursesettings['imageresizemethod'] == 2);
+
+            // Section title in grid box.
+            $data->sectiontitleingridbox = ($coursesettings['sectiontitleingridbox'] == 2);
+
+            // Section badge in grid box.
+            $data->sectionbadgeingridbox = ($coursesettings['sectionbadgeingridbox'] == 2);
 
             // Popup.
             if (!$editing) {
@@ -175,15 +190,23 @@ class content extends content_base {
 
             // Now iterate over the sections.
             $data->gridsections = [];
-            $sectionsforgrid = $this->get_grid_sections($output, $coursesettings);
+            $sectionsforgrid = $this->get_grid_sections($output, $coursesettings, $editing);
             $displayediswebp = (get_config('format_grid', 'defaultdisplayedimagefiletype') == 2);
 
             $completionshown = false;
-            $headerimages = false;
+            $sectionheaderimages = false;
             if ($editing) {
                 $datasectionmap = [];
                 foreach ($data->sections as $datasectionkey => $datasection) {
                     $datasectionmap[$datasection->id] = $datasectionkey;
+                }
+            } else {
+                // Visibility info for grid.
+                $sectionvisiblity = [];
+                foreach ($sections as $section) {
+                    $sectionvisiblity[$section->id] = new stdClass;
+                    $sectionvisiblity[$section->id]->ishidden = (!empty($section->ishidden));
+                    $sectionvisiblity[$section->id]->visibility = $section->visibility;
                 }
             }
             foreach ($sectionsforgrid as $section) {
@@ -215,18 +238,20 @@ class content extends content_base {
 
                 // Current section?
                 if ((!empty($currentsectionid)) && ($currentsectionid == $section->id)) {
-                    $sectionimages[$section->id]->currentsection = true;
+                    $sectionimages[$section->id]->iscurrent = true;
+                    $sectionimages[$section->id]->hasbadge = true;
+                    $sectionimages[$section->id]->highlightedlabel = $format->get_section_highlighted_name();
                 }
 
                 if ($editing) {
                     if (!empty($data->sections[$datasectionmap[$section->id]])) {
                         // Add the image to the section content.
                         $data->sections[$datasectionmap[$section->id]]->gridimage = $sectionimages[$section->id];
-                        $headerimages = true;
+                        $sectionheaderimages = true;
                     }
                 } else {
                     // Section link.
-                    $sectionimages[$section->id]->sectionurl = new \moodle_url(
+                    $sectionimages[$section->id]->sectionurl = new url(
                         '/course/section.php',
                         ['id' => $section->id]
                     );
@@ -235,10 +260,14 @@ class content extends content_base {
                     // Section name.
                     $sectionimages[$section->id]->sectionname = $section->name;
 
-                    /* User visible.  For more info, see: $format->is_section_visible($thissection) method in relation
-                       to 'hiddensections' course format setting. */
-                    if (!$section->uservisible) {
-                        $sectionimages[$section->id]->notavailable = true;
+                    // Visibility information.
+                    $sectionimages[$section->id]->ishidden = $sectionvisiblity[$section->id]->ishidden;
+                    if ($sectionimages[$section->id]->ishidden) {
+                        $sectionimages[$section->id]->visibility = $sectionvisiblity[$section->id]->visibility;
+                        $sectionimages[$section->id]->hiddenfromstudents =
+                            (!empty($sectionimages[$section->id]->visibility->hiddenfromstudents));
+                        $sectionimages[$section->id]->notavailable = (!empty($sectionimages[$section->id]->visibility->notavailable));
+                        $sectionimages[$section->id]->hasbadge = true;
                     }
 
                     // Section break.
@@ -280,15 +309,15 @@ class content extends content_base {
                 $data->gridsectionnumbers = implode(',', $gridsectionnums);
             }
 
-            if ($headerimages) {
-                $data->hasheaderimages = true;
+            if ($sectionheaderimages) {
+                $data->hassectionheaderimages = true;
                 $coursesettings['imagecontainerwidth'] = 144;
                 $data->coursestyles = $toolbox->get_displayed_image_container_properties($coursesettings);
             }
         }
 
         if ($this->hassteathwithcontent) {
-            $context = \context_course::instance($course->id);
+            $context = context_course::instance($course->id);
             if (has_capability('moodle/course:update', $context)) {
                 $data->stealthwarning = get_string('stealthwarning', 'format_grid', $this->hassteathwithcontent);
             }
@@ -312,19 +341,45 @@ class content extends content_base {
      *
      * @param renderer_base $output typically, the renderer that's calling this method.
      * @param array $settings The settings for the format.
+     * @param boolean $editing The user is editing.
      *
      * @return array data context for a mustache template
      */
-    protected function get_grid_sections(\renderer_base $output, $settings): array {
-
+    protected function get_grid_sections(renderer_base $output, $settings, $editing): array {
         $format = $this->format;
         $course = $format->get_course();
         $modinfo = $this->format->get_modinfo();
 
         // Generate section list.
         $sections = [];
-        $numsections = $format->get_last_section_number();
+        $numsections = $format->get_last_section_number_without_deligated();
+        $sectioncount = 0;
         $sectioninfos = $modinfo->get_section_info_all();
+        $deligatedsections = []; // Array of parent section number with an array of deligated section numbers if they have them.
+
+        foreach ($sectioninfos as $sectioninfokey => $sectioninfo) {
+            if (!empty($sectioninfo->component)) {
+                // Deligated section.
+                if ((!$editing) && ((!empty($settings['showcompletion'])) && ($settings['showcompletion'] == 2))) {
+                    // Work out the parent for completion.
+                    foreach ($modinfo->delegatedbycm as $delegatedsectioninfokey => $delegatedsectioninfo) {
+                        if ($sectioninfo->id == $delegatedsectioninfo->id) {
+                            foreach ($modinfo->cms as $cmskey => $cminfo) {
+                                if ($delegatedsectioninfokey == $cmskey) {
+                                    if (empty($deligatedsections[$cminfo->sectionnum])) {
+                                        $deligatedsections[$cminfo->sectionnum] = [];
+                                    }
+                                    $deligatedsections[$cminfo->sectionnum][] = $sectioninfo->sectionnum;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                unset($sectioninfos[$sectioninfokey]);
+            }
+        }
 
         $coursesettings = $format->get_settings();
         $sectionzeronotingrid = ($coursesettings['sectionzeroingrid'] == 1);
@@ -335,9 +390,10 @@ class content extends content_base {
             }
         }
         foreach ($sectioninfos as $thissection) {
-            // The course/view.php check the section existence but the output can be called from other parts so we need to check it.
+            /* The course/view.php check the section existence but the output can be called from other parts so we need to
+               check it. */
             if (!$thissection) {
-                throw new \moodle_exception(
+                throw new moodle_exception(
                     'unknowncoursesection',
                     'error',
                     '',
@@ -349,8 +405,11 @@ class content extends content_base {
                 );
             }
 
-            if ($thissection->section > $numsections) {
-                if (!empty($modinfo->sections[$thissection->section])) {
+            $sectioncount++;
+            if ($sectioncount > $numsections) {
+                // Only count sections that are not deligated and have content.
+                $temp = $thissection->hasactivities;
+                if (!empty($modinfo->sectionmodules[$thissection->section])) {
                     $this->hassteathwithcontent++;
                 }
                 continue;
@@ -364,8 +423,9 @@ class content extends content_base {
             $section->id = $thissection->id;
             $section->num = $thissection->section;
             $section->name = $output->section_title_without_link($thissection, $course);
-            if ((!empty($settings['showcompletion'])) && ($settings['showcompletion'] == 2)) {
-                $this->calculate_section_activity_completion($thissection, $course, $modinfo, $output);
+            if ((!$editing) && ((!empty($settings['showcompletion'])) && ($settings['showcompletion'] == 2))) {
+                $this->calculate_section_activity_completion(
+                    $thissection->section, $course, $modinfo, $deligatedsections, $output);
                 if (!empty($this->sectioncompletionmarkup[$thissection->section])) {
                     $section->sectioncompletionmarkup = $this->sectioncompletionmarkup[$thissection->section];
                 }
@@ -380,16 +440,18 @@ class content extends content_base {
     /**
      * Calculate and generate the markup for completion of the activities in a section.
      *
-     * @param stdClass $section The course_section.
+     * @param int $sectionnum The section number.
      * @param stdClass $course the course.
-     * @param stdClass $modinfo the course module information.
+     * @param course_modinfo $modinfo the course module information.
+     * @param array $deligatedsections Array of sections that have deligated sections containing an array of their section numbers.
      * @param renderer_base $output typically, the renderer that's calling this method.
      */
-    protected function calculate_section_activity_completion($section, $course, $modinfo, \renderer_base $output) {
-        if (empty($this->sectioncompletioncalculated[$section->section])) {
-            $this->sectioncompletionmarkup[$section->section] = '';
-            if (empty($modinfo->sections[$section->section])) {
-                $this->sectioncompletioncalculated[$section->section] = true;
+    protected function calculate_section_activity_completion(
+        $sectionnum, $course, $modinfo, $deligatedsections, renderer_base $output) {
+        if (empty($this->sectioncompletioncalculated[$sectionnum])) {
+            $this->sectioncompletionmarkup[$sectionnum] = '';
+            if (empty($modinfo->sections[$sectionnum])) {
+                $this->sectioncompletioncalculated[$sectionnum] = true;
                 return;
             }
 
@@ -399,42 +461,43 @@ class content extends content_base {
             $cancomplete = isloggedin() && !isguestuser();
             $asectionisavailable = false;
             if ($cancomplete) {
-                $completioninfo = new \completion_info($course);
-                foreach ($modinfo->sections[$section->section] as $cmid) {
-                    $thismod = $modinfo->cms[$cmid];
+                $completioninfo = new completion_info($course);
 
-                    if ($thismod->uservisible) {
-                        $asectionisavailable = true;
-                        if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
-                            $total++;
-                            $completiondata = $completioninfo->get_data($thismod, true);
-                            if (
-                                $completiondata->completionstate == COMPLETION_COMPLETE ||
-                                $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                            ) {
-                                $complete++;
-                            }
-                        }
+                $this->calculate_section_activity_completion_modules(
+                    $sectionnum, $modinfo, $completioninfo, $total, $complete, $asectionisavailable);
+                // Deligated sections.
+                if (!empty($deligatedsections[$sectionnum])) {
+                    foreach ($deligatedsections[$sectionnum] as $deligatedsectionnum) {
+                        $this->calculate_section_activity_completion_modules(
+                            $deligatedsectionnum, $modinfo, $completioninfo, $total, $complete, $asectionisavailable);
                     }
                 }
             }
 
             if ((!$asectionisavailable) || (!$cancomplete)) {
                 // No sections or no completion.
-                $this->sectioncompletioncalculated[$section->section] = true;
+                $this->sectioncompletioncalculated[$sectionnum] = true;
                 return;
             }
 
             // Output section completion data.
             if ($total > 0) {
                 $percentage = round(($complete / $total) * 100);
-                $this->sectioncompletionpercentage[$section->section] = $percentage;
+                $this->sectioncompletionpercentage[$sectionnum] = $percentage;
 
-                $data = new \stdClass();
-                $data->percentagevalue = $this->sectioncompletionpercentage[$section->section];
-                if ($data->percentagevalue < 11) {
+                $low = get_config('format_grid', 'defaultcompletionlowpercentagevalue');
+                if (empty($low)) {
+                    $low = 50; // Default.
+                }
+                $medium = get_config('format_grid', 'defaultcompletionmediumpercentagevalue');
+                if (empty($medium)) {
+                    $medium = 80; // Default.
+                }
+                $data = new stdClass();
+                $data->percentagevalue = $this->sectioncompletionpercentage[$sectionnum];
+                if ($data->percentagevalue < $low) {
                     $data->percentagecolour = 'low';
-                } else if ($data->percentagevalue < 90) {
+                } else if ($data->percentagevalue < $medium) {
                     $data->percentagecolour = 'middle';
                 } else {
                     $data->percentagecolour = 'high';
@@ -450,11 +513,42 @@ class content extends content_base {
                 } else {
                     $data->percentagequarter = 4;
                 }
-                $this->sectioncompletionmarkup[$section->section] =
+                $this->sectioncompletionmarkup[$sectionnum] =
                     $output->render_from_template('format_grid/grid_completion', $data);
             }
 
-            $this->sectioncompletioncalculated[$section->section] = true;
+            $this->sectioncompletioncalculated[$sectionnum] = true;
+        }
+    }
+
+    /**
+     * Calculate the total and total complete modules in a section.
+     *
+     * @param int $sectionnum The section number.
+     * @param course_modinfo $modinfo the course module information.
+     * @param completion_info $completioninfo Completion information instance.
+     * @param int $total The total number of modules.  Reference to called variable.
+     * @param int $complete The total number of modules that are complete.  Reference to called variable.
+     * @param boolean $asectionisavailable One of more modules are available in the section.  Reference to called variable.
+     */
+    protected function calculate_section_activity_completion_modules(
+        $sectionnum, $modinfo, $completioninfo, &$total, &$complete, &$asectionisavailable) {
+        foreach ($modinfo->sections[$sectionnum] as $cmid) {
+            $thismod = $modinfo->cms[$cmid];
+
+            if ($thismod->uservisible) {
+                $asectionisavailable = true;
+                if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
+                    $total++;
+                    $completiondata = $completioninfo->get_data($thismod, true);
+                    if (
+                        $completiondata->completionstate == COMPLETION_COMPLETE ||
+                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                    ) {
+                        $complete++;
+                    }
+                }
+            }
         }
     }
 }

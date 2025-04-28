@@ -26,6 +26,9 @@
 
 namespace format_grid\output\courseformat\content;
 
+use core\output\renderer_base;
+use stdClass;
+
 /**
  * Base class to render a course add section navigation.
  */
@@ -39,7 +42,7 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
      * @param renderer_base $output typically, the renderer that's calling this function
      * @return stdClass data context for a mustache template
      */
-    public function export_for_template(\renderer_base $output): \stdClass {
+    public function export_for_template(renderer_base $output): stdClass {
         global $USER;
 
         if ($this->data !== null) {
@@ -78,7 +81,7 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
         }
 
         $forward = $this->sectionno + 1;
-        $numsections = course_get_format($course)->get_last_section_number();
+        $numsections = course_get_format($course)->get_last_section_number_without_deligated();
         while ($forward <= $numsections && empty($data->nexturl)) {
             if ($canviewhidden || $format->is_section_visible($sections[$forward])) {
                 if (!$sections[$forward]->visible) {

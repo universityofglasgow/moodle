@@ -26,6 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+use format_grid\admin_setting_configinteger;
 use format_grid\admin_setting_information;
 use format_grid\admin_setting_markdown;
 
@@ -158,6 +159,28 @@ if ($ADMIN->fulltree) {
     ];
     $page->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
+    // Section title in grid box.
+    $name = 'format_grid/defaultsectiontitleingridbox';
+    $title = get_string('defaultsectiontitleingridbox', 'format_grid');
+    $description = get_string('defaultsectiontitleingridbox_desc', 'format_grid');
+    $default = 2;
+    $choices = [
+        1 => new lang_string('no'),
+        2 => new lang_string('yes'),
+    ];
+    $page->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
+    // Section badge in grid box.
+    $name = 'format_grid/defaultsectionbadgeingridbox';
+    $title = get_string('defaultsectionbadgeingridbox', 'format_grid');
+    $description = get_string('defaultsectionbadgeingridbox_desc', 'format_grid');
+    $default = 2;
+    $choices = [
+        1 => new lang_string('no'),
+        2 => new lang_string('yes'),
+    ];
+    $page->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
     // Completion.
     $name = 'format_grid/defaultshowcompletion';
     $title = get_string('defaultshowcompletion', 'format_grid');
@@ -168,6 +191,24 @@ if ($ADMIN->fulltree) {
         2 => new lang_string('yes'),
     ];
     $page->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
+    // Completion percentage low.
+    $name = 'format_grid/defaultcompletionlowpercentagevalue';
+    $title = get_string('defaultcompletionlowpercentagevalue', 'format_grid');
+    $description = get_string('defaultcompletionlowpercentagevalue_desc', 'format_grid');
+    $default = 50;
+    $lower = 1;
+    $upper = 98;
+    $page->add(new admin_setting_configinteger($name, $title, $description, $default, $lower, $upper));
+
+    // Completion percentage medium.
+    $name = 'format_grid/defaultcompletionmediumpercentagevalue';
+    $title = get_string('defaultcompletionmediumpercentagevalue', 'format_grid');
+    $description = get_string('defaultcompletionmediumpercentagevalue_desc', 'format_grid');
+    $default = 80;
+    $lower = 2;
+    $upper = 99;
+    $page->add(new admin_setting_configinteger($name, $title, $description, $default, $lower, $upper));
 
     // Show the grid image in the section summary on a single page.
     $name = 'format_grid/defaultsinglepagesummaryimage';

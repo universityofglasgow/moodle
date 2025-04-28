@@ -56,9 +56,6 @@ $string['deletesection'] = 'Delete section';
 $string['editsectionname'] = 'Edit section name';
 $string['newsectionname'] = 'New name for section {$a}';
 
-// Moodle 2.4 Course format refactoring - MDL-35218.
-$string['numbersections'] = 'Number of sections';
-
 // Setting general.
 $string['default'] = 'Default - {$a}';
 
@@ -134,11 +131,26 @@ $string['sectionzeroingrid_help'] = 'Place section zero in the grid';
 $string['defaultsectionzeroingrid'] = 'Section zero in grid';
 $string['defaultsectionzeroingrid_desc'] = 'Place section zero in the grid.';
 
+// Grid section title / badges.
+$string['sectiontitleingridbox'] = 'Section title in grid box';
+$string['sectiontitleingridbox_help'] = 'Show the section title in the grid box';
+$string['defaultsectiontitleingridbox'] = 'Section title in grid box';
+$string['defaultsectiontitleingridbox_desc'] = 'Show the section title in the grid box.';
+$string['sectionbadgeingridbox'] = 'Section badge in grid box';
+$string['sectionbadgeingridbox_help'] = 'Show the section badge in the grid box';
+$string['defaultsectionbadgeingridbox'] = 'Section badge in grid box';
+$string['defaultsectionbadgeingridbox_desc'] = 'Show the section badge in the grid box.';
+
 // Completion.
 $string['showcompletion'] = 'Show completion';
 $string['showcompletion_help'] = 'Show the completion of the section on the grid';
 $string['defaultshowcompletion'] = 'Show completion';
 $string['defaultshowcompletion_desc'] = 'Show the completion of the section on the grid.';
+
+$string['defaultcompletionlowpercentagevalue'] = 'Completion low percentage value';
+$string['defaultcompletionlowpercentagevalue_desc'] = 'For a completion percentage to be \'low\' then it must be less than this value.';
+$string['defaultcompletionmediumpercentagevalue'] = 'Completion medium percentage value';
+$string['defaultcompletionmediumpercentagevalue_desc'] = 'For a completion percentage to be \'medium\' then it must be less than this value.';
 
 // Other.
 $string['information'] = 'Information';
@@ -155,6 +167,11 @@ $string['versionalpha'] = 'Alpha version - Almost certainly contains bugs.  This
 $string['versionbeta'] = 'Beta version - Likely to contain bugs.  Ready for testing by administrators on a test server only.';
 $string['versionrc'] = 'Release candidate version - May contain bugs.  Check completely on a test server before considering on a production server.';
 $string['versionstable'] = 'Stable version - Could contain bugs.  Check on a test server before installing on your production server.';
+
+// Setting class admin_setting_configinteger.
+$string['asconfigintlower'] = '{$a->value} is less than the lower range limit of {$a->lower}';
+$string['asconfigintupper'] = '{$a->value} is greater than the upper range limit of {$a->upper}';
+$string['asconfigintnan'] = '{$a->value} is not a number';
 
 // Exception messages.
 $string['cannotconvertuploadedimagetodisplayedimage'] = 'Cannot convert uploaded image to displayed image - {$a}.';
