@@ -33,12 +33,18 @@ namespace format_topcoll\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-use context_course;
 use core_courseformat\base as course_format;
+use context_course;
+use core\output\html_writer;
+use core\url;
 use core_courseformat\output\section_renderer;
-use html_writer;
-use moodle_url;
+use core_useragent;
+use format_topcoll\togglelib;
+use format_topcoll\toolbox;
+use moodle_exception;
+use moodle_page;
 use section_info;
+use stdClass;
 
 require_once($CFG->dirroot . '/course/format/lib.php'); // For course_get_format.
 
@@ -70,8 +76,6 @@ class renderer extends section_renderer {
     protected $togglelib;
     /** @var int $currentsection If not false then will be the current section number.*/
     protected $currentsection = false;
-    /** @var bool $isoldtogglepreference */
-    protected $isoldtogglepreference = false;
     /** @var bool $userisediting */
     protected $userisediting = false;
     /** @var string $tconesectioniconfont */
@@ -82,6 +86,8 @@ class renderer extends section_renderer {
     protected $formatresponsive;
     /** @var bool $rtl */
     protected $rtl = false;
+    /** @var optional visibility output class */
+    protected $visibilityclass;
 
     /**
      * Constructor method, calls the parent constructor - MDL-21097.
@@ -89,9 +95,9 @@ class renderer extends section_renderer {
      * @param moodle_page $page The page.
      * @param string $target One of rendering target constants.
      */
-    public function __construct(\moodle_page $page, $target) {
+    public function __construct(moodle_page $page, $target) {
         parent::__construct($page, $target);
-        $this->togglelib = new \format_topcoll\togglelib();
+        $this->togglelib = new togglelib();
         $this->courseformat = course_get_format($page->course); // Needed for collapsed topics settings retrieval.
         $this->course = $this->courseformat->get_course();
 
@@ -108,7 +114,7 @@ class renderer extends section_renderer {
         $this->rtl = right_to_left();
 
         // Portable.
-        $devicetype = \core_useragent::get_device_type(); // In /lib/classes/useragent.php.
+        $devicetype = core_useragent::get_device_type(); // In /lib/classes/useragent.php.
         if ($devicetype == "mobile") {
             $this->mobiletheme = true;
         } else if ($devicetype == "tablet") {
@@ -117,6 +123,8 @@ class renderer extends section_renderer {
             $this->mobiletheme = false;
             $this->tablettheme = false;
         }
+
+        $this->visibilityclass = $this->courseformat->get_output_classname('content\\section\\visibility');
     }
 
     /**
@@ -152,9 +160,9 @@ class renderer extends section_renderer {
      * By default, the template used for update a section is the same as when it renders initially,
      * but format plugins are free to override this method to provide extra effects or so.
      *
-     * @param course_format $format the course format
-     * @param section_info $section the section info
-     * @return string the rendered element
+     * @param course_format $format the course format.
+     * @param section_info $section the section info.
+     * @return string the rendered element.
      */
     public function course_section_updated(
         course_format $format,
@@ -168,13 +176,13 @@ class renderer extends section_renderer {
         }
         $this->set_user_preferences();
 
-        $course = $format->get_course();
-        // If section no > sections then orphan = stealth.
-        if ($section->section > $course->numsections) {
-            $output = $this->stealth_section($section, $course);
+        if ($this->courseformat->is_section_current($section)) {
+            $togglestate = true;
         } else {
-            $output = $this->topcoll_section($section, $course, false, null, true);
+            $togglestate = $this->togglelib->get_toggle_state($section->section);
         }
+        $course = $format->get_course();
+        $output = $this->topcoll_section($section, $course, false, null, $togglestate);
 
         return $output;
     }
@@ -267,7 +275,7 @@ class renderer extends section_renderer {
                 if (empty($this->tcsettings)) {
                     $this->tcsettings = $this->courseformat->get_settings();
                 }
-                $url = new moodle_url('/course/view.php', ['id' => $course->id, 'section' => $section->section]);
+                $url = new url('/course/view.php', ['id' => $course->id, 'section' => $section->section]);
                 // Get the specific words from the language files.
                 $topictext = null;
                 if (($this->tcsettings['layoutstructure'] == 1) || ($this->tcsettings['layoutstructure'] == 4)) {
@@ -404,7 +412,10 @@ class renderer extends section_renderer {
             $title = html_writer::tag(
                 'a',
                 $title,
-                ['href' => course_get_url($course, $section->section), 'class' => $linkclasses]
+                [
+                    'href' => $this->courseformat->get_view_url($section->section, ['navigation' => 'true'])->out(false),
+                    'class' => $linkclasses,
+                ]
             );
         }
         $sectionsummarycontext['heading'] = $this->section_heading($section, $title, 'section-title');
@@ -529,7 +540,7 @@ class renderer extends section_renderer {
 
         if ($this->userisediting && has_capability('moodle/course:update', $context)) {
             $sectioncontext['usereditingicon'] = $this->output->pix_icon('t/edit', get_string('edit'));
-            $sectioncontext['usereditingurl'] = new moodle_url(
+            $sectioncontext['usereditingurl'] = new url(
                 '/course/editsection.php',
                 ['id' => $section->id, 'sr' => $sectionreturn]
             );
@@ -570,6 +581,12 @@ class renderer extends section_renderer {
                 $result = true;
             }
         }
+
+        /* @var \core_courseformat\output\local\content\section\visibility $visibility By default the visibility class used
+         * here but can be overriden by any course format */
+        $visibility = new $this->visibilityclass($this->courseformat, $section);
+        $data['visibility'] = $visibility->export_for_template($this);
+
         return $result;
     }
 
@@ -721,11 +738,11 @@ class renderer extends section_renderer {
         if (!($thissection = $modinfo->get_section_info($displaysection))) {
             /* This section doesn't exist or is not available for the user.
                We actually already check this in course/view.php but just in case exit from this function as well. */
-            print_error(
+            throw new moodle_exception(
                 'unknowncoursesection',
                 'error',
                 course_get_url($course),
-                format_string($course->fullname)
+                format_string($course->fullname. ' - id='.$course->id)
             );
         }
 
@@ -739,7 +756,7 @@ class renderer extends section_renderer {
         $singlesectioncontext = [
             'maincoursepageicon' => $this->output->pix_icon('t/less', $maincoursepage),
             'maincoursepagestr' => $maincoursepage,
-            'maincoursepageurl' => new moodle_url('/course/view.php', ['id' => $course->id]),
+            'maincoursepageurl' => new url('/course/view.php', ['id' => $course->id]),
             'sectionnavlinks' => $this->section_nav_links(),
             // Title with section navigation links and jump to menu.
             'sectionnavselection' => $this->section_nav_selection($course, null, $displaysection),
@@ -786,6 +803,8 @@ class renderer extends section_renderer {
         $content .= $this->start_section_list();
 
         $sections = $modinfo->get_section_info_all();
+        $sectionskeys = array_keys($sections);
+
         // General section if non-empty.
         $thissection = $sections[0];
         unset($sections[0]);
@@ -794,7 +813,7 @@ class renderer extends section_renderer {
         }
 
         $shownonetoggle = false;
-        $coursenumsections = $this->courseformat->get_last_section_number();
+        $coursenumsections = $this->courseformat->get_last_section_number_without_deligated();
         if ($coursenumsections > 0) {
             $sectiondisplayarray = [];
             $sectionoutput = '';
@@ -879,12 +898,13 @@ class renderer extends section_renderer {
             $loopsection = 1;
             $breaking = false; // Once the first section is shown we can decide if we break on another column.
 
+            $extrasectioninfo = [];
             while ($loopsection <= $coursenumsections) {
                 if (($this->tcsettings['layoutstructure'] == 3) && ($this->userisediting == false)) {
                     $nextweekdate = $weekdate - ($weekofseconds);
                 }
-                $thissection = $modinfo->get_section_info($section);
-                $extrasectioninfo[$thissection->id] = new \stdClass();
+                $thissection = $modinfo->get_section_info($sectionskeys[$section]);
+                $extrasectioninfo[$thissection->id] = new stdClass();
 
                 /* Show the section if the user is permitted to access it, OR if it's not available
                    but there is some available info text which explains the reason & should display. */
@@ -903,21 +923,12 @@ class renderer extends section_renderer {
                     $showsection = false; // Do not reshow current section.
                 }
                 if ($showsection) {
-                    if ($this->isoldtogglepreference == true) {
-                        $togglestate = substr($this->togglelib->get_toggles(), $section, 1);
-                        if ($togglestate == '1') {
-                            $extrasectioninfo[$thissection->id]->toggle = true;
-                        } else {
-                            $extrasectioninfo[$thissection->id]->toggle = false;
-                        }
-                    } else {
-                        $extrasectioninfo[$thissection->id]->toggle = $this->togglelib->get_toggle_state($thissection->section);
-                    }
-
                     if ($this->courseformat->is_section_current($thissection)) {
                         $this->currentsection = $thissection->section;
                         $extrasectioninfo[$thissection->id]->toggle = true; // Open current section regardless of toggle state.
                         $this->togglelib->set_toggle_state($thissection->section, true);
+                    } else {
+                        $extrasectioninfo[$thissection->id]->toggle = $this->togglelib->get_toggle_state($thissection->section);
                     }
 
                     $extrasectioninfo[$thissection->id]->isshown = true;
@@ -976,7 +987,7 @@ class renderer extends section_renderer {
             $columncount = 1;
             $breakpoint = 0;
             $shownsectioncount = 0;
-            if ((!$this->userisediting) && ($this->tcsettings['onesection'] == 2) && (!empty($this->currentsection))) {
+            if (($this->tcsettings['onesection'] == 2) && (!empty($this->currentsection))) {
                 $shownonetoggle = $this->currentsection; // One toggle open only, so as we have a current section it will be it.
             }
 
@@ -984,12 +995,12 @@ class renderer extends section_renderer {
             foreach ($sectiondisplayarray as $thissection) {
                 $shownsectioncount++;
 
-                if (!empty($thissection->ishidden)) {
+                if (!empty($extrasectioninfo[$thissection->id]->ishidden)) {
                     $sectionoutput .= $this->section_hidden($thissection);
                 } else if (!empty($thissection->issummary)) {
                     $sectionoutput .= $this->section_summary($thissection, $course, null);
                 } else if (!empty($extrasectioninfo[$thissection->id]->isshown)) {
-                    if ((!$this->userisediting) && ($this->tcsettings['onesection'] == 2)) {
+                    if ($this->tcsettings['onesection'] == 2) {
                         if ($extrasectioninfo[$thissection->id]->toggle) {
                             if (!empty($shownonetoggle)) {
                                 // Make sure the current section is not closed if set above.
@@ -1052,7 +1063,7 @@ class renderer extends section_renderer {
 
             if ($coursenumsections > 1) {
                 if ($this->tcsettings['toggleallenabled'] == 2) {
-                    if (($this->userisediting) || ($this->tcsettings['onesection'] == 1)) {
+                    if ($this->tcsettings['onesection'] == 1) {
                         // Collapsed Topics all toggles.
                         $content .= $this->toggle_all($toggledsections);
                     }
@@ -1070,6 +1081,10 @@ class renderer extends section_renderer {
             $changenumsections = $this->change_number_sections($course, 0);
             // Print stealth sections if present.
             foreach ($modinfo->get_section_info_all() as $thissection) {
+                if (!empty($thissection->component)) {
+                    // Delegated section.
+                    continue;
+                }
                 $sectionno = $thissection->section;
                 if ($sectionno <= $coursenumsections || empty($modinfo->sections[$sectionno])) {
                     // This is not stealth section or it is empty.
@@ -1090,18 +1105,18 @@ class renderer extends section_renderer {
 
         // Now initialise the JavaScript.
         $toggles = $this->togglelib->get_toggles();
-        $this->page->requires->js_init_call('M.format_topcoll.init', [
-            $course->id,
-            $toggles,
-            $coursenumsections,
-            $this->defaulttogglepersistence,
-            $this->defaultuserpreference,
-            ((!$this->userisediting) && ($this->tcsettings['onesection'] == 2)),
-            $shownonetoggle,
-            $this->userisediting, ]);
+        $onetopic = ($this->tcsettings['onesection'] == 2) ? 'true' : 'false';
+        $onetopictoggle = (empty($shownonetoggle)) ? 'false' : $shownonetoggle;
+        $defaulttogglepersistence = ($this->defaulttogglepersistence == 1) ? 'true' : 'false';
+        $content .= '<span id="tcdata" class="d-none"'.
+            ' data-onetopic="'.$onetopic.'"'.
+            ' data-onetopictoggle="'.$onetopictoggle.'"'.
+            ' data-defaulttogglepersistence="'.$defaulttogglepersistence.'"'.
+            '></span>';
+
         /* Make sure the database has the correct state of the toggles if changed by the code.
            This ensures that a no-change page reload is correct. */
-        set_user_preference(\format_topcoll\togglelib::TOPCOLL_TOGGLE.'_' . $course->id, $toggles);
+        set_user_preference(togglelib::TOPCOLL_TOGGLE.'_' . $course->id, $toggles);
 
         return $content;
     }
@@ -1162,11 +1177,11 @@ class renderer extends section_renderer {
         }
 
         $coursestylescontext = [];
-        $coursestylescontext['togglebackground'] = \format_topcoll\toolbox::hex2rgba(
+        $coursestylescontext['togglebackground'] = toolbox::hex2rgba(
             $this->tcsettings['togglebackgroundcolour'],
             $this->tcsettings['togglebackgroundopacity']
         );
-        $coursestylescontext['toggleforegroundcolour'] = \format_topcoll\toolbox::hex2rgba(
+        $coursestylescontext['toggleforegroundcolour'] = toolbox::hex2rgba(
             $this->tcsettings['toggleforegroundcolour'],
             $this->tcsettings['toggleforegroundopacity']
         );
@@ -1202,11 +1217,11 @@ class renderer extends section_renderer {
                     $coursestylescontext['toggleiconposition'] = 'left';
             }
         }
-        $coursestylescontext['toggleforegroundhovercolour'] = \format_topcoll\toolbox::hex2rgba(
+        $coursestylescontext['toggleforegroundhovercolour'] = toolbox::hex2rgba(
             $this->tcsettings['toggleforegroundhovercolour'],
             $this->tcsettings['toggleforegroundhoveropacity']
         );
-        $coursestylescontext['togglebackgroundhovercolour'] = \format_topcoll\toolbox::hex2rgba(
+        $coursestylescontext['togglebackgroundhovercolour'] = toolbox::hex2rgba(
             $this->tcsettings['togglebackgroundhovercolour'],
             $this->tcsettings['togglebackgroundhoveropacity']
         );
@@ -1267,54 +1282,37 @@ class renderer extends section_renderer {
 
         if ($this->defaulttogglepersistence == 1) {
             global $USER;
-            $USER->topcoll_user_pref[\format_topcoll\togglelib::TOPCOLL_TOGGLE.'_' . $this->course->id] = PARAM_RAW;
-            $userpreference = get_user_preferences(\format_topcoll\togglelib::TOPCOLL_TOGGLE.'_' . $this->course->id);
+            $USER->topcoll_user_pref[togglelib::TOPCOLL_TOGGLE.'_' . $this->course->id] = PARAM_RAW;
+            $userpreference = get_user_preferences(togglelib::TOPCOLL_TOGGLE.'_' . $this->course->id);
         } else {
             $userpreference = null;
         }
 
-        $coursenumsections = $this->courseformat->get_last_section_number();
+        $coursenumsections = $this->courseformat->get_last_section_number_without_deligated();
         if ($userpreference != null) {
-            $this->isoldtogglepreference = $this->togglelib->is_old_preference($userpreference);
-            if ($this->isoldtogglepreference == true) {
-                $ts1 = base_convert(substr($userpreference, 0, 6), 36, 2);
-                $ts2 = base_convert(substr($userpreference, 6, 12), 36, 2);
-                $thesparezeros = "00000000000000000000000000";
-                if (strlen($ts1) < 26) {
-                    // Need to PAD.
-                    $ts1 = substr($thesparezeros, 0, (26 - strlen($ts1))) . $ts1;
+            // Check we have enough digits for the number of toggles in case this has increased.
+            $numdigits = togglelib::get_required_digits($coursenumsections);
+            $totdigits = strlen($userpreference);
+            if ($numdigits > $totdigits) {
+                if ($this->defaultuserpreference == 0) {
+                    $dchar = togglelib::get_min_digit();
+                } else {
+                    $dchar = togglelib::get_max_digit();
                 }
-                if (strlen($ts2) < 27) {
-                    // Need to PAD.
-                    $ts2 = substr($thesparezeros, 0, (27 - strlen($ts2))) . $ts2;
+                for ($i = $totdigits; $i < $numdigits; $i++) {
+                    $userpreference .= $dchar;
                 }
-                $tb = $ts1 . $ts2;
-                $this->togglelib->set_toggles($tb);
-            } else {
-                // Check we have enough digits for the number of toggles in case this has increased.
-                $numdigits = $this->togglelib->get_required_digits($coursenumsections);
-                $totdigits = strlen($userpreference);
-                if ($numdigits > $totdigits) {
-                    if ($this->defaultuserpreference == 0) {
-                        $dchar = $this->togglelib->get_min_digit();
-                    } else {
-                        $dchar = $this->togglelib->get_max_digit();
-                    }
-                    for ($i = $totdigits; $i < $numdigits; $i++) {
-                        $userpreference .= $dchar;
-                    }
-                } else if ($numdigits < $totdigits) {
-                    // Shorten to save space.
-                    $userpreference = substr($userpreference, 0, $numdigits);
-                }
-                $this->togglelib->set_toggles($userpreference);
+            } else if ($numdigits < $totdigits) {
+                // Shorten to save space.
+                $userpreference = substr($userpreference, 0, $numdigits);
             }
+            $this->togglelib->set_toggles($userpreference);
         } else {
-            $numdigits = $this->togglelib->get_required_digits($coursenumsections);
+            $numdigits = togglelib::get_required_digits($coursenumsections);
             if ($this->defaultuserpreference == 0) {
-                $dchar = $this->togglelib->get_min_digit();
+                $dchar = togglelib::get_min_digit();
             } else {
-                $dchar = $this->togglelib->get_max_digit();
+                $dchar = togglelib::get_max_digit();
             }
             $userpreference = '';
             for ($i = 0; $i < $numdigits; $i++) {

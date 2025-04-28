@@ -28,6 +28,10 @@
 
 namespace format_topcoll\output\courseformat\content;
 
+use context_course;
+use core\output\renderer_base;
+use stdClass;
+
 /**
  * Base class to render a course add section navigation.
  */
@@ -41,7 +45,7 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
      * @param renderer_base $output typically, the renderer that's calling this function
      * @return stdClass data context for a mustache template
      */
-    public function export_for_template(\renderer_base $output): \stdClass {
+    public function export_for_template(renderer_base $output): stdClass {
         global $USER;
 
         if ($this->data !== null) {
@@ -50,10 +54,10 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
 
         $format = $this->format;
         $course = $format->get_course();
-        $context = \context_course::instance($course->id);
+        $context = context_course::instance($course->id);
 
         $modinfo = $this->format->get_modinfo();
-        $sections = $modinfo->get_section_info_all();
+        $sections = $modinfo->get_section_info_all(); // Note: Deligated sections are put at the end of the array.
 
         // FIXME: This is really evil and should by using the navigation API.
         $canviewhidden = has_capability('moodle/course:viewhiddensections', $context, $USER);
@@ -73,21 +77,21 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
                     $data->previoushidden = true;
                 }
                 $data->previousname = get_section_name($course, $sections[$back]);
-                $data->previousurl = $format->get_view_url($back, ['navigation' => false]);
+                $data->previousurl = $format->get_view_url($back, ['singlenavigation' => true]);
                 $data->hasprevious = true;
             }
             $back--;
         }
 
         $forward = $this->sectionno + 1;
-        $numsections = $format->get_last_section_number();
+        $numsections = $format->get_last_section_number_without_deligated();
         while ($forward <= $numsections && empty($data->nexturl)) {
             if ($canviewhidden || $format->is_section_visible($sections[$forward])) {
                 if (!$sections[$forward]->visible) {
                     $data->nexthidden = true;
                 }
                 $data->nextname = get_section_name($course, $sections[$forward]);
-                $data->nexturl = $format->get_view_url($forward, ['navigation' => false]);
+                $data->nexturl = $format->get_view_url($forward, ['singlenavigation' => true]);
                 $data->hasnext = true;
             }
             $forward++;
@@ -101,10 +105,10 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
     /**
      * Get the name of the template to use for this templatable.
      *
-     * @param \renderer_base $renderer The renderer requesting the template name
+     * @param renderer_base $renderer The renderer requesting the template name
      * @return string
      */
-    public function get_template_name(\renderer_base $renderer): string {
+    public function get_template_name(renderer_base $renderer): string {
         return 'format_topcoll/local/content/sectionnavigation';
     }
 }
