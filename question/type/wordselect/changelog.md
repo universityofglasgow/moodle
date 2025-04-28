@@ -1,5 +1,11 @@
+
+# Version 2.54 of the Moodle Wordselect question type by Marcus Green April 25
+Confirmed compatibility with Moodle 5.0
+Thanks to  Philipp Imhof with help getting the ci testing to work. Thanks to Ralf Erlebach for a fix to a division by zero error.
+https://github.com/marcusgreen/moodle-qtype_wordselect/pull/58/
+
 # Version 2.53 of the Moodle WordSelect question type by Marcus Green. Oct 24
-Switched from using jquery to plain javascript in response to 
+Switched from using jquery to plain javascript in response to
 https://github.com/marcusgreen/moodle-qtype_wordselect/issues/56
 Bumped version and having run automated tests against master confirmed compatibility
 with Moodle 4.5
