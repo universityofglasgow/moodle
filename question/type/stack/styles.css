@@ -1,4 +1,4 @@
-/* Style for hint question block */
+/* Style for hint question block. */
 details.stack-hint {
     padding: 2px;
     display: block;
@@ -199,6 +199,17 @@ body.path-question-type-stack-doc blockquote {
     margin: 1.5em 10px;
     padding: 1em 10px .1em 10px;
     quotes: "\201C""\201D""\2018""\2019";
+}
+
+/* Support for comments, used in example questions. */
+div.stack-comment {
+    text-align: left;
+    background: #fcf8e3;
+    border: 4px solid #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 4px;
+    overflow: hidden;
 }
 
 /* Support for proof. */
@@ -1215,4 +1226,51 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 .algebratree > li > span.cell:before,
 .algebratree > li > code:before {
     outline: none;
+}
+
+/* Response Analysis */
+.stack-collapse-header {
+    cursor: pointer;
+}
+.stack-collapse-header:not(.collapsed):before {
+    font-family: FontAwesome;
+    content: "\f0d7";
+    font-weight: bold;
+    display: inline-block;
+}
+.stack-collapse-header.collapsed:before {
+    font-family: FontAwesome;
+    content: "\f0da";
+    font-weight: bold;
+    display: inline-block;
+}
+.stack-ra-report::marker {
+    font-size: 1.4rem;
+}
+.stack-ra-question {
+    max-width: 800px;
+    background-color: rgb(230, 247, 255);
+    border-radius: 10px;
+    padding: 1em;
+    white-space: pre-line;
+}
+.stack-ra-question * {
+    margin: 0;
+}
+.stack-library-file-list {
+    padding: 20px 0 20px 0;
+    height: 400px;
+    overflow-y: scroll;
+    border: 1px solid lightblue;
+    border-radius: 10px;
+}
+.stack-library-import-success {
+    padding: 5px 0 5px 10px;
+    background-color: lightgreen;
+    border-radius: 10px;
+}
+.stack-library-import-failure {
+    padding: 5px 0 5px 10px;
+    background-color: pink;
+    border-radius: 10px;
 }

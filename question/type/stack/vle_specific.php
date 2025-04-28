@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Stack.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Add description here!
+ * @package    qtype_stack
+ * @copyright  2024 University of Edinburgh.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ */
+
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 // This file defines question_display_options which the next class extends.
@@ -169,7 +176,7 @@ function stack_castext_file_filter(string $castext, array $identifiers): string 
     return $castext;
 }
 
-/*
+/**
  * This function returns the version number of the current Moodle.
  */
 function stack_determine_moodle_version() {
@@ -177,7 +184,7 @@ function stack_determine_moodle_version() {
     return($v->branch);
 }
 
-/*
+/**
  * This function returns fully defined URL for a file present in
  * the `corsscripts` directory. Either mapped through logic that
  * modifies headers or a direct link.
@@ -191,29 +198,46 @@ function stack_cors_link(string $filename): string {
     }
 }
 
-/*
+/**
  * Gets the URL used for MathJax, might be VLE local.
  */
 function stack_get_mathjax_url(): string {
     // TO-DO: figure out how to support VLE local with CORS.
-    return 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    $mathjaxconfigurl = get_config('filter_mathjaxloader', 'httpsurl');
+    if ($mathjaxconfigurl) {
+        $questionpos = strpos($mathjaxconfigurl, '?');
+        if ($questionpos !== false) {
+            $querystring = substr($mathjaxconfigurl, $questionpos + 1);
+            $urlstring = substr($mathjaxconfigurl, 0, $questionpos);
+            parse_str($querystring, $queryparams);
+            $queryparams = array_merge(['config' => 'TeX-AMS-MML_HTMLorMML'], $queryparams);
+            $querystring = http_build_query($queryparams, '', '&', PHP_QUERY_RFC3986);
+            $url = $urlstring . '?' . $querystring;
+        } else {
+            $url = $mathjaxconfigurl . '?config=TeX-AMS-MML_HTMLorMML';
+        }
+
+        return $url;
+    } else {
+        return 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    }
 }
 
-/*
+/**
  * Gets the url for MathJax 3.
  */
 function stack_get_mathjax3_url() {
     return 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
 }
 
-/*
+/**
  * Give the VLE a chance to clear any question cache.
  */
 function stack_clear_vle_question_cache(int $questionid) {
     question_bank::notify_question_edited($questionid);
 }
 
-/*
+/**
  * This is needed to put links to the STACK question dashboard into the question.
  */
 function question_display_options() {
@@ -241,8 +265,9 @@ function question_display_options() {
  *
  *  contrib:// is for CAS side stuff and template:// is for CASText side stuff.
  *
- *  Returns the string content of the URL/file. If failign return false.
+ *  Returns the string content of the URL/file. If failing return false.
  */
+// phpcs:ignore moodle.Commenting.MissingDocblock.Function
 function stack_fetch_included_content(string $url) {
     static $cache = [];
     $lc = trim(strtolower($url));
@@ -285,6 +310,11 @@ function stack_fetch_included_content(string $url) {
             $islocalfile = true;
             $translated = __DIR__ . '/stack/cas/castext2/template/' . $path;
         }
+    } else if (strpos($lc, 'cors://') === 0) {
+        $good = true;
+        $islocalfile = true;
+        $translated = __DIR__ . '/corsscripts/' . $path;
+
     }
 
     if ($good) {
