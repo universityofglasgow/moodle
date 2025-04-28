@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tiny_generico';
-$plugin->release = '1.0.1 (Build 2023100800)';
+$plugin->release = '1.0.3 (Build 2025041700)';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->requires = 2022112800;//Moodle 4.1.0
-$plugin->version = 2023100800;
+$plugin->version = 2025041700;
