@@ -35,10 +35,10 @@ global $CFG;
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/auth/saml2/locallib.php');
 
-    $yesno = array(
+    $yesno = [
             new lang_string('no'),
             new lang_string('yes'),
-    );
+    ];
 
     // Introductory explanation.
     $settings->add(new admin_setting_heading('auth_saml2/pluginname', '',
@@ -196,7 +196,7 @@ if ($ADMIN->fulltree) {
         'auth_saml2/assertionsconsumerservices',
         get_string('assertionsconsumerservices', 'auth_saml2'),
         get_string('assertionsconsumerservices_help', 'auth_saml2'),
-        array(),
+        [],
         $assertionsconsumerservices
     );
     $acssetting->set_updatedcallback('auth_saml2_update_sp_metadata');
@@ -245,6 +245,13 @@ if ($ADMIN->fulltree) {
             PARAM_URL
         ));
     }
+
+    $settings->add(new admin_setting_configiplist(
+        'auth_saml2/noredirectips',
+        get_string('noredirectips', 'auth_saml2'),
+        get_string('noredirectips_help', 'auth_saml2'),
+        ''
+    ));
 
     // Auto login.
     $autologinoptions = [
@@ -343,7 +350,7 @@ urn:mace:dir:attribute-def:mail *</pre>"]),
     // Multi IdP display type.
     $multiidpdisplayoptions = [
         saml2_settings::OPTION_MULTI_IDP_DISPLAY_DROPDOWN => get_string('multiidpdropdown', 'auth_saml2'),
-        saml2_settings::OPTION_MULTI_IDP_DISPLAY_BUTTONS => get_string('multiidpbuttons', 'auth_saml2')
+        saml2_settings::OPTION_MULTI_IDP_DISPLAY_BUTTONS => get_string('multiidpbuttons', 'auth_saml2'),
     ];
     $settings->add(new admin_setting_configselect(
         'auth_saml2/multiidpdisplay',
@@ -359,6 +366,16 @@ urn:mace:dir:attribute-def:mail *</pre>"]),
         get_string('attemptsignout_help', 'auth_saml2'),
         1,
         $yesno));
+
+    // SAMLPHP tempdir.
+    $settings->add(new admin_setting_configtext(
+        'auth_saml2/tempdir',
+        get_string('tempdir', 'auth_saml2'),
+        get_string('tempdir_help', 'auth_saml2'),
+        '/tmp/simplesaml',
+        PARAM_TEXT,
+        50,
+        3));
 
     // SAMLPHP version.
     $authplugin = get_auth_plugin('saml2');
@@ -381,7 +398,7 @@ urn:mace:dir:attribute-def:mail *</pre>"]),
     // Flagged login response options.
     $flaggedloginresponseoptions = [
         saml2_settings::OPTION_FLAGGED_LOGIN_MESSAGE => get_string('flaggedresponsetypemessage', 'auth_saml2'),
-        saml2_settings::OPTION_FLAGGED_LOGIN_REDIRECT => get_string('flaggedresponsetyperedirect', 'auth_saml2')
+        saml2_settings::OPTION_FLAGGED_LOGIN_REDIRECT => get_string('flaggedresponsetyperedirect', 'auth_saml2'),
     ];
 
     // Flagged login response options selector.
@@ -427,4 +444,32 @@ urn:mace:dir:attribute-def:mail *</pre>"]),
             ',',
             PARAM_TEXT,
             5));
+
+    // Moodle as an IDP feature setting section.
+    $settings->add(new admin_setting_heading('auth_saml2/moodleidpheading', get_string('moodleidpheading', 'auth_saml2'),
+        new lang_string('moodleidpdescription', 'auth_saml2')));
+
+    // Enable Moodle IDP.
+    $settings->add(new admin_setting_configselect(
+        'auth_saml2/moodleidpenabled',
+        get_string('moodleidpenabled', 'auth_saml2'),
+        get_string('moodleidpenabled_help', 'auth_saml2'),
+        0, $yesno));
+
+        // IDP Metadata.
+    $settings->add(new setting_textonly(
+        'auth_saml2/moodleidpmetadata',
+        get_string('moodleidpmetadata', 'auth_saml2'),
+        get_string('moodleidpmetadata_help', 'auth_saml2', $CFG->wwwroot . '/auth/saml2/idp/metadata.php')
+        ));
+
+    // List valid SPs.
+    $settings->add(new admin_setting_configtextarea(
+        'auth_saml2/moodleidpsplist',
+        get_string('moodleidpsplist', 'auth_saml2'),
+        get_string('moodleidpsplist_help', 'auth_saml2', ['example' => "<pre>
+https://www.someothermoodle.com/auth/saml2/sp/metadata.php
+</pre>"]),
+        '',
+        PARAM_TEXT));
 }
