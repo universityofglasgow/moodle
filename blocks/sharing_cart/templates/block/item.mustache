@@ -1,0 +1,43 @@
+<div class="sharing_cart_item" data-type="{{type}}" data-itemid="{{id}}" data-oldinstanceid="{{old_instance_id}}"
+     {{#module_is_disabled_on_site}}title="{{#str}}module_is_disabled_on_site, block_sharing_cart{{/str}}"{{/module_is_disabled_on_site}}
+     data-module_is_disabled_on_site="{{#module_is_disabled_on_site}}1{{/module_is_disabled_on_site}}{{^module_is_disabled_on_site}}0{{/module_is_disabled_on_site}}"
+     data-status="{{status}}"
+     {{^is_module}}data-collapsed="true"{{/is_module}}
+    {{#original_course_fullname}}title="{{#str}}original_course, block_sharing_cart{{/str}} {{.}}"{{/original_course_fullname}}
+>
+    <div class="item-body">
+        {{#is_root}}
+            <input class="d-none mr-1" type="checkbox" data-action="bulk_select" value="{{id}}"/>
+        {{/is_root}}
+        <div class="info">
+            {{> block_sharing_cart/block/item/icon }}
+            <span class="name">{{{name}}}</span>
+        </div>
+        <span class="sharing_cart_item_actions">
+            {{^status_awaiting}}
+                {{#is_root}}
+                    <i class="fa fa-trash" data-action="delete"
+                       title="{{#str}}delete_item, block_sharing_cart{{/str}}"></i>
+                {{/is_root}}
+                {{#status_finished}}
+                    {{#has_file_id}}
+                        {{^module_is_disabled_on_site}}
+                            <i class="fa fa-clone" data-action="copy_to_course"
+                               title="{{#str}}copy_item, block_sharing_cart{{/str}}"></i>
+                        {{/module_is_disabled_on_site}}
+                    {{/has_file_id}}
+                {{/status_finished}}
+            {{/status_awaiting}}
+            {{#has_run_now}}
+                <button class="btn btn-secondary text-nowrap" data-action="run_now" data-task-id="{{task_id}}">
+                    {{#str}}run_now, block_sharing_cart{{/str}}
+                </button>
+            {{/has_run_now}}
+        </span>
+    </div>
+    <div class="sharing_cart_item_children">
+        {{#children}}
+            {{> block_sharing_cart/block/item }}
+        {{/children}}
+    </div>
+</div>

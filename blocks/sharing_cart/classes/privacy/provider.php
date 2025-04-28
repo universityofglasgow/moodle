@@ -2,243 +2,145 @@
 
 namespace block_sharing_cart\privacy;
 
+// @codeCoverageIgnoreStart
+defined('MOODLE_INTERNAL') || die();
+
+// @codeCoverageIgnoreEnd
+
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
-use core_privacy\local\request\context;
 use core_privacy\local\request\contextlist;
-use core_privacy\local\request\core_userlist_provider;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
-defined('MOODLE_INTERNAL') || die();
-
-
 class provider implements
-    core_userlist_provider,
     \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider {
+    \core_privacy\local\request\plugin\provider,
+    \core_privacy\local\request\core_userlist_provider
+{
+    public static function get_metadata(collection $collection): collection
+    {
+        $collection->add_database_table('block_sharing_cart_items', [
+            'user_id' => 'privacy:metadata:sharing_cart_items:user_id',
+            'file_id' => 'privacy:metadata:sharing_cart_items:file_id',
+            'parent_item_id' => 'privacy:metadata:sharing_cart_items:parent_item_id',
+            'old_instance_id' => 'privacy:metadata:sharing_cart_items:old_instance_id',
+            'type' => 'privacy:metadata:sharing_cart_items:type',
+            'name' => 'privacy:metadata:sharing_cart_items:name',
+            'status' => 'privacy:metadata:sharing_cart_items:status',
+            'sortorder' => 'privacy:metadata:sharing_cart_items:sortorder',
+            'original_course_fullname' => 'privacy:metadata:sharing_cart_items:original_course_fullname',
+            'timecreated' => 'privacy:metadata:sharing_cart_items:timecreated',
+            'timemodified' => 'privacy:metadata:sharing_cart_items:timemodified',
+        ], 'privacy:metadata:sharing_cart_items:tabledesc');
 
-    /**
-     * Get the list of contexts that contain user information for the specified user.
-     */
+        return $collection;
+    }
+
     public static function get_contexts_for_userid(int $userid): contextlist {
-        $contextlist = new contextlist();
-
-        // There is only user context that related to sharing cart
-        $contextlist->add_user_context($userid);
-
+        $contextlist = new \core_privacy\local\request\contextlist();
+        $sql = "SELECT id FROM {context} WHERE contextlevel = :context_level_user AND instanceid = :userid";
+        $contextlist->add_from_sql($sql, ['userid' => $userid, 'context_level_user' => CONTEXT_USER]);
         return $contextlist;
     }
 
-    /**
-     * Export all user data for the specified user, in the specified contexts.
-     *
-     * @param approved_contextlist $contextlist The approved contexts to export information for.
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function export_user_data(approved_contextlist $contextlist): void {
-        $user = $contextlist->get_user();
-        // Data structure
-        $root = get_string('pluginname', 'block_sharing_cart');
+    public static function export_user_data(approved_contextlist $contextlist): void
+    {
+        global $DB;
 
-        $context = \context_user::instance($user->id);
-        self::export_user_sharing_cart($user, $context, $root);
+        $user = $contextlist->get_user();
+        $sql = 'SELECT *
+                  FROM {block_sharing_cart_items} i
+                 WHERE i.user_id = :userid';
+
+        $context = \core\context\user::instance($user->id);
+        $contextpath = [get_string('pluginname', 'block_sharing_cart')];
+
+        $recordset = $DB->get_recordset_sql($sql, ['userid' => $user->id]);
+        foreach ($recordset as $record) {
+            $data = (object) [
+                'user_id' => $record->user_id,
+                'file_id' => $record->file_id,
+                'parent_item_id' => $record->parent_item_id,
+                'old_instance_id' => $record->old_instance_id,
+                'type' => $record->type,
+                'name' => format_string($record->name),
+                'status' => $record->status,
+                'sortorder' => $record->sortorder,
+                'original_course_fullname' => format_string($record->original_course_fullname),
+                'timecreated' => transform::datetime($record->timecreated),
+                'timemodified' => transform::datetime($record->timemodified),
+            ];
+
+            writer::with_context($context)->export_data(array_merge($contextpath, [
+                clean_param($record->idopensesame, PARAM_FILE),
+            ]), $data);
+        }
+
+        $recordset->close();
+
     }
 
-    /**
-     * Delete all data for all users in the specified context.
-     *
-     * @param \context $context $context   The specific context to delete data for.
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function delete_data_for_all_users_in_context(\context $context): void {
-        // No data need to be delete other than user context
+    public static function delete_data_for_all_users_in_context(\context $context): void
+    {
+        global $DB;
+
+        // Only delete data for a user context.
         if ($context->contextlevel !== CONTEXT_USER) {
             return;
         }
 
-        self::delete_user_sharing_cart_entities($context->instanceid);
+        $DB->delete_records('block_sharing_cart_items', ['user_id' => $context->instanceid]);
     }
 
-    /**
-     * Delete all user data for the specified user, in the specified contexts.
-     *
-     * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
-     * @throws \dml_exception
-     */
-    public static function delete_data_for_user(approved_contextlist $contextlist): void {
+    public static function delete_data_for_user(approved_contextlist $contextlist): void
+    {
         global $DB;
 
-        if (empty($contextlist->count())) {
-            return;
-        }
-
-        $user = $contextlist->get_user();
         foreach ($contextlist as $context) {
-            // Accept only user context
             if ($context->contextlevel !== CONTEXT_USER) {
                 continue;
             }
-            if ((int)$context->instanceid !== (int)$user->id) {
+
+            if ($context->instanceid !== $contextlist->get_user()->id) {
                 continue;
             }
 
-            $DB->delete_records('block_sharing_cart', ['userid' => $user->id]);
+            $DB->delete_records('block_sharing_cart_items', ['user_id' => $context->instanceid]);
         }
     }
 
-    /**
-     * Get the list of users who have data within a context.
-     *
-     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
-     * @throws \dml_exception
-     */
-    public static function get_users_in_context(userlist $userlist): void {
+    public static function get_users_in_context(userlist $userlist): void
+    {
         global $DB;
 
         $context = $userlist->get_context();
-
-        // Out of context
-        if (!$context instanceof \context_user) {
+        if ($context->contextlevel !== CONTEXT_USER) {
             return;
         }
 
-        // No data available for this user
-        if (!$DB->record_exists('block_sharing_cart', ['userid' => $context->instanceid])) {
+        if (!$DB->record_exists('block_sharing_cart_items', ['user_id' => $context->instanceid])) {
             return;
         }
 
         $userlist->add_user($context->instanceid);
     }
 
-    /**
-     * Delete multiple users within a single context.
-     *
-     * @param approved_userlist $userlist The approved context and user information to delete information for.
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    public static function delete_data_for_users(approved_userlist $userlist): void {
-        $users = $userlist->get_userids();
-
-        if (!empty($users)) {
-            self::delete_users_sharing_cart_entities($users);
-        }
-    }
-
-    /**
-     * Returns meta data about this system.
-     *
-     * @param   collection     $collection The initialised collection to add items to.
-     * @return  collection     A listing of user data stored through this system.
-     */
-    public static function get_metadata(collection $collection): collection {
-        $collection->add_database_table('block_sharing_cart', [
-            'userid' => 'privacy:metadata:block_sharing_cart:userid',
-            'modname' => 'privacy:metadata:block_sharing_cart:modname',
-            'modicon' => 'privacy:metadata:block_sharing_cart:modicon',
-            'modtext' => 'privacy:metadata:block_sharing_cart:modtext',
-            'ctime' => 'privacy:metadata:block_sharing_cart:ctime',
-            'tree' => 'privacy:metadata:block_sharing_cart:tree',
-            'weight' => 'privacy:metadata:block_sharing_cart:weight',
-        ], 'privacy:metadata:block_sharing_cart');
-
-        $collection->add_database_table('block_sharing_cart_plugins', [
-            'plugin' => 'privacy:metadata:block_sharing_cart_plugins:plugin',
-            'userid' => 'privacy:metadata:block_sharing_cart_plugins:userid',
-            'data' => 'privacy:metadata:block_sharing_cart_plugins:data',
-        ], 'privacy:metadata:block_sharing_cart_plugins');
-
-        return $collection;
-    }
-
-    /**
-     * @param object $user
-     * @param \context $context
-     * @param string $root_data_path
-     * @throws \dml_exception
-     */
-    private static function export_user_sharing_cart(object $user, \context $context, string $root_data_path): void {
+    public static function delete_data_for_users(approved_userlist $userlist): void
+    {
         global $DB;
 
-        // Mapping
-        $items = [];
-
-        $params = [
-            'userid' => $user->id
-        ];
-        $records = $DB->get_recordset('block_sharing_cart', $params);
-
-        foreach ($records as $record) {
-            $folder = !empty($record->tree) ? $record->tree : 0;
-
-            $items[$folder][] = [
-                'type' => $record->modname,
-                'name' => $record->modtext,
-                'timecreated' => transform::datetime($record->ctime),
-            ];
-        }
-
-        $records->close();
-
-        // Sharing cart under section
-        foreach ($items as $folder => $data) {
-            if (empty($folder)) {
-                continue;
-            }
-            writer::with_context($context)->export_data([$root_data_path, $folder], (object)$data);
-        }
-
-        // Sharing cart root
-        if (isset($items[0]) && $data = $items[0]) {
-            writer::with_context($context)->export_data([$root_data_path], (object)$data);
-        }
-    }
-
-    /**
-     * Delete user sharing cart entities
-     * @param int $userid
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    private static function delete_user_sharing_cart_entities(int $userid): void {
-        self::delete_users_sharing_cart_entities([$userid]);
-    }
-
-    /**
-     * Delete many users sharing cart entities
-     * @param array $users
-     * @throws \coding_exception
-     * @throws \dml_exception
-     */
-    private static function delete_users_sharing_cart_entities(array $users): void {
-        global $DB;
-
-        // Exit if given user is empty
-        if (empty($users)) {
+        $context = $userlist->get_context();
+        if ($context->contextlevel !== CONTEXT_USER) {
             return;
         }
 
-        // Get sections that belong to sharing cart entities
-        [$user_sql, $user_params] = $DB->get_in_or_equal($users);
-        $sections = $DB->get_fieldset_select(
-            'block_sharing_cart',
-            'section',
-            'section != 0 AND userid ' . $user_sql,
-            $user_params
-        );
-
-        // Delete sharing cart sections
-        if (!empty($sections)) {
-            [$in_sql, $in_params] = $DB->get_in_or_equal($sections);
-            $DB->delete_records_select('block_sharing_cart_sections', 'id ' . $in_sql, $in_params);
+        if (!in_array($context->instanceid, $userlist->get_userids())) {
+            return;
         }
 
-        // Delete any sharing cart entities that belong to user
-        $DB->delete_records_select('block_sharing_cart', 'userid ' . $user_sql, $user_params);
+        $DB->delete_records('block_sharing_cart_items', ['user_id' => $context->instanceid]);
     }
 }
