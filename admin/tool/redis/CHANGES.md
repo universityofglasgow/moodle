@@ -4,6 +4,13 @@ moodle-tool_redis
 Changes
 -------
 
+### v4.5-r1
+
+* 2024-10-14 - Upgrade: Adopt changes from MDL-81960 and use new \core\url class
+* 2024-10-14 - Upgrade: Adopt changes from MDL-81920 and use new \core\lang_string class.
+* 2024-10-14 - Upgrade: Adopt changes from MDL-82158 and use new \core_cache\factory class.
+* 2024-10-07 - Prepare compatibility for Moodle 4.5.
+
 ### v4.4-r2
 
 * 2024-10-29 - Replace Redis Stats GUI with the newer Valkey Stats GUI
