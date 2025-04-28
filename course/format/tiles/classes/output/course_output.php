@@ -257,8 +257,8 @@ class course_output implements \renderable, \templatable {
             $message = get_string('coursephotomigrationincomplete', 'format_tiles');
             $message .= \html_writer::link(
                 new \moodle_url('/course/format/tiles/editor/migratecoursedata.php', ['courseid' => $this->course->id]),
-                '<i class="icon fa fa-cog mr-1"></i>' . get_string('fixproblems', 'format_tiles'),
-                ['class' => 'ml-1']
+                '<i class="icon fa fa-cog me-1"></i>' . get_string('fixproblems', 'format_tiles'),
+                ['class' => 'ms-1']
             );
             $data['editorwarnings'][] = [
                 'text' => $message,
@@ -488,7 +488,10 @@ class course_output implements \renderable, \templatable {
         if ($this->canviewhidden) {
             $data['availabilitymessage'] = self::temp_section_availability_message($thissection);
         }
-        $data['isdelegatedsection'] = $this->moodlerelease >= 4.5 && ($thissection->is_delegated() ?? false);
+        if ($this->moodlerelease >= 4.5 && ($thissection->is_delegated() ?? false)) {
+            $data['isdelegatedsection'] = true;
+            $data['contentcollapsed'] = true;
+        }
         return $data;
     }
 

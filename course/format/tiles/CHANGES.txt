@@ -573,23 +573,30 @@ Other
 - Fix issue 223 custom certificate monologo
 - Fix issue 226 stop page modal when pop up set
 
-4.4.0.27 (2024100942)
-=====================
+4.5.0.0 (2024101150)
+====================
+- Previous prep work for Moodle 4.5 (e.g. on subsections / delegated sections in 4.4.0.22 & 23) can now be used
+- Bootstrap 5 change class names e.g. ml-1 => ms-1 - see https://moodledev.io/docs/4.5/guides/bs5migration
 - Reserve space for right scroll bar on tiles main screen
     (avoid layout change in Chrome when tiles open/close and scrollbar appears/disappears)
 - Mobile sub-tile layout adjustment
+
+4.5.0.1 (2024101250)
+====================
+- Improve sub-sections expanded state handling (e.g. when persist when content is reloaded)
+- Add behat test for sub-sections
+
+4.5.0.2 (2024102550)
+====================
 - Fix missing section link in breadcrumb in activity
 - Fix new number picker button titles
 - Remove jquery from behat tests
 - Remove redundant local icons for resource subtiles in Moodle 4.3+
 - Improve appearance of bigbluebutton and Turnitin icons on sub-tiles
 
-4.4.0.28 (2024111540)
+4.5.0.3 (2024120950)
 =====================
 - High contrast mode available (shown if activated by user preference)
-
-4.4.0.29 (2024120940)
-=====================
 - Simplify $displaysection
 - Improve scroll bar access when tile open (overlay in centre section only, exposing left and right drawers to user)
 - Include "General" heading (for section zero) at top of course index
@@ -597,7 +604,14 @@ Other
 - Remove debug message
 - Allow null displaysection on js init
 
-
-4.4.0.30 (2024121240)
-=====================
+4.5.0.4 (2024121250)
+====================
 - Adjust tests
+
+4.5.0.5 (2024121251)
+====================
+- Fix JS build file course.min.js
+
+4.5.0.6 (2024121252)
+====================
+- Add missing change to version.php

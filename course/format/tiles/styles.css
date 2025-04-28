@@ -44,7 +44,7 @@
 .format-tiles .embed_cm_modal .modal-header h4 {
     color: #fff;
 }
-.format-tiles .embed_cm_modal .modal-header .close {
+.format-tiles .embed_cm_modal .modal-header .btn-close {
     color: #fff;
     opacity: 0.8;
 }
@@ -1085,7 +1085,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles .cursorpointer {
     cursor: pointer;
 }
-#page-course-editsection .format-tiles .icon_picker_modal button.close {
+#page-course-editsection .format-tiles .icon_picker_modal button.btn-close {
     color: #333;
     opacity: 0.9;
 }
@@ -1412,7 +1412,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: 30px;
 }
 .format-tiles .embed_cm_modal .embed_file_button,
-.format-tiles .modal-container .modal .modal-header button.close {
+.format-tiles .modal-container .modal .modal-header button.btn-close {
     display: inline-block;
     width: 28px;
     height: 28px;
@@ -1426,13 +1426,13 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     text-align: center;
     box-shadow: none;
 }
-.format-tiles .modal-container .modal .modal-header button.close {
+.format-tiles .modal-container .modal .modal-header button.btn-close {
     font-size: 1.8em;
     background-repeat: no-repeat;
     background-image: url([[pix:format_tiles|close-white]]);
     background-size: 17px 17px;
 }
-.format-tiles .modal-container .modal .modal-header .embed-module-buttons .close {
+.format-tiles .modal-container .modal .modal-header .embed-module-buttons .btn-close {
     /*Clean theme.*/
     position: relative;
     top: unset;
@@ -1444,7 +1444,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     display: flex;
     justify-content: flex-end;
 }
-.format-tiles .embed-module-buttons button.close {
+.format-tiles .embed-module-buttons button.btn-close {
     width: 28px;
     height: 28px;
     float: none;

@@ -48,7 +48,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
             completionState: "#completion-check-",
             cmModal: ".embed_cm_modal",
             moodleMediaPlayer: ".mediaplugin_videojs",
-            closeBtn: "button.close",
+            closeBtn: "button.btn-close",
             ACTIVITY: "li.activity",
             URLACTIVITYPOPUPLINK: ".activity.modtype_url.urlpopup a",
             modalHeader: ".modal-header",

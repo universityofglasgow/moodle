@@ -164,7 +164,7 @@ class course_section_manager {
                             ['action' => 'canceldeleteemptysections', 'courseid' => $courseid, 'sesskey' => sesskey()]
                         ),
                         get_string('canceltask', 'format_tiles'),
-                        ['class' => 'btn btn-secondary ml-2']
+                        ['class' => 'btn btn-secondary ms-2']
                     )
                 );
             } else {
@@ -178,7 +178,7 @@ class course_section_manager {
                         ['action' => 'deleteemptysections', 'courseid' => $courseid, 'sesskey' => sesskey()]
                     ),
                     get_string('deleteemptytiles', 'format_tiles'),
-                    ['class' => 'btn btn-secondary ml-2']
+                    ['class' => 'btn btn-secondary ms-2']
                 );
             } else {
                 // Only admin can use this feature.

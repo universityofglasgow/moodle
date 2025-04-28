@@ -138,7 +138,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
             $admintoolsbutton = \html_writer::link(
                 $admintoolsurl,
                 get_string('checkforproblemcourses', 'format_tiles'),
-                ['class' => 'btn btn-secondary ml-2']
+                ['class' => 'btn btn-secondary ms-2']
             );
         } else {
             $admintoolsurl = '';

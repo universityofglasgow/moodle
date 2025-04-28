@@ -94,13 +94,13 @@ if ($mform->is_cancelled()) {
 
 echo $OUTPUT->header();
 if (!$hideform) {
-    echo html_writer::start_div('ml-5');
+    echo html_writer::start_div('ms-5');
     echo html_writer::div(get_string('registerintro1', 'format_tiles'));
     echo html_writer::tag('ul',
         html_writer::tag('li', get_string('registerintro2', 'format_tiles'), [])
         . html_writer::tag('li', get_string('registerintro3', 'format_tiles'), [])
         . html_writer::tag('li', get_string('registerintro4', 'format_tiles'), [])
-        , ['class' => 'ml-3']
+        , ['class' => 'ms-3']
     );
     echo html_writer::div(get_string('registerintro5', 'format_tiles'));
     echo html_writer::end_div();

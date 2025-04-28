@@ -41,6 +41,11 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
         let resizeTimeout;
         var enableCompletion;
         var reorgSectionsDisabledUntil = 0;
+        /**
+         * If the user has previously expanded a sub-section, its ID will be in expandedSubSectionIds.
+         * @type {{}}
+         */
+        var expandedSubSectionIds = {};
 
          // Keep a record of which tile is currently open.
         var openTile = 0;
@@ -199,7 +204,42 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          */
         var setCourseContentHTML = function (contentArea, html, js) {
             if (html) {
-                contentArea.html(html);
+                // If section content is reloaded following a completion change, server does not know if sub-sections were expanded.
+                // We keep a local record of sub-sections which were expanded.
+                // When we get HTML from server, we adjust it to re-expand ny subsections which were expanded before displaying.
+                const newHtml = $(html);
+                const subSections = newHtml.find('li.modtype_subsection');
+                subSections.each((i) => {
+                    const subSection = $(subSections[i]);
+                    if (subSection.find('.course-content-item-content.collapse').length) {
+                        const subSectionId = subSection.find('a[data-toggle="collapse"]').data('subSectionId');
+                        // If the user has previously expanded the section, its ID will be in expandedSubSectionIds.
+                        const shouldBeExpanded = expandedSubSectionIds[subSectionId] !== undefined;
+                        if (shouldBeExpanded) {
+                            subSection.find('a[data-toggle="collapse"]')
+                                .removeClass('collapsed').attr('aria-expanded', true);
+                            subSection.find('.course-content-item-content')
+                                .addClass('show').addClass('collapse').removeClass('collapsing');
+                        }
+                    }
+                });
+
+                contentArea.html(newHtml.html());
+
+                // In the new content area, check for any expand or collapse of sub-sections.
+                // Keep a local record of which are expanded.
+                contentArea.find('li.modtype_subsection a[data-toggle="collapse"]').on(Event.CLICK, (e) => {
+                    const clickedButton = $(e.currentTarget);
+                    const isCollapsed = clickedButton.hasClass('collapsed');
+                    const subSectionId = clickedButton.data('subSectionId');
+                    if (isCollapsed && expandedSubSectionIds[subSectionId] === undefined) {
+                        // Sub-section is being expanded - record that fact locally.
+                        expandedSubSectionIds[subSectionId] = true;
+                    } else if (!isCollapsed && expandedSubSectionIds[subSectionId] !== undefined) {
+                        delete expandedSubSectionIds[subSectionId];
+                    }
+                });
+
                 $(Selector.TILE_LOADING_ICON).fadeOut(300, function () {
                     $(Selector.TILE_LOADING_ICON).html("");
                 });

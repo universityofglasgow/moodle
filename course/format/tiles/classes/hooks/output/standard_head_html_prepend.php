@@ -36,7 +36,6 @@ class standard_head_html_prepend {
             // This is called on every page so check that we are in a tiles course first.
             return;
         }
-        $debug = "Could not prepare format_tiles head data";
         try {
             if (method_exists('format_tiles\local\dynamic_styles', 'get_tiles_dynamic_css')) {
                 // The method get_tiles_dynamic_css() will check that we are on a page that really needs it.
@@ -44,8 +43,6 @@ class standard_head_html_prepend {
                 if ($dynamiccss) {
                     $hook->add_html("<style id=\"format-tiles-dynamic-css\">$dynamiccss</style>");
                 }
-            } else {
-                debugging("$debug: class not found", DEBUG_DEVELOPER);
             }
         } catch (\Exception $e) {
             debugging("Could not prepare format_tiles head data: " . $e->getMessage(), DEBUG_DEVELOPER);

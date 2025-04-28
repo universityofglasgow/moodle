@@ -175,6 +175,8 @@ class renderer extends section_renderer {
         $usecore = !$data['useSubtiles'] || $this->page->user_is_editing();
         if ($usecore) {
             $data = $parentdata;
+            $data->contentcollapsed = true;
+            $data->isdelegatedsection = true;
             $template = 'format_tiles/local/content/delegatedsection';
         }
 

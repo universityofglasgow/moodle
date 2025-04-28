@@ -273,7 +273,7 @@ function list_problem_courses() {
                 $displaycourse->action = html_writer::link(
                     $url,
                     get_string('fixproblems', 'format_tiles'),
-                    ['target' => '_blank', 'class' => 'btn btn-secondary ml-2']
+                    ['target' => '_blank', 'class' => 'btn btn-secondary ms-2']
                 );
             }
             $displaycourses[] = $displaycourse;
