@@ -36,15 +36,14 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/xmlize.php");
-require_once($CFG->dirroot.'/lib/uploadlib.php');
 
 // Development: turn on all debug messages and strict warnings.
 // The wordtable plugin just extends XML import/export.
 require_once("$CFG->dirroot/question/format/xml/format.php");
 
 // Include Book tool Word import plugin wordconverter class and utility functions.
-use \booktool_wordimport\wordconverter;
-use \qformat_wordtable\mqxmlconverter;
+use booktool_wordimport\wordconverter;
+use qformat_wordtable\mqxmlconverter;
 
 /**
  * Importer for Microsoft Word table question format.
@@ -57,12 +56,12 @@ use \qformat_wordtable\mqxmlconverter;
  */
 class qformat_wordtable extends qformat_xml {
     /** @var array Overrides to default XSLT parameters used for conversion */
-    private $xsltparameters = array('pluginname' => 'qformat_wordtable',
+    private $xsltparameters = ['pluginname' => 'qformat_wordtable',
             'heading1stylelevel' => 1, // Map "Heading 1" style to <h1> element.
-            'imagehandling' => 'embedded' // Embed image data directly into the generated Moodle Question XML.
-        );
+            'imagehandling' => 'embedded', // Embed image data directly into the generated Moodle Question XML.
+        ];
     /** @var array Lesson questions are stored here if importing a lesson Word file. */
-    private $lessonquestions = array();
+    private $lessonquestions = [];
 
     /**
      * Define required MIME-Type
@@ -158,7 +157,7 @@ class qformat_wordtable extends qformat_xml {
         }
 
         // Import the Word file into XHTML and an array of images.
-        $imagesforzipping = array();
+        $imagesforzipping = [];
         $word2xml = new wordconverter($this->xsltparameters['pluginname']);
         $word2xml->set_heading1styleoffset($this->xsltparameters['heading1stylelevel']);
         $word2xml->set_imagehandling($this->xsltparameters['imagehandling']);
@@ -197,7 +196,7 @@ class qformat_wordtable extends qformat_xml {
         if (is_readable($filename) && isset($cm)) {
             $filearray = file($filename);
             // Check for Macintosh OS line returns (ie file on one line), and fix.
-            if (preg_match("/\r/", $filearray[0]) AND !preg_match("/\n/", $filearray[0])) {
+            if (preg_match("/\r/", $filearray[0]) && !preg_match("/\n/", $filearray[0])) {
                 $this->lessonquestions = explode("\r", $filearray[0]);
             } else {
                 $this->lessonquestions = $filearray;
