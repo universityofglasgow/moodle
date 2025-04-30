@@ -1,4 +1,4 @@
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -11,7 +11,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Helper functions for the form used to create / edit a formulas question.
@@ -19,13 +19,14 @@
  * @module     qtype_formulas/editform
  * @copyright  2022 Philipp Imhof
  * @author     Philipp Imhof
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import * as Notification from 'core/notification';
 import Pending from 'core/pending';
 import {call as fetchMany} from 'core/ajax';
 import * as Instantiation from 'qtype_formulas/instantiation';
+import * as String from 'core/str';
 
 /**
  * Default grading criterion according to plugin settings (admin)
@@ -37,11 +38,34 @@ var defaultCorrectness = '';
  */
 var numberOfParts = 0;
 
+/**
+ * Pending timer, allowing to reset / cancel it.
+ */
+var timer = null;
+
+/**
+ * Delay (in milliseconds) before sending the current input of a field to validation.
+ */
+const DELAY = 250;
+
+/**
+ * Warning text for use of caret in model answer.
+ */
+var caretWarning = '';
+
+/**
+ * Initialization, i. e. registration of event handlers and stuff.
+ *
+ * @param {string} defCorrectness default correctness criterion from admin settings
+ */
 export const init = (defCorrectness) => {
     defaultCorrectness = defCorrectness;
-    numberOfParts = document.querySelectorAll('fieldset[id^=id_answerhdr_]').length;
+    numberOfParts = document.querySelectorAll("fieldset[id^='id_answerhdr_']").length;
 
     Instantiation.init(numberOfParts);
+
+    // Pre-fetch strings; currently there is only one.
+    fetchStrings();
 
     for (let i = 0; i < numberOfParts; i++) {
         let textfield = document.getElementById(`id_correctness_${i}`);
@@ -79,6 +103,9 @@ export const init = (defCorrectness) => {
         document.getElementById(`id_correctness_simple_tol_${i}`).addEventListener(
             'change', normalizeTolerance
         );
+
+        // Attach listener for input event to answer fields.
+        document.getElementById(`id_answer_${i}`).addEventListener('input', setDebounceTimer);
     }
 
     // When the form fields for random, global or any part's local variables loses focus,
@@ -111,6 +138,41 @@ export const init = (defCorrectness) => {
     } else {
         document.addEventListener('DOMContentLoaded', disableSimpleModeIfError.bind(null));
     }
+};
+
+/**
+ * Pre-fetch strings from the language file.
+ */
+const fetchStrings = async() => {
+    let pendingPromise = new Pending('qtype_formulas/editformstrings');
+    let strings = null;
+    try {
+        strings = await String.get_strings([
+            {key: 'caretwarning', component: 'qtype_formulas'},
+        ]);
+    } catch (err) {
+        Notification.exception(err);
+    }
+    pendingPromise.resolve();
+    // If fetching of strings was not successful, we quit here.
+    if (strings === null) {
+        return;
+    }
+    caretWarning = strings[0];
+};
+
+/**
+ * Event handler: set or re-initialize timer for a given input field.
+ *
+ * @param {Event} evt event
+ */
+const setDebounceTimer = (evt) => {
+    // If a timer has already been set, delete it.
+    if (typeof timer === 'number') {
+        clearTimeout(timer);
+    }
+    // Set timer for given input field.
+    timer = setTimeout(warnAboutCaret, DELAY, evt.target.id);
 };
 
 /**
@@ -190,6 +252,11 @@ const validateRandomvars = async(evt) => {
     pendingPromise.resolve();
 };
 
+/**
+ * Send text from local variables to web service for validation.
+ *
+ * @param {number} part number of part
+ */
 const validateLocalvars = async(part) => {
     let fieldList = {
         'random': 'id_varsrandom',
@@ -244,14 +311,89 @@ const showOrClearValidationError = (fieldID, message, sameField = true) => {
         field.classList.remove('is-invalid');
         return;
     }
-    annotation.innerText = message;
+    // If row and column number are -1, we remove them.
+    annotation.innerText = message.replaceAll('-1:', '');
     field.classList.add('is-invalid');
     // If there is already an error in *this* field, we don't generally force the focus,
     // because that could trap the user. We do, however, set the focus, if the prior error
     // occured in another field.
     if (!alreadyWithError || !sameField) {
+        // We set the focus here, so we don't depend on the further processing.
         field.focus();
+
+        // If we have a row and column number, extract them and place the cursor accordingly.
+        let messageParts = message.split(':', 2);
+        if (messageParts.length < 2) {
+            return;
+        }
+        let row = parseInt(messageParts[0]);
+        let col = parseInt(messageParts[1]);
+        jumpToRowAndColumn(field, row, col);
     }
+};
+
+/**
+ * Show a notice about the meaning of the caret (^) symbol in model answers.
+ *
+ * @param {string} id the answer field's id
+ */
+const warnAboutCaret = (id) => {
+    // If the string could not be loaded, we quit.
+    if (caretWarning === '') {
+        return;
+    }
+
+    let field = document.getElementById(id);
+    let annotation = document.getElementById(id.replace(/^id_(.*)$/, 'id_error_$1'));
+
+    // Display or hide the notice, depending on the presence of a caret in the model answer.
+    // Also, we make sure not to overwrite or hide existing error messages, e. g. from the
+    // form validation.
+    if (field.value.includes('^')) {
+        if (annotation.innerText.trim() !== '') {
+            return;
+        }
+        annotation.innerText = caretWarning;
+        annotation.style.display = 'block';
+    } else {
+        if (annotation.innerText !== caretWarning) {
+            return;
+        }
+        annotation.innerText = '';
+        annotation.style.display = '';
+    }
+};
+
+/**
+ * Jump to a certain text position (row, column) in a textarea field.
+ *
+ * @param {HTMLElement} field
+ * @param {number} row the row
+ * @param {number} col the column
+ * @returns
+ */
+const jumpToRowAndColumn = (field, row, col) => {
+    let lines = field.value.split('\n');
+
+    // If the row number is invalid, we leave. Focus has already been set by the caller.
+    if (row == -1 || col == -1) {
+        return;
+    }
+
+    let cursorPosition = 0;
+    // First, for every line, advance the appropriate number of characters.
+    for (let i = 0; i < row - 1; i++) {
+        // Stop if the row number is too high. This will bring us to the end of the field.
+        if (i >= lines.length) {
+            break;
+        }
+        cursorPosition += lines[i].length + 1;
+    }
+    // Now shift the cursor (col - 1) characters to the right, but not more than the line's length.
+    // Also avoid shifting it to the left, in case col is 0.
+    cursorPosition += Math.max(0, Math.min(col - 1, lines[row - 1].length));
+    field.focus();
+    field.setSelectionRange(cursorPosition, cursorPosition);
 };
 
 /**
@@ -268,6 +410,7 @@ const reenableCriterionTextfields = () => {
  * Handle change event for the elements that allow simplified entry of the grading criterion.
  * On each modification, the current criterion is propagated to the (hidden) textbox,
  * that will be used to store the criterion in the database upon submission of the form.
+ *
  * @param {number} partNumber number of the part
  */
 const handleSimpleCriterionChanges = (partNumber) => {
@@ -278,6 +421,7 @@ const handleSimpleCriterionChanges = (partNumber) => {
 /**
  * Parse the tolerance value into a number and put the value back into the textfield.
  * This allows for immediate simplification and some validation; invalid numbers will be replaced by 0.
+ *
  * @param {Event} event Event containing the textfield to be normalized
  */
 const normalizeTolerance = (event) => {
@@ -293,6 +437,7 @@ const normalizeTolerance = (event) => {
 
 /**
  * Switch between simplified and normal entry mode for the grading criterion.
+ *
  * @param {number} partNumber number of the part
  */
 const handleGradingCriterionModeSwitcher = (partNumber) => {
@@ -319,6 +464,7 @@ const handleGradingCriterionModeSwitcher = (partNumber) => {
 
 /**
  * Convert the simple grading criterion into the corresponding text.
+ *
  * @param {number} partNumber number of the part
  * @returns {string} text form of the grading criterion
  */
@@ -334,6 +480,7 @@ const convertSimpleCriterionToText = (partNumber) => {
 
 /**
  * Convert the grading criterion into the simplified form.
+ *
  * @param {number} partNumber number of the part
  * @returns {object} criterion the simplified grading criterion
  * @returns {number} criterion.type the type of error (relative or absolute)
@@ -360,8 +507,9 @@ const convertTextCriterionToSimple = (partNumber) => {
 /**
  * Check whether the current grading criterion can be converted into the simplified form.
  * If not, disable the checkbox that would allow switching to simple mode.
- * If yes, enable sais checkbox.
+ * If yes, enable said checkbox.
  * If the text box is empty, conversion is possible using the default value.
+ *
  * @param {number} partNumber number of the part
  */
 const blockModeSwitcherIfNeeded = (partNumber) => {

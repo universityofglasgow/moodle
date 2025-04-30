@@ -1,4 +1,4 @@
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -11,7 +11,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * support for the Moodle mobile app >= 3.9.5. PHP calls this from within
@@ -23,6 +23,10 @@ var result = {
     componentInit: function() {
         var div = document.createElement('div');
         div.innerHTML = this.question.html;
+
+        // We use Bootstrap tooltips in the classic renderer, but we don't want them in the
+        // Moodle App, because they can take away the focus.
+        div.innerHTML = div.innerHTML.replaceAll(/data(-bs)?-toggle="tooltip"/g, '');
         this.question.text = div.querySelector('.qtext').innerHTML;
 
         // Replace Moodle's correct/incorrect and feedback classes with our own.

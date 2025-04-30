@@ -15,15 +15,10 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * @package    qtype_formulas
- * @copyright  2010 Hon Wai, Lau <lau65536@gmail.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-/**
- * restore plugin class that provides the necessary information
+ * Restore plugin class that provides the necessary information
  * needed to restore one formulas qtype plugin
  *
+ * @package    qtype_formulas
  * @copyright  2010 Hon Wai, Lau <lau65536@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -59,6 +54,8 @@ class restore_qtype_formulas_plugin extends restore_qtype_plugin {
      * This function processes the <formulas> XML element for the backup, i. e. the part where the
      * specific question level data like varsrandom or varsglobal are backed up. That's the data stored
      * in the qtype_formulas_options table.
+     *
+     * @param array $data data from the XML element <formulas>
      */
     public function process_formulas($data) {
         global $DB;
@@ -105,6 +102,8 @@ class restore_qtype_formulas_plugin extends restore_qtype_plugin {
      * This function processes the <formulas_answer> XML element for the backup, i. e. the part where
      * the specific part level data like answertype or subqtext are backed up. That's the data stored
      * in the qtype_formulas_answers table.
+     *
+     * @param array $data data from the <formulas_answer> XML element
      */
     public function process_formulas_answer($data) {
         global $DB;
@@ -223,7 +222,7 @@ class restore_qtype_formulas_plugin extends restore_qtype_plugin {
         return [
             '/options/answers/id',
             '/options/answers/questionid',
-            '/options/numpart',
+            '/options/numparts',
         ];
     }
 }

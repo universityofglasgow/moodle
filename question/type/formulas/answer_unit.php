@@ -20,6 +20,7 @@ use Exception;
 /**
  * @copyright Copyright (c) 2010-2011, Hon Wai, Lau. All rights reserved.
  * @author Hon Wai, Lau <lau65536@gmail.com>
+ * @package qtype_formulas
  * @license New and Simplified BSD licenses, http://www.opensource.org/licenses/bsd-license.php
  */
 
@@ -242,11 +243,15 @@ class answer_unit_conversion {
      * Attempt to convert the $test_unit_name to one of the unit in the $base_unit_array,
      * using any of the conversion rule added in this class earlier. No throw
      *
-     * @param string $test_unit the name of the test unit
+     * @param string $test_unit_name the name of the test unit
      * @param array $base_unit_array in the format of array(unit => exponent, ...)
-     * @return array(conversion factor, unit exponent) if it can be converted, otherwise null.
+     * @return null|array (conversion factor, unit exponent) if it can be converted, otherwise null.
      */
     private function attempt_conversion($test_unit_name, $base_unit_array) {
+        // If the unit does not exist, we leave early.
+        if (!array_key_exists($test_unit_name, $this->mapping)) {
+            return null;
+        }
         $oclass = $this->mapping[$test_unit_name];
         if (!isset($oclass)) {
             return null;  // It does not exist in the mapping implies it is not convertible.
@@ -288,7 +293,7 @@ class answer_unit_conversion {
      *
      * @param string $unit_expression The input unit string
      * @param bool $no_divisor whether divisor '/' is acceptable. It is used to parse unit recursively
-     * @return an array of the form (base unit name => exponent), null on error
+     * @return array an array of the form (base unit name => exponent), null on error
      */
     public function parse_unit($unit_expression, $no_divisor=false) {
         if (strlen(trim($unit_expression)) == 0) {

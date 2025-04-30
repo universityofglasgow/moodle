@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,14 +12,14 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Test helper class for the formulas question type.
  *
  * @package    qtype_formulas
  * @copyright  2012 Jean-Michel Védrine
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_formulas_test_helper extends question_test_helper {
     /** @var string */
@@ -84,12 +84,11 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->varsrandom = '';
         $q->varsglobal = '';
         $q->answernumbering = 'abc';
-        $q->qv = new qtype_formulas\variables();
         $q->penalty = 0.2;
         $q->generalfeedback = '';
         test_question_maker::set_standard_combined_feedback_fields($q);
         $q->shownumcorrect = 1;
-        $q->numpart = 0;   // This is of course invalid but should be changed by all tests.
+        $q->numparts = 0;   // This is of course invalid but should be changed by all tests.
         $q->parts = [];
         return $q;
     }
@@ -146,7 +145,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->penalty = 0.2;
         $q->textfragments = [0 => '<p>This is a minimal question. The answer is "5*x^2".</p>',
                                   1 => ''];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 1;
         $q->varsglobal = 'a=5;';
         $q->generalfeedback = '';
@@ -156,7 +155,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $p->answermark = 1;
         $p->vars1 = 'x={1:10}';
         $p->answer = '"a*x^2"';
-        $p->answertype = '1000';
+        $p->answertype = strval(qtype_formulas::ANSWER_TYPE_ALGEBRAIC);
         $p->answernotunique = '1';
         $p->correctness = '_err < 0.01';
         $p->subqtext = '';
@@ -179,7 +178,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $form->answer = ['"a*x^2"'];
         $form->answernotunique = ['1'];
         $form->answermark = [1];
-        $form->answertype = ['1000'];
+        $form->answertype = [strval(qtype_formulas::ANSWER_TYPE_ALGEBRAIC)];
         $form->correctness = ['_err < 0.01'];
         $form->numbox = [1];
         $form->placeholder = [''];
@@ -228,7 +227,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->penalty = 0.3; // Non-zero and not the default.
         $q->textfragments = [0 => '<p>This is a minimal question. The answer is 5.</p>',
                                   1 => ''];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $q->generalfeedback = '';
         $p = self::make_a_formulas_part();
@@ -373,7 +372,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             ],
         ];
 
-        $qdata->options->numpart = 1;
+        $qdata->options->numparts = 1;
 
         $qdata->hints = [
             (object) [
@@ -411,7 +410,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->penalty = 0.3;
         $q->textfragments = [0 => '<p>One part, one number plus unit, answer is 5 m/s</p>',
                                   1 => ''];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $p = self::make_a_formulas_part();
         $p->id = 14;
@@ -545,7 +544,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             ],
         ];
 
-        $qdata->options->numpart = 1;
+        $qdata->options->numparts = 1;
 
         return $qdata;
     }
@@ -566,7 +565,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             0 => '<p>One part, one number plus unit, answer is 5 m/s</p>',
             1 => '',
         ];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
 
         $p = self::make_a_formulas_part();
@@ -702,7 +701,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             ],
         ];
 
-        $qdata->options->numpart = 1;
+        $qdata->options->numparts = 1;
 
         return $qdata;
     }
@@ -723,7 +722,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             0 => '<p>Question with two numbers. The answers are 2 and 3.</p>',
             1 => '',
         ];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
 
         $p = self::make_a_formulas_part();
@@ -812,7 +811,7 @@ class qtype_formulas_test_helper extends question_test_helper {
                 1 => '--',
                 2 => '--',
                 3 => '</p>'];
-        $q->numpart = 3;
+        $q->numparts = 3;
         $q->defaultmark = 6;
         $p0 = self::make_a_formulas_part();
         $p0->placeholder = '#1';
@@ -937,7 +936,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->questiontext = '<p>This question shows different display methods of the answer and unit box.</p>';
         $q->defaultmark = 8;
         $q->penalty = 0.3; // Non-zero and not the default.
-        $q->numpart = 4;
+        $q->numparts = 4;
         $q->generalfeedback = 'This is the general feedback.';
         $q->textfragments = [0 => '<p>This question shows different display methods of the answer and unit box.</p>',
                 1 => '',
@@ -1148,7 +1147,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             ],
         ];
 
-        $qdata->options->numpart = 4;
+        $qdata->options->numparts = 4;
 
         $qdata->hints = [
             1 => (object) [
@@ -1330,7 +1329,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->penalty = 0.3; // Non-zero and not the default.
         $q->textfragments = [0 => '<p>This question has 0 as answer to test problem when answer is equal to 0.</p>',
                 1 => ''];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $p = self::make_a_formulas_part();
         $p->id = 17;
@@ -1409,7 +1408,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->questiontext = '<p>This question shows different display methods of the answer and unit box.</p>';
         $q->defaultmark = 8;
         $q->penalty = 0.3; // Non-zero and not the default.
-        $q->numpart = 4;
+        $q->numparts = 4;
         $q->generalfeedback = 'This is the general feedback.';
         $q->textfragments = [0 => '<p>This question shows different display methods of the answer and unit box.</p>',
                 1 => '',
@@ -1564,7 +1563,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->penalty = 0.3; // Non-zero and not the default.
         $q->textfragments = [0 => '<p>This question has a multichoice answer.</p>',
                                   1 => ''];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $p = self::make_a_formulas_part();
         $p->id = 14;
@@ -1647,7 +1646,7 @@ class qtype_formulas_test_helper extends question_test_helper {
         $q->penalty = 0.3; // Non-zero and not the default.
         $q->textfragments = [0 => '<p>This question has a multichoice answer.</p>',
                                   1 => ''];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $p = self::make_a_formulas_part();
         $p->id = 14;
@@ -1733,7 +1732,7 @@ class qtype_formulas_test_helper extends question_test_helper {
                                   1 => '{_0:choices1:MCE}',
                                   2 => '{_0:choices2:MCE}',
                             ];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $p1 = self::make_a_formulas_part();
         $p1->id = 14;
@@ -1834,7 +1833,7 @@ class qtype_formulas_test_helper extends question_test_helper {
                                   1 => 'Part 1 -- {_0:choices1}',
                                   2 => 'Part 2 -- {_0:choices2}',
                             ];
-        $q->numpart = 1;
+        $q->numparts = 1;
         $q->defaultmark = 2;
         $p1 = self::make_a_formulas_part();
         $p1->id = 14;
@@ -1934,7 +1933,7 @@ class qtype_formulas_test_helper extends question_test_helper {
             1 => '',
             2 => '',
         ];
-        $q->numpart = 2;
+        $q->numparts = 2;
         $q->defaultmark = 2;
 
         $p1 = self::make_a_formulas_part();
@@ -2123,8 +2122,9 @@ class qtype_formulas_test_helper extends question_test_helper {
             ],
         ];
 
-        $qdata->options->numpart = 2;
+        $qdata->options->numparts = 2;
 
         return $qdata;
     }
+
 }

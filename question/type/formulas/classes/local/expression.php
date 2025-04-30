@@ -14,15 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace qtype_formulas;
+namespace qtype_formulas\local;
 
 /**
- * Empty dummy trait for Moodle < 4.0 where the real quiz_question_helper_test_trait is not available.
+ * expression or statement for qtype_formulas parser
  *
  * @package    qtype_formulas
- * @category   test
- * @copyright  2025 Philipp Imhof
+ * @copyright  2022 Philipp Imhof
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-trait dummy_quiz_question_helper_test_trait {
+class expression {
+    /** @var array the expression or statement in RPN notation */
+    public array $body = [];
+
+    /**
+     * Constructor.
+     *
+     * @param array $body list of tokens forming the expression or statement, in RPN notation
+     */
+    public function __construct(array $body) {
+        $this->body = $body;
+    }
 }

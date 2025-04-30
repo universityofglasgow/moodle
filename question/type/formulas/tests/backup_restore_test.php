@@ -45,17 +45,10 @@ global $CFG;
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
+require_once($CFG->dirroot . '/mod/quiz/tests/quiz_question_helper_test_trait.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/formulas/questiontype.php');
 require_once($CFG->dirroot . '/question/type/formulas/tests/helper.php');
-
-if (file_exists($CFG->dirroot . '/mod/quiz/tests/quiz_question_helper_test_trait.php')) {
-    require_once($CFG->dirroot . '/mod/quiz/tests/quiz_question_helper_test_trait.php');
-    class_alias('\quiz_question_helper_test_trait', '\trait_class_alias');
-} else {
-    require_once($CFG->dirroot . '/question/type/formulas/tests/dummy_quiz_question_helper_test_trait.php');
-    class_alias('\qtype_formulas\dummy_quiz_question_helper_test_trait', '\trait_class_alias');
-}
 
 /**
  * Unit tests for backup and restore.
@@ -70,7 +63,7 @@ if (file_exists($CFG->dirroot . '/mod/quiz/tests/quiz_question_helper_test_trait
  * @covers     \qtype_formulas_part
  */
 final class backup_restore_test extends \advanced_testcase {
-    use \trait_class_alias;
+    use \quiz_question_helper_test_trait;
 
     /**
      * Data provider.
@@ -103,11 +96,7 @@ final class backup_restore_test extends \advanced_testcase {
      * @dataProvider provide_question_names
      */
     public function test_backup_and_restore(string $questionname): void {
-        global $CFG, $USER, $DB;
-
-        if ($CFG->branch < 400) {
-            $this->markTestSkipped('Not testing backup and restore in Moodle < 4.0');
-        }
+        global $USER, $DB;
 
         // Login as admin user.
         $this->resetAfterTest(true);
@@ -175,7 +164,7 @@ final class backup_restore_test extends \advanced_testcase {
         }
 
         // Next, we check the fields for each part.
-        $partfields = $qtype->part_tags() + ['subqtext', 'subqtextformat', 'feedback', 'feedbackformat'];
+        $partfields = qtype_formulas::PART_BASIC_FIELDS + ['subqtext', 'subqtextformat', 'feedback', 'feedbackformat'];
         foreach ($partfields as $field) {
             foreach ($questionrecord->options->answers as $i => $part) {
                 self::assertEquals($referencedata->parts[$i]->$field, $part->$field, $field);

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,45 +12,71 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * External functions and service definitions for the Formulas question type plugin.
+ *
+ * @package    qtype_formulas
+ * @copyright  2023 Philipp Imhof
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
-$functions = array(
-    'qtype_formulas_instantiate' => array(
-            'classname'   => 'qtype_formulas\external\instantiation',
-            'methodname'  => 'instantiate',
+$functions = [
+    'qtype_formulas_instantiate' => [
+            'classname' => 'qtype_formulas\external\instantiation',
+            'methodname' => 'instantiate',
             'description' => 'Instantiate a Formulas question based on the values provided in the request',
-            'type'        => 'read',
-            'ajax'        => true,
-            'capabilities'  => '',
-            'services' => array()
-    ),
-    'qtype_formulas_check_random_global_vars' => array(
-        'classname'   => 'qtype_formulas\external\instantiation',
-        'methodname'  => 'check_random_global_vars',
+            'type' => 'read',
+            'ajax' => true,
+            'capabilities' => '',
+            'services' => [],
+    ],
+    'qtype_formulas_check_random_global_vars' => [
+        'classname' => 'qtype_formulas\external\instantiation',
+        'methodname' => 'check_random_global_vars',
         'description' => 'Validate definition of random and/or global variables',
-        'type'        => 'read',
-        'ajax'        => true,
-        'capabilities'  => '',
-        'services' => array()
-    ),
-    'qtype_formulas_check_local_vars' => array(
-        'classname'   => 'qtype_formulas\external\instantiation',
-        'methodname'  => 'check_local_vars',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => '',
+        'services' => [],
+    ],
+    'qtype_formulas_check_local_vars' => [
+        'classname' => 'qtype_formulas\external\instantiation',
+        'methodname' => 'check_local_vars',
         'description' => 'Validate definition of a part\'s local variables',
-        'type'        => 'read',
-        'ajax'        => true,
-        'capabilities'  => '',
-        'services' => array()
-    ),
-    'qtype_formulas_render_question_text' => array(
-        'classname'   => 'qtype_formulas\external\instantiation',
-        'methodname'  => 'render_question_text',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => '',
+        'services' => [],
+    ],
+    'qtype_formulas_render_question_text' => [
+        'classname' => 'qtype_formulas\external\instantiation',
+        'methodname' => 'render_question_text',
         'description' => 'Substitute variables inside the question and/or part by their values',
-        'type'        => 'read',
-        'ajax'        => true,
-        'capabilities'  => '',
-        'services' => array()
-    )
-);
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => '',
+        'services' => [],
+    ],
+    'qtype_formulas_validate_student_answer' => [
+        'classname' => 'qtype_formulas\external\answervalidation',
+        'methodname' => 'validate_student_answer',
+        'description' => "Check whether a student's answer is (syntactically) valid",
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => '',
+        'services' => [],
+    ],
+    'qtype_formulas_validate_unit' => [
+        'classname' => 'qtype_formulas\external\answervalidation',
+        'methodname' => 'validate_unit',
+        'description' => "Check whether unit is (syntactically) valid",
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => '',
+        'services' => [],
+    ],
+];

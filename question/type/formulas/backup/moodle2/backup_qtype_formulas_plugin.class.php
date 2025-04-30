@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,19 +12,14 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * @package    qtype_formulas
- * @copyright  2010 Hon Wai, Lau <lau65536@gmail.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Provides the information to backup formulas questions
  *
+ * @package    qtype_formulas
  * @copyright  2010 Hon Wai, Lau <lau65536@gmail.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_qtype_formulas_plugin extends backup_qtype_plugin {
 
@@ -46,7 +41,7 @@ class backup_qtype_formulas_plugin extends backup_qtype_plugin {
 
         // Now create the qtype own structures.
 
-        $formulas = new backup_nested_element('formulas', array('id'), [
+        $formulas = new backup_nested_element('formulas', ['id'], [
             'varsrandom', 'varsglobal',
             'correctfeedback', 'correctfeedbackformat',
             'partiallycorrectfeedback', 'partiallycorrectfeedbackformat',
@@ -76,9 +71,9 @@ class backup_qtype_formulas_plugin extends backup_qtype_plugin {
                 FROM {qtype_formulas_answers}
                 WHERE questionid = :questionid
                 ORDER BY partindex',
-                array('questionid' => backup::VAR_PARENTID));
+                ['questionid' => backup::VAR_PARENTID]);
 
-        $formulas->set_source_table('qtype_formulas_options', array('questionid' => backup::VAR_PARENTID));
+        $formulas->set_source_table('qtype_formulas_options', ['questionid' => backup::VAR_PARENTID]);
 
         // Don't need to annotate ids nor files.
 
@@ -88,11 +83,11 @@ class backup_qtype_formulas_plugin extends backup_qtype_plugin {
     /**
      * Returns one array with filearea => mappingname elements for the qtype
      *
-     * Used by {@link get_components_and_fileareas} to know about all the qtype
+     * Used by {@see get_components_and_fileareas()} to know about all the qtype
      * files to be processed both in backup and restore.
      */
     public static function get_qtype_fileareas() {
-        return array(
+        return [
             'answersubqtext' => 'qtype_formulas_answers',
             'answerfeedback' => 'qtype_formulas_answers',
             'correctfeedback' => 'question_created',
@@ -100,6 +95,6 @@ class backup_qtype_formulas_plugin extends backup_qtype_plugin {
             'incorrectfeedback' => 'question_created',
             'partcorrectfb' => 'qtype_formulas_answers',
             'partpartiallycorrectfb' => 'qtype_formulas_answers',
-            'partincorrectfb' => 'qtype_formulas_answers');
+            'partincorrectfb' => 'qtype_formulas_answers'];
     }
 }
