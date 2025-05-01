@@ -27,12 +27,31 @@ namespace local_gugrades;
 
 defined('MOODLE_INTERNAL') || die();
 
+// Constant definitions of all the admin grades
+define('AG_GOODCAUSE_FO', 0);
+define('AG_GOODCAUSE_NR', 1);
+define('AG_NOSUBMISSION', 2);
+define('AG_NOSUBMISSION_0', 3);
+define('AG_DEFERRED', 4);
+define('AG_GOODCAUSECREDITWITHHELD', 5);
+define();
+
 require_once($CFG->dirroot . '/grade/lib.php');
 
 /**
  * Handles admin grades in one place
  */
 class admingrades {
+
+    /**
+     * (Default) definition of admin grades
+     * This is mostly used to configure the settings page.
+     */
+    private defaults = [
+        (object) [
+            'name' => ''
+        ]
+    ];
 
     /**
      * Define the different types of grade

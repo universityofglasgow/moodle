@@ -1675,8 +1675,12 @@ class api {
         // "Cached" gradeitems.
         $GRADEITEMS = [];
 
-        // Clear cache items for this course.
-        \local_gugrades\aggregation::invalidate_cache($courseid);
+        // As this will be a rarely used function we will take the liberty of purging the caches. 
+        $caches = ['gradeitems', 'availableusers', 'useraggdata', 'progress', 'provisionalgrade'];
+        foreach ($caches as $cache) {
+            $cache = \cache::make('local_gugrades', $cache);
+            $cache->purge();
+        }
     }
 
     /**
