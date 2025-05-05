@@ -122,6 +122,24 @@ if ($hassiteconfig) {
     );
     $settingspage->add($startdateafter);
 
+    /**
+     * Admingrades definitions
+     */
+    $settingspage->add(new admin_setting_heading('local_gugrades/headingadmingrades',
+    new lang_string('admingrades', 'local_gugrades'),
+    new lang_string('admingradesinfo', 'local_gugrades')));
+
+    $admingrades = \local_gugrades\admingrades::get_settings_data();
+    foreach ($admingrades as $id => $admingrade) {
+        $admingradeconfig = new \local_gugrades\adminsetting\admin_setting_admingrade(
+            'local_gugrades/admingrade_' . $id,
+            get_string('admingrade', 'local_gugrades'),
+            get_string('admingrade_help', 'local_gugrades'),
+            $admingrade['default'],
+        );
+        $settingspage->add($admingradeconfig);
+    }
+
     $ADMIN->add('localplugins', $settingspage);
 }
 

@@ -27,14 +27,25 @@ namespace local_gugrades;
 
 defined('MOODLE_INTERNAL') || die();
 
-// Constant definitions of all the admin grades
-define('AG_GOODCAUSE_FO', 0);
-define('AG_GOODCAUSE_NR', 1);
-define('AG_NOSUBMISSION', 2);
-define('AG_NOSUBMISSION_0', 3);
-define('AG_DEFERRED', 4);
-define('AG_GOODCAUSECREDITWITHHELD', 5);
-define();
+// Constant definitions of all the admin grades.
+// Note that value is what is used to identify grade in settings, database and so on. 
+// So don't change them if you add one or take one away. 
+define('AG_GOODCAUSE_FO', 1);
+define('AG_GOODCAUSE_NR', 2);
+define('AG_NOSUBMISSION', 3);
+define('AG_NOSUBMISSION_0', 4);
+define('AG_DEFERRED', 5);
+define('AG_GOODCAUSECREDITWITHHELD', 6);
+define('AG_CREDITWITHHELD', 7);
+define('AG_UNSATISFACTORY', 8);
+define('AG_SATISFACTORY', 9);
+define('AG_NOTPASSED', 10);
+define('AG_PASSED', 11);
+define('AG_NOTCOMPLETE', 12);
+define('AG_COMPLETE', 13);
+define('AG_CREDITREFUSED', 14);
+define('AG_CREDITAWARDED', 15);
+define('AG_AUDITONLY', 16);
 
 require_once($CFG->dirroot . '/grade/lib.php');
 
@@ -44,14 +55,146 @@ require_once($CFG->dirroot . '/grade/lib.php');
 class admingrades {
 
     /**
-     * (Default) definition of admin grades
-     * This is mostly used to configure the settings page.
+     * Default definitions of admin grades and where they may be used. 
+     * levels means....
+     * 0 = gradeitems (all levels)
+     * 1 = level 1 (totals)
+     * 2 = l2+ only
+     * [] = inactive admingrade
+     * @return array
      */
-    private defaults = [
-        (object) [
-            'name' => ''
-        ]
-    ];
+    private static function defaults() {
+        return [
+            AG_GOODCAUSE_FO => [
+                'default' => [
+                    'code' => 'MV',
+                    'description' => get_string('adminmv', 'local_gugrades'),
+                ],
+                'levels' => [0, 1],
+            ],
+            AG_GOODCAUSE_NR => [
+                'default' => [
+                    'code' => 'MV0',
+                    'description' => get_string('adminmv0', 'local_gugrades'),
+                ],
+                'levels' => [0],
+            ],
+            AG_NOSUBMISSION => [
+                'default' => [
+                    'code' => 'NS',
+                    'description' => get_string('adminns', 'local_gugrades'),
+                ],
+                'levels' => [0],
+            ],
+            AG_NOSUBMISSION_0 => [
+                'default' => [
+                    'code' => 'NS',
+                    'description' => get_string('adminns0', 'local_gugrades'),
+                ],
+                'levels' => [2],
+            ],
+            AG_DEFERRED => [
+                'default' => [
+                    'code' => '07',
+                    'description' => get_string('admin07', 'local_gugrades'),
+                ],
+                'levels' => [0],
+            ],
+            AG_GOODCAUSECREDITWITHHELD => [
+                'default' => [
+                    'code' => 'CW',
+                    'description' => get_string('admin07', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_GOODCAUSECREDITWITHHELD => [
+                'default' => [
+                    'code' => 'GCW',
+                    'description' => get_string('admingcw', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_CREDITWITHHELD => [
+                'default' => [
+                    'code' => 'CW',
+                    'description' => get_string('admincw', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_UNSATISFACTORY => [
+                'default' => [
+                    'code' => 'UNS',
+                    'description' => get_string('adminuns', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_SATISFACTORY => [
+                'default' => [
+                    'code' => 'UNS',
+                    'description' => get_string('adminsat', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_NOTPASSED => [
+                'default' => [
+                    'code' => 'NP',
+                    'description' => get_string('adminnp', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_PASSED => [
+                'default' => [
+                    'code' => 'P',
+                    'description' => get_string('adminp', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_NOTCOMPLETE => [
+                'default' => [
+                    'code' => 'NC',
+                    'description' => get_string('adminnc', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_COMPLETE => [
+                'default' => [
+                    'code' => 'CP',
+                    'description' => get_string('admincp', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_CREDITREFUSED => [
+                'default' => [
+                    'code' => 'CR',
+                    'description' => get_string('admincr', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_CREDITAWARDED => [
+                'default' => [
+                    'code' => 'CA',
+                    'description' => get_string('adminca', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+            AG_AUDITONLY => [
+                'default' => [
+                    'code' => 'AU',
+                    'description' => get_string('adminau', 'local_gugrades'),
+                ],
+                'levels' => [1],
+            ],
+        ];
+    }
+
+    /**
+     * Get the data for settings page
+     * @return array
+     */
+    public static function get_settings_data() {
+
+        return self::defaults();
+    }
 
     /**
      * Define the different types of grade
