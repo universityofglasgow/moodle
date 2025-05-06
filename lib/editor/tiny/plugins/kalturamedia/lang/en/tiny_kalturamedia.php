@@ -28,4 +28,3 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Kaltura media plugin';
 $string['privacy:metadata'] = 'Kaltura media plugin does not store any personal data';
 $string['buttontitle'] = 'Embed Kaltura Media';
-$string['helplinktext'] = 'Kaltura';
