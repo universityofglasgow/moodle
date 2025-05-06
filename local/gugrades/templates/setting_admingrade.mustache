@@ -1,0 +1,24 @@
+<div class="form-text defaultsnext">
+<input
+    type="text"
+    name="{{name}}[code]"
+    value="{{value-code}}"
+    size="5"
+    id="{{id}}"
+    class="form-control"
+    {{#readonly}}disabled{{/readonly}}
+    {{#data}}
+    data-{{key}}={{#quote}}{{{value}}}{{/quote}}{{/data}}
+    >
+<input
+    type="text"
+    name="{{name}}[description]"
+    value="{{value-description}}"
+    size="50"
+    id="{{id}}"
+    class="form-control"
+    {{#readonly}}disabled{{/readonly}}
+    {{#data}}
+    data-{{key}}={{#quote}}{{{value}}}{{/quote}}{{/data}}
+    >
+</div>

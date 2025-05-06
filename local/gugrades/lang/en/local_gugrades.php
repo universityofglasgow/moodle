@@ -36,6 +36,7 @@ $string['admincr'] = 'Credit Refused';
 $string['admincw'] = 'Credit Withheld';
 $string['admingcw'] = 'Good Cause Credit Withheld (not to be used until Session 2025/26)';
 $string['admingrade'] = 'Admin grade';
+$string['admingradelabel'] = 'Admin grade {$a}';
 $string['admingrade_help'] = 'Specify admin grade code and description';
 $string['admingrades'] = 'Admin grade';
 $string['admingradesinfo'] = 'Configure admin grades displayed code and description';

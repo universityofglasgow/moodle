@@ -133,7 +133,7 @@ if ($hassiteconfig) {
     foreach ($admingrades as $id => $admingrade) {
         $admingradeconfig = new \local_gugrades\adminsetting\admin_setting_admingrade(
             'local_gugrades/admingrade_' . $id,
-            get_string('admingrade', 'local_gugrades'),
+            get_string('admingradelabel', 'local_gugrades', $admingrade['name']),
             get_string('admingrade_help', 'local_gugrades'),
             $admingrade['default'],
         );

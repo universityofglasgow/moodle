@@ -28,8 +28,8 @@ namespace local_gugrades;
 defined('MOODLE_INTERNAL') || die();
 
 // Constant definitions of all the admin grades.
-// Note that value is what is used to identify grade in settings, database and so on. 
-// So don't change them if you add one or take one away. 
+// Note that value is what is used to identify grade in settings, database and so on.
+// So don't change them if you add one or take one away.
 define('AG_GOODCAUSE_FO', 1);
 define('AG_GOODCAUSE_NR', 2);
 define('AG_NOSUBMISSION', 3);
@@ -55,7 +55,7 @@ require_once($CFG->dirroot . '/grade/lib.php');
 class admingrades {
 
     /**
-     * Default definitions of admin grades and where they may be used. 
+     * Default definitions of admin grades and where they may be used.
      * levels means....
      * 0 = gradeitems (all levels)
      * 1 = level 1 (totals)
@@ -66,6 +66,7 @@ class admingrades {
     private static function defaults() {
         return [
             AG_GOODCAUSE_FO => [
+                'name' => 'GOODCAUSE_FO',
                 'default' => [
                     'code' => 'MV',
                     'description' => get_string('adminmv', 'local_gugrades'),
@@ -73,6 +74,7 @@ class admingrades {
                 'levels' => [0, 1],
             ],
             AG_GOODCAUSE_NR => [
+                'name' => 'GOODCAUSE_NR',
                 'default' => [
                     'code' => 'MV0',
                     'description' => get_string('adminmv0', 'local_gugrades'),
@@ -80,6 +82,7 @@ class admingrades {
                 'levels' => [0],
             ],
             AG_NOSUBMISSION => [
+                'name' => 'NOSUBMISSION',
                 'default' => [
                     'code' => 'NS',
                     'description' => get_string('adminns', 'local_gugrades'),
@@ -87,6 +90,7 @@ class admingrades {
                 'levels' => [0],
             ],
             AG_NOSUBMISSION_0 => [
+                'name' => 'NOSUBMISSION_0',
                 'default' => [
                     'code' => 'NS',
                     'description' => get_string('adminns0', 'local_gugrades'),
@@ -94,6 +98,7 @@ class admingrades {
                 'levels' => [2],
             ],
             AG_DEFERRED => [
+                'name' => 'DEFERRED',
                 'default' => [
                     'code' => '07',
                     'description' => get_string('admin07', 'local_gugrades'),
@@ -101,13 +106,7 @@ class admingrades {
                 'levels' => [0],
             ],
             AG_GOODCAUSECREDITWITHHELD => [
-                'default' => [
-                    'code' => 'CW',
-                    'description' => get_string('admin07', 'local_gugrades'),
-                ],
-                'levels' => [1],
-            ],
-            AG_GOODCAUSECREDITWITHHELD => [
+                'name' => 'GOODCAUSECREDITWITHHELD',
                 'default' => [
                     'code' => 'GCW',
                     'description' => get_string('admingcw', 'local_gugrades'),
@@ -115,6 +114,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_CREDITWITHHELD => [
+                'name' => 'CREDITWITHHELD',
                 'default' => [
                     'code' => 'CW',
                     'description' => get_string('admincw', 'local_gugrades'),
@@ -122,6 +122,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_UNSATISFACTORY => [
+                'name' => 'UNSATISFACTORY',
                 'default' => [
                     'code' => 'UNS',
                     'description' => get_string('adminuns', 'local_gugrades'),
@@ -129,6 +130,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_SATISFACTORY => [
+                'name' => 'SATISFACTORY',
                 'default' => [
                     'code' => 'UNS',
                     'description' => get_string('adminsat', 'local_gugrades'),
@@ -136,6 +138,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_NOTPASSED => [
+                'name' => 'NOTPASSED',
                 'default' => [
                     'code' => 'NP',
                     'description' => get_string('adminnp', 'local_gugrades'),
@@ -143,6 +146,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_PASSED => [
+                'name' => 'PASSED',
                 'default' => [
                     'code' => 'P',
                     'description' => get_string('adminp', 'local_gugrades'),
@@ -150,6 +154,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_NOTCOMPLETE => [
+                'name' => 'NOTCOMPLETE',
                 'default' => [
                     'code' => 'NC',
                     'description' => get_string('adminnc', 'local_gugrades'),
@@ -157,6 +162,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_COMPLETE => [
+                'name' => 'COMPLETE',
                 'default' => [
                     'code' => 'CP',
                     'description' => get_string('admincp', 'local_gugrades'),
@@ -164,6 +170,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_CREDITREFUSED => [
+                'name' => 'CREDITREFUSED',
                 'default' => [
                     'code' => 'CR',
                     'description' => get_string('admincr', 'local_gugrades'),
@@ -171,6 +178,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_CREDITAWARDED => [
+                'name' => 'CREDITAWARDED',
                 'default' => [
                     'code' => 'CA',
                     'description' => get_string('adminca', 'local_gugrades'),
@@ -178,6 +186,7 @@ class admingrades {
                 'levels' => [1],
             ],
             AG_AUDITONLY => [
+                'name' => 'AUDITONLY',
                 'default' => [
                     'code' => 'AU',
                     'description' => get_string('adminau', 'local_gugrades'),

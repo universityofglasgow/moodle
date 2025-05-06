@@ -37,7 +37,7 @@ class admin_setting_admingrade extends \admin_setting {
      * @return mixed array or string depending on instance, NULL means not set yet
      */
     public function get_setting() {
-        return $this->config_read($this->name);
+        return json_decode($this->config_read($this->name));
     }
 
     /**
@@ -47,12 +47,7 @@ class admin_setting_admingrade extends \admin_setting {
      * @return string empty string if ok, string error message otherwise
      */
     public function write_setting($data) {
-        if (!is_array($data)) {
-            $timestamp = (int)$data; // Called with an integer when setting the initial default.
-        } else {
-            $timestamp = make_timestamp($data['year'], $data['mon'], $data['mday'], $data['hours'], $data['minutes']);
-        }
-        $result = $this->config_write($this->name, $timestamp);
+        $result = $this->config_write($this->name, json_encode($data));
         return ($result ? '' : get_string('errorsetting', 'admin'));
     }
 
@@ -63,51 +58,32 @@ class admin_setting_admingrade extends \admin_setting {
      * @return string
      */
     public function output_html($data, $query='') {
+        global $OUTPUT;
 
         $default = $this->get_defaultsetting();
-        echo "<pre>"; var_dump($default); die;
+        if (!$data) {
+            $data = (object) [
+                'code' => $default['code'],
+                'description' => $default['description'],
+            ];
+        }
 
         if (!$default) {
             throw new \moodle_exception('Default admingrade data must be provided');
         }
+        $defaultstring = '[' . $default['code'] . '] ' . $default['description'];
 
-        if (!is_array($data)) {
-            $data = usergetdate($data);
-        }
-
-        $yearnow = intval(userdate(time(), '%Y'));
-        $monopts = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $monopts[$i] = userdate(gmmktime(12, 0, 0, $i, 15, 2000), "%B");
-        }
-        $opts = [
-            'mday' => range(1, 31),
-            'mon' => $monopts,
-            'year' => range($yearnow - 10, $yearnow + 5),
-            ' ',
-            'hours' => range(0, 23),
-            ':',
-            'minutes' => range(0, 59),
+        $context = (object) [
+            'name' => $this->get_full_name(),
+            'id' => $this->get_id(),
+            'code' => $data->code,
+            'description' => $data->description,
+            'value-code' => $data->code,
+            'value-description' => $data->description,
+            'readonly' => $this->is_readonly(),
         ];
+        $element = $OUTPUT->render_from_template('local_gugrades/setting_admingrade', $context);
 
-        $out = '';
-        foreach ($opts as $type => $range) {
-            if (!is_array($range)) {
-                $out .= $range;
-                continue;
-            }
-            if ($type != 'mon') {
-                $range = array_combine($range, $range);
-            }
-            if ($type == 'hours' || $type == 'minutes') {
-                $range = array_map(function($item) {
-                    return sprintf('%02d', $item);
-                }, $range);
-            }
-            $out .= html_writer::select($range, $this->get_full_name().'['.$type.']', $data[$type], null);
-        }
-        $out = html_writer::tag('div', $out, ['class' => 'form-date defaultsnext']);
-
-        return format_admin_setting($this, $this->visiblename, $out, $this->description, false, '', $defaultinfo, $query);
+        return format_admin_setting($this, $this->visiblename, $element, $this->description, false, '', $defaultstring, $query);
     }
 }
