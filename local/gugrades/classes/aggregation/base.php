@@ -242,7 +242,7 @@ class base {
                 }
             }
             if ($nsfound && $mvfound) {
-                $this->explain('explain_mixmvns', 'local_gugrades');
+                $this->explain = get_string('explain_mixmvns', 'local_gugrades');
                 return 'MV';
             }
         }

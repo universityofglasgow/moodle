@@ -152,7 +152,7 @@ $string['explain_allnslevel1'] = 'If all grades are NS or NS0 at level 1, result
 $string['explain_allnslevel2'] = 'If all grades are NS or NS0 at >= level 2, result is NS';
 $string['explain_gradesmissing'] = 'One or more grades is missing/incomplete';
 $string['explain_gradetypeerror'] = 'Grade type / mix of grade types not valid';
-$string['explain_lessthan75level1ns'] = "If completion <75% at Level 1,  result is CW";
+$string['explain_lessthan75level1'] = "If completion <75% at Level 1,  result is CW";
 $string['explain_lessthan75mv0level1'] = "If completion <75% at Level 1, and any MV0s ignored,  result is MV";
 $string['explain_lessthan75mv0level1ns'] = "If completion <75% at Level 1, and any MV0s ignored, and any NS grades remaining, result is CW";
 $string['explain_mixmvns'] = 'If there is a mix of MV and NS at Level 1, result is MV';

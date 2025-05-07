@@ -37,7 +37,12 @@ class admin_setting_admingrade extends \admin_setting {
      * @return mixed array or string depending on instance, NULL means not set yet
      */
     public function get_setting() {
-        return json_decode($this->config_read($this->name));
+        $setting = $this->config_read($this->name);
+        if ($setting) {
+            return json_decode($setting);
+        } else {
+            return null;
+        }
     }
 
     /**
