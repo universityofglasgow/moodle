@@ -27,26 +27,6 @@ namespace local_gugrades;
 
 defined('MOODLE_INTERNAL') || die();
 
-// Constant definitions of all the admin grades.
-// Note that value is what is used to identify grade in settings, database and so on.
-// So don't change them if you add one or take one away.
-define('AG_GOODCAUSE_FO', 1);
-define('AG_GOODCAUSE_NR', 2);
-define('AG_NOSUBMISSION', 3);
-define('AG_NOSUBMISSION_0', 4);
-define('AG_DEFERRED', 5);
-define('AG_GOODCAUSECREDITWITHHELD', 6);
-define('AG_CREDITWITHHELD', 7);
-define('AG_UNSATISFACTORY', 8);
-define('AG_SATISFACTORY', 9);
-define('AG_NOTPASSED', 10);
-define('AG_PASSED', 11);
-define('AG_NOTCOMPLETE', 12);
-define('AG_COMPLETE', 13);
-define('AG_CREDITREFUSED', 14);
-define('AG_CREDITAWARDED', 15);
-define('AG_AUDITONLY', 16);
-
 require_once($CFG->dirroot . '/grade/lib.php');
 
 /**
@@ -65,63 +45,56 @@ class admingrades {
      */
     private static function defaults() {
         return [
-            AG_GOODCAUSE_FO => [
-                'name' => 'GOODCAUSE_FO',
+            'GOODCAUSE_FO' => [
                 'default' => [
                     'code' => 'MV',
                     'description' => get_string('adminmv', 'local_gugrades'),
                 ],
                 'levels' => [0, 1],
             ],
-            AG_GOODCAUSE_NR => [
-                'name' => 'GOODCAUSE_NR',
+            'GOODCAUSE_NR' => [
                 'default' => [
                     'code' => 'MV0',
                     'description' => get_string('adminmv0', 'local_gugrades'),
                 ],
                 'levels' => [0],
             ],
-            AG_NOSUBMISSION => [
-                'name' => 'NOSUBMISSION',
+            'NOSUBMISSION' => [
                 'default' => [
                     'code' => 'NS',
                     'description' => get_string('adminns', 'local_gugrades'),
                 ],
                 'levels' => [0],
             ],
-            AG_NOSUBMISSION_0 => [
-                'name' => 'NOSUBMISSION_0',
+            'NOSUBMISSION_0' => [
                 'default' => [
-                    'code' => 'NS',
+                    'code' => 'NS0',
                     'description' => get_string('adminns0', 'local_gugrades'),
                 ],
                 'levels' => [2],
             ],
-            AG_DEFERRED => [
-                'name' => 'DEFERRED',
+            'DEFERRED' => [
                 'default' => [
                     'code' => '07',
                     'description' => get_string('admin07', 'local_gugrades'),
                 ],
                 'levels' => [0],
             ],
-            AG_GOODCAUSECREDITWITHHELD => [
-                'name' => 'GOODCAUSECREDITWITHHELD',
+            'GOODCAUSECREDITWITHHELD' => [
                 'default' => [
                     'code' => 'GCW',
                     'description' => get_string('admingcw', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_CREDITWITHHELD => [
-                'name' => 'CREDITWITHHELD',
+            'CREDITWITHHELD' => [
                 'default' => [
                     'code' => 'CW',
                     'description' => get_string('admincw', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_UNSATISFACTORY => [
+            'UNSATISFACTORY' => [
                 'name' => 'UNSATISFACTORY',
                 'default' => [
                     'code' => 'UNS',
@@ -129,64 +102,56 @@ class admingrades {
                 ],
                 'levels' => [1],
             ],
-            AG_SATISFACTORY => [
-                'name' => 'SATISFACTORY',
+            'SATISFACTORY' => [
                 'default' => [
                     'code' => 'UNS',
                     'description' => get_string('adminsat', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_NOTPASSED => [
-                'name' => 'NOTPASSED',
+            'NOTPASSED' => [
                 'default' => [
                     'code' => 'NP',
                     'description' => get_string('adminnp', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_PASSED => [
-                'name' => 'PASSED',
+            'PASSED' => [
                 'default' => [
                     'code' => 'P',
                     'description' => get_string('adminp', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_NOTCOMPLETE => [
-                'name' => 'NOTCOMPLETE',
+            'NOTCOMPLETE' => [
                 'default' => [
                     'code' => 'NC',
                     'description' => get_string('adminnc', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_COMPLETE => [
-                'name' => 'COMPLETE',
+            'COMPLETE' => [
                 'default' => [
                     'code' => 'CP',
                     'description' => get_string('admincp', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_CREDITREFUSED => [
-                'name' => 'CREDITREFUSED',
+            'CREDITREFUSED' => [
                 'default' => [
                     'code' => 'CR',
                     'description' => get_string('admincr', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_CREDITAWARDED => [
-                'name' => 'CREDITAWARDED',
+            'CREDITAWARDED' => [
                 'default' => [
                     'code' => 'CA',
                     'description' => get_string('adminca', 'local_gugrades'),
                 ],
                 'levels' => [1],
             ],
-            AG_AUDITONLY => [
-                'name' => 'AUDITONLY',
+            'AUDITONLY' => [
                 'default' => [
                     'code' => 'AU',
                     'description' => get_string('adminau', 'local_gugrades'),
@@ -197,12 +162,69 @@ class admingrades {
     }
 
     /**
+     * Get map from old to new database entry codes 
+     * used (once) in db/upgrade.php
+     * @return array
+     */
+    public static function get_upgrade_map() {
+        $defaults = self::defaults();
+        $maps = [];
+        foreach ($defaults as $name => $default) {
+            $maps[$default['default']['code']] = $name;
+        }
+
+        return $maps;
+    }
+
+    /**
      * Get the data for settings page
      * @return array
      */
     public static function get_settings_data() {
 
         return self::defaults();
+    }
+
+    /**
+     * Get the settings tag for admin grade
+     * @param string $admingrade
+     * @return string
+     */
+    public static function get_setting_tag(string $admingrade) {
+        return 'admingrade_' . strtolower($admingrade);
+    }
+
+    /**
+     * Check that admingrade (name) is valid
+     * @param string $admingrade
+     * @throws \moodle_exception
+     */
+    public static function validate_admingrade(string $admingrade) {
+        $defaults = self::defaults();
+        if (!array_key_exists($admingrade, $defaults)) {
+            throw new \moodle_exception('Attempt to write invalid admin grade - "' . $admingrade . '"'); 
+        }
+
+        return $defaults[$admingrade];
+    }
+
+    /**
+     * Get displaygrade and description from name
+     * @param string $name
+     * @return array
+     */
+    public static function get_displaygrade_from_name($admingrade) {
+        $default = self::validate_admingrade($admingrade);
+
+        // Admingrade details from settings
+        $tag = self::get_setting_tag($admingrade);
+        $setting = get_config('local_gugrades', $tag);
+        if (!$setting) {
+            throw new \moodle_exception('Setting not found for tag "' . $tag . '"');
+        }
+        $admin = json_decode($setting);
+
+        return [$admin->code, $admin->description];
     }
 
     /**

@@ -179,7 +179,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'NOSUBMISSION_0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -207,7 +207,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'CATEGORY',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'NOSUBMISSION_0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -235,7 +235,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'NOSUBMISSION_0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -253,7 +253,7 @@ final class MGU_1191_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS0',
+            admingrade:     'NOSUBMISSION_0',
             scale:          0,
             grade:          0,
             notes:          'Test notes'

@@ -130,10 +130,10 @@ if ($hassiteconfig) {
     new lang_string('admingradesinfo', 'local_gugrades')));
 
     $admingrades = \local_gugrades\admingrades::get_settings_data();
-    foreach ($admingrades as $id => $admingrade) {
+    foreach ($admingrades as $name => $admingrade) {
         $admingradeconfig = new \local_gugrades\adminsetting\admin_setting_admingrade(
-            'local_gugrades/admingrade_' . $id,
-            get_string('admingradelabel', 'local_gugrades', $admingrade['name']),
+            'local_gugrades/' . \local_gugrades\admingrades::get_setting_tag($name),
+            get_string('admingradelabel', 'local_gugrades', $name),
             get_string('admingrade_help', 'local_gugrades'),
             $admingrade['default'],
         );

@@ -108,7 +108,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
 
         // Set NS for question 3.
         // This will.
-        $this->apply_admingrade('Question 3', $this->student->id, 'NS');
+        $this->apply_admingrade('Question 3', $this->student->id, 'NOSUBMISSION');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
@@ -125,7 +125,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(66.667, $fred['completed']);
 
         // Change item 1 to an MV
-        $this->apply_admingrade('Item 1', $this->student->id, 'MV');
+        $this->apply_admingrade('Item 1', $this->student->id, 'GOODCAUSE_FO');
 
         // This should result in a GCW (MGU-1009)
         // Superceded by MGU-1210
@@ -141,7 +141,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(33.333, $fred['completed']);
 
         // Change question 3 to 07 admingrade
-        $this->apply_admingrade('Question 3', $this->student->id, '07');
+        $this->apply_admingrade('Question 3', $this->student->id, 'DEFERRED');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);

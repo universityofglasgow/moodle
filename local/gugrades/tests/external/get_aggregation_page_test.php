@@ -233,7 +233,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $this->student->id,
             'SECOND',
             '',
-            'MV',
+            'GOODCAUSE_FO',
             0,
             0,
             'Test notes'
@@ -873,7 +873,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             userid:         $this->student->id,
             reason:         'CATEGORY',
             other:          '',
-            admingrade:     'MV',
+            admingrade:     'GOODCAUSE_FO',
             scale:          0,
             grade:          0,
             notes:          'Test notes'

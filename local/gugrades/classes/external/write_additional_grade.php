@@ -46,7 +46,7 @@ class write_additional_grade extends external_api {
             'userid' => new external_value(PARAM_INT, 'User id - for user we are adding grade'),
             'reason' => new external_value(PARAM_TEXT, 'Reason for grade - SECOND, AGREED etc.'),
             'other' => new external_value(PARAM_TEXT, 'Detail if reason == OTHER'),
-            'admingrade' => new external_value(PARAM_ALPHANUM, 'Admin grade code - overrides a grade'),
+            'admingrade' => new external_value(PARAM_TEXT, 'Admin grade code - overrides a grade'),
             'scale' => new external_value(PARAM_INT, 'Scale value'),
             'grade' => new external_value(PARAM_FLOAT, 'Points grade'),
             'notes' => new external_value(PARAM_TEXT, 'Optional notes'),

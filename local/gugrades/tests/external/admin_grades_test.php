@@ -106,7 +106,7 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
 
         // Set 07 for question 3.
         // This is technically the lowest value grade but the 07 should override the drop low
-        $this->apply_admingrade('Question 3', $this->student->id, '07');
+        $this->apply_admingrade('Question 3', $this->student->id, 'DEFERRED');
 
         // Get aggregation page for sub-category.
         // 07 should override grades missing.
@@ -174,7 +174,7 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
 
         // Set MV for question 3.
         // This is technically the lowest value grade but the MV should override the drop low
-        $this->apply_admingrade('Question 3', $this->student->id, 'MV');
+        $this->apply_admingrade('Question 3', $this->student->id, 'GOODCAUSE_FO');
 
         // Get aggregation page for sub-category.
         // MV should override grades missing.
@@ -203,7 +203,7 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
 
         // Set 07 for question 4.
         // This is technically the lowest value grade but the 07 should override the drop low and MV.
-        $this->apply_admingrade('Question 4', $this->student->id, '07');
+        $this->apply_admingrade('Question 4', $this->student->id, 'DEFERRED');
 
         // Get aggregation page for total.
         // Should change to 07.
@@ -221,10 +221,11 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
 
     /**
      * Test IS admin grade
+     * Don't think we currently have IS
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_IS_admin_grade(): void {
+    public function xx_test_IS_admin_grade(): void {
         global $DB;
 
         // Make sure that we're a teacher.

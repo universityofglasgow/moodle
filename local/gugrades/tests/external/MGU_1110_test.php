@@ -200,7 +200,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         $fred = $page['users'][0];
         $this->assertEquals('66', $fred['displaygrade']);
 
-        // Add MV0 to 'Question 1'.
+        // Add GOODCAUSE_NR to 'Question 1'.
         $question1id = $this->get_gradeitemid('Question 1');
         $nothing = write_additional_grade::execute(
             courseid:       $this->course->id,
@@ -208,7 +208,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -228,7 +228,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         $fred = $page['users'][0];
         $this->assertEquals('60', $fred['displaygrade']);
 
-        // Add MV0 to category 'Sub question'.
+        // Add GOODCAUSE_NR to category 'Sub question'.
         $subquestionid = $this->get_gradeitemid_for_category('Sub question');
         $nothing = write_additional_grade::execute(
             courseid:       $this->course->id,
@@ -236,7 +236,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'CATEGORY',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -264,7 +264,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -282,7 +282,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -337,7 +337,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -369,7 +369,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'NS',
+            admingrade:     'NOSUBMISSION',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -402,7 +402,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV',
+            admingrade:     'GOODCAUSE_FO',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -433,7 +433,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV',
+            admingrade:     'GOODCAUSE_FO',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -502,7 +502,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'CATEGORY',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -538,7 +538,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'
@@ -556,7 +556,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
             userid:         $this->student->id,
             reason:         'AGREED',
             other:          '',
-            admingrade:     'MV0',
+            admingrade:     'GOODCAUSE_NR',
             scale:          0,
             grade:          0,
             notes:          'Test notes'

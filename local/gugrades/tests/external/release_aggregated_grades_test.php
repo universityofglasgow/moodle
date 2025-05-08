@@ -182,7 +182,7 @@ final class release_aggregated_grades_test extends \local_gugrades\external\gugr
             userid:             $this->student->id,
             reason:             'SECOND',
             other:              '',
-            admingrade:         'NS',
+            admingrade:         'NOSUBMISSION',
             scale:              0,
             grade:              0,
             notes:              'Test notes'

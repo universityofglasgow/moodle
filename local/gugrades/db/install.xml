@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/gugrades/db" VERSION="20241112" COMMENT="XMLDB file for Moodle local/gugrades"
+<XMLDB PATH="local/gugrades/db" VERSION="20250507" COMMENT="XMLDB file for Moodle local/gugrades"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -52,7 +52,7 @@
         <FIELD NAME="points" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = points, 0 = scale"/>
         <FIELD NAME="rawgrade" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="Point value or scale index as read from core Moodle"/>
         <FIELD NAME="convertedgrade" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="(Typically) 22 point scale, 0 - 22. Once the grade is converted."/>
-        <FIELD NAME="admingrade" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="admingrade" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="displaygrade" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Grade to display (numeric or scale)"/>
         <FIELD NAME="weightedgrade" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="Grade after any weighting applied"/>
         <FIELD NAME="gradetype" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="FIRST, SECOND and so on"/>

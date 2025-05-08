@@ -486,6 +486,11 @@ class grades {
             throw new \moodle_exception('catoverride true when gradetype sis not CATEGORY');
         }
 
+        // Admingrade Sanity.
+        if ($admingrade) {
+            \local_gugrades\admingrades::validate_admingrade($admingrade);
+        }
+
         // Invalidate provisionalgrade cache
         self::invalidate_provisionalgrade_cache($gradeitemid, $userid);
 
