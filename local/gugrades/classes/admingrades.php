@@ -228,6 +228,22 @@ class admingrades {
     }
 
     /**
+     * Updates *all* the instances of admingrades in the grade table
+     * when an admingrade setting is changed.
+     * @param string $name
+     */
+    public static function update_displaynames(string $name) {
+        global $DB;
+
+        [$displaygrade, ] = self::get_displaygrade_from_name($name);
+        $sql = 'UPDATE {local_gugrades_grade} SET displaygrade = :displaygrade WHERE admingrade = :name';
+        $DB->execute($sql, [
+            'displaygrade' => $displaygrade,
+            'name' => $name,
+        ]);
+    }
+
+    /**
      * Define the different types of grade
      * for level 1 cat total grades
      * @param int $level

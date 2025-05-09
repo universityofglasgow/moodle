@@ -137,6 +137,10 @@ if ($hassiteconfig) {
             get_string('admingrade_help', 'local_gugrades'),
             $admingrade['default'],
         );
+        $admingradeconfig->set_updatedcallback(function() use ($name) {
+            $task = \local_gugrades\task\update_admingrades::instance($name);
+            \core\task\manager::queue_adhoc_task($task);
+        });
         $settingspage->add($admingradeconfig);
     }
 
