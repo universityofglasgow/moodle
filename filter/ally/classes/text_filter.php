@@ -39,7 +39,7 @@ use tool_ally\logging\logger;
  * @copyright Copyright (c) 2017 Open LMS / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class text_filter extends moodle_text_filter {
+class text_filter extends \core_filters\text_filter {
 
     /**
      * @var array File ids (path hashes) of all processed files by url.
