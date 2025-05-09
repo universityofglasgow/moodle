@@ -60,8 +60,10 @@ echo "<p>Path: $path</p>";
 $data = openssl_x509_parse(file_get_contents($path));
 
 // Calculate date expirey interval.
-$date1 = date("Y-m-d\TH:i:s\Z", str_replace ('Z', '', $data['validFrom_time_t']));
-$date2 = date("Y-m-d\TH:i:s\Z", str_replace ('Z', '', $data['validTo_time_t']));
+$timestamp1 = (int) str_replace ('Z', '', $data['validFrom_time_t']);
+$date1 = date("Y-m-d\TH:i:s\Z", $timestamp1);
+$timestamp2 = (int) str_replace ('Z', '', $data['validTo_time_t']);
+$date2 = date("Y-m-d\TH:i:s\Z", $timestamp2);
 $datetime1 = new DateTime($date1);
 $datetime2 = new DateTime($date2);
 $interval = $datetime1->diff($datetime2);
