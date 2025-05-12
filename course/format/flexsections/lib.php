@@ -184,6 +184,25 @@ class format_flexsections extends core_courseformat\base {
     }
 
     /**
+     * Get if the current format instance will show multiple sections or an individual one.
+     *
+     * Only available in Moodle 4.4 or later
+     *
+     * Some formats has the hability to swith from one section to multiple sections per page,
+     * output components will use this method to know if the current display is a single or
+     * multiple sections.
+     *
+     * @return int|null null for all sections or the sectionid.
+     */
+    public function get_sectionid(): ?int {
+        global $CFG;
+        if ((int)$CFG->branch >= 404) {
+            return parent::get_sectionid();
+        }
+        return 0;
+    }
+
+    /**
      * The URL to use for the specified course (with section).
      *
      * @param int|stdClass $section Section object from database or just field course_sections.section
@@ -195,30 +214,46 @@ class format_flexsections extends core_courseformat\base {
      */
     public function get_view_url($section, $options = []) {
         $url = new moodle_url('/course/view.php', ['id' => $this->courseid]);
+        $permalink = !empty($options['permalink']);
 
         $sectionno = $this->resolve_section_number($section);
         $section = $this->get_section($sectionno);
+        $sectionid = $section ? $section->id : 0;
         if ($sectionno && !$this->is_section_visible($section)) {
             return empty($options['navigation']) ? $url : null;
+        }
+
+        if ($this->get_sectionid() && $this->get_sectionid() == $section->id &&
+                (strpos(qualified_me(), '/course/section.php') !== false) && !empty($options['navigation'])) {
+            // When we are already on /course/section.php page, return URL for this page so that the breadcrumb sets correctly.
+            return new moodle_url('/course/section.php', ['id' => $section->id]);
         }
 
         if (array_key_exists('sr', $options)) {
             // Return to the page for section with number $sr.
             $url->param('section', $options['sr']);
             if ($sectionno) {
-                $url->set_anchor('section-'.$sectionno);
+                $url->set_anchor($permalink ? "sectionid-{$sectionid}" : "section-{$sectionno}");
             }
         } else if ($sectionno) {
             // Check if this section has separate page.
             if ($section->collapsed == FORMAT_FLEXSECTIONS_COLLAPSED) {
-                $url->param('section', $section->section);
+                if ($permalink) {
+                    $url->param('sectionid', $sectionid);
+                } else {
+                    $url->param('section', $section->section);
+                }
                 return $url;
             }
             // Find the parent (or grandparent) page that is displayed on separate page.
             if ($parent = $this->find_collapsed_parent($section->parent)) {
-                $url->param('section', $parent);
+                if ($permalink && ($parentsection = $this->get_section($parent))) {
+                    $url->param('sectionid', $parentsection->id);
+                } else {
+                    $url->param('section', $parent);
+                }
             }
-            $url->set_anchor('section-'.$sectionno);
+            $url->set_anchor($permalink ? "sectionid-{$sectionid}" : "section-{$sectionno}");
         }
         return $url;
     }
@@ -723,6 +758,10 @@ class format_flexsections extends core_courseformat\base {
      * @return int
      */
     public function get_viewed_section() {
+        $sid = $this->get_sectionid();
+        if ($sid && ($section = $this->get_modinfo()->get_section_info_by_id($sid))) {
+            return $section->section;
+        }
         if ($this->on_course_view_page()) {
             if ($s = $this->get_caller_page_url()->get_param('section')) {
                 return (int)$s;
@@ -1209,77 +1248,88 @@ class format_flexsections extends core_courseformat\base {
             return [[], []];
         }
 
-        $sectionid = $section->id;
-        $course = $this->get_course();
+        $lockfactory = \core\lock\lock_config::get_lock_factory('format_flexsections_delete_section');
 
-        // Move the section to be removed to the end (this will re-number other sections).
-        $this->move_section($section->section, 0);
+        if (!($lock = $lockfactory->get_lock('course_modification_lock', 10))) {
+            throw new moodle_exception('locktimeout');
+        }
 
-        $modinfo = get_fast_modinfo($this->courseid);
-        $allsections = $modinfo->get_section_info_all();
-        $process = false;
-        $sectionstodelete = [];
-        $modulestodelete = [];
-        foreach ($allsections as $sectioninfo) {
-            if ($sectioninfo->id == $sectionid) {
-                // This is the section to be deleted. Since we have already
-                // moved it to the end we know that we need to delete this section
-                // and all the following (which can only be its subsections).
-                $process = true;
-            }
-            if ($process) {
-                $sectionstodelete[] = $sectioninfo->id;
-                if (!empty($modinfo->sections[$sectioninfo->section])) {
-                    $modulestodelete = array_merge($modulestodelete,
-                        $modinfo->sections[$sectioninfo->section]);
+        try {
+            $sectionid = $section->id;
+            $course = $this->get_course();
+
+            // Move the section to be removed to the end (this will re-number other sections).
+            $this->move_section($section->section, 0);
+
+            $modinfo = get_fast_modinfo($this->courseid);
+            $allsections = $modinfo->get_section_info_all();
+            $process = false;
+            $sectionstodelete = [];
+            $modulestodelete = [];
+            foreach ($allsections as $sectioninfo) {
+                if ($sectioninfo->id == $sectionid) {
+                    // This is the section to be deleted. Since we have already
+                    // moved it to the end we know that we need to delete this section
+                    // and all the following (which can only be its subsections).
+                    $process = true;
                 }
-                // Remove the marker if it points to this section.
-                if ($sectioninfo->section == $course->marker) {
-                    course_set_marker($course->id, 0);
+                if ($process) {
+                    $sectionstodelete[] = $sectioninfo->id;
+                    if (!empty($modinfo->sections[$sectioninfo->section])) {
+                        $modulestodelete = array_merge($modulestodelete,
+                            $modinfo->sections[$sectioninfo->section]);
+                    }
+                    // Remove the marker if it points to this section.
+                    if ($sectioninfo->section == $course->marker) {
+                        course_set_marker($course->id, 0);
+                    }
                 }
             }
+
+            foreach ($modulestodelete as $cmid) {
+                course_delete_module($cmid);
+            }
+
+            [$sectionsql, $params] = $DB->get_in_or_equal($sectionstodelete);
+            $sections = $DB->get_records_select('course_sections', "id $sectionsql", $params);
+
+            // Delete section records.
+            $transaction = $DB->start_delegated_transaction();
+            $DB->execute('DELETE FROM {course_format_options} WHERE sectionid ' . $sectionsql, $params);
+            $DB->execute('DELETE FROM {course_sections} WHERE id ' . $sectionsql, $params);
+            $transaction->allow_commit();
+
+            foreach ($sections as $section) {
+                // Invalidate the section cache by given section id.
+                course_modinfo::purge_course_section_cache_by_id($course->id, $section->id);
+
+                // Delete section summary files.
+                $context = \context_course::instance($course->id);
+                $fs = get_file_storage();
+                $fs->delete_area_files($context->id, 'course', 'section', $section->id);
+
+                // Trigger an event for course section deletion.
+                $event = \core\event\course_section_deleted::create(
+                    [
+                        'objectid' => $section->id,
+                        'courseid' => $course->id,
+                        'context' => $context,
+                        'other' => [
+                            'sectionnum' => $section->section,
+                            'sectionname' => $this->get_section_name($section),
+                        ],
+                    ]
+                );
+                $event->add_record_snapshot('course_sections', $section);
+                $event->trigger();
+            }
+
+            // Partial rebuild section cache that has been purged.
+            rebuild_course_cache($this->courseid, true, true);
+
+        } finally {
+            $lock->release();
         }
-
-        foreach ($modulestodelete as $cmid) {
-            course_delete_module($cmid);
-        }
-
-        [$sectionsql, $params] = $DB->get_in_or_equal($sectionstodelete);
-        $sections = $DB->get_records_select('course_sections', "id $sectionsql", $params);
-
-        // Delete section records.
-        $transaction = $DB->start_delegated_transaction();
-        $DB->execute('DELETE FROM {course_format_options} WHERE sectionid ' . $sectionsql, $params);
-        $DB->execute('DELETE FROM {course_sections} WHERE id ' . $sectionsql, $params);
-        $transaction->allow_commit();
-
-        foreach ($sections as $section) {
-            // Invalidate the section cache by given section id.
-            course_modinfo::purge_course_section_cache_by_id($course->id, $section->id);
-
-            // Delete section summary files.
-            $context = \context_course::instance($course->id);
-            $fs = get_file_storage();
-            $fs->delete_area_files($context->id, 'course', 'section', $section->id);
-
-            // Trigger an event for course section deletion.
-            $event = \core\event\course_section_deleted::create(
-                [
-                    'objectid' => $section->id,
-                    'courseid' => $course->id,
-                    'context' => $context,
-                    'other' => [
-                        'sectionnum' => $section->section,
-                        'sectionname' => $this->get_section_name($section),
-                    ],
-                ]
-            );
-            $event->add_record_snapshot('course_sections', $section);
-            $event->trigger();
-        }
-
-        // Partial rebuild section cache that has been purged.
-        rebuild_course_cache($this->courseid, true, true);
 
         return [$sectionstodelete, $modulestodelete];
     }
