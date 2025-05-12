@@ -37,10 +37,9 @@ class admingrades {
     /**
      * Default definitions of admin grades and where they may be used.
      * levels means....
-     * 0 = gradeitems (all levels)
-     * 1 = level 1 (totals)
-     * 2 = l2+ only
-     * [] = inactive admingrade
+     * 'grandtotal' = available in 'grand total' selection
+     * 'items' = available in the small selection for all items / cats
+     * 'level2' = available in small selection ONLY for L2 and below
      * @return array
      */
     private static function defaults() {
@@ -50,49 +49,52 @@ class admingrades {
                     'code' => 'MV',
                     'description' => get_string('adminmv', 'local_gugrades'),
                 ],
-                'levels' => [0, 1],
+                'grandtotal' => true,
+                'items' => true,
             ],
             'GOODCAUSE_NR' => [
                 'default' => [
                     'code' => 'MV0',
                     'description' => get_string('adminmv0', 'local_gugrades'),
                 ],
-                'levels' => [0],
+                'items' => true,
             ],
             'NOSUBMISSION' => [
                 'default' => [
                     'code' => 'NS',
                     'description' => get_string('adminns', 'local_gugrades'),
                 ],
-                'levels' => [0],
+                'items' => true,
             ],
             'NOSUBMISSION_0' => [
                 'default' => [
                     'code' => 'NS0',
                     'description' => get_string('adminns0', 'local_gugrades'),
                 ],
-                'levels' => [2],
+                'items' => true,
+                'level2' => true,
             ],
             'DEFERRED' => [
                 'default' => [
                     'code' => '07',
                     'description' => get_string('admin07', 'local_gugrades'),
                 ],
-                'levels' => [0],
+                'grandtotal' => true,
+                'items' => true,
             ],
             'GOODCAUSECREDITWITHHELD' => [
                 'default' => [
                     'code' => 'GCW',
                     'description' => get_string('admingcw', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'CREDITWITHHELD' => [
                 'default' => [
                     'code' => 'CW',
                     'description' => get_string('admincw', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'UNSATISFACTORY' => [
                 'name' => 'UNSATISFACTORY',
@@ -100,27 +102,28 @@ class admingrades {
                     'code' => 'UNS',
                     'description' => get_string('adminuns', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'SATISFACTORY' => [
                 'default' => [
-                    'code' => 'UNS',
+                    'code' => 'SAT',
                     'description' => get_string('adminsat', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'NOTPASSED' => [
                 'default' => [
                     'code' => 'NP',
                     'description' => get_string('adminnp', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'PASSED' => [
                 'default' => [
                     'code' => 'P',
                     'description' => get_string('adminp', 'local_gugrades'),
                 ],
+                'grandtotal' => true,
                 'levels' => [1],
             ],
             'NOTCOMPLETE' => [
@@ -128,35 +131,35 @@ class admingrades {
                     'code' => 'NC',
                     'description' => get_string('adminnc', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'COMPLETE' => [
                 'default' => [
                     'code' => 'CP',
                     'description' => get_string('admincp', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'CREDITREFUSED' => [
                 'default' => [
                     'code' => 'CR',
                     'description' => get_string('admincr', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'CREDITAWARDED' => [
                 'default' => [
                     'code' => 'CA',
                     'description' => get_string('adminca', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
             'AUDITONLY' => [
                 'default' => [
                     'code' => 'AU',
                     'description' => get_string('adminau', 'local_gugrades'),
                 ],
-                'levels' => [1],
+                'grandtotal' => true,
             ],
         ];
     }
@@ -244,10 +247,60 @@ class admingrades {
     }
 
     /**
+     * Check the 'level' flags in the admingrades default array
+     * @param array $default
+     * @param string $key
+     * @return bool
+     */
+    private static function flag_set($default, $key) {
+        if (!array_key_exists($key, $default)) {
+            return false;
+        }
+        
+        return $default[$key];
+    }
+
+    /**
+     * Get grades for supplied 
+     * Level = 
+     * @param int $level
+     * @param bool $grandtotal
+     * @return array
+     */
+    public static function get_admingrades_for_level(int $level, bool $grandtotal = false) {
+
+        $defaults = self::defaults();
+
+        $admingrades = [];
+        foreach ($defaults as $name => $default) {
+
+            // Work out if this is ok for this level / grandtotal
+            $send = false;
+            if ($grandtotal && self::flag_set($default, 'grandtotal')) {
+                $send = true;
+            }
+            if (!$grandtotal && self::flag_set($default, 'items')) {
+                $send = true;
+            }
+            if (!$grandtotal && ($level == 1) && self::flag_set($default, 'level2')) {
+                $send = false;
+            }
+
+            if ($send) {
+                [$displaygrade, $description] = self::get_displaygrade_from_name($name);
+                $admingrades[$displaygrade] = "$displaygrade - $description";
+            }
+        }
+
+        return $admingrades;
+    }
+
+    /**
      * Define the different types of grade
      * for level 1 cat total grades
      * @param int $level
      */
+    /*
     private static function define(int $level) {
         $admingrades = [
             'MV' => get_string('adminmv', 'local_gugrades'),
@@ -268,10 +321,12 @@ class admingrades {
 
         return $admingrades;
     }
+    */
 
     /**
      * Define level 1 total grades
      */
+    /*
     private static function define_level_one() {
         $admingrades = [
             'GCW' => get_string('admingcw', 'local_gugrades'),
@@ -295,16 +350,19 @@ class admingrades {
 
         return $admingrades;
     }
+    */
 
     /**
      * Get description
      * @param string $admincode
      * @return string
      */
+    /*
     public static function get_description(string $admincode) {
         $admincodes = self::define();
         return $admincodes[$admincode] ?? '[[' . $admincode . ']]';
     }
+    */
 
     /**
      * Get admincodes for non level 1 total menu
@@ -313,9 +371,9 @@ class admingrades {
      */
     public static function get_menu(int $gradeitemid) {
         $level = \local_gugrades\grades::get_gradeitem_level($gradeitemid);
-        $gradetypes = self::define($level);
+        $admingrades = self::get_admingrades_for_level($level, false);
 
-        return $gradetypes;
+        return $admingrades;
     }
 
     /**
@@ -323,9 +381,9 @@ class admingrades {
      * @return array
      */
     public static function get_menu_level_one() {
-        $gradetypes = self::define_level_one();
+        $admingrades = self::get_admingrades_for_level(1, true);
 
-        return $gradetypes;
+        return $admingrades;
     }
 
 }
