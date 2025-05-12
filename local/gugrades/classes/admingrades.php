@@ -288,7 +288,8 @@ class admingrades {
 
             if ($send) {
                 [$displaygrade, $description] = self::get_displaygrade_from_name($name);
-                $admingrades[$displaygrade] = "$displaygrade - $description";
+                //$admingrades[$displaygrade] = "$displaygrade - $description";
+                $admingrades[$name] = "$displaygrade - $description";
             }
         }
 
