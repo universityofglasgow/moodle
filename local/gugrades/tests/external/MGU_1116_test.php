@@ -133,7 +133,7 @@ final class MGU_1116_test extends \local_gugrades\external\gugrades_aggregation_
 
         // Change Question 4 to NS
         $q4id = $this->get_gradeitemid('Question 4');
-        $this->write_grade($courseid, $q4id, 0, 'NS');
+        $this->write_grade($courseid, $q4id, 0, 'NOSUBMISSION');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($courseid, $gradecatsummer->id, '', '', 0, false);

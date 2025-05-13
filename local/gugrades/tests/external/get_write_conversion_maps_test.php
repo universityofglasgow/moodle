@@ -1375,6 +1375,8 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         );
 
         // Add additional grade.
+        // IS not currently used
+        /*
         $nothing = write_additional_grade::execute(
             $this->course->id,
             $this->gradeitemidassign1,
@@ -1412,5 +1414,6 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         $this->assertEquals('CONVERTED', $grades[2]['gradetype']);
         $this->assertEquals('IS', $grades[3]['displaygrade']);
         $this->assertEquals('PROVISIONAL', $grades[3]['gradetype']);
+        */
     }
 }

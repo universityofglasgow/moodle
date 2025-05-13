@@ -509,9 +509,9 @@ class api {
         } else if ($fillns == 'none') {
             return '';
         } else if ($fillns == 'fillns') {
-            return 'NS';
+            return 'NOSUBMISSION';
         } else if ($fillns == 'fillns0') {
-            return 'NS0';
+            return 'NOSUBMISSION_0';
         } else {
             throw new \moodle_exception('Fillns can only be none, fillns or fillns0. We found - "' . $fillns . '"');
         }
@@ -599,6 +599,7 @@ class api {
 
             // If there's no grade and fillns is enabled, write
             // an NS grade, instead.
+            [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($fillns);
 
             \local_gugrades\grades::write_grade(
                 courseid:       $courseid,
@@ -607,7 +608,7 @@ class api {
                 admingrade:     $fillns,
                 rawgrade:       0,
                 convertedgrade: 0,
-                displaygrade:   $fillns,
+                displaygrade:   $displaygrade,
                 weightedgrade:  0,
                 gradetype:      'FIRST',
                 other:          '',
@@ -1222,7 +1223,8 @@ class api {
         if (!empty($admingrade)) {
             $rawgrade = 0;
             $convertedgrade = 0.0;
-            $displaygrade = $admingrade;
+            [$code, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
+            $displaygrade = $code;
         } else if ($usescale) {
             $displaygrade = $mapping->get_band($scale);
             $rawgrade = $scale;
@@ -1675,8 +1677,12 @@ class api {
         // "Cached" gradeitems.
         $GRADEITEMS = [];
 
-        // Clear cache items for this course.
-        \local_gugrades\aggregation::invalidate_cache($courseid);
+        // As this will be a rarely used function we will take the liberty of purging the caches. 
+        $caches = ['gradeitems', 'availableusers', 'useraggdata', 'progress', 'provisionalgrade'];
+        foreach ($caches as $cache) {
+            $cache = \cache::make('local_gugrades', $cache);
+            $cache->purge();
+        }
     }
 
     /**

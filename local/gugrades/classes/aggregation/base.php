@@ -140,10 +140,10 @@ class base {
      */
     public function pre_process_items(array $items) {
 
-        // Drop any MV0
+        // Drop any GOODCAUSE_NR
         $newitems = [];
         foreach ($items as $item) {
-            if ($item->admingrade != 'MV0') {
+            if ($item->admingrade != 'GOODCAUSE_NR') {
                 $newitems[] = $item;
             } else {
                 $this->mv0found = true;
@@ -151,10 +151,10 @@ class base {
         }
 
         // If this has resulted in ALL items being removed then the
-        // result is also MV0
+        // result is also GOODCAUSE_NR
         if (count($newitems) == 0) {
             $this->explain = get_string('explain_allmv0', 'local_gugrades');
-            $agrade = 'MV0';
+            $agrade = 'GOODCAUSE_NR';
         } else {
             $agrade = false;
         }
@@ -220,9 +220,9 @@ class base {
 
         // Any '07' admin grades means aggregation is 07
         foreach ($items as $item) {
-            if ($item->admingrade == '07') {
+            if ($item->admingrade == 'DEFERRED') {
                 $this->explain = get_string('explain_any07', 'local_gugrades');
-                return '07';
+                return 'DEFERRED';
             }
         }
 
@@ -234,39 +234,42 @@ class base {
             $nsfound = false;
             $mvfound = false;
             foreach ($items as $item) {
-                if ($item->admingrade == 'MV') {
+                if ($item->admingrade == 'GOODCAUSE_FO') {
                     $mvfound = true;
                 }
-                if ($item->admingrade == 'NS') {
+                if ($item->admingrade == 'NOSUBMISSION') {
                     $nsfound = true;
                 }
             }
             if ($nsfound && $mvfound) {
-                $this->explain('explain_mixmvns', 'local_gugrades');
-                return 'MV';
+                $this->explain = get_string('explain_mixmvns', 'local_gugrades');
+                return 'GOODCAUSE_FO';
             }
         }
 
         // Any 'IS' admin grades means aggregation is IS
+        // NOT CURRENTLY USED
+        /*
         foreach ($items as $item) {
             if ($item->admingrade == 'IS') {
                 $this->explain = get_string('explain_anyis', 'local_gugrades');
                 return 'IS';
             }
         }
+        */
 
         // Any 'MV' admin grades means aggregation is MV
         foreach ($items as $item) {
-            if ($item->admingrade == 'MV') {
+            if ($item->admingrade == 'GOODCAUSE_FO') {
                 $this->explain = get_string('explain_anymv', 'local_gugrades');
-                return 'MV';
+                return 'GOODCAUSE_FO';
             }
         }
 
         // If ALL grades are NS/NS0, then return NS (MGU-1191)
         $allns = true;
         foreach ($items as $item) {
-            if (($item->admingrade != 'NS') && ($item->admingrade != 'NS0')) {
+            if (($item->admingrade != 'NOSUBMISSION') && ($item->admingrade != 'NOSUBMISSION_0')) {
                 $allns = false;
             }
         }
@@ -275,10 +278,10 @@ class base {
             // MGU-1216.
             if ($level == 1) {
                 $this->explain = get_string('explain_allnslevel1', 'local_gugrades');
-                return 'CW';
+                return 'CREDITWITHHELD';
             } else {
                 $this->explain = get_string('explain_allnslevel2', 'local_gugrades');
-                return 'NS';
+                return 'NOSUBMISSION';
             }
         }
 
@@ -299,9 +302,9 @@ class base {
         // Condition 1: are there 1 or more NS? If so, result is NS.
         foreach ($items as $item) {
             $grade = $item->admingrade;
-            if ($grade == 'NS') {
+            if ($grade == 'NOSUBMISSION') {
                 $this->explain = get_string('explain_anynslevel2', 'local_gugrades');
-                return 'NS';
+                return 'NOSUBMISSION';
             }
         }
 
@@ -332,18 +335,18 @@ class base {
 
                 // If there is an NS, then it's CW
                 foreach ($items as $item) {
-                    if ($item->admingrade == 'NS') {
+                    if ($item->admingrade == 'NOSUBMISSION') {
                         $this->explain = get_string('explain_lessthan75mv0level1ns', 'local_gugrades');
-                        return 'CW';
+                        return 'CREDITWITHHELD';
                     }
                 }
 
                 $this->explain = get_string('explain_lessthan75mv0level1', 'local_gugrades');
-                return 'MV';
+                return 'GOODCAUSE_FO';
             }
 
             $this->explain = get_string('explain_lessthan75level1', 'local_gugrades');
-            return 'CW';
+            return 'CREDITWITHHELD';
         }
 
         return '';

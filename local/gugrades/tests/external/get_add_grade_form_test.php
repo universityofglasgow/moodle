@@ -96,11 +96,11 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         $this->assertArrayHasKey('adminmenu', $form);
         $adminmenu = $form['adminmenu'];
         $this->assertGreaterThan(0, count($adminmenu));
-        $this->assertEquals('07', $adminmenu[0]['value']);
+        $this->assertEquals('DEFERRED', $adminmenu[0]['value']);
         $this->assertEquals('07 - Deferred', $adminmenu[0]['label']);
-        $this->assertEquals('NS', $adminmenu[1]['value']);
+        $this->assertEquals('NOSUBMISSION', $adminmenu[1]['value']);
         $this->assertEquals('NS - No Submission', $adminmenu[1]['label']);
-        $this->assertEquals('MV0', $adminmenu[2]['value']);
+        $this->assertEquals('GOODCAUSE_NR', $adminmenu[2]['value']);
         $this->assertEquals('MV0 - Good cause (non replicable)', $adminmenu[2]['label']);
     }
 

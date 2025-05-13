@@ -15,21 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file.
+ * Update all admingrades after settings have been changed
  *
  * @package    local_gugrades
- * @copyright  2022
+ * @copyright  2025
  * @author     Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_gugrades\task;
 
-$plugin->version      = 2025051200;
-$plugin->requires     = 2022041900; // Moodle 4.0.
-$plugin->component    = 'local_gugrades';
+class update_admingrades extends \core\task\adhoc_task {
 
-$plugin->maturity     = MATURITY_BETA;
+    /**
+     * Create the task
+     * @param string $name
+     * @return \local_gugrades\task\update_admingrades
+     */
+    public static function instance(string $name): self {
+        $task = new self();
+        $task->set_custom_data((object) [
+            'name' => $name,
+        ]);
 
-$plugin->release      = '0.2 Beta';
+        return $task;
+    }
 
+    /**
+     * Execute the ad-hoc task
+     */
+    public function execute() {
+        $data = $this->get_custom_data();
+        $name = $data->name;
+        mtrace('Updating admingrades for name = "' . $name . '"');
+
+        \local_gugrades\admingrades::update_displaynames($name);
+    }
+}

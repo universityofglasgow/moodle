@@ -35,66 +35,264 @@ require_once($CFG->dirroot . '/grade/lib.php');
 class admingrades {
 
     /**
-     * Define the different types of grade
-     * for level 1 cat total grades
-     * @param int $level
+     * Default definitions of admin grades and where they may be used.
+     * levels means....
+     * 'grandtotal' = available in 'grand total' selection
+     * 'items' = available in the small selection for all items / cats
+     * 'level2' = available in small selection ONLY for L2 and below
+     * @return array
      */
-    private static function define(int $level) {
-        $admingrades = [
-            'MV' => get_string('adminmv', 'local_gugrades'),
-            'MV0' => get_string('adminmv0', 'local_gugrades'),
-            'NS' => get_string('adminns', 'local_gugrades'),
-            'NS0' => get_string('adminns0', 'local_gugrades'),
-            '07' => get_string('admin07', 'local_gugrades'),
+    private static function defaults() {
+        return [
+            'GOODCAUSE_FO' => [
+                'default' => [
+                    'code' => 'MV',
+                    'description' => get_string('adminmv', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+                'items' => true,
+            ],
+            'GOODCAUSE_NR' => [
+                'default' => [
+                    'code' => 'MV0',
+                    'description' => get_string('adminmv0', 'local_gugrades'),
+                ],
+                'items' => true,
+            ],
+            'NOSUBMISSION' => [
+                'default' => [
+                    'code' => 'NS',
+                    'description' => get_string('adminns', 'local_gugrades'),
+                ],
+                'items' => true,
+            ],
+            'NOSUBMISSION_0' => [
+                'default' => [
+                    'code' => 'NS0',
+                    'description' => get_string('adminns0', 'local_gugrades'),
+                ],
+                'items' => true,
+                'level2' => true,
+            ],
+            'DEFERRED' => [
+                'default' => [
+                    'code' => '07',
+                    'description' => get_string('admin07', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+                'items' => true,
+            ],
+            'GOODCAUSECREDITWITHHELD' => [
+                'default' => [
+                    'code' => 'GCW',
+                    'description' => get_string('admingcw', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'CREDITWITHHELD' => [
+                'default' => [
+                    'code' => 'CW',
+                    'description' => get_string('admincw', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'UNSATISFACTORY' => [
+                'name' => 'UNSATISFACTORY',
+                'default' => [
+                    'code' => 'UNS',
+                    'description' => get_string('adminuns', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'SATISFACTORY' => [
+                'default' => [
+                    'code' => 'SAT',
+                    'description' => get_string('adminsat', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'NOTPASSED' => [
+                'default' => [
+                    'code' => 'NP',
+                    'description' => get_string('adminnp', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'PASSED' => [
+                'default' => [
+                    'code' => 'P',
+                    'description' => get_string('adminp', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+                'levels' => [1],
+            ],
+            'NOTCOMPLETE' => [
+                'default' => [
+                    'code' => 'NC',
+                    'description' => get_string('adminnc', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'COMPLETE' => [
+                'default' => [
+                    'code' => 'CP',
+                    'description' => get_string('admincp', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'CREDITREFUSED' => [
+                'default' => [
+                    'code' => 'CR',
+                    'description' => get_string('admincr', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'CREDITAWARDED' => [
+                'default' => [
+                    'code' => 'CA',
+                    'description' => get_string('adminca', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
+            'AUDITONLY' => [
+                'default' => [
+                    'code' => 'AU',
+                    'description' => get_string('adminau', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+            ],
         ];
-
-        foreach ($admingrades as $code => $admingrade) {
-            $admingrades[$code] = "$code - $admingrade";
-        }
-
-        // NS0 is not available at Level 1
-        if ($level == 1) {
-            unset($admingrades['NS0']);
-        }
-
-        return $admingrades;
     }
 
     /**
-     * Define level 1 total grades
+     * Get map from old to new database entry codes 
+     * used (once) in db/upgrade.php
+     * @return array
      */
-    private static function define_level_one() {
-        $admingrades = [
-            'GCW' => get_string('admingcw', 'local_gugrades'),
-            '07' => get_string('admin07', 'local_gugrades'),
-            'MV' => get_string('adminmv', 'local_gugrades'),
-            'CW' => get_string('admincw', 'local_gugrades'),
-            'UNS' => get_string('adminuns', 'local_gugrades'),
-            'SAT' => get_string('adminsat', 'local_gugrades'),
-            'NP' => get_string('adminnp', 'local_gugrades'),
-            'P' => get_string('adminp', 'local_gugrades'),
-            'NC' => get_string('adminnc', 'local_gugrades'),
-            'CP' => get_string('admincp', 'local_gugrades'),
-            'CR' => get_string('admincr', 'local_gugrades'),
-            'CA' => get_string('adminca', 'local_gugrades'),
-            'AU' => get_string('adminau', 'local_gugrades'),
-        ];
-
-        foreach ($admingrades as $code => $admingrade) {
-            $admingrades[$code] = "$code - $admingrade";
+    public static function get_upgrade_map() {
+        $defaults = self::defaults();
+        $maps = [];
+        foreach ($defaults as $name => $default) {
+            $maps[$default['default']['code']] = $name;
         }
 
-        return $admingrades;
+        return $maps;
     }
 
     /**
-     * Get description
-     * @param string $admincode
+     * Get the data for settings page
+     * @return array
+     */
+    public static function get_settings_data() {
+
+        return self::defaults();
+    }
+
+    /**
+     * Get the settings tag for admin grade
+     * @param string $admingrade
      * @return string
      */
-    public static function get_description(string $admincode) {
-        $admincodes = self::define();
-        return $admincodes[$admincode] ?? '[[' . $admincode . ']]';
+    public static function get_setting_tag(string $admingrade) {
+        return 'admingrade_' . strtolower($admingrade);
+    }
+
+    /**
+     * Check that admingrade (name) is valid
+     * @param string $admingrade
+     * @throws \moodle_exception
+     */
+    public static function validate_admingrade(string $admingrade) {
+        $defaults = self::defaults();
+        if (!array_key_exists($admingrade, $defaults)) {
+            throw new \moodle_exception('Attempt to write invalid admin grade - "' . $admingrade . '"'); 
+        }
+
+        return $defaults[$admingrade];
+    }
+
+    /**
+     * Get displaygrade and description from name
+     * @param string $name
+     * @return array
+     */
+    public static function get_displaygrade_from_name($admingrade) {
+        $default = self::validate_admingrade($admingrade);
+
+        // Admingrade details from settings
+        $tag = self::get_setting_tag($admingrade);
+        $setting = get_config('local_gugrades', $tag);
+        if (!$setting) {
+            throw new \moodle_exception('Setting not found for tag "' . $tag . '"');
+        }
+        $admin = json_decode($setting);
+
+        return [$admin->code, $admin->description];
+    }
+
+    /**
+     * Updates *all* the instances of admingrades in the grade table
+     * when an admingrade setting is changed.
+     * @param string $name
+     */
+    public static function update_displaynames(string $name) {
+        global $DB;
+
+        [$displaygrade, ] = self::get_displaygrade_from_name($name);
+        $sql = 'UPDATE {local_gugrades_grade} SET displaygrade = :displaygrade WHERE admingrade = :name';
+        $DB->execute($sql, [
+            'displaygrade' => $displaygrade,
+            'name' => $name,
+        ]);
+    }
+
+    /**
+     * Check the 'level' flags in the admingrades default array
+     * @param array $default
+     * @param string $key
+     * @return bool
+     */
+    private static function flag_set($default, $key) {
+        if (!array_key_exists($key, $default)) {
+            return false;
+        }
+        
+        return $default[$key];
+    }
+
+    /**
+     * Get grades for supplied 
+     * Level = 
+     * @param int $level
+     * @param bool $grandtotal
+     * @return array
+     */
+    public static function get_admingrades_for_level(int $level, bool $grandtotal = false) {
+
+        $defaults = self::defaults();
+
+        $admingrades = [];
+        foreach ($defaults as $name => $default) {
+
+            // Work out if this is ok for this level / grandtotal
+            $send = false;
+            if ($grandtotal && self::flag_set($default, 'grandtotal')) {
+                $send = true;
+            }
+            if (!$grandtotal && self::flag_set($default, 'items')) {
+                $send = true;
+            }
+            if (!$grandtotal && ($level == 1) && self::flag_set($default, 'level2')) {
+                $send = false;
+            }
+
+            if ($send) {
+                [$displaygrade, $description] = self::get_displaygrade_from_name($name);
+                $admingrades[$name] = "$displaygrade - $description";
+            }
+        }
+
+        return $admingrades;
     }
 
     /**
@@ -104,9 +302,9 @@ class admingrades {
      */
     public static function get_menu(int $gradeitemid) {
         $level = \local_gugrades\grades::get_gradeitem_level($gradeitemid);
-        $gradetypes = self::define($level);
+        $admingrades = self::get_admingrades_for_level($level, false);
 
-        return $gradetypes;
+        return $admingrades;
     }
 
     /**
@@ -114,9 +312,9 @@ class admingrades {
      * @return array
      */
     public static function get_menu_level_one() {
-        $gradetypes = self::define_level_one();
+        $admingrades = self::get_admingrades_for_level(1, true);
 
-        return $gradetypes;
+        return $admingrades;
     }
 
 }

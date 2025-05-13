@@ -987,8 +987,9 @@ class aggregation {
         // Admingrade check for anything that happens before drop lowest and
         // checks for all items graded etc.
         if ($admingrade = $aggregation->admin_grade_precheck($level, $items)) {
+            [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $explain = $aggregation->get_explain();
-            return [0, 0, $admingrade, $admingrade, $completion, '', $explain];
+            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
         }
 
         // Ignore unavailable weights for purposes of aggregation. MGU-1224.
@@ -1005,8 +1006,9 @@ class aggregation {
         // Pre-process. Can optionally return aggregated grade
         [$admingrade, $items] = $aggregation->pre_process_items($items);
         if ($admingrade) {
+            [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $explain = $aggregation->get_explain();
-            return [0, 0, $admingrade, $admingrade, $completion, '', $explain];
+            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
         }
 
         // "drop lowest" items.
@@ -1021,7 +1023,8 @@ class aggregation {
         // UNLESS any MV0s already dumped.
         if (count($items) == 0) {
             if ($aggregation->get_mv0found()) {
-                return [0, 0, 'MV0', 'MV0', $completion, '', $explain];
+                [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name('GOODCAUSE_NR');
+                return [0, 0, 'GOODCAUSE_NR', $displaygrade, $completion, '', $explain];
             } else {
                 $explain = get_string('explain_noitems', 'local_gugrades');
                 return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain];
@@ -1031,16 +1034,18 @@ class aggregation {
         // If >=level2 then check for admin grades (see MGU-726).
         if ($level >= 2) {
             if ($admingrade = $aggregation->admin_grades_level2($items)) {
+                [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
                 $explain = $aggregation->get_explain();
-                return [0, 0, $admingrade, $admingrade, $completion, '', $explain];
+                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
             }
         }
 
         // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
         if ($level == 1) {
             if ($admingrade = $aggregation->admin_grades_level1($items, $completion)) {
+                [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
                 $explain = $aggregation->get_explain();
-                return [0, 0, $admingrade, $admingrade, $completion, '', $explain];
+                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
             }
         }
 

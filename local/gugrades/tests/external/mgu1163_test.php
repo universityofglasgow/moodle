@@ -94,7 +94,7 @@ final class mgu1163_test extends \local_gugrades\external\gugrades_aggregation_t
         $this->set_strategy($this->gradecatsummative->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
         // Set NS for item 3.
-        $this->apply_admingrade('Item 3', $this->student->id, 'NS');
+        $this->apply_admingrade('Item 3', $this->student->id, 'NOSUBMISSION');
 
         // Get aggregation page for above.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
