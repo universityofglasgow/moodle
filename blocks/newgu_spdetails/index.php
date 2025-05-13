@@ -83,7 +83,7 @@ $help_link_attribs = ['target'=>'_new',
                         'class'=>'text-light',
                         ];
 
-$help_link = html_writer::link($helpurl, '<i class="icon fa fa-question fa-fw fa-2x" aria-hidden="true"></i>', $help_link_attribs);
+$help_link = html_writer::link($help_url, '<i class="icon fa fa-question fa-fw fa-2x" aria-hidden="true"></i>', $help_link_attribs);
 
 $help_button = html_writer::tag('button', $help_link, $help_button_attribs);
 
