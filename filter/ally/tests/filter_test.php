@@ -19,6 +19,7 @@
  * @author    Guy Thomas
  * @copyright Copyright (c) 2017 Open LMS / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package filter_ally
  */
 namespace filter_ally;
 use tool_ally\local_content;
@@ -27,13 +28,15 @@ use tool_ally\local_file;
 /**
  * @group     filter_ally
  * @group     ally
+ * @package filter_ally
  */
-class filter_test extends \advanced_testcase {
+final class filter_test extends \advanced_testcase {
 
     public $filter;
 
     public function setUp(): void {
         global $PAGE, $CFG;
+        parent::setUp();
 
         // We reset after every test because the filter modifies $CFG->additionalhtmlfooter.
         $this->resetAfterTest();
@@ -41,13 +44,12 @@ class filter_test extends \advanced_testcase {
         // Filter must be on.
         filter_set_global_state('ally', TEXTFILTER_ON);
 
-        require_once(__DIR__.'/../filter.php');
         require_once($CFG->dirroot.'/mod/forum/lib.php');
         $PAGE->set_url($CFG->wwwroot.'/course/view.php');
         $this->filter = $this->call_filter_setup();
     }
 
-    public function test_restrictions_pagetype() {
+    public function test_restrictions_pagetype(): void {
         global $PAGE, $CFG, $COURSE;
 
         $CFG->additionalhtmlfooter = '';
@@ -59,35 +61,35 @@ class filter_test extends \advanced_testcase {
         $this->assertStringContainsString('ally_section_maps', $CFG->additionalhtmlfooter);
     }
 
-    public function test_is_course_page() {
+    public function test_is_course_page(): void {
         global $PAGE, $CFG;
 
         $PAGE->set_url($CFG->wwwroot.'/course/view.php');
-        $iscoursepage = \phpunit_util::call_internal_method($this->filter, 'is_course_page', [], 'filter_ally');
+        $iscoursepage = \phpunit_util::call_internal_method($this->filter, 'is_course_page', [], text_filter::class);
         $this->assertTrue($iscoursepage);
         $PAGE->set_url($CFG->wwwroot.'/user/view.php');
-        $iscoursepage = \phpunit_util::call_internal_method($this->filter, 'is_course_page', [], 'filter_ally');
+        $iscoursepage = \phpunit_util::call_internal_method($this->filter, 'is_course_page', [], text_filter::class);
         $this->assertFalse($iscoursepage);
     }
 
-    public function test_map_assignment_file_paths_to_pathhash() {
+    public function test_map_assignment_file_paths_to_pathhash(): void {
         global $PAGE, $CFG;
 
         $gen = $this->getDataGenerator();
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_assignment_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_assignment_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertEmpty($map);
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_assignment_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_assignment_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertEmpty($map);
 
         $course = $gen->create_course();
         $data = (object) [
-            'course' => $course->id
+            'course' => $course->id,
         ];
         $assign = $gen->create_module('assign', $data);
 
@@ -104,25 +106,25 @@ class filter_test extends \advanced_testcase {
             // Add actual file there.
             $filerecord = ['component' => 'mod_assign', 'filearea' => 'introattachment',
                 'contextid' => \context_module::instance($assign->cmid)->id, 'itemid' => 0,
-                'filename' => $file, 'filepath' => '/'];
+                'filename' => $file, 'filepath' => '/', ];
             $fs = get_file_storage();
             $fs->create_file_from_pathname($filerecord, $fixturepath);
         }
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_assignment_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_assignment_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertEmpty($map);
 
         $PAGE->set_pagetype('mod-assign-view');
         $_GET['id'] = $assign->cmid;
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_assignment_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_assignment_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertNotEmpty($map);
     }
 
-    public function test_map_folder_file_paths_to_pathhash() {
+    public function test_map_folder_file_paths_to_pathhash(): void {
         global $PAGE, $CFG;
 
         $this->setAdminUser();
@@ -130,13 +132,13 @@ class filter_test extends \advanced_testcase {
         $gen = $this->getDataGenerator();
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_folder_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_folder_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertEmpty($map);
 
         $course = $gen->create_course();
         $data = (object) [
-            'course' => $course->id
+            'course' => $course->id,
         ];
         $assign = $gen->create_module('folder', $data);
 
@@ -157,21 +159,21 @@ class filter_test extends \advanced_testcase {
                 'contextid' => \context_module::instance($assign->cmid)->id,
                 'itemid' => 0,
                 'filename' => $file,
-                'filepath' => '/'
+                'filepath' => '/',
             ];
             $fs = get_file_storage();
             $fs->create_file_from_pathname($filerecord, $fixturepath);
         }
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_folder_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_folder_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertEmpty($map);
 
         $PAGE->set_pagetype('mod-folder-view');
         $_GET['id'] = $assign->cmid;
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_folder_file_paths_to_pathhash', [], 'filter_ally'
+            $this->filter, 'map_folder_file_paths_to_pathhash', [], text_filter::class
         );
         $this->assertNotEmpty($map);
     }
@@ -185,7 +187,7 @@ class filter_test extends \advanced_testcase {
         $gen->enrol_user($student->id, $course->id, 'student');
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], text_filter::class
         );
         $this->assertEmpty($map);
 
@@ -204,7 +206,7 @@ class filter_test extends \advanced_testcase {
             $data = (object) [
                 'course'  => $course->id,
                 'name'    => $file,
-                'visible' => 0
+                'visible' => 0,
             ];
 
             $resource = $gen->create_module('resource', $data);
@@ -212,20 +214,20 @@ class filter_test extends \advanced_testcase {
             // Add actual file there.
             $filerecord = ['component' => 'mod_assign', 'filearea' => 'introattachment',
                 'contextid' => \context_module::instance($resource->cmid)->id, 'itemid' => 0,
-                'filename' => $file, 'filepath' => '/'];
+                'filename' => $file, 'filepath' => '/', ];
             $fs = get_file_storage();
             $fs->create_file_from_pathname($filerecord, $fixturepath);
         }
 
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], text_filter::class
         );
         $this->assertNotEmpty($map);
 
         // Check students don't get anything as all the resources were invisible.
         $this->setUser($student);
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], text_filter::class
         );
         $this->assertEmpty($map);
 
@@ -234,7 +236,7 @@ class filter_test extends \advanced_testcase {
         $PAGE->set_url($CFG->wwwroot.'/user/view.php');
         $PAGE->set_pagetype('course-view-topics');
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_resource_file_paths_to_pathhash', [$course], text_filter::class
         );
 
         $this->assertEmpty($map);
@@ -243,19 +245,19 @@ class filter_test extends \advanced_testcase {
     /**
      * @param bool $fileparam
      */
-    public function test_process_url($fileparam = false) {
+    public function test_process_url($fileparam = false): void {
         global $CFG;
         $fileparam = $fileparam ? '?file=' : '';
 
         $urlformats = [
             'somecomponent' => $CFG->wwwroot.'/pluginfile.php'.$fileparam.'/123/somecomponent/somearea/myfile.test',
             'label' => $CFG->wwwroot.'/pluginfile.php'.$fileparam.'/123/label/somearea/0/myfile.test',
-            'question' => $CFG->wwwroot.'/pluginfile.php'.$fileparam.'/123/question/somearea/123/5/0/myfile.test'
+            'question' => $CFG->wwwroot.'/pluginfile.php'.$fileparam.'/123/question/somearea/123/5/0/myfile.test',
         ];
 
         foreach ($urlformats as $expectedcomponent => $url) {
             list($contextid, $component, $filearea, $itemid, $filename) = \phpunit_util::call_internal_method(
-                $this->filter, 'process_url', [$url], 'filter_ally'
+                $this->filter, 'process_url', [$url], text_filter::class
             );
             $this->assertEquals(123, $contextid);
             $this->assertEquals($expectedcomponent, $component);
@@ -267,12 +269,12 @@ class filter_test extends \advanced_testcase {
         // Make sure URLs belonging to different sites are *not* processed.
         $badurl = 'http://test.com/pluginfile.php'.$fileparam.'/123/somecomponent/somearea/myfile.test';
         $result = \phpunit_util::call_internal_method(
-            $this->filter, 'process_url', [$badurl], 'filter_ally'
+            $this->filter, 'process_url', [$badurl], text_filter::class
         );
         $this->assertNull($result);
     }
 
-    public function test_process_url_fileparam() {
+    public function test_process_url_fileparam(): void {
         $this->test_process_url(true);
     }
 
@@ -292,7 +294,7 @@ EOF;
         return $text;
     }
 
-    public function test_filter_img() {
+    public function test_filter_img(): void {
         global $PAGE, $CFG;
 
         $PAGE->set_url($CFG->wwwroot.'/course/view.php');
@@ -308,14 +310,14 @@ EOF;
         $this->setUser($teacher);
 
         $fs = get_file_storage();
-        $filerecord = array(
+        $filerecord = [
             'contextid' => \context_course::instance($course->id)->id,
             'component' => 'mod_label',
             'filearea' => 'intro',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => 'test.png'
-        );
+            'filename' => 'test.png',
+        ];
         $teststring = 'moodletest';
         $file = $fs->create_file_from_string($filerecord, $teststring);
         $url = local_file::url($file);
@@ -361,15 +363,15 @@ EOF;
         $label = $gen->create_module('label', ['course' => $course->id]);
         $modinfo = get_fast_modinfo($course);
         $cm = $modinfo->get_cm($label->cmid);
-        $filerecord = array(
+        $filerecord = [
             'contextid' => $cm->context->id,
             'component' => 'mod_notwhitelisted',
             'filearea' => 'intro',
             'itemid' => 0,
             'filepath' => '/',
             'filename' => 'test-student-file.png',
-            'userid' => $student->id
-        );
+            'userid' => $student->id,
+        ];
         $teststring = 'moodletest';
         $file = $fs->create_file_from_string($filerecord, $teststring);
         $url = local_file::url($file);
@@ -388,13 +390,13 @@ EOF;
         $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
     }
 
-    public function test_filter_img_noslashargs() {
+    public function test_filter_img_noslashargs(): void {
         global $CFG;
         $CFG->slasharguments = 0;
         $this->test_filter_img();
     }
 
-    public function test_filter_img_blacklistedcontexts() {
+    public function test_filter_img_blacklistedcontexts(): void {
         global $PAGE, $CFG, $USER;
 
         $this->setAdminUser();
@@ -408,19 +410,19 @@ EOF;
         $blacklistedcontexts = [
             \context_coursecat::instance($category->id),
             \context_system::instance(),
-            \context_user::instance($USER->id)
+            \context_user::instance($USER->id),
         ];
 
         foreach ($blacklistedcontexts as $context) {
             $fs = get_file_storage();
-            $filerecord = array(
+            $filerecord = [
                 'contextid' => $context->id,
                 'component' => 'mod_label',
                 'filearea' => 'intro',
                 'itemid' => 0,
                 'filepath' => '/',
-                'filename' => 'test.png'
-            );
+                'filename' => 'test.png',
+            ];
             $teststring = 'moodletest';
             $fs->create_file_from_string($filerecord, $teststring);
             $path = str_replace('//', '', implode('/', $filerecord));
@@ -447,7 +449,7 @@ EOF;
         }
     }
 
-    public function test_filter_img_blacklistedcontexts_noslashargs() {
+    public function test_filter_img_blacklistedcontexts_noslashargs(): void {
         global $CFG;
         $CFG->slasharguments = 0;
         $this->test_filter_img_blacklistedcontexts();
@@ -456,7 +458,7 @@ EOF;
     /**
      * Make sure that regex chars are handled correctly when present in img src file names.
      */
-    public function test_filter_img_regexchars() {
+    public function test_filter_img_regexchars(): void {
 
         $gen = $this->getDataGenerator();
         $course = $gen->create_course();
@@ -469,19 +471,19 @@ EOF;
         $regextestfilenames = [
             'test (2).png',
             'test (3:?).png',
-            'test (~4).png'
+            'test (~4).png',
         ];
         $urls = [];
         $text = '';
         foreach ($regextestfilenames as $filename) {
-            $filerecord = array(
+            $filerecord = [
                 'contextid' => \context_course::instance($course->id)->id,
                 'component' => 'mod_label',
                 'filearea' => 'intro',
                 'itemid' => 0,
                 'filepath' => '/',
-                'filename' => $filename
-            );
+                'filename' => $filename,
+            ];
             $teststring = 'moodletest';
             $file = $fs->create_file_from_string($filerecord, $teststring);
             $url = local_file::url($file);
@@ -506,7 +508,7 @@ EOF;
         }
     }
 
-    public function test_filter_img_regexchars_noslashargs() {
+    public function test_filter_img_regexchars_noslashargs(): void {
         global $CFG;
         $CFG->slasharguments = 0;
         $this->test_filter_img_regexchars();
@@ -528,7 +530,7 @@ EOF;
         return $text;
     }
 
-    public function test_filter_anchor() {
+    public function test_filter_anchor(): void {
 
         $gen = $this->getDataGenerator();
 
@@ -539,14 +541,14 @@ EOF;
         $gen->enrol_user($teacher->id, $course->id, 'teacher');
 
         $fs = get_file_storage();
-        $filerecord = array(
+        $filerecord = [
             'contextid' => \context_course::instance($course->id)->id,
             'component' => 'mod_label',
             'filearea' => 'intro',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => 'test.txt'
-        );
+            'filename' => 'test.txt',
+        ];
         $teststring = 'moodletest';
         $file = $fs->create_file_from_string($filerecord, $teststring);
         $url = local_file::url($file);
@@ -583,15 +585,15 @@ EOF;
         $label = $gen->create_module('label', ['course' => $course->id]);
         $modinfo = get_fast_modinfo($course);
         $cm = $modinfo->get_cm($label->cmid);
-        $filerecord = array(
+        $filerecord = [
             'contextid' => $cm->context->id,
             'component' => 'mod_notwhitelisted',
             'filearea' => 'intro',
             'itemid' => 0,
             'filepath' => '/',
             'filename' => 'test-student-file.txt',
-            'userid' => $student->id
-        );
+            'userid' => $student->id,
+        ];
         $teststring = 'moodletest';
         $file = $fs->create_file_from_string($filerecord, $teststring);
         $url = local_file::url($file);
@@ -610,7 +612,7 @@ EOF;
         $this->assertStringNotContainsString('<span class="ally-feedback"', $filteredtext);
     }
 
-    public function test_filter_anchor_noslashargs() {
+    public function test_filter_anchor_noslashargs(): void {
         global $CFG;
         $CFG->slasharguments = 0;
         $this->test_filter_anchor();
@@ -619,7 +621,7 @@ EOF;
     /**
      * Test processing an anchor where the anchor style attribute contains html entity quotes.
      */
-    public function test_filter_anchor_style_with_htmlentities() {
+    public function test_filter_anchor_style_with_htmlentities(): void {
 
         $gen = $this->getDataGenerator();
 
@@ -628,14 +630,14 @@ EOF;
         $gen->enrol_user($teacher->id, $course->id, 'teacher');
 
         $fs = get_file_storage();
-        $filerecord = array(
+        $filerecord = [
             'contextid' => \context_course::instance($course->id)->id,
             'component' => 'mod_label',
             'filearea' => 'intro',
             'itemid' => 0,
             'filepath' => '/',
-            'filename' => 'test.txt'
-        );
+            'filename' => 'test.txt',
+        ];
         $teststring = 'moodletest';
         $file = $fs->create_file_from_string($filerecord, $teststring);
         $url = local_file::url($file);
@@ -653,7 +655,7 @@ EOF;
         $this->assertStringContainsString('<span class="ally-feedback"', $filteredtext);
     }
 
-    public function test_filter_anchor_blacklistedcontexts() {
+    public function test_filter_anchor_blacklistedcontexts(): void {
         global $PAGE, $CFG, $USER;
 
         $this->setAdminUser();
@@ -667,19 +669,19 @@ EOF;
         $blacklistedcontexts = [
             \context_coursecat::instance($category->id),
             \context_system::instance(),
-            \context_user::instance($USER->id)
+            \context_user::instance($USER->id),
         ];
 
         foreach ($blacklistedcontexts as $context) {
             $fs = get_file_storage();
-            $filerecord = array(
+            $filerecord = [
                 'contextid' => $context->id,
                 'component' => 'mod_label',
                 'filearea' => 'intro',
                 'itemid' => 0,
                 'filepath' => '/',
-                'filename' => 'test.txt'
-            );
+                'filename' => 'test.txt',
+            ];
             $teststring = 'moodletest';
             $file = $fs->create_file_from_string($filerecord, $teststring);
             $url = local_file::url($file);
@@ -704,7 +706,7 @@ EOF;
         }
     }
 
-    public function test_filter_anchor_blacklistedcontexts_noslashargs() {
+    public function test_filter_anchor_blacklistedcontexts_noslashargs(): void {
         global $CFG;
         $CFG->slasharguments = 0;
         $this->test_filter_anchor_blacklistedcontexts();
@@ -713,7 +715,7 @@ EOF;
     /**
      * Make sure that regex chars are handled correctly when present in anchor href file names.
      */
-    public function test_filter_anchor_regexchars() {
+    public function test_filter_anchor_regexchars(): void {
 
         $gen = $this->getDataGenerator();
         $course = $gen->create_course();
@@ -726,19 +728,19 @@ EOF;
         $regextestfilenames = [
             'test (2).txt',
             'test (3:?).txt',
-            'test (~4).txt'
+            'test (~4).txt',
         ];
         $urls = [];
         $text = '';
         foreach ($regextestfilenames as $filename) {
-            $filerecord = array(
+            $filerecord = [
                 'contextid' => \context_course::instance($course->id)->id,
                 'component' => 'mod_label',
                 'filearea' => 'intro',
                 'itemid' => 0,
                 'filepath' => '/',
-                'filename' => $filename
-            );
+                'filename' => $filename,
+            ];
             $teststring = 'moodletest';
             $file = $fs->create_file_from_string($filerecord, $teststring);
             $url = local_file::url($file);
@@ -763,13 +765,13 @@ EOF;
         }
     }
 
-    public function test_filter_anchor_regexchars_noslashargs() {
+    public function test_filter_anchor_regexchars_noslashargs(): void {
         global $CFG;
         $CFG->slasharguments = 0;
         $this->test_filter_anchor_regexchars();
     }
 
-    public function test_map_forum_attachment_file_paths_to_pathhash() {
+    public function test_map_forum_attachment_file_paths_to_pathhash(): void {
         global $PAGE, $CFG, $DB, $COURSE;
 
         $gen = $this->getDataGenerator();
@@ -785,7 +787,7 @@ EOF;
 
         // Should be empty when nothing added.
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], text_filter::class
         );
         $this->assertEmpty($map);
 
@@ -793,7 +795,7 @@ EOF;
         $record->course = $course->id;
         $forum = self::getDataGenerator()->create_module('forum', $record);
         $_GET['id'] = $forum->cmid;
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['forum'] = $forum->id;
         $record['userid'] = $teacher->id;
@@ -803,13 +805,13 @@ EOF;
         // Add a text file.
         $filerecord = ['component' => 'mod_forum', 'filearea' => 'attachment',
             'contextid' => \context_module::instance($forum->cmid)->id, 'itemid' => $post->id,
-            'filename' => 'test file.txt', 'filepath' => '/'];
+            'filename' => 'test file.txt', 'filepath' => '/', ];
         $fs = get_file_storage();
         $fs->create_file_from_string($filerecord, 'Test content');
 
         // Add an file.
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], text_filter::class
         );
         $this->assertNotEmpty($map);
 
@@ -817,7 +819,7 @@ EOF;
         $testfile = 'testpng_small.png';
         $filerecord = ['component' => 'mod_forum', 'filearea' => 'attachment',
             'contextid' => \context_module::instance($forum->cmid)->id, 'itemid' => $post->id,
-            'filename' => $testfile, 'filepath' => '/'];
+            'filename' => $testfile, 'filepath' => '/', ];
         $fs = get_file_storage();
         $fixturedir = $CFG->dirroot.'/filter/ally/tests/fixtures/';
         $fixturepath = $fixturedir.'/'.$testfile;
@@ -825,12 +827,12 @@ EOF;
 
         // Shouldn't be be empty when an image file has been added (only image files are mapped).
         $map = \phpunit_util::call_internal_method(
-            $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], 'filter_ally'
+            $this->filter, 'map_forum_attachment_file_paths_to_pathhash', [$course], text_filter::class
         );
         $this->assertNotEmpty($map);
     }
 
-    public function test_verify_and_fix_if_applied_lesson_module() {
+    public function test_verify_and_fix_if_applied_lesson_module(): void {
         global $PAGE;
 
         $gen = $this->getDataGenerator();
@@ -844,20 +846,20 @@ EOF;
         $regextestfilenames = [
             'test (2).txt',
             'test (3:?).txt',
-            'test (~4).txt'
+            'test (~4).txt',
         ];
         $urls = [];
         $text = ''; // Paragraph with links.
         $datalesstext = ''; // Paragraph with dataless links.
         foreach ($regextestfilenames as $filename) {
-            $filerecord = array(
+            $filerecord = [
                 'contextid' => \context_course::instance($course->id)->id,
                 'component' => 'mod_lesson',
                 'filearea' => 'page_contents',
                 'itemid' => 0,
                 'filepath' => '/',
-                'filename' => $filename
-            );
+                'filename' => $filename,
+            ];
             $teststring = 'moodletest';
             $file = $fs->create_file_from_string($filerecord, $teststring);
             $url = local_file::url($file);
@@ -888,7 +890,7 @@ EOF;
         $label = $gen->create_module('label', ['course' => $course->id]);
         $modinfo = get_fast_modinfo($course);
         $cm = $modinfo->get_cm($label->cmid);
-        $filter = new \filter_ally($cm->context, []);
+        $filter = new text_filter($cm->context, []);
 
         $tests = [
             'just some text, no tags',
@@ -914,10 +916,10 @@ EOF;
 
     }
 
-    private function call_filter_setup(): \filter_ally {
+    private function call_filter_setup(): text_filter {
         global $PAGE;
         $context = \context_system::instance();
-        $filter = new \filter_ally($context, []);
+        $filter = new text_filter($context, []);
         $filter->setup($PAGE, $context);
         return $filter;
     }

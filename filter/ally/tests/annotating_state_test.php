@@ -19,23 +19,24 @@
  * @author    David Castro <david.castro@openlms.net>
  * @copyright Copyright (c) 2020 Open LMS / 2023 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package filter_ally
  */
 namespace filter_ally;
 
 /**
- * @group     filter_ally
+ * @group     text_filter
  * @group     ally
+ * @package filter_ally
  */
-class annotating_state_test extends \advanced_testcase {
-    public function test_annotating_state() {
+final class annotating_state_test extends \advanced_testcase {
+    public function test_annotating_state(): void {
         $this->resetAfterTest();
-        require_once(__DIR__.'/../filter.php');
         $courseid = 3;
 
-        $this->assertFalse(\filter_ally::is_annotating($courseid));
-        \filter_ally::start_annotating($courseid);
-        $this->assertTrue(\filter_ally::is_annotating($courseid));
-        \filter_ally::end_annotating($courseid);
-        $this->assertFalse(\filter_ally::is_annotating($courseid));
+        $this->assertFalse(text_filter::is_annotating($courseid));
+        text_filter::start_annotating($courseid);
+        $this->assertTrue(text_filter::is_annotating($courseid));
+        text_filter::end_annotating($courseid);
+        $this->assertFalse(text_filter::is_annotating($courseid));
     }
 }

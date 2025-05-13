@@ -18,12 +18,15 @@
  * Filter for processing file links for Ally accessibility enhancements.
  * @author    Guy Thomas
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Open LMS / 2023 Anthology Inc. and its affiliates
+ * @copyright Copyright (c) 2017 Open LMS / 2025 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace filter_ally;
+
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once(__DIR__.'/../../../mod/forum/lib.php');
 
 use filter_ally\renderables\wrapper;
 use tool_ally\cache;
@@ -31,15 +34,19 @@ use tool_ally\local_file;
 use tool_ally\local_content;
 use tool_ally\models\pluginfileurlprops;
 use tool_ally\logging\logger;
+use stdClass;
+use context_course;
+use cm_info;
+use DOMElement;
 
 /**
  * Filter for processing file links for Ally accessibility enhancements.
  * @author    Guy Thomas
  * @package   filter_ally
- * @copyright Copyright (c) 2017 Open LMS / 2023 Anthology Inc. and its affiliates
+ * @copyright Copyright (c) 2017 Open LMS / 2025 Anthology Inc. and its affiliates
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class text_filter extends moodle_text_filter {
+class text_filter extends \core_filters\text_filter {
 
     /**
      * @var array File ids (path hashes) of all processed files by url.
@@ -492,7 +499,7 @@ class text_filter extends moodle_text_filter {
                     'courseid' => $COURSE->id,
                     'pagetype' => $PAGE->pagetype,
                     'pagelayout' => $PAGE->pagelayout,
-                    'stacktrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)
+                    'stacktrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
                 ];
                 logger::get()->info('logger:filtersetupdebugger', $log);
             }
@@ -529,7 +536,7 @@ class text_filter extends moodle_text_filter {
                 'forum_files' => $forummap,
                 'folder_files' => $foldermap,
                 'glossary_files' => $glossarymap,
-                'lesson_files' => $lessonmap
+                'lesson_files' => $lessonmap,
             ];
             $filejson = json_encode($modulemaps);
 
@@ -554,7 +561,7 @@ EOF;
                 'adminurl' => !empty($config->adminurl) ? $config->adminurl : null,
                 'pushurl' => !empty($config->pushurl) ? $config->pushurl : null,
                 'clientid' => !empty($config->clientid) ? $config->clientid : null,
-                'moodleversion' => $CFG->version
+                'moodleversion' => $CFG->version,
             ];
 
             $params = new stdClass();
@@ -681,15 +688,8 @@ EOF;
         return $urlprops->to_list();
     }
 
-    /**
-     * Filters the given HTML text, looking for links pointing to files so that the file id data attribute can
-     * be injected.
-     *
-     * @param $text HTML to be processed.
-     * @param $options
-     * @return string String containing processed HTML.
-     */
-    public function filter($text, array $options = array()) {
+    #[\Override]
+    public function filter($text, array $options = []) {
         global $PAGE;
 
         if (!$this->filteractive) {
@@ -727,7 +727,7 @@ EOF;
                 $elements[] = (object) [
                     'type' => 'a',
                     'url' => $href,
-                    'result' => $result
+                    'result' => $result,
                 ];
             }
         }
@@ -741,7 +741,7 @@ EOF;
                 $elements[] = (object) [
                     'type' => 'img',
                     'url' => $src,
-                    'result' => $result
+                    'result' => $result,
                 ];
             }
         }
@@ -765,7 +765,7 @@ EOF;
                     continue;
                 }
 
-                $context = context::instance_by_id($contextid, IGNORE_MISSING);
+                $context = \context::instance_by_id($contextid, IGNORE_MISSING);
                 if (!$context) {
                     // The context couldn't be found (perhaps this is a copy/pasted url pointing at old deleted content). Move on.
                     continue;
@@ -774,7 +774,7 @@ EOF;
                 $blacklistedcontexts = [
                     CONTEXT_USER,
                     CONTEXT_COURSECAT,
-                    CONTEXT_SYSTEM
+                    CONTEXT_SYSTEM,
                 ];
                 if (in_array($context->contextlevel, $blacklistedcontexts)) {
                     continue;
@@ -888,7 +888,7 @@ EOF;
      * @param $courseid
      * @return bool
      */
-    public static function is_annotating($courseid) : bool {
+    public static function is_annotating($courseid): bool {
         return array_key_exists($courseid, self::$isannotating);
     }
 
