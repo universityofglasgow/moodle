@@ -165,7 +165,7 @@ class admingrades {
     }
 
     /**
-     * Get map from old to new database entry codes 
+     * Get map from old to new database entry codes
      * used (once) in db/upgrade.php
      * @return array
      */
@@ -205,10 +205,24 @@ class admingrades {
     public static function validate_admingrade(string $admingrade) {
         $defaults = self::defaults();
         if (!array_key_exists($admingrade, $defaults)) {
-            throw new \moodle_exception('Attempt to write invalid admin grade - "' . $admingrade . '"'); 
+            throw new \moodle_exception('Attempt to write invalid admin grade - "' . $admingrade . '"');
         }
 
         return $defaults[$admingrade];
+    }
+
+    /**
+     * Set empty settings to defaults
+     */
+    public static function setting_defaults() {
+        $defaults = self::defaults();
+        foreach ($defaults as $name => $default) {
+            $tag = self::get_setting_tag($name);
+            $setting = get_config('local_gugrades', $tag);
+            if (!$setting) {
+                set_config($tag, json_encode($default['default']), 'local_gugrades');
+            }
+        }
     }
 
     /**
@@ -256,13 +270,13 @@ class admingrades {
         if (!array_key_exists($key, $default)) {
             return false;
         }
-        
+
         return $default[$key];
     }
 
     /**
-     * Get grades for supplied 
-     * Level = 
+     * Get grades for supplied
+     * Level =
      * @param int $level
      * @param bool $grandtotal
      * @return array

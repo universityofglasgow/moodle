@@ -266,30 +266,7 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024111200, 'local', 'gugrades');
     }
 
-    if ($oldversion < 2025050700) {
-
-        // Changing precision of field admingrade on table local_gugrades_grade to (20).
-        $table = new xmldb_table('local_gugrades_grade');
-        $field = new xmldb_field('admingrade', XMLDB_TYPE_CHAR, '30', null, null, null, null, 'convertedgrade');
-
-        // Launch change of precision for field admingrade.
-        $dbman->change_field_precision($table, $field);
-
-        // Map old admin codes (in db) to new names
-        $maps = \local_gugrades\admingrades::get_upgrade_map();
-        foreach ($maps as $oldcode => $newname) {
-            $sql = 'UPDATE {local_gugrades_grade} SET admingrade = :newname WHERE admingrade = :oldcode';
-            $DB->execute($sql, [
-                'newname' => $newname,
-                'oldcode' => $oldcode,
-            ]);
-        }
-
-        // Gugrades savepoint reached.
-        upgrade_plugin_savepoint(true, 2025050700, 'local', 'gugrades');
-    }
-
-    if ($oldversion < 2025051300) {
+    if ($oldversion < 2025051301) {
 
         // Changing precision of field admingrade on table local_gugrades_grade to (30).
         $table = new xmldb_table('local_gugrades_grade');
@@ -297,6 +274,9 @@ function xmldb_local_gugrades_upgrade($oldversion) {
 
         // Launch change of precision for field admingrade.
         $dbman->change_field_precision($table, $field);
+
+        // Update setting defaults
+        \local_gugrades\admingrades::setting_defaults();
 
         // Map old admin codes (in db) to new names.
         // Do this again because some may have been missed due to an error.
@@ -310,7 +290,7 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         }
 
         // Gugrades savepoint reached.
-        upgrade_plugin_savepoint(true, 2025051300, 'local', 'gugrades');
+        upgrade_plugin_savepoint(true, 2025051301, 'local', 'gugrades');
     }
 
     return true;
