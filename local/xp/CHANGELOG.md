@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v18.1
+-----
+
+Bug fixes
+
+- Fixed a regression causing the anonymity setting "First name and initial" to be fully anonymous
+
 v18.0
 -----
 

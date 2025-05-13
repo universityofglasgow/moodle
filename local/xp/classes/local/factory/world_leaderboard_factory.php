@@ -22,10 +22,12 @@ use block_xp\local\division\division;
 use block_xp\local\division\empty_division;
 use block_xp\local\leaderboard\leaderboard;
 use block_xp\local\userfilter\user_filter;
+use block_xp\local\xp\state_anonymiser;
 use local_xp\local\config\default_course_world_config;
 use local_xp\local\division\cohort_division;
 use local_xp\local\userfilter\leaderboard_participants;
 use local_xp\local\userfilter\stack;
+use local_xp\local\xp\firstname_initial_lastname_anonymiser;
 
 /**
  * Factory.
@@ -56,6 +58,19 @@ class world_leaderboard_factory extends \block_xp\local\factory\world_leaderboar
         }
 
         return parent::assemble_leaderboard($targetuserid, $userfilter);
+    }
+
+    /**
+     * Get the anonymiser.
+     *
+     * @param int $targetuserid The target user ID.
+     * @return state_anonymiser|null
+     */
+    protected function get_anonymiser(int $targetuserid): ?state_anonymiser {
+        if ($this->config->get('identitymode') == default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME) {
+            return new firstname_initial_lastname_anonymiser([$targetuserid]);
+        }
+        return parent::get_anonymiser($targetuserid);
     }
 
     /**

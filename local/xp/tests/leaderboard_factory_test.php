@@ -66,7 +66,7 @@ final class leaderboard_factory_test extends base_testcase {
         $store->set($u3->id, 130);
         $store->set($u4->id, 140);
 
-        $factory = di::get('course_world_leaderboard_factory');
+        $factory = new \local_xp\local\factory\course_world_leaderboard_factory(di::get('db'), di::get('iomad_facade'));
         $lb = $factory->get_course_leaderboard($world);
         $ranking = $lb->get_ranking(new limit(0, 0));
         $ranking = !is_array($ranking) ? array_values(iterator_to_array($ranking)) : $ranking;
