@@ -270,7 +270,7 @@ function xmldb_local_gugrades_upgrade($oldversion) {
 
         // Changing precision of field admingrade on table local_gugrades_grade to (20).
         $table = new xmldb_table('local_gugrades_grade');
-        $field = new xmldb_field('admingrade', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'convertedgrade');
+        $field = new xmldb_field('admingrade', XMLDB_TYPE_CHAR, '30', null, null, null, null, 'convertedgrade');
 
         // Launch change of precision for field admingrade.
         $dbman->change_field_precision($table, $field);
