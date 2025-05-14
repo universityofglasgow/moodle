@@ -48,6 +48,11 @@ class base {
     private string $explain = '';
 
     /**
+     * @var string $atype
+     */
+    private string $atype;
+
+    /**
      * Note that MV0 grades were found (and dropped) in pre-process
      * Their presence (even though dropped) effects the aggregated admin grade
      * (see MGU-1110)

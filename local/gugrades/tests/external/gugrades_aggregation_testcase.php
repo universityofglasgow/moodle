@@ -50,6 +50,11 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
     protected array $gradeitems;
 
     /**
+     * @var array $gradeitemids
+     */
+    protected array $gradeitemids;
+
+    /**
      * Process schema json (recursive)
      * $gradeitemid specifies where to put new grade items
      * @param array $items
