@@ -92,8 +92,8 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $mygradesgradeitemid,
             'userid' => $this->student1->id,
-            'admingrade' => '07',
-            'displaygrade' => '07',
+            'admingrade' => 'GOODCAUSECREDITWITHHELD', // As now declared as a faux constant in admingrades.php
+            'displaygrade' => 'GCW', // This will actually be a dynamic value, but we're hard coding for the sake of it here.
             'gradetype' => 'RELEASED',
             'columnid' => 0,
             'iscurrent' => 1,
@@ -102,7 +102,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         ]);
 
         $admingrade = $this->get_gugrades_grade_item($mygradesgradeitemid, '');
-        $expected = get_string('admin07', 'local_gugrades');
+        $expected = get_string('admingcw', 'local_gugrades');
 
         $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade, $admingrade->displaygrade));
     }
@@ -162,7 +162,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $mygradesgradeitemid,
             'userid' => $this->student1->id,
-            'admingrade' => 'MV',
+            'admingrade' => 'GOODCAUSE_FO',
             'displaygrade' => 'MV',
             'gradetype' => 'RELEASED',
             'columnid' => 0,
@@ -178,7 +178,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         // Update the record to MV0
         $params = [
-            'admingrade' => 'MV0',
+            'admingrade' => 'GOODCAUSE_NR',
             'displaygrade' => 'MV0',
             'id' => $admingrade->id,
         ];
@@ -244,7 +244,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $mygradesgradeitemid,
             'userid' => $this->student1->id,
-            'admingrade' => 'NS',
+            'admingrade' => 'NOSUBMISSION',
             'displaygrade' => 'NS',
             'gradetype' => 'RELEASED',
             'columnid' => 0,
@@ -260,7 +260,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         // Update the record to MV0
         $params = [
-            'admingrade' => 'NS0',
+            'admingrade' => 'NOSUBMISSION',
             'displaygrade' => 'NS0',
             'id' => $admingrade->id,
         ];
