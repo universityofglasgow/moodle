@@ -23,6 +23,10 @@
                 :placeholder="mstrings.pleasespecify"
                 name="other"
                 v-model="other"
+                validation="required"
+                :validation-messages="{
+                    required: 'This field is required.',
+                }"
             />
             <FormKit
                 type="textarea"
