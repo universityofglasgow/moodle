@@ -65,15 +65,16 @@ class template extends datasource {
         // Add core course join.
         $coursentity = new course();
         $coursealias = $coursentity->get_table_alias('course');
-        $coursejoin = "JOIN {course} {$coursealias} ON {$coursealias}.id = {$templatealias}.templatecourseid";
+        $coursejoin = "JOIN {course} {$coursealias} ON {$coursealias}.id = {$templatealias}.createdcourseid";
         $this->add_entity($coursentity->add_join($coursejoin));
 
         // Join the course category entity.
         $coursecatentity = new course_category();
-        $coursecattablealias = $coursecatentity->get_table_alias('course_categories');
-        $this->add_entity($coursecatentity
-            ->add_join("JOIN {course_categories} {$coursecattablealias}
-                ON {$coursecattablealias}.id = {$templatealias}.category"));
+        $coursecatalias = $coursecatentity->get_table_alias('course_categories');
+        $coursecatentity->add_joins($coursentity->get_joins());
+        $coursecatentity->add_join("LEFT JOIN {course_categories} {$coursecatalias}
+                                    ON {$coursecatalias}.id = {$coursealias}.category");
+        $this->add_entity($coursecatentity);
 
         $this->add_all_from_entities();
     }
@@ -84,10 +85,16 @@ class template extends datasource {
      */
     public function get_default_columns(): array {
 
-        return ['course:fullname',
-                'user:fullname',
-                'template:fullname',
+        return ['template:fullnametemplate',
+                'template:categorytemplate',
+                'course:fullname',
+                'template:fullnameorigin',
+                'template:fullnameimported',
+                'course_category:path',
+                'course_category:name',
                 'template:timemodified',
+                'user:fullname',
+                'user:username',
             ];
 
     }

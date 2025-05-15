@@ -213,7 +213,7 @@ class activity {
             }
         } elseif (!$mygradesenabled) {
             $data['mygradesenabled'] = false;
-            
+
             // The weight for this grade category can be derived from the aggregation coefficient
             // value of the grade item, this needs to have been set in Gradebook Setup however.
             $weighttowardscourse = 0;
@@ -229,7 +229,7 @@ class activity {
                 $data['courseitems'] = $categorydata;
                 $data['hasgradecategory'] = true;
             }
-    
+
             if ($activityitems->items) {
                 $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
                 $activitydata = [];
@@ -254,7 +254,7 @@ class activity {
 
     /**
      * Process and prepare for display MyGrades specific gradable items.
-     * Grade items should honour what has been entered via the MyGrades tool. This can 
+     * Grade items should honour what has been entered via the MyGrades tool. This can
      * include altered weights for example. Fallback to honouring what has been set up
      * in Gradebook - (think restrictions, visibility etc).
      *
@@ -330,7 +330,7 @@ class activity {
                             }
 
                             // We also need to check if the item has been hidden for the student.
-                            // Given that the grade item record is the global record, grade_grades 
+                            // Given that the grade item record is the global record, grade_grades
                             // gives us the setting we need for the student. The userid we need is
                             // helpfully in the $mygradesitem['releasegrade'] object. See MGU-1241,
                             // MGU-1242 and MGU-1249 for further context.
@@ -679,7 +679,7 @@ class activity {
         } else {
             $whichuser = $USER->id;
         }
-        
+
         $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
         // This hidden property is the global setting for the item and applies to all students.
         // It can also include a restriction on the item also.
@@ -804,7 +804,7 @@ class activity {
 
     /**
      * MGU-1065/MGU-1066 - Only display activity item weights if a weighted strategy is being used.
-     * However, if using a weighted strategy with 'drop the lowest' and the value is greater 
+     * However, if using a weighted strategy with 'drop the lowest' and the value is greater
      * than 0, then don't display any weights.
      * @param object $gradecategoryweight
      * @param object $gradecategory
@@ -812,7 +812,7 @@ class activity {
      */
     public static function get_display_activity_item_weights(object $gradecategoryweight, object $gradecategory = null): bool {
         $displayweights = false;
-        
+
         if (($gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
             $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
             if ((int) $gradecategoryweight->grade_category_weight > 0) {

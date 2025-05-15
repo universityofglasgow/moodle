@@ -241,26 +241,9 @@ class grade {
      */
     public static function is_admin_or_generic_grade(string $admingrade, string $displaygrade): string {
         if ($admingrade) {
-            // It seems in PHP (at least) I can't set this up as a static array, probably because of the get_string calls.
-            $admingrades = [
-                '07' => get_string('admin07', 'local_gugrades'),
-                'MV' => get_string('adminmv', 'local_gugrades'),
-                'MV0' => get_string('adminmv0', 'local_gugrades'),
-                'NS' => get_string('adminns', 'local_gugrades'),
-                'NS0' => get_string('adminns', 'local_gugrades'),
-                'CW' => get_string('admincw', 'local_gugrades'),
-                'UNS' => get_string('adminuns', 'local_gugrades'),
-                'SAT' => get_string('adminsat', 'local_gugrades'),
-                'NP' => get_string('adminnp', 'local_gugrades'),
-                'P' => get_string('adminp', 'local_gugrades'),
-                'NC' => get_string('adminnc', 'local_gugrades'),
-                'CP' => get_string('admincp', 'local_gugrades'),
-                'CR' => get_string('admincr', 'local_gugrades'),
-                'CA' => get_string('adminca', 'local_gugrades'),
-                'AU' => get_string('adminau', 'local_gugrades'),
-            ];
-            $gradetodisplay = $admingrades[$displaygrade];
-            return $gradetodisplay;
+            $gradetodisplay = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
+            // We only want the description as per MGU-1004.
+            return $gradetodisplay[1];
         } else {
             return $displaygrade;
         }
