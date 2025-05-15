@@ -95,7 +95,15 @@
             {{#data.assessmentitems}}
             <tr data-assessmentid="{{id}}">
                 <td class="td15"><a href="{{courseurl}}">{{coursename}}</a></td>
-                <td class="td50">{{#assessment_url}}<a href="{{assessment_url}}">{{#item_icon}}<img class="icon itemicon" src="{{item_icon}}" title="{{icon_alt}}" alt="{{icon_alt}}" />{{/item_icon}}{{/assessment_url}}{{^assessment_url}}<span title="{{item_name}}" tabindex="0"><i class="icon fa fa-pencil-square-o fa-fw icon itemicon" title="{{icon_alt}}" role="img" aria-label="{{icon_alt}}"></i>{{/assessment_url}}{{item_name}}{{^assessment_url}}</span>{{/assessment_url}}{{#assessment_url}}</a>{{/assessment_url}}</td>
+                <td class="td50">
+                {{#assessment_url}}<a href="{{assessment_url}}">{{#item_icon}}<img class="icon itemicon" src="{{item_icon}}" title="{{icon_alt}}" alt="{{icon_alt}}" />{{/item_icon}}{{/assessment_url}}
+                {{^assessment_url}}<span title="{{item_name}}" tabindex="0">
+                    {{#icon_hidden}}<i class="icon fa fa-eye-slash fa-fw " title="{{icon_alt}}" alt="{{icon_alt}}" aria-hidden="true" role="img" aria-label="{{icon_alt}}"></i>{{/icon_hidden}}
+                    {{^icon_hidden}}<i class="icon fa fa-pencil-square-o fa-fw icon itemicon" title="{{icon_alt}}" alt="{{icon_alt}}" aria-hidden="true" role="img" aria-label="{{icon_alt}}"></i>{{/icon_hidden}}
+                {{/assessment_url}}
+                {{item_name}}
+                {{^assessment_url}}</span>{{/assessment_url}}
+                {{#assessment_url}}</a>{{/assessment_url}}</td>
                 <td class="td10">{{assessment_type}}</td>
                 <td class="td5" data-rawassessmentweight="{{raw_assessment_weight}}">{{assessment_weight}}</td>
                 <td class="td15" data-rawduedate="{{raw_due_date}}">{{due_date}}</td>
