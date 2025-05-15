@@ -798,6 +798,8 @@ class course {
         $totalsubmissions = 0;
         $totaltosubmit = 0;
         $sortstring = 'shortname asc';
+        $isgradehidden = false;
+
         $currentcourses = \local_gugrades\api::dashboard_get_courses($USER->id, true, false, $sortstring);
 
         $stats = [
