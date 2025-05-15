@@ -71,23 +71,23 @@ $PAGE->requires->js_call_amd('block_newgu_spdetails/main', 'init');
 
 echo $OUTPUT->header();
 
-$help_url = 'https://www.gla.ac.uk/myglasgow/sld/digitalskills/how-to-moodleforstudents/studentmygrades/';
+$helpurl = 'https://www.gla.ac.uk/myglasgow/sld/digitalskills/how-to-moodleforstudents/studentmygrades/';
 
-$help_button_attribs = ['class'=>'btn bg-info btn-lg icon-no-margin',
-                        'id'=>'UofG_MyGrades_help',
-                        'title'=>'Additional guidance'
-                        ];
+$helpbuttonattribs = ['class' => 'btn bg-info btn-lg icon-no-margin',
+                        'id' => 'UofG_MyGrades_help',
+                        'title' => 'Additional guidance',
+                    ];
 
-$help_link_attribs = ['target'=>'_new',
-                        'HREF'=>$help_url,
-                        'class'=>'text-light',
-                        ];
+$helplinkattribs = ['target' => '_new',
+                        'HREF' => $helpurl,
+                        'class' => 'text-light',
+                    ];
 
-$help_link = html_writer::link($help_url, '<i class="icon fa fa-question fa-fw fa-2x" aria-hidden="true"></i>', $help_link_attribs);
+$helplink = html_writer::link($helpurl, '<i class="icon fa fa-question fa-fw fa-2x" aria-hidden="true"></i>', $helplinkattribs);
 
-$help_button = html_writer::tag('button', $help_link, $help_button_attribs);
+$helpbutton = html_writer::tag('button', $helplink, $helpbuttonattribs);
 
-echo $help_button;
+echo $helpbutton;
 
 echo $content;
 echo $OUTPUT->footer();
