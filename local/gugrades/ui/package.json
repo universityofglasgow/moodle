@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@formkit/vue": "^0.17.5",
-    "@kouts/vue-modal": "^5.0.0",
+    "@kouts/vue-modal": "^5.0.1",
     "@kyvg/vue3-notification": "^2.9.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vueuse/core": "^10.7.2",

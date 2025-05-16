@@ -6,7 +6,7 @@
         <span v-else>{{ mstrings.importgrades }}</span>
     </button>
 
-    <VueModal v-model="showimportmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.importgrades">
+    <VueModal v-model="showimportmodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.importgrades">
         <div v-if="loading">
             <PleaseWait progresstype="import" :staffuserid="props.staffuserid"></PleaseWait>
         </div>

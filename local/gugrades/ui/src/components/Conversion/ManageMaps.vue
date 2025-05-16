@@ -40,7 +40,7 @@
     <ConfirmModal :show="showconfirm" :message="mstrings.deletemapconfirm" @confirm="confirmdelete"></ConfirmModal>
 
     <!-- Modal for map upload -->
-    <VueModal v-model="showimportmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.importconversionmap">
+    <VueModal v-model="showimportmodal" :enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.importconversionmap">
         <div class="p-4 mb-3 border rounded">
             <button class="btn btn-primary mr-1" type="button" @click="open()">
                 Choose files

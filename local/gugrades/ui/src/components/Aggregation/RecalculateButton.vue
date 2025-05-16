@@ -5,7 +5,7 @@
         {{ mstrings.recalculate }}
     </button>
 
-    <VueModal v-model="showrecalculatemodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.recalculate">
+    <VueModal v-model="showrecalculatemodal" :enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.recalculate">
         <div v-if="loading">
             <PleaseWait :staffuserid="props.staffuserid" progresstype="aggregate"></PleaseWait>
         </div>

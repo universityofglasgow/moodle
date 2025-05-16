@@ -5,7 +5,7 @@
         {{ mstrings.altertitle }}
     </a>
 
-    <VueModal v-model="showaltermodal" enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.altertitle">
+    <VueModal v-model="showaltermodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.altertitle">
 
         <div v-if="loading" class="alert alert-info">
             {{ mstrings.pleasewait }}

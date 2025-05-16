@@ -1,5 +1,5 @@
 <template>
-    <VueModal v-model="showdebugmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" title="A serious error has occurred">
+    <VueModal v-model="showdebugmodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" title="A serious error has occurred">
         <div class="alert alert-danger">A serious error has occurred and MyGrades cannot continue.</div>
         <ul>
             <li>

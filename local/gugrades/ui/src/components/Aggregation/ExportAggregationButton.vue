@@ -3,7 +3,7 @@
 
     <button type="button" class="btn btn-outline-primary  mr-1" @click="open_modal()">{{ mstrings.exportaggregation }}</button>
 
-    <VueModal v-model="showexportmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.exportaggregation">
+    <VueModal v-model="showexportmodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.exportaggregation">
 
         <PleaseWait v-if="pleasewait"></PleaseWait>
 

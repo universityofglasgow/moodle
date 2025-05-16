@@ -2,7 +2,7 @@
     <DebugDisplay :debug="debug"></DebugDisplay>
     <a class="dropdown-item" href="#" @click="read_history()">{{ mstrings.history }}</a>
 
-    <VueModal v-model="showhistorymodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.gradehistory">
+    <VueModal v-model="showhistorymodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.gradehistory">
         <div>
             <ul class="list-unstyled">
                 <li><b>{{ mstrings.name }}:</b> {{ props.name }}</li>

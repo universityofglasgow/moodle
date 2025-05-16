@@ -5,7 +5,7 @@
         {{ mstrings.explain }}
     </a>
 
-    <VueModal v-model="showexplainmodal" enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.explain">
+    <VueModal v-model="showexplainmodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded scrollable-modal" :title="mstrings.explain">
 
         <div v-if="loading" class="alert alert-info">
             {{ mstrings.pleasewait }}

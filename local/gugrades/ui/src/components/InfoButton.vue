@@ -8,7 +8,7 @@
     </a>
 
     <!-- modal to show info-->
-    <VueModal v-model="showinfomodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="itemname">
+    <VueModal v-model="showinfomodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="itemname">
 
         <table class="table">
             <tbody>

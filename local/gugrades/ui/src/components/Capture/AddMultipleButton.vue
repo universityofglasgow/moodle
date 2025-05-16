@@ -5,7 +5,7 @@
         {{ mstrings.addmultiple }}
     </button>
 
-    <VueModal v-model="showaddmultiplemodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.addmultiple">
+    <VueModal v-model="showaddmultiplemodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.addmultiple">
         <FormKit class="border rounded" type="form" @submit="submit_form">
             <FormKit
                 type="select"

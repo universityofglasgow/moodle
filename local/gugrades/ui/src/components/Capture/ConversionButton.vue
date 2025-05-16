@@ -5,7 +5,7 @@
         {{ mstrings.convertgrades }}
     </button>
 
-    <VueModal v-model="showselectmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
+    <VueModal v-model="showselectmodal" :enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.conversionselect">
 
         <PleaseWait v-if="waiting"></PleaseWait>
 

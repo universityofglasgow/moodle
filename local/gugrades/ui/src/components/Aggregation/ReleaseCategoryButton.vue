@@ -8,7 +8,7 @@
         </span>
     </button>
 
-    <VueModal v-model="showreleasemodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releaseaggregatedgrade">
+    <VueModal v-model="showreleasemodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.releaseaggregatedgrade">
 
         <div v-if="loading">
             <PleaseWait></PleaseWait>

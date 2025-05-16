@@ -3,7 +3,7 @@
 
     <button type="button" class="btn btn-outline-primary  mr-1" :disabled="!props.show" @click="showcsvmodal = true">{{ mstrings.csvimport }}</button>
 
-    <VueModal v-model="showcsvmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
+    <VueModal v-model="showcsvmodal" :enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.csvimport">
 
         <PleaseWait v-if="waiting" progresstype="csvimport" :staffuserid="props.staffuserid"></PleaseWait>
 

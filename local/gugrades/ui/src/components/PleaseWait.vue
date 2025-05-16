@@ -1,5 +1,5 @@
 <template>
-    <VueModal v-model="showmodal" enableClose="false" modalClass="col-3 col-lg-2 rounded vm_container" :title="mstrings.pleasewait">
+    <VueModal v-model="showmodal" :enableClose="false" modalClass="col-3 col-lg-2 rounded vm_container" :title="mstrings.pleasewait">
         <div class="d-flex justify-content-center" >
             <div class="border rounded m-1 p-2 text-center" style="min-width: 300px">
                 <p>{{ props.message }}</p>

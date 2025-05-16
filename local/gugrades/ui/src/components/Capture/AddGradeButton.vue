@@ -5,7 +5,7 @@
         {{ buttontitle }}
     </a>
 
-    <VueModal v-model="showaddgrademodal" enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="buttontitle">
+    <VueModal v-model="showaddgrademodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="buttontitle">
 
         <!-- Can either show add grade form or re-release dialogue -->
         <div v-if="!showreleaseddialogue">

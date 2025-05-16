@@ -3,7 +3,7 @@
 
     <button type="button" class="btn btn-outline-primary  mr-1" @click="open_modal()">{{ mstrings.exportcapture }}</button>
 
-    <VueModal v-model="showexportmodal" enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.exportcapture">
+    <VueModal v-model="showexportmodal" :enableClose="false" modalClass="col-11 col-lg-6 rounded" :title="mstrings.exportcapture">
 
         <div class="alert alert-info">
             {{  mstrings.exportcapturehelp }}
