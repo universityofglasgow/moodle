@@ -26088,13 +26088,11 @@ blockquote {
 .showmore-container:not(.collapsed) .collapsed-content {
   display: none;
 }
-.showmore-container button {
+.showmore-container .showmore-button {
   float: right;
-}
-.showmore-container button.btn-link {
   text-decoration: none;
 }
-.showmore-container button .icon {
+.showmore-container .showmore-button .icon {
   font-size: 0.8203125rem;
   margin: 0;
 }
@@ -31808,9 +31806,6 @@ a.ygtvspacer:hover {
     display: flex;
     align-items: center;
   }
-  .message-app .footer-container [data-region=view-overview] {
-    display: none;
-  }
   .message-app .overflow-y {
     overflow-y: unset;
   }
@@ -31992,7 +31987,7 @@ a.ygtvspacer:hover {
   color: #1d2125;
 }
 .message-app .lazy-load-list {
-  overflow-y: auto;
+  overflow-y: inherit;
 }
 
 #page-message-index #page-header {
@@ -39206,6 +39201,12 @@ div.editor_atto_toolbar button .icon {
 .dropdown-item:hover a.text-dark, .dropdown-item:focus.text-dark,
 .dropdown-item:focus a.text-dark {
   color: #fff !important; /* stylelint-disable-line declaration-no-important */
+}
+
+.dir-rtl .dropdown-menu {
+  transform: none !important; /* stylelint-disable-line declaration-no-important */
+  top: 100% !important; /* stylelint-disable-line declaration-no-important */
+  right: inherit !important; /* stylelint-disable-line declaration-no-important */
 }
 
 /**
