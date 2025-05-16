@@ -58,13 +58,13 @@
                 <FormKit
                     type="select"
                     :label="mstrings.importfillns + ':'"
-                    :help="mstrings.importfillnshelp"
+                    :help="fillnshelp"
                     :options="options"
                     name="importfillns"
                     v-model="importfillns"
                     >
                     <template #help>
-                        <p><i class="fa fa-info-circle mt-2" aria-hidden="true"></i> {{ mstrings.importfillnshelp }}</p>
+                        <p><i class="fa fa-info-circle mt-2" aria-hidden="true"></i> {{ fillnshelp }}</p>
                     </template>
                 </FormKit>
             </div>
@@ -138,7 +138,20 @@
         }
 
         return options;
-    })
+    });
+
+    /**
+     * Correct message for NS/NS0 help
+     */
+    const fillnshelp = computed(() => {
+
+        // Mention NS0 if level >= 2
+        if (level.value > 1) {
+            return mstrings.importfillns0help;
+        } else {
+            return mstrings.importfillnshelp;
+        }
+    });
 
     /**
      * Import confirmed. Select appropriate importfunction
