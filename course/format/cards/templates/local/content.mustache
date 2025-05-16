@@ -1,0 +1,238 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core_courseformat/local/content
+
+    Displays the complete course format.
+
+    Example context (json):
+    {
+        "initialsection": {
+                "num": 0,
+                "id": 34,
+                "cmlist": {
+                    "cms": [
+                        {
+                            "cmitem": {
+                                "cmformat": {
+                                    "cmname": "<a class=\"aalink\" href=\"#\"><span class=\"instancename\">Forum example</span></a>",
+                                    "hasname": "true"
+                                },
+                                "id": 3,
+                                "module": "forum",
+                                "extraclasses": "newmessages"
+                            }
+                        }
+                    ],
+                    "hascms": true
+                },
+                "iscurrent": true,
+                "summary": {
+                    "summarytext": "Summary text!"
+                }
+            },
+        "sections": [
+            {
+                "num": 1,
+                "id": 35,
+                "header": {
+                    "name": "Section title",
+                    "url": "#"
+                },
+                "cmlist": {
+                    "cms": [
+                        {
+                            "cmitem": {
+                                "cmformat": {
+                                    "cmname": "<a class=\"aalink\" href=\"#\"><span class=\"instancename\">Another forum</span></a>",
+                                    "hasname": "true"
+                                },
+                                "id": 3,
+                                "module": "forum",
+                                "extraclasses": "newmessages"
+                            }
+                        }
+                    ],
+                    "hascms": true
+                },
+                "iscurrent": true,
+                "summary": {
+                    "summarytext": "Summary text!"
+                },
+                "sectionbreak": {
+                    "id": 35,
+                    "displayvalue" : "<a href=\"#\">Moodle</a>",
+                    "value" : "Moodle",
+                    "itemid" : 35,
+                    "component" : "core_unknown",
+                    "itemtype" : "unknown",
+                    "edithint" : "Edit this",
+                    "editlabel" : "New name for this",
+                    "type" : "text",
+                    "options" : "",
+                    "linkeverything": 0
+                },
+                "addsectionbreak": false
+            },
+            {
+                "num": 4,
+                "id": 36,
+                "header": {
+                    "name": "Section 2 title",
+                    "url": "#"
+                },
+                "cmlist": {
+                    "cms": [
+                        {
+                            "cmitem": {
+                                "cmformat": {
+                                    "cmname": "<a class=\"aalink\" href=\"#\"><span class=\"instancename\">Forum example</span></a>",
+                                    "hasname": "true"
+                                },
+                                "id": 5,
+                                "module": "forum",
+                                "extraclasses": "newmessages"
+                            }
+                        }
+                    ],
+                    "hascms": true
+                },
+                "iscurrent": true,
+                "summary": {
+                    "summarytext": "Summary text!"
+                },
+                "addsectionbreak": true
+            }
+        ],
+        "format": "topics",
+        "title": "Course title example",
+            "hasnavigation": true,
+            "sectionnavigation": {
+            "hasprevious": true,
+            "previousurl": "#",
+            "larrow": "&#x25C4;",
+            "previousname": "Section 3",
+            "hasnext": true,
+            "rarrow": "&#x25BA;",
+            "nexturl": "#",
+            "nextname": "Section 5"
+        },
+        "sectionselector": {
+            "hasprevious": true,
+            "previousurl": "#",
+            "larrow": "&#x25C4;",
+            "previousname": "Section 3",
+            "hasnext": true,
+            "rarrow": "&#x25BA;",
+            "nexturl": "#",
+            "nextname": "Section 5",
+            "selector": "<select><option>Section 4</option></select>"
+        },
+        "sectionreturn": 1,
+        "singlesection": {
+            "num": 1,
+            "id": 35,
+            "header": {
+                "name": "Single Section Example",
+                "url": "#"
+            },
+            "cmlist": {
+                "cms": [
+                    {
+                        "cmitem": {
+                            "cmformat": {
+                                "cmname": "<a class=\"aalink\" href=\"#\"><span class=\"instancename\">Assign example</span></a>",
+                                "hasname": "true"
+                            },
+                            "id": 4,
+                            "module": "assign",
+                            "extraclasses": ""
+                        }
+                    }
+                ],
+                "hascms": true
+            },
+            "iscurrent": true,
+            "summary": {
+                "summarytext": "Summary text!"
+            }
+        }
+    }
+}}
+<div id="course-format-{{uniqid}}" {{#subsectionsascards}}class="subsectionsascards"{{/subsectionsascards}}>
+    <h2 class="accesshide">{{{title}}}</h2>
+    {{{completionhelp}}}
+    <ul class="{{format}}">
+        {{#initialsection}}
+            {{$ core_courseformat/local/content/section }}
+                {{> core_courseformat/local/content/section}}
+            {{/core_courseformat/local/content/section}}
+        {{/initialsection}}
+    </ul>
+    <ul class="card-deck dashboard-card-deck {{format}}"
+         data-for="course_sectionlist">
+        {{#sections}}
+            {{$ format_cards/local/content/section }}
+                {{> format_cards/local/content/section}}
+            {{/format_cards/local/content/section}}
+        {{/sections}}
+    </ul>
+    {{#hasnavigation}}
+    <div class="single-section">
+        {{#sectionnavigation}}
+            {{$ format_cards/local/content/sectionnavigation }}
+                {{> format_cards/local/content/sectionnavigation }}
+            {{/ format_cards/local/content/sectionnavigation }}
+        {{/sectionnavigation}}
+        <ul class="{{format}}">
+        {{#singlesection}}
+            {{$ core_courseformat/local/content/section }}
+                {{> core_courseformat/local/content/section }}
+            {{/ core_courseformat/local/content/section }}
+            {{#cmlist}}
+                {{^hascms}}
+                    {{< core_course/no-courses}}
+                        {{$nocoursestring}}{{#str}} noactivities, format_cards {{/str}}{{/nocoursestring}}
+                    {{/core_course/no-courses}}
+                {{/hascms}}
+            {{/cmlist}}
+        {{/singlesection}}
+        </ul>
+        {{#sectionselector}}
+            {{$ format_cards/local/content/sectionselector }}
+                {{> format_cards/local/content/sectionselector }}
+            {{/ format_cards/local/content/sectionselector }}
+        {{/sectionselector}}
+    </div>
+    {{/hasnavigation}}
+    {{#numsections}}
+        {{$ core_courseformat/local/content/addsection}}
+            {{> core_courseformat/local/content/addsection}}
+        {{/ core_courseformat/local/content/addsection}}
+    {{/numsections}}
+    {{#bulkedittools}}
+        {{$ core_courseformat/local/content/bulkedittools}}
+            {{> core_courseformat/local/content/bulkedittools}}
+        {{/ core_courseformat/local/content/bulkedittools}}
+    {{/bulkedittools}}
+</div>
+{{#js}}
+require(['core_courseformat/local/content', 'format_cards/cards'], function(component, cards) {
+    component.init('{{#moodle500orlater}}#{{/moodle500orlater}}course-format-{{uniqid}}', {}, {{sectionreturn}});
+    cards.init('course-format-{{uniqid}}');
+});
+{{/js}}

@@ -1,0 +1,62 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_cards/local/content/completion
+
+    Displays the completion badge for a card
+
+    Example context (json):
+    {
+        "completion": {
+            "total": 4,
+            "completed": 2,
+            "percentage": 60,
+            "dashoffset": 40,
+            "hasprogress": true,
+            "iscomplete": false,
+            "showpercentage": true,
+            "showcount": false
+        }
+    }
+}}
+{{#completion}}
+    <div class="bg-secondary small {{#iscomplete}}text-success icon-no-margin{{/iscomplete}}{{^iscomplete}}text-body{{/iscomplete}} section-completion">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <circle class="outer"
+                cx="20"
+                cy="20"
+                r="17"></circle>
+            {{#hasprogress}}
+                <circle class="inner{{#iscomplete}} complete{{/iscomplete}}"
+                    cx="20"
+                    cy="20"
+                    r="17"
+                    stroke-dashoffset="{{dashoffset}}"></circle>
+            {{/hasprogress}}
+        </svg>
+        {{#iscomplete}}
+            {{#pix}} i/checked, core, done {{/pix}}
+            <span class="sr-only">{{#str}} completed, core {{/str}}</span>
+        {{/iscomplete}}
+        {{#showpercentage}}
+            {{#str}} section:completion:percentage, format_cards, { "percentage": {{#quote}}{{percentage}}{{/quote}} } {{/str}}
+        {{/showpercentage}}
+        {{#showcount}}
+            {{#str}} section:completion:count, format_cards, { "completed": {{#quote}}{{completed}}{{/quote}}, "total": {{#quote}}{{total}}{{/quote}} } {{/str}}
+        {{/showcount}}
+    </div>
+{{/completion}}

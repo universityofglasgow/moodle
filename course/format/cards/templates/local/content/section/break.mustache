@@ -1,0 +1,57 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core_courseformat/local/content/section-break
+
+    Displays a course section break.
+
+    Example context (json):
+    {
+        "id": 35,
+        "displayvalue" : "<a href=\"#\">Moodle</a>",
+        "value" : "Moodle",
+        "itemid" : 35,
+        "component" : "core_unknown",
+        "itemtype" : "unknown",
+        "edithint" : "Edit this",
+        "editlabel" : "New name for this",
+        "type" : "text",
+        "options" : "",
+        "linkeverything": 0
+    }
+}}
+<div class="section-break mt-4 mb-1">
+    <h2 class="d-flex align-self-stretch align-items-center mb-0"
+        id="sectionbreak-{{id}}-title" data-for="section_break" data-id="{{id}}">
+        {{$ core/inplace_editable }}
+            {{> core/inplace_editable }}
+        {{/ core/inplace_editable }}
+        {{#component}}
+            <span class="inplaceeditable inplaceeditable-{{type}}">
+                <a href="{{deletebreakurl}}"
+                   class="quickeditlink aalink">
+                    <span class="quickediticon visibleifjs">
+                        {{#pix}} i/trash, core, {{#str}}section:break:remove,format_cards{{/str}}{{/pix}}
+                    </span>
+                    <span class="sr-only">
+                        {{#str}} section:break:remove,format_cards {{/str}}
+                    </span>
+                </a>
+            </span>
+        {{/component}}
+    </h2>
+</div>
