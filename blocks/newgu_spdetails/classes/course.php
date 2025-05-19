@@ -291,8 +291,8 @@ class course {
         $gradecategoryweight = new stdClass();
         $gradecategoryweight->raw_weight = 0;
         $gradecategoryweight->grade_category_weight = '-';
-        if (($gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
-            $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
+        if ((isset($gradecategory->aggregation) && $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
+            isset($gradecategory->aggregation) && $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
             if ((int) $item->aggregationcoef <= 1) {
                 $gradecategoryweight->raw_weight = course::return_weight($item->aggregationcoef);
                 $gradecategoryweight->grade_category_weight = (($gradecategoryweight->raw_weight > 0) ?

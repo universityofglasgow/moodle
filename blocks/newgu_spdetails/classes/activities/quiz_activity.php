@@ -73,14 +73,13 @@ class quiz_activity extends base {
     private function get_quiz(int $gradeitemid, object $cm) {
         global $DB, $CFG;
 
-        require_once($CFG->dirroot . '/mod/quiz/attemptlib.php');
         require_once($CFG->dirroot . '/mod/quiz/lib.php');
         require_once($CFG->dirroot . '/mod/quiz/locallib.php');
         $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
         $coursemodulecontext = \context_module::instance($cm->id);
         $gradeitem = $DB->get_record('grade_items', ['id' => $gradeitemid], '*', MUST_EXIST);
         $quizrecord = $DB->get_record('quiz', ['id' => $gradeitem->iteminstance], '*', MUST_EXIST);
-        $quiz = new \quiz($quizrecord, $cm, $course, $coursemodulecontext);
+        $quiz = new \mod_quiz\quiz_settings($quizrecord, $cm, $course, $coursemodulecontext);
 
         return $quiz;
     }

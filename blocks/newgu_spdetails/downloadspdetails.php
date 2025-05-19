@@ -197,7 +197,7 @@ if ($coursestype) {
             if ($activitydata) {
                 foreach ($activitydata as $key => $activityitem) {
                     $itemrestriction = '';
-                    if ($activityitem->icon_hidden) {
+                    if (isset($activityitem->icon_hidden) && $activityitem->icon_hidden) {
                         $itemrestriction .= ' (' . get_string('status_text_hidden', 'block_newgu_spdetails') . ')';
                     }
                     $spdetailspdf .= "<tr>";
