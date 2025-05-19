@@ -1,0 +1,87 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_cards/local/content/section-card
+
+    Displays a section as a card. Does not display activities, just the section header
+
+    Example context (json):
+    {
+        "id": 1234,
+        "num": 1,
+        "sectionreturnid": 0,
+        "classes": [ "extra", "css", "classes" ],
+        "header": {
+            "url": "https://example.com/course/index.php",
+            "name": "Section name",
+            "image": "https://example.com/image.png",
+            "summary": {
+                "summarytext": "<p>Introductory text</p>"
+            }
+        }
+    }
+}}
+{{#sectionbreak}}
+    <li class="section-break">
+        {{$ format_cards/local/content/section/break }}
+            {{> format_cards/local/content/section/break }}
+        {{/format_cards/local/content/section/break}}
+    </li>
+{{/sectionbreak}}
+<li class="card dashboard-card{{#classes}} {{.}}{{/classes}}"
+     role="listitem"
+     aria-labelledby="section-{{num}}-title"
+     data-sectionid="{{num}}"
+     data-sectionreturnid="{{sectionreturnid}}"
+     data-for="section"
+     data-id="{{id}}"
+     data-number="{{num}}">
+
+    {{#header}}
+        <a class="card-main-content" href="{{{url}}}" title="{{{name}}}">
+            <div class="card-img-top"
+                 role="presentation"
+                 {{#image}}style="background: url('{{{image}}}') center/cover"{{/image}}>
+            </div>
+            <div class="card-overlay">
+                <div class="card-header-fade">
+                    {{> format_cards/local/content/availability }}
+                    {{$ format_cards/local/content/completion }}
+                        {{> format_cards/local/content/completion }}
+                    {{/ format_cards/local/content/completion }}
+                </div>
+                <div class="card-header">
+                    {{$ core_courseformat/local/content/section/badges }}
+                        {{> core_courseformat/local/content/section/badges }}
+                    {{/ core_courseformat/local/content/section/badges }}
+                    <h3 id="section-{{num}}-title"
+                        class="card-title">
+                        {{{name}}}
+                    </h3>
+                    {{#summary}}
+                        {{#summarytext}}
+                            <div class="summary">
+                                {{{summarytext}}}
+                            </div>
+                        {{/summarytext}}
+                    {{/summary}}
+                </div>
+            </div>
+        </a>
+    {{/header}}
+
+</li>
