@@ -62,13 +62,6 @@ custom_course_field();
 // VueJS stuff gets injected here.
 echo $OUTPUT->header();
 
-// MyGrades logo.
-// (Not in Vue to save pissing around with PublicPath).
-$logo = $OUTPUT->image_url('MyGradesLogoSmall', 'local_gugrades');
-echo '<div class="text-center pb-1">';
-echo '<img id="mygradeslogo" src="' . $logo . '" alt="MyGrades logo"></img>';
-echo '</div>';
-
 echo "<div id=\"app\"></div>";
 
 // LISU Link

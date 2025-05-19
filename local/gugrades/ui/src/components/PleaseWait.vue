@@ -3,7 +3,7 @@
         <div class="d-flex justify-content-center" >
             <div class="border rounded m-1 p-2 text-center" style="min-width: 300px">
                 <p>{{ props.message }}</p>
-                <VueSpinner v-if="!showprogress" size="50" color="#005c8a"></VueSpinner>
+                <VueSpinnerOrbit v-if="!showprogress" size="50" color="#005c8a"></VueSpinnerOrbit>
                 <div v-if="showprogress" class="progress" style="min-width: 250px">
                     <div class="progress-bar progress-bar-striped progress-bar-animated" :class="progressclass" role="progressbar" :style="'width: ' + progress + '%'" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
                         {{ progress }}%
@@ -16,7 +16,7 @@
 
 <script setup>
     import {ref, inject, onMounted, onUnmounted, defineProps, computed} from '@vue/runtime-core';
-    import { VueSpinner } from 'vue3-spinners';
+    import { VueSpinnerOrbit } from 'vue3-spinners';
     import { useIntervalFn } from '@vueuse/core';
 
     const mstrings = inject('mstrings');

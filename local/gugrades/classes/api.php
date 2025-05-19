@@ -2480,4 +2480,26 @@ class api {
             'progress' => $progress,
         ];
     }
+
+    /**
+     * Get image urls
+     * @param int $courseid
+     * @param array $images
+     * @return array
+     */
+    public static function get_image_urls(int $courseid, array $images) {
+        global $PAGE, $OUTPUT;
+
+        $context = \context_course::instance($courseid);
+        $PAGE->set_context($context);
+
+        $urls = [];
+        foreach ($images as $image) {
+            $urls[] = [
+                'url' => $OUTPUT->image_url($image['imagename'], $image['component'])->out(),
+            ];
+        }
+
+        return $urls;
+    }
 }

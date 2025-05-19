@@ -170,7 +170,7 @@
 </template>
 
 <script setup>
-    import {ref, computed, inject, watch} from '@vue/runtime-core';
+    import {ref, computed, inject, watch, defineEmits} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
     import CaptureSelect from '@/components/CaptureSelect.vue';
     import CaptureMenu from '@/components/CaptureMenu.vue';
@@ -228,6 +228,8 @@
     const staffuserid = ref(0);
 
     const toast = useToast();
+
+    const emit = defineEmits(['refreshlogo']);
 
     /**
      * Table name filter
@@ -705,6 +707,7 @@
      */
     function refresh() {
         get_page_data(itemid.value, groupid.value);
+        emit('refreshlogo');
     }
 
     /**

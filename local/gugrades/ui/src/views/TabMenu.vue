@@ -1,6 +1,8 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
+    <GreyLogo :setmonochrome="setmonochrome"></GreyLogo>
+
     <div v-if="!available" class="alert alert-danger">
         MyGrades cannot be used in this course as it has too many enrolled participants.
     </div>
@@ -8,7 +10,7 @@
         <TabsNav @tabchange="tabChange" :viewaggregation="viewaggregation"></TabsNav>
 
         <div v-if="currenttab == 'capture'">
-            <CaptureTable></CaptureTable>
+            <CaptureTable @refreshlogo="refreshlogo"></CaptureTable>
         </div>
 
         <div v-if="currenttab == 'conversion'">
@@ -39,6 +41,7 @@
     import AuditPage from '@/views/AuditPage.vue';
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import GreyLogo from '@/components/GreyLogo.vue';
 
     const currenttab = ref('capture');
     const level1category = ref(0);
@@ -48,6 +51,7 @@
     const viewaggregation = ref(true);
     const available = ref(true);
     const debug = ref({});
+    const setmonochrome = ref(false);
 
     const toast = useToast();
 
@@ -60,6 +64,13 @@
         level1category.value = 0;
         showactivityselect.value = false;
         itemid.value = 0;
+    }
+
+    /**
+     * Force logo to refresh
+     */
+    function refreshlogo() {
+        get_dashboard_enabled();
     }
 
     /**
@@ -78,15 +89,7 @@
         }])[0]
         .then((result) => {
             const enabled = result.enabled;
-
-            // Bodge to get jQuery needed for Bootstrap JS.
-            const $ = window.jQuery;
-
-            if (enabled) {
-                $('#mygradeslogo').css('filter', 'grayscale(0)');
-            } else {
-                $('#mygradeslogo').css('filter', 'grayscale(1)');
-            }
+            setmonochrome.value = !enabled;
         })
         .catch((error) => {
             window.console.error(error);
