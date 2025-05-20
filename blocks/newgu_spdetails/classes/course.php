@@ -504,6 +504,7 @@ class course {
 
     /**
      * Return a list of the activities for a given course id.
+     * Make sure we only return activities that belong within a Grade Category.
      *
      * @param int $courseid
      * @param array $extraparams - This is to allow the export PDF/Excel feature to work. We need to include 'manual' items.
@@ -513,9 +514,16 @@ class course {
     public static function get_activities(int $courseid, array $extraparams = [], $includehidden = true) {
         global $DB;
 
-        $gradeitemselect = 'courseid = ? AND (itemtype = ?';
+        $parentcategoryselect = 'courseid = ? AND parent IS NULL';
+        $parentcategoryparams = [
+            $courseid,
+        ];
+        $parentcategory = $DB->get_records_select('grade_categories', $parentcategoryselect, $parentcategoryparams, '', 'id');
+        $parentcategory = array_shift($parentcategory);
+        $gradeitemselect = 'courseid = ? AND categoryid != ? AND (itemtype = ?';
         $gradeitemparams = [
             $courseid,
+            $parentcategory->id,
             'mod'
         ];
 
