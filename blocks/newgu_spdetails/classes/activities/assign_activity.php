@@ -208,6 +208,7 @@ class assign_activity extends base {
         $statusobj->cutoff_date = $assigninstance->cutoffdate;
         $statusobj->markingworkflow = $assigninstance->markingworkflow;
         $statusobj->grade_date = '';
+        $workflowstate = '';
 
         // We could break this process flow into groups or indvidual submissions, however, I think
         // there would be code duplication if we did this. So, following the layout in the settings
@@ -398,7 +399,7 @@ class assign_activity extends base {
                         $gtd = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
 
                         // And marking has begun, what stage are we at.
-                        if ($workflowstate) {
+                        if ($workflowstate != '') {
                             switch($workflowstate) {
                                 case "notmarked":
                                     $gtd = get_string('notmarked', 'block_newgu_spdetails');
