@@ -557,7 +557,7 @@ class course_output implements \renderable, \templatable {
 
             // If we have sections with numbers greater than the max allowed, do not show them unless teacher.
             // (Showing more to editors allows editor to fix them).
-            if ($countincludedsections > $maxallowedsections) {
+            if ($countincludedsections >= $maxallowedsections) {
                 if (!$data['canedit']) {
                     // Do not show them to students at all.
                     break;
@@ -566,8 +566,7 @@ class course_output implements \renderable, \templatable {
                         $a = new \stdClass();
                         $a->max = $maxallowedsections;
                         $a->tilename = $previoustiletitle;
-                        $button = \format_tiles\local\course_section_manager::get_schedule_button($this->course->id);
-                        \core\notification::error(get_string('coursetoomanysections', 'format_tiles', $a) . $button);
+                        \core\notification::error(get_string('coursetoomanysections', 'format_tiles', $a));
                         $sectioncountwarningissued = true;
                     }
                     if ($countincludedsections > $maxallowedsections * 2) {
@@ -640,7 +639,7 @@ class course_output implements \renderable, \templatable {
                 // Include completion tracking data for each tile (if used).
                 if ($section->visible && $this->completionenabled) {
                     if (isset($this->modinfo->sections[$sectionnum])) {
-                        $completionthistile = $this->section_progress($this->modinfo->sections[$sectionnum], $this->modinfo->cms);
+                        $completionthistile = $this->section_progress($sectionnum);
                         // Keep track of overall progress so we can show this too - add this tile's completion to the totals.
                         $data['overall_progress']['num_out_of'] += $completionthistile['outof'];
                         $data['overall_progress']['num_complete'] += $completionthistile['completed'];
@@ -687,14 +686,17 @@ class course_output implements \renderable, \templatable {
                 // Add in section zero completion data to overall completion count.
                 if ($section->visible && $this->completionenabled) {
                     if (isset($this->modinfo->sections[$sectionnum])) {
-                        $completionthistile = $this->section_progress($this->modinfo->sections[$sectionnum], $this->modinfo->cms);
+                        $completionthistile = $this->section_progress($sectionnum);
                         // Keep track of overall progress so we can show this too - add this tile's completion to the totals.
                         $data['overall_progress']['num_out_of'] += $completionthistile['outof'];
                         $data['overall_progress']['num_complete'] += $completionthistile['completed'];
                     }
                 }
             }
-            $countincludedsections++;
+            // Check if it's a subsection and do not count if so as not a true section.
+            if ($sectionnum > 0 && !$section->is_delegated()) {
+                $countincludedsections++;
+            }
         }
 
         // Now the filter buttons (if used).
@@ -734,23 +736,35 @@ class course_output implements \renderable, \templatable {
      * in this section, and the number which the student has completed
      * Exclude labels if we are using sub tiles, as these are not checkable
      * Also exclude items the user cannot see e.g. restricted
-     * @param array $sectioncmids the ids of course modules to count
-     * @param array $coursecms the course module objects for this course
+     * @param int $sectionnum the section number we want.
      * @return array with the completion data x items complete out of y
      */
-    public function section_progress($sectioncmids, $coursecms) {
+    public function section_progress(int $sectionnum): array {
         $completed = 0;
         $outof = 0;
-        foreach ($sectioncmids as $cmid) {
-            $thismod = $coursecms[$cmid];
-            if ($thismod->uservisible && !$thismod->deletioninprogress) {
-                if ($this->completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
-                    $outof++;
-                    $completiondata = $this->completioninfo->get_data($thismod, true);
-                    if ($completiondata->completionstate == COMPLETION_COMPLETE ||
-                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                    ) {
-                        $completed++;
+        $sectioncmids = array_key_exists($sectionnum, $this->modinfo->sections)
+            ? $this->modinfo->sections[$sectionnum] : [];
+        if (!empty($sectioncmids)) {
+            $coursecms = $this->modinfo->cms;
+            $includesubsectiondata = get_config('format_tiles', 'progressincludesubsections');
+            foreach ($sectioncmids as $cmid) {
+                $thismod = $coursecms[$cmid];
+                $issubsection = $thismod->modname === 'subsection';
+                if ($thismod->uservisible && !$thismod->deletioninprogress) {
+                    if (!$issubsection && $this->completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
+                        $outof++;
+                        $completiondata = $this->completioninfo->get_data($thismod, true);
+                        if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                            $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                        ) {
+                            $completed++;
+                        }
+                    } else if ($issubsection && $includesubsectiondata) {
+                        // Add completion data for the subsection to the parent section totals.
+                        $delegatedsectioninfo = $thismod->get_delegated_section_info();
+                        $delegatedsectiondata = $this->section_progress($delegatedsectioninfo->sectionnum);
+                        $completed += $delegatedsectiondata['completed'];
+                        $outof += $delegatedsectiondata['outof'];
                     }
                 }
             }
@@ -854,7 +868,7 @@ class course_output implements \renderable, \templatable {
      * @throws \moodle_exception
      */
     private function course_module_data($mod, $section, $previouswaslabel, $isfirst, $output): array {
-        global $PAGE, $CFG, $DB;
+        global $CFG, $DB;
         $displayoptions = [];
         $obj = new \core_courseformat\output\local\content\section\cmitem($this->format, $section, $mod, $displayoptions);
         $moduleobject = (array)$obj->export_for_template($output);
@@ -913,19 +927,8 @@ class course_output implements \renderable, \templatable {
         if (!$treataslabel) {
             $iconclass = '';
             $modiconurl = $mod->get_icon_url($output);
-            if (!\core_component::has_monologo_icon('mod', $mod->modname)) {
-                if ($mod->modname == 'customcert') {
-                    // Temporary icon for mod_customcert where monologo not yet implemented (their issue #568).
-                    $modiconurl = $output->image_url('tileicon/award-solid', 'format_tiles');
-                } else {
-                    // Use the mod's legacy icon but with no filtering.
-                    $iconclass = 'nofilter';
-                }
-            }
-
-            // No filter icons.  Big blue button has a coloured monologo which cannot be filtered.
-            $nofiltericons = ['bigbluebuttonbn'];
-            if (in_array($mod->modname, $nofiltericons)) {
+            if (!\format_tiles\local\util::has_monologo_icon('mod', $mod->modname)) {
+                // To use the mod's non-monologo icon we need no filtering.
                 $iconclass = 'nofilter';
             }
 
@@ -996,26 +999,12 @@ class course_output implements \renderable, \templatable {
         }
 
         if ($mod->modname == 'folder') {
-            // Folders set to display inline will not work this theme.
-            // This is not a very elegant solution, but it will ensure that the URL is correctly shown.
-            // If the user is editing it will change the format of the folder.
-            // It will show on a separate page, and alert the editing user as to what it has done.
             $moduleobject['url'] = new \moodle_url('/mod/folder/view.php', ['id' => $mod->id]);
-            if ($PAGE->user_is_editing()) {
-                $folder = $DB->get_record('folder', ['id' => $mod->instance]);
-                if ($folder->display == FOLDER_DISPLAY_INLINE) {
-                    $DB->set_field('folder', 'display', FOLDER_DISPLAY_PAGE, ['id' => $folder->id]);
-                    \core\notification::info(
-                        get_string('folderdisplayerror', 'format_tiles', $moduleobject['url']->out())
-                    );
-                    rebuild_course_cache($mod->course, true);
-                }
-            }
-        } else if ($mod->modname == 'url') {
+        }
+        if ($mod->modname == 'url'&& \format_tiles\local\video_cm::is_video_cm($this->course->id, $mod->id)) {
             $externalurl = $DB->get_field('url', 'externalurl', ['id' => $mod->instance]);
-            $modifiedvideourl = self::check_modify_embedded_url($externalurl);
-
-            if ($modifiedvideourl || self::is_video_url($externalurl)) {
+            $modifiedvideourl = \format_tiles\local\video_cm::check_modify_embedded_url($externalurl);
+            if ($modifiedvideourl) {
                 // Even though it's really a URL activity, display it as "video" activity with video icon.
                 $videostring = get_string('displaytitle_mod_mp4', 'format_tiles');
                 if ($this->courseformatoptions['courseusesubtiles']) {
@@ -1151,69 +1140,6 @@ class course_output implements \renderable, \templatable {
         return $progressdata;
     }
 
-    /**
-     * If the URL is a YouTube or Vimeo URL etc, make some adjustments for embedding.
-     * Teacher probably used standard watch URL so fix it if so.
-     * @see \format_tiles_testcase::test_video_urls()
-     * @param string $url
-     * @return string|null string the URL if it was en embed video URL, null if not.
-     */
-    public static function check_modify_embedded_url(string $url): ?string {
-
-        // Keep pattern replacements here specific as remote end may use params unknown to this code.
-        // Sophisticated editors wanting to use other params can enter the embed URL directly and won't need this.
-
-        // First match type - "watch" URL with no other params.
-        // E.g. https://www.youtube.com/watch?v=abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk transform.
-        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/watch\?v=[a-zA-Z0-9\-_]{11}))$/';
-        if (preg_match($pattern, $url)) {
-            return str_replace('watch?v=', 'embed/', $url);
-        }
-
-        // Second match type - "youtu.be" URL with no other params.
-        // E.g. https://youtu.be/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk transform.
-        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtu\.be\/([a-zA-Z0-9\-_]{11})))$/';
-        $matches = null;
-        preg_match($pattern, $url, $matches);
-        if ($matches && isset($matches[6])) {
-            return 'https://www.youtube.com/embed/' . $matches[6];
-        }
-
-        // Third match type - "shorts" URL with no other params.
-        // E.g. https://www.youtube.com/shorts/abcdefghijk ==> https://www.youtube.com/embed/abcdefghijk transform.
-        $pattern = '/^(http(s)??\:\/\/)?(www\.)?((youtube\.com\/shorts\/[a-zA-Z0-9\-_]{11}))$/';
-        if (preg_match($pattern, $url)) {
-            return str_replace('shorts/', 'embed/', $url);
-        }
-
-        // Vimeo.
-        // E.g. https://vimeo.com/347119375 ==> https://player.vimeo.com/video/347119375 transform.
-        $pattern = '/^(https?:\/\/)?(www.)?vimeo.com\/([a-zA-Z0-9\-_]{6,11})$/';
-        $matches = null;
-        preg_match($pattern, $url, $matches);
-        if ($matches && isset($matches[3])) {
-            return "https://player.vimeo.com/video/$matches[3]";
-        }
-        return null;
-    }
-
-    /**
-     * Is the URL provided a video URL (i.e. show Video icon for URL activity?).
-     * @param string $url
-     * @return bool
-     */
-    public static function is_video_url(string $url): bool {
-        $patterns = [
-            '/^(http(s)??\:\/\/)?(www\.)?(youtube\.com\/|youtu\.be\/)/',
-            '/^(https?:\/\/)?(www.)?vimeo.com\//',
-        ];
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $url)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Get an array of the controls to show above the tiles e.g. high contrast mode.
@@ -1231,19 +1157,16 @@ class course_output implements \renderable, \templatable {
             $controls[] = [
                 'url' => new \moodle_url($courseurl, array_merge($courseurlparams, ['format-tiles-action' => 'toggleanimatednav'])),
                 'label' => get_string('jsactivate', 'format_tiles'),
-                'iconname' => $usingjsnav ? 'toggle-on' : 'toggle-off',
-                'icontitle' => get_string($usingjsnav ? 'on' : 'off', 'format_tiles'),
+                'checked' => $usingjsnav,
             ];
         }
         if (get_config('format_tiles', 'highcontrastmodeallow')) {
-            $usehighcontrast = \format_tiles\local\util::using_high_contrast();
             $controls[] = [
                 'url' => new \moodle_url(
                     $courseurl, array_merge($courseurlparams, ['format-tiles-action' => 'togglehighcontrast'])
                 ),
                 'label' => get_string('highcontrastmode', 'format_tiles'),
-                'iconname' => $usehighcontrast ? 'toggle-on' : 'toggle-off',
-                'icontitle' => get_string($usehighcontrast ? 'on' : 'off', 'format_tiles'),
+                'checked' => \format_tiles\local\util::using_high_contrast(),
             ];
         }
         return $controls;

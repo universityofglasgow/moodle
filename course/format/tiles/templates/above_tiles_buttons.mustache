@@ -21,7 +21,9 @@
             <div class="dropdown-menu dropdown-menu-right">
                 {{#abovetilescontrols}}
                     <a class="dropdown-item" href="{{{url}}}">
-                        {{#pix}}{{iconname}}, format_tiles, {{icontitle}}{{/pix}} {{{label}}}
+                        <div class="custom-control custom-switch{{#checked}} checked{{/checked}}">
+                            <span class="custom-control-label">{{label}}</span>
+                        </div>
                     </a>
                 {{/abovetilescontrols}}
             </div>

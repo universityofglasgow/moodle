@@ -145,8 +145,7 @@ class backup_format_tiles_plugin extends backup_format_plugin {
             $admintoolsbutton = '';
         }
 
-        // Get the course sections from the database for the course we are backing up and check them.
-        $countsections = $DB->get_field('course_sections', 'COUNT(id)',  ['course' => $courseid]);
+        $countsections = \format_tiles\local\course_section_manager::count_course_sections($courseid);
         if ($countsections && $countsections > $maxallowed * 5) {
             // Course has a very high number of sections, so fail early as probably en error and we avoid further work.
             $a = new stdClass();
@@ -156,32 +155,27 @@ class backup_format_tiles_plugin extends backup_format_plugin {
             throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
         }
 
-        $sections = $DB->get_records('course_sections', ['course' => $courseid], 'id ASC, section ASC',
-            'id, section, name', 0, $maxallowed * 5);
-
         $totalincluded = 0;
+        $modinfo = get_fast_modinfo($courseid);
+        $sections = $modinfo->get_section_info_all();
         foreach ($sections as $section) {
+            if ($section->is_delegated()) {
+                // This is a subsection so not counted for this purpose.
+                continue;
+            }
+
             // Is the section to be included in the backup or has the user excluded it (unchecked box)?  Ignore if excluded.
             $settingname = 'section_' . $section->id . '_included';
             $included = $this->get_setting_value($settingname);
             if ($included) {
-                if ($section->section > $maxallowed) {
-                    // Allowing this section would mean we had some secs with sec numbers too high - disallow.
+                $totalincluded++;
+                if ($totalincluded > $maxallowed) {
+                    // Allowing this section to go in the backup would mean we have too many secs - disallow.
                     $a = new stdClass();
-                    $a->sectionnum = $section->section;
-                    $a->maxallowed = $maxallowed;
-                    \core\notification::error(get_string('restoreincorrectsections', 'format_tiles', $a) . $admintoolsbutton);
+                    $a->numsections = $totalincluded;
+                    $a->maxallowed = $maxsectionsconfig;
+                    \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $a) . $admintoolsbutton);
                     throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
-                } else {
-                    $totalincluded++;
-                    if ($totalincluded > $maxallowed) {
-                        // Allowing this section to go in the backup would mean we have too many secs - disallow.
-                        $a = new stdClass();
-                        $a->numsections = $totalincluded;
-                        $a->maxallowed = $maxsectionsconfig;
-                        \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $a) . $admintoolsbutton);
-                        throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
-                    }
                 }
             }
         }

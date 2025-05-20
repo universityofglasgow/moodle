@@ -291,6 +291,12 @@ if ($ADMIN->fulltree) {
     $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
+    $name = 'format_tiles/progressincludesubsections';
+    $title = get_string('progressincludesubsections', 'format_tiles');
+    $description = get_string('progressincludesubsections_desc', 'format_tiles');
+    $default = 0; // Core does not include it, so for now we do not do so by default.
+    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
+
     $name = 'format_tiles/showseczerocoursewide';
     $title = get_string('showseczerocoursewide', 'format_tiles');
     $description = get_string('showseczerocoursewide_desc', 'format_tiles');

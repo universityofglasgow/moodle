@@ -615,3 +615,22 @@ Other
 4.5.0.6 (2024121252)
 ====================
 - Add missing change to version.php
+
+4.5.0.7 (2025041650)
+====================
+- Simplify legacy checks for excess sections (detail now redundant)
+- Add setting to include sub-section progress data within on-tile progress indicator
+- Adjust tests
+- Make user pref controls more obvious if on/off (use same switch as edit mode)
+- Improve JS section load content error report notification
+- Remove registration form and contact links
+- Simplify page scroll
+- Inline folder warning
+- Refactor to video cm class
+- Fix issue 252 section zero heading
+- Remove any queued adhoc tasks for deleted code
+
+4.5.0.8 (2025052050)
+====================
+- Improve monologo icon check
+- Remove redundant language strings
