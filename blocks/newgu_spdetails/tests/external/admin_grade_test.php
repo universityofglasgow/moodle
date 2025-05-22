@@ -34,13 +34,14 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for admin grades.
  */
-
-class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * Test of the general admin grades that can be returned.
-    */
-    public function test_return_admingrade() {
+     *
+     * @covers \local\gugrades\admingrades
+     */
+    public function test_return_admingrade(): void {
         global $DB;
 
         // We're the test student.
@@ -62,7 +63,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -75,7 +76,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
@@ -92,7 +93,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $mygradesgradeitemid,
             'userid' => $this->student1->id,
-            'admingrade' => 'GOODCAUSECREDITWITHHELD', // As now declared as a faux constant in admingrades.php
+            'admingrade' => 'GOODCAUSECREDITWITHHELD', // As now declared as a faux constant in admingrades.php.
             'displaygrade' => 'GCW', // This will actually be a dynamic value, but we're hard coding for the sake of it here.
             'gradetype' => 'RELEASED',
             'columnid' => 0,
@@ -104,13 +105,16 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         $admingrade = $this->get_gugrades_grade_item($mygradesgradeitemid, '');
         $expected = get_string('admingcw', 'local_gugrades');
 
-        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade, $admingrade->displaygrade));
+        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade,
+            $admingrade->displaygrade));
     }
 
     /**
      * MGU-1202 - Test that the student sees either Good Cause (non replicable) for MV0 or Good Cause (further opportunity) for MV.
+     *
+     * @covers \local\gugrades\admingrades
      */
-    public function test_return_MV0_admingrade() {
+    public function test_return_mv0_admingrade(): void {
         global $DB;
 
         // We're the test student.
@@ -132,7 +136,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -145,7 +149,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
@@ -174,9 +178,10 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         $admingrade = $this->get_gugrades_grade_item($mygradesgradeitemid, '');
         $expected = get_string('adminmv', 'local_gugrades');
 
-        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade, $admingrade->displaygrade));
+        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade,
+            $admingrade->displaygrade));
 
-        // Update the record to MV0
+        // Update the record to MV0.
         $params = [
             'admingrade' => 'GOODCAUSE_NR',
             'displaygrade' => 'MV0',
@@ -186,13 +191,16 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         $admingrade = $this->get_gugrades_grade_item($mygradesgradeitemid, '');
         $expected = get_string('adminmv0', 'local_gugrades');
-        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade, $admingrade->displaygrade));
+        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade,
+            $admingrade->displaygrade));
     }
 
     /**
      * MGU-1203 - Test that student sees 'Non Submission' - regardless of the grade being NS or NS0.
+     *
+     * @covers \local\gugrades\admingrades
      */
-    public function test_return_NS0_admingrade() {
+    public function test_return_ns0_admingrade(): void {
         global $DB;
 
         // We're the test student.
@@ -214,7 +222,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -227,7 +235,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
@@ -256,9 +264,10 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
         $admingrade = $this->get_gugrades_grade_item($mygradesgradeitemid, '');
         $expected = get_string('adminns', 'local_gugrades');
 
-        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade, $admingrade->displaygrade));
+        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade,
+            $admingrade->displaygrade));
 
-        // Update the record to MV0
+        // Update the record to MV0.
         $params = [
             'admingrade' => 'NOSUBMISSION',
             'displaygrade' => 'NS0',
@@ -268,7 +277,7 @@ class get_admin_grade_test extends \block_newgu_spdetails\external\newgu_spdetai
 
         $admingrade = $this->get_gugrades_grade_item($mygradesgradeitemid, '');
         $expected = get_string('adminns', 'local_gugrades');
-        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade, $admingrade->displaygrade));
+        $this->assertEquals($expected, $this->gradeapi->is_admin_or_generic_grade($admingrade->admingrade,
+            $admingrade->displaygrade));
     }
-
 }

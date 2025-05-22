@@ -144,7 +144,7 @@ class workshop_activity extends base {
                 $workshopduedate = $this->workshop->assessmentend;
             break;
         }
-        
+
         $rawdate = $workshopduedate;
 
         return $rawdate;
@@ -158,7 +158,7 @@ class workshop_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $workshopphase = $this->gradeitem->itemnumber;
         $workshopduedate = 'N/A';
         switch($workshopphase) {
@@ -169,7 +169,7 @@ class workshop_activity extends base {
                 $workshopduedate = $this->workshop->assessmentend;
             break;
         }
-        
+
         $rawdate = $workshopduedate;
         if ($unformatteddate) {
             $rawdate = $unformatteddate;
@@ -235,7 +235,7 @@ class workshop_activity extends base {
         }
 
         if ($statusobj->grade_status == '') {
-            
+
             $workshopphase = '';
             $whichgrader = '';
             if ($this->gradeitem->itemnumber == 0) {
@@ -244,7 +244,7 @@ class workshop_activity extends base {
                     'authorid' => $userid,
                 ]);
                 $whichgrader = $workshopphase->gradeoverby;
-            } elseif ($this->gradeitem->itemnumber == 1) {
+            } else if ($this->gradeitem->itemnumber == 1) {
                 // We need to get the submissionid via the submissions table.
                 $fk = $DB->get_record('workshop_submissions', [
                     'workshopid' => $workshopinstance->id,
@@ -283,7 +283,7 @@ class workshop_activity extends base {
                     $statusobj->status_text = get_string('status_text_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
                     $statusobj->status_link = '';
-                    
+
                     if ($workshopinstance->latesubmissions) {
                         $statusobj->grade_status = get_string('status_overdue', 'block_newgu_spdetails');
                         $statusobj->status_class = get_string('status_class_overdue', 'block_newgu_spdetails');
@@ -328,7 +328,7 @@ class workshop_activity extends base {
         $workshopactivityphase = $this->gradeitem->itemnumber;
 
         // We're treating itemnumber 0 as the submission and 1 as the assessment.
-        
+
         if (!$cachedata[$cachekey] || $cachedata[$cachekey][0]['updated'] < $fiveminutes) {
             $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
             if ($workshopactivityphase == 0) {
@@ -352,7 +352,7 @@ class workshop_activity extends base {
             if ($workshopactivityphase == 1) {
                 // Here we'll need to join the assessments against the submission table using the submissionid.
                 $tmpworkshopsubmissions = $DB->get_recordset_sql(
-                    'SELECT workshopid FROM {workshop_submissions} AS ws INNER JOIN {workshop_assessments} AS wa ON
+                    'SELECT workshopid FROM {workshop_submissions} ws INNER JOIN {workshop_assessments} wa ON
                     wa.submissionid = ws.id WHERE wa.reviewerid = :userid AND ((wa.timecreated BETWEEN :lastmonth AND :now) OR
                     (wa.timemodified BETWEEN :tlastmonth AND :tnow))',
                     [
@@ -366,7 +366,7 @@ class workshop_activity extends base {
                 // We need to turn this back into a regular array.
                 $workshopsubmissions = [];
                 if ($tmpworkshopsubmissions) {
-                    foreach($tmpworkshopsubmissions as $workshopsubmission) {
+                    foreach ($tmpworkshopsubmissions as $workshopsubmission) {
                         $workshopsubmissions[] = $workshopsubmission->workshopid;
                     }
                 }

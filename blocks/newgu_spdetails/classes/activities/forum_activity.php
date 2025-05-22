@@ -142,7 +142,7 @@ class forum_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $dateinstance = $this->forum;
         $rawdate = $dateinstance->duedate;
         if ($unformatteddate) {
@@ -282,8 +282,8 @@ class forum_activity extends base {
             ];
 
             $forumsubmissions = $DB->get_records_sql(
-                'SELECT f.id FROM {forum_posts} AS fp INNER JOIN {forum_discussions} AS fd ON fd.id = fp.discussion INNER JOIN
-                {forum} AS f ON f.id = fd.forum WHERE ((fp.created BETWEEN :lastmonth AND :now) OR (fp.modified BETWEEN
+                'SELECT f.id FROM {forum_posts} fp INNER JOIN {forum_discussions} fd ON fd.id = fp.discussion INNER JOIN
+                {forum} f ON f.id = fd.forum WHERE ((fp.created BETWEEN :lastmonth AND :now) OR (fp.modified BETWEEN
                 :tlastmonth AND :tnow))',
                 $params);
 
@@ -313,7 +313,7 @@ class forum_activity extends base {
                     $obj->name = $forum->name;
                     $obj->duedate = $forum->duedate;
                     $forumdata[] = $obj;
-                } elseif ($forum->cutoffdate != 0 && $forum->cutoffdate > $now) {
+                } else if ($forum->cutoffdate != 0 && $forum->cutoffdate > $now) {
                     $obj = new \stdClass();
                     $obj->name = $forum->name;
                     $obj->duedate = $forum->duedate;

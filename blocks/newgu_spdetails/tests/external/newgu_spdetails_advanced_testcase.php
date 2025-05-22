@@ -82,7 +82,7 @@ class newgu_spdetails_advanced_testcase extends newgu_spdetails_base_testcase {
      * @var object $gradebookassignment2
      */
     protected $gradebookassignment2;
-    
+
     /**
      * @var object $gradebookassignment3
      */
@@ -91,127 +91,127 @@ class newgu_spdetails_advanced_testcase extends newgu_spdetails_base_testcase {
     /**
      * @var object $mygrades_summativecategory
      */
-    protected $mygrades_summative_category;
+    protected $mygradessummativecategory;
 
     /**
-     * @var object $mygrades_summative_subcategory
+     * @var object $mygradessummativesubcategory
      */
-    protected $mygrades_summative_subcategory;
+    protected $mygradessummativesubcategory;
 
     /**
-     * var @object $mygrades_summative_subcategory2
+     * @var object $mygradessummativesubcategory2
      */
-    protected $mygrades_summative_subcategory2;
+    protected $mygradessummativesubcategory2;
 
     /**
      * @var object $mygrades_formativecategory
      */
-    protected $mygrades_formative_category;
+    protected $mygradesformativecategory;
 
     /**
      * @var object $gradebookcategory
      */
-    protected $gradebook_category;
+    protected $gradebookcategory;
 
     /**
-     * @var object $attendance_activity
+     * @var object $attendanceactivity
      */
-    protected $attendance_activity;
+    protected $attendanceactivity;
 
     /**
-     * @var object $checklist_activity
+     * @var object $checklistactivity
      */
-    protected $checklist_activity;
+    protected $checklistactivity;
 
     /**
-     * @var object $data_activity
+     * @var object $dataactivity
      */
-    protected $data_activity;
+    protected $dataactivity;
 
     /**
-     * @var object $default_activity
+     * @var object $defaultactivity
      */
-    protected $default_activity;
+    protected $defaultactivity;
 
     /**
-     * @var object $forum_activity
+     * @var object $forumactivity
      */
-    protected $forum_activity;
+    protected $forumactivity;
 
     /**
-     * @var object $game_activity
+     * @var object $gameactivity
      */
-    protected $game_activity;
+    protected $gameactivity;
 
     /**
-     * @var object $glossary_activity
+     * @var object $glossaryactivity
      */
-    protected $glossary_activity;
+    protected $glossaryactivity;
 
     /**
-     * @var object $h5p_activity
+     * @var object $h5pactivity
      */
-    protected $h5p_activity;
+    protected $h5pactivity;
 
     /**
-     * @var object $hsuforum_activity
+     * @var object $hsuforumactivity
      */
-    protected $hsuforum_activity;
+    protected $hsuforumactivity;
 
     /**
-     * @var object $hvp_activity
+     * @var object $hvpactivity
      */
-    protected $hvp_activity;
+    protected $hvpactivity;
 
     /**
-     * @var object $kalvidassign_activity
+     * @var object $kalvidassignactivity
      */
-    protected $kalvidassign_activity;
+    protected $kalvidassignactivity;
 
     /**
-     * @var object $lesson_activity
+     * @var object $lessonactivity
      */
-    protected $lesson_activity;
+    protected $lessonactivity;
 
     /**
-     * @var object $lti_activity
+     * @var object $ltiactivity
      */
-    protected $lti_activity;
+    protected $ltiactivity;
 
     /**
-     * @var object $oublog_activity
+     * @var object $oublogactivity
      */
-    protected $oublog_activity;
+    protected $oublogactivity;
 
     /**
-     * @var object $peerwork_activity
+     * @var object $peerworkactivity
      */
-    protected $peerwork_activity;
+    protected $peerworkactivity;
 
     /**
-     * @var object $questionnaire_activity
+     * @var object $questionnaireactivity
      */
-    protected $questionnaire_activity;
+    protected $questionnaireactivity;
 
     /**
-     * @var object $quiz_activity
+     * @var object $quizactivity
      */
-    protected $quiz_activity;
+    protected $quizactivity;
 
     /**
-     * @var object $scheduler_activity
+     * @var object $scheduleractivity
      */
-    protected $scheduler_activity;
+    protected $scheduleractivity;
 
     /**
-     * @var object $scorm_activity
+     * @var object $scormactivity
      */
-    protected $scorm_activity;
+    protected $scormactivity;
 
     /**
-     * @var object $workshop_activity
+     * @var object $workshopactivity
      */
-    protected $workshop_activity;
+    protected $workshopactivity;
 
     /**
      * Get gradeitemid
@@ -239,7 +239,7 @@ class newgu_spdetails_advanced_testcase extends newgu_spdetails_base_testcase {
 
     /**
      * Get gugrades grade item
-     * 
+     *
      * @param int $gradeitemid
      * @param string $gradetype
      * @return object
@@ -288,10 +288,10 @@ class newgu_spdetails_advanced_testcase extends newgu_spdetails_base_testcase {
 
     /**
      * Set up our test conditions...
-     * 
+     *
      * All courses now need to be MyGrades "enabled" in order for them to appear in Student MyGrades.
-     * Activities are added, "categorised", completed and graded in Gradebook as per usual. It is 
-     * (normally) at this point that grade information is then imported into MyGrades and processed 
+     * Activities are added, "categorised", completed and graded in Gradebook as per usual. It is
+     * (normally) at this point that grade information is then imported into MyGrades and processed
      * there. The quirk being that not all activity grades may end up getting imported or processed.
      * Therefore their state will still be considered to be "Gradebook" and will display as per the
      * settings made in Gradebook.
@@ -306,58 +306,58 @@ class newgu_spdetails_advanced_testcase extends newgu_spdetails_base_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
 
-        //  Create the parent grade category for the MyGrades course.
-        $mygrades_summative_category = $this->getDataGenerator()->create_grade_category([
+        // Create the parent grade category for the MyGrades course.
+        $mygradessummativecategory = $this->getDataGenerator()->create_grade_category([
             'fullname' => 'Summative Assessments',
             'courseid' => $this->mygradescourse->id,
-            'aggregation' => 10 // Weighted mean of grades
+            'aggregation' => 10, // Weighted mean of grades.
         ]);
 
         // Set a weighting for the parent category.
-        $record = $DB->get_record("grade_items", ['iteminstance' => $mygrades_summative_category->id]);
+        $record = $DB->get_record("grade_items", ['iteminstance' => $mygradessummativecategory->id]);
         $DB->update_record('grade_items', [
             'id' => $record->id,
-            'aggregationcoef' => 1.00000
+            'aggregationcoef' => 1.00000,
         ]);
 
         // Now create the sub categories that live under this parent.
-        $mygrades_summative_subcategory = $this->getDataGenerator()->create_grade_category([
+        $mygradessummativesubcategory = $this->getDataGenerator()->create_grade_category([
             'fullname' => 'October Assessments Aggregated',
             'courseid' => $this->mygradescourse->id,
-            'parent' => $mygrades_summative_category->id,
-            'aggregation' => 10 // Weighted mean of grades
+            'parent' => $mygradessummativecategory->id,
+            'aggregation' => 10, // Weighted mean of grades.
         ]);
 
         // Set a weighting for this sub category.
-        $record = $DB->get_record("grade_items", ['iteminstance' => $mygrades_summative_subcategory->id]);
+        $record = $DB->get_record("grade_items", ['iteminstance' => $mygradessummativesubcategory->id]);
         $DB->update_record('grade_items', [
             'id' => $record->id,
-            'aggregationcoef' => 0.20000
+            'aggregationcoef' => 0.20000,
         ]);
 
         // This sub category lives under the above grade category - we may or may not use this.
-        $mygrades_summative_subcategory2 = $this->getDataGenerator()->create_grade_category([
+        $mygradessummativesubcategory2 = $this->getDataGenerator()->create_grade_category([
             'fullname' => 'Written Assessments 1 A and B Parts',
             'courseid' => $this->mygradescourse->id,
-            'parent' => $mygrades_summative_subcategory->id,
-            'aggregation' => 10 // Weighted mean of grades
+            'parent' => $mygradessummativesubcategory->id,
+            'aggregation' => 10, // Weighted mean of grades.
         ]);
 
         // This is just an empty category for now.
-        $mygrades_formative_category = $this->getDataGenerator()->create_grade_category([
+        $mygradesformativecategory = $this->getDataGenerator()->create_grade_category([
             'fullname' => 'Formative Assessments',
             'courseid' => $this->mygradescourse->id,
         ]);
 
         // Howard's API adds some additional data.
         $this->mygradescourse->firstlevel[] = [
-            'id' => $mygrades_summative_category->id,
-            'fullname' => $mygrades_summative_category->fullname,
+            'id' => $mygradessummativecategory->id,
+            'fullname' => $mygradessummativecategory->fullname,
         ];
 
-        $this->mygrades_summative_category = $mygrades_summative_category;
-        $this->mygrades_summative_subcategory = $mygrades_summative_subcategory;
-        $this->mygrades_summative_subcategory2 = $mygrades_summative_subcategory2;
-        $this->mygrades_formative_category = $mygrades_formative_category;
+        $this->mygradessummativecategory = $mygradessummativecategory;
+        $this->mygradessummativesubcategory = $mygradessummativesubcategory;
+        $this->mygradessummativesubcategory2 = $mygradessummativesubcategory2;
+        $this->mygradesformativecategory = $mygradesformativecategory;
     }
 }

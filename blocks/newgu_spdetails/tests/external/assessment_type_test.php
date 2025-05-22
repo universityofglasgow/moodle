@@ -34,12 +34,15 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for activity types.
  */
-class get_assessment_type_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class assessment_type_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * Test of the language string settings against mock assessment types and weighting.
+     *
+     * @covers ::get_string
+     * @covers \blocks\newgu_spdetails\classes\course
      */
-    public function test_return_assessmenttype() {
+    public function test_return_assessmenttype(): void {
         $lang = 'block_newgu_spdetails';
         $expected1 = get_string("formative", $lang);
         $expected2 = get_string("summative", $lang);

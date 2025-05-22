@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Parent class from which all other test cases can extend.
+ *
  * @package    block_newgu_spdetails
  * @author     Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @copyright  2024 University of Glasgow
@@ -145,7 +147,7 @@ class newgu_spdetails_base_testcase extends externallib_advanced_testcase {
      * Check for MyGrades custom course category and field
      * @var object $mygradescourse
      * @var object $context
-    */
+     */
     protected function custom_course_field($mygradescourse, $context) {
         global $DB;
 
@@ -160,7 +162,7 @@ class newgu_spdetails_base_testcase extends externallib_advanced_testcase {
         $category->timecreated = time();
         $category->timemodified = time();
         $categoryid = $DB->insert_record('customfield_category', $category);
-        
+
         $field = new \stdClass;
         $field->shortname = 'studentmygrades';
         $field->name = 'Enable Student MyGrades';
@@ -180,7 +182,7 @@ class newgu_spdetails_base_testcase extends externallib_advanced_testcase {
         $field->timemodified = time();
         $DB->insert_record('customfield_field', $field);
 
-        // Find the custom field
+        // Find the custom field.
         $field = $DB->get_record('customfield_field', ['shortname' => 'studentmygrades'], '*', MUST_EXIST);
         $data = new \stdClass;
         $data->fieldid = $field->id;
@@ -205,7 +207,7 @@ class newgu_spdetails_base_testcase extends externallib_advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
 
-        // Create some oft used objects
+        // Create some oft used objects.
         $api = new \block_newgu_spdetails\api();
         $this->api = $api;
 

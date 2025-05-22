@@ -139,7 +139,7 @@ class lti_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
 
         $duedate = 'N/A';
         if ($unformatteddate > 0) {

@@ -73,8 +73,8 @@ class course {
                         $subcatname = '';
                         $subcatid = $subcategory['id'];
                         $subcatname = $subcategory['fullname'];
-                        $has_items_or_categories = self::has_items_or_categories($course->id, 'categoryid', $subcatid);
-                        if ($has_items_or_categories) {
+                        $hasitemsorcategories = self::has_items_or_categories($course->id, 'categoryid', $subcatid);
+                        if ($hasitemsorcategories) {
 
                             $item = \grade_item::fetch(['courseid' => $course->id, 'iteminstance' => $subcatid,
                             'itemtype' => 'category']);
@@ -90,8 +90,8 @@ class course {
                     // Our course appears to contain no sub categories. We want to filter out PLUGIN RELATED items.
                     $gradecat = \grade_category::fetch_all(['courseid' => $course->id, 'hidden' => 0]);
                     if ($gradecat) {
-                        $has_items_or_categories = self::has_items_or_categories($course->id, 'categoryid', $course->category);
-                        if ($has_items_or_categories) {
+                        $hasitemsorcategories = self::has_items_or_categories($course->id, 'categoryid', $course->category);
+                        if ($hasitemsorcategories) {
 
                             $item = \grade_item::fetch(['courseid' => $course->id, 'itemtype' => 'course']);
                             $assessmenttype = self::return_assessmenttype($course->fullname, $item->aggregationcoef);
@@ -143,14 +143,14 @@ class course {
             if ($gradecategory['released'] == true) {
                 $tokens = explode('AGG_', $gradecategory['fieldname']);
                 $fieldid = $tokens[1];
-                $has_items_or_categories = self::has_items_or_categories($courseid, 'id', $fieldid);
-                if ($has_items_or_categories) {
-                    $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $fieldid,'itemtype' => 'category']);
+                $hasitemsorcategories = self::has_items_or_categories($courseid, 'id', $fieldid);
+                if ($hasitemsorcategories) {
+                    $item = \grade_item::fetch(['courseid' => $courseid, 'id' => $fieldid, 'itemtype' => 'category']);
                     $rawsubcatweight = (($gradecategory['weight'] != null) ? $gradecategory['weight'] : 0);
-                    $subcatweight = (($gradecategory['weight'] != null) ? course::return_weight(
+                    $subcatweight = (($gradecategory['weight'] != null) ? self::return_weight(
                         $gradecategory['weight']) . '%' : '-');
                     $subcat = new \stdClass();
-                    // iteminstance is our grade category id here. $fieldid above is actually from the grade item record.
+                    // The iteminstance is our grade category id here. $fieldid above is actually from the grade item record.
                     $subcat->id = $item->iteminstance;
                     $subcat->name = $tmpgradecategories[$index]->category->fullname;
                     $subcat->sortorder = $item->sortorder;
@@ -163,19 +163,21 @@ class course {
                         // MGU-1162 - The display of adjusted category weights wasn't being set correctly.
                         $rawsubcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ?
                         $gradecategory['releasegrade']->normalisedweight : 0);
-                        $subcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ? course::return_weight(
+                        $subcatweight = (($gradecategory['releasegrade']->normalisedweight != null) ? self::return_weight(
                             $gradecategory['releasegrade']->normalisedweight) . '%' : '-');
                         $subcat->sub_category_weight = $subcatweight;
                         $subcat->raw_category_weight = $rawsubcatweight;
                         if (!$gradecategory['grademissing']) {
-                            $subcat->grade_category_grade = grade::is_admin_or_generic_grade($gradecategory['releasegrade']->admingrade,
-                            $gradecategory['releasegrade']->displaygrade);
+                            $subcat->grade_category_grade = grade::is_admin_or_generic_grade(
+                                $gradecategory['releasegrade']->admingrade,
+                                $gradecategory['releasegrade']->displaygrade
+                            );
                         }
                     }
 
                     $gradessubcatdata[] = $subcat;
                 }
-            } elseif ($gradecategory['released'] == false) {
+            } else if ($gradecategory['released'] == false) {
                 // Fallback to processing this as a regular Gradebook grade category if nothing has been released.
                 $tmpgradecategory = $tmpgradecategories[$index];
                 $tmp = self::process_default_subcategories($courseid, [$tmpgradecategory], $assessmenttype);
@@ -206,12 +208,12 @@ class course {
                 continue;
             }
 
-            $has_items_or_categories = self::has_items_or_categories($courseid, 'categoryid', $gradecategory->category->id);
-            if ($has_items_or_categories) {
+            $hasitemsorcategories = self::has_items_or_categories($courseid, 'categoryid', $gradecategory->category->id);
+            if ($hasitemsorcategories) {
                 $item = \grade_item::fetch(['courseid' => $courseid, 'iteminstance' => $gradecategory->category->id,
                 'itemtype' => 'category']);
 
-                $gradecategoryweight = course::get_grade_category_weight($item, $gradecategory->category);
+                $gradecategoryweight = self::get_grade_category_weight($item, $gradecategory->category);
                 $rawsubcatweight = $gradecategoryweight->raw_weight;
                 $subcatweight = $gradecategoryweight->grade_category_weight;
                 // MGU-1033 - Grade Category Grades are not required here as Moodle doesn't do aggregation the way UofG requires.
@@ -294,12 +296,12 @@ class course {
         if ((isset($gradecategory->aggregation) && $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||
             isset($gradecategory->aggregation) && $gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN2)) {
             if ((int) $item->aggregationcoef <= 1) {
-                $gradecategoryweight->raw_weight = course::return_weight($item->aggregationcoef);
+                $gradecategoryweight->raw_weight = self::return_weight($item->aggregationcoef);
                 $gradecategoryweight->grade_category_weight = (($gradecategoryweight->raw_weight > 0) ?
                     $gradecategoryweight->raw_weight . '%' : '-');
             }
         } else {
-            $gradecategoryweight->raw_weight = course::return_weight($item->aggregationcoef);
+            $gradecategoryweight->raw_weight = self::return_weight($item->aggregationcoef);
             $gradecategoryweight->grade_category_weight = (($gradecategoryweight->raw_weight > 0) ?
                 $gradecategoryweight->raw_weight . '%' : '-');
         }
@@ -394,7 +396,7 @@ class course {
         if ($topcategory) {
             $topcategoryname = $topcategory->fullname;
         }
-        $assessmenttype = \block_newgu_spdetails\course::return_assessmenttype($topcategoryname, 0);
+        $assessmenttype = self::return_assessmenttype($topcategoryname, 0);
 
         return $assessmenttype;
     }
@@ -524,11 +526,11 @@ class course {
         $gradeitemparams = [
             $courseid,
             $parentcategory->id,
-            'mod'
+            'mod',
         ];
 
         if ($extraparams) {
-            foreach($extraparams as $k => $v) {
+            foreach ($extraparams as $k => $v) {
                 $gradeitemselect .= ' OR ' . $k . ' = ?';
                 $gradeitemparams[] = $v;
             }
@@ -879,9 +881,8 @@ class course {
                                         $activityitem->id,
                                         $USER->id,
                                         $activityitem->gradetype,
-                                        $activityitem->scaleid,
                                         $activityitem->grademax,
-                                        ''
+                                        $activityitem->scaleid,
                                     );
                                     $status = $gradestatus->grade_status;
                                     if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
@@ -948,7 +949,7 @@ class course {
         $dateheader = '';
         $option = '';
         $whichstatus = '';
-        $show_grade_column = false;
+        $showgradecolumn = false;
         switch ($charttype) {
             case 0:
                 $option = get_string('status_text_tobesubmitted', 'block_newgu_spdetails');
@@ -969,7 +970,7 @@ class course {
                 $option = get_string('status_text_graded', 'block_newgu_spdetails');
                 $dateheader = get_string('header_dategraded', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_graded', 'block_newgu_spdetails');
-                $show_grade_column = true;
+                $showgradecolumn = true;
                 break;
         }
 
@@ -1038,9 +1039,14 @@ class course {
                                                     if (!$usergrade->dropped) {
                                                         $gradestatus->activityweight->rawassessmentweight = (
                                                             ($usergrade->normalisedweight != null) ? self::return_weight(
-                                                                $usergrade->normalisedweight) : (($activityitem->aggregationcoef != null) ?
-                                                                self::return_weight($activityitem->aggregationcoef) : '-'));
-                                                        $gradestatus->activityweight->assessmentweight = (($gradestatus->activityweight->rawassessmentweight > 0) ? $gradestatus->activityweight->rawassessmentweight . "%" : "-");
+                                                                $usergrade->normalisedweight) : (
+                                                                ($activityitem->aggregationcoef != null) ? self::return_weight(
+                                                                    $activityitem->aggregationcoef) : '-')
+                                                        );
+                                                        $gradestatus->activityweight->assessmentweight = (
+                                                            ($gradestatus->activityweight->rawassessmentweight > 0) ?
+                                                                $gradestatus->activityweight->rawassessmentweight . "%" : "-"
+                                                        );
                                                     }
                                                     $gradestatus->grade_date = $usergrade->audittimecreated;
                                                     $gradestatus->assessment_url = $CFG->wwwroot . '/' .
@@ -1073,7 +1079,8 @@ class course {
                                                         $iconhidden = true;
                                                         $gradestatus->icon_alt = $iconalt;
                                                         $gradestatus->icon_hidden = $iconhidden;
-                                                        $gradefeedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
+                                                        $gradefeedback = get_string('status_text_tobeconfirmed',
+                                                            'block_newgu_spdetails');
                                                         $gradefeedbacklink = '';
                                                     }
                                                 }
@@ -1087,9 +1094,8 @@ class course {
                                                     $activityitem->id,
                                                     $USER->id,
                                                     $activityitem->gradetype,
-                                                    $activityitem->scaleid,
                                                     $activityitem->grademax,
-                                                    '',
+                                                    $activityitem->scaleid,
                                                 );
 
                                                 $grade = $gradestatus->grade_to_display;
@@ -1112,9 +1118,8 @@ class course {
                                                 $activityitem->id,
                                                 $USER->id,
                                                 $activityitem->gradetype,
-                                                $activityitem->scaleid,
                                                 $activityitem->grademax,
-                                                '',
+                                                $activityitem->scaleid,
                                             );
 
                                             $grade = $gradestatus->grade_to_display;
@@ -1167,9 +1172,8 @@ class course {
                                                 $activityitem->id,
                                                 $USER->id,
                                                 $activityitem->gradetype,
-                                                $activityitem->scaleid,
                                                 $activityitem->grademax,
-                                                ''
+                                                $activityitem->scaleid,
                                             );
                                         }
 
@@ -1180,9 +1184,8 @@ class course {
                                             $activityitem->id,
                                             $USER->id,
                                             $activityitem->gradetype,
-                                            $activityitem->scaleid,
                                             $activityitem->grademax,
-                                            '',
+                                            $activityitem->scaleid,
                                         );
                                     }
                                 }
@@ -1267,7 +1270,7 @@ class course {
         }
 
         $assessmentsdue['date_header'] = $dateheader;
-        $assessmentsdue['show_grade_column'] = $show_grade_column;
+        $assessmentsdue['show_grade_column'] = $showgradecolumn;
         $assessmentsdue['assessmentitems'] = $assessmentdata;
 
         return $assessmentsdue;

@@ -107,7 +107,7 @@ class hvp_activity extends base {
                 return $activitygrade;
             }
         }
-        
+
         return false;
     }
 

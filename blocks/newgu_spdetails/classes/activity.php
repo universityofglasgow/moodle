@@ -51,12 +51,13 @@ define('ITEM_SCRIPT', '/view.php?id=');
 class activity {
 
     /**
-     * @see MGU-975 - we're now restricting a number of activity types that no longer
-     * need to appear on Student MyGrades
      * @var array $excludedactivities
+     * @see MGU-975 - we're now restricting a number of activity types that no longer
+     * need to appear on Student MyGrades.
+     *
      */
 
-     public static $excludedactivities = [
+    public static $excludedactivities = [
         'attendance',
         'board',
         'book',
@@ -82,8 +83,8 @@ class activity {
         'survey',
         'url',
         'wiki',
-        'zoom'
-     ];
+        'zoom',
+    ];
 
     /**
      * Main method called from the API.
@@ -179,10 +180,10 @@ class activity {
 
             $gradecategories = [];
             $gradeitems = [];
-            foreach($tmpitems as $tmpitem) {
+            foreach ($tmpitems as $tmpitem) {
                 if ($tmpitem['iscategory'] == true) {
                     $gradecategories[] = $tmpitem;
-                } elseif ($tmpitem['iscategory'] == false) {
+                } else if ($tmpitem['iscategory'] == false) {
                     $gradeitems[] = $tmpitem;
                 }
             }
@@ -211,7 +212,7 @@ class activity {
                     $activitydata);
                 $data['hascourseitems'] = true;
             }
-        } elseif (!$mygradesenabled) {
+        } else if (!$mygradesenabled) {
             $data['mygradesenabled'] = false;
 
             // The weight for this grade category can be derived from the aggregation coefficient
@@ -352,7 +353,7 @@ class activity {
                         if ($cm) {
                             $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
                         }
-                        // @see MGU-1025.
+                        // MGU-1025 - Due Dates not showing Correctly on Your Assessment details.
                         if ($activityduedate > 0) {
                             $duedate = userdate($activityduedate, get_string('strftimedate', 'core_langconfig'));
                         } else {
@@ -413,19 +414,20 @@ class activity {
                                         'block_newgu_spdetails');
                                     $mygradesactivityitem->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
 
-                                    // @see MGU-1230.
+                                    // See MGU-1230 - Student MyGrades / Staff View.
                                     if ($cm) {
                                         if ($cm->uservisible) {
                                             if ($cm->visibleoncoursepage) {
-                                            $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
+                                                $mygradesactivityitem->grade_feedback = get_string('status_text_viewfeedback',
                                                 'block_newgu_spdetails');
-                                            $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' .
+                                                $mygradesactivityitem->grade_feedback_link = $CFG->wwwroot .
+                                                '/grade/report/index.php?id=' .
                                                 $tmpgradeitems[$index]->courseid;
                                             }
                                         }
                                     }
 
-                                    // See @MGU-1249 The Feedback column for manual grade items no longer needs to display a link
+                                    // See MGU-1249 - The Feedback column for manual grade items no longer needs to display a link.
                                     if ($tmpgradeitems[$index]->itemtype == 'manual') {
                                         $mygradesactivityitem->grade_feedback = '-';
                                         $mygradesactivityitem->grade_feedback_link = '';
@@ -442,7 +444,7 @@ class activity {
                     } else {
                         $processasgradebookitem = true;
                     }
-                } elseif ($mygradesitem['released'] == false) {
+                } else if ($mygradesitem['released'] == false) {
                     $processasgradebookitem = true;
                 }
 
@@ -453,8 +455,7 @@ class activity {
                     $tmpgradeitem = $tmpgradeitems[$index];
 
                     if ($tmpgradeitem->itemtype == 'manual') {
-                        $manualgradeitem = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype,
-                        'mygradesenabled');
+                        $manualgradeitem = self::process_manual_grade_item((object) $tmpgradeitem, $assessmenttype);
                         if ($manualgradeitem != null) {
                             $mygradesdata[] = $manualgradeitem;
                         }
@@ -504,7 +505,7 @@ class activity {
      * @return array
      */
     public static function process_default_items(array $defaultitems, string $activetab, array $ltiactivities,
-    string $assessmenttype, bool $displayweights, int $userid = null): array {
+    string $assessmenttype, bool $displayweights, int|null $userid = null): array {
 
         global $USER;
         $whichuser = null;
@@ -524,8 +525,7 @@ class activity {
                 if (!in_array($defaultitem->itemmodule, self::$excludedactivities)) {
                     // Cater for manual grade items that may have been added.
                     if ($defaultitem->itemtype == 'manual') {
-                        $manualgradeitem = self::process_manual_grade_item($defaultitem, $assessmenttype, 'gradebookenabled',
-                        $whichuser);
+                        $manualgradeitem = self::process_manual_grade_item($defaultitem, $assessmenttype, $whichuser);
                         if ($manualgradeitem != null) {
                             $defaultdata[] = $manualgradeitem;
                         }
@@ -571,9 +571,8 @@ class activity {
                                 $defaultitem->id,
                                 $whichuser,
                                 $defaultitem->gradetype,
-                                $defaultitem->scaleid,
                                 $defaultitem->grademax,
-                                'gradebookenabled',
+                                $defaultitem->scaleid,
                             );
                             $assessmenturl = $gradestatobj->assessment_url;
                             $duedate = $gradestatobj->due_date;
@@ -614,7 +613,7 @@ class activity {
                                 $defaultactivityitem->grade_feedback = $gradefeedback;
                                 $defaultactivityitem->grade_feedback_link = $gradefeedbacklink;
                                 $defaultactivityitem->gradebookenabled = 'true';
-                            } elseif ($cm->availableinfo) {
+                            } else if ($cm->availableinfo) {
                                 $iconalt = substr($activityicon->iconalt, 8);
 
                                 $defaultactivityitem = new \stdClass();
@@ -642,9 +641,8 @@ class activity {
                                 $defaultactivityitem->grade_feedback = $gradefeedback;
                                 $defaultactivityitem->grade_feedback_link = $gradefeedbacklink;
                                 $defaultactivityitem->gradebookenabled = 'true';
-                            } else {
-                                // User cannot access this activity - they simply will not see it at all.
                             }
+                            // User cannot access this activity otherwise - they simply will not see it at all.
 
                             if (is_object($defaultactivityitem)) {
                                 $defaultdata[] = $defaultactivityitem;
@@ -662,14 +660,15 @@ class activity {
     }
 
     /**
+     * Process and prepare for display manual grade items.
+     *
      * @param object $manualgradeitem
      * @param string $assessmenttype
-     * @param string $coursetype - this is more to satisfy the unit tests - for now at least.
      * @param int $userid - when this is being passed in by Student MyGrades Staff View - $USER would actually be the teacher here.
      * @return object or null
      */
-    public static function process_manual_grade_item(object $manualgradeitem, string $assessmenttype, string $coursetype,
-    int $userid = null): object|null {
+    public static function process_manual_grade_item(object $manualgradeitem, string $assessmenttype,
+    int|null $userid = null): object|null {
 
         global $USER;
         $whichuser = null;
@@ -701,8 +700,8 @@ class activity {
                 $manualgradeitem->id,
                 $whichuser,
                 $manualgradeitem->gradetype,
+                $manualgradeitem->grademax,
                 $manualgradeitem->scaleid,
-                $manualgradeitem->grademax
             );
 
             // The manual item can be hidden both via Gradebook Setup and from within the Grader report.
@@ -742,7 +741,6 @@ class activity {
                 $processedmanualgradeitem->grade_provisional = $gradeprovisional;
                 $processedmanualgradeitem->grade_feedback = $gradefeedback;
                 $processedmanualgradeitem->grade_feedback_link = $gradefeedbacklink;
-                $processedmanualgradeitem->$coursetype = true;
 
                 return $processedmanualgradeitem;
             }
@@ -751,10 +749,10 @@ class activity {
             // but, have this appear in Student MyGrades Staff View, we need to carry out the following trick shot.
             if ($gradestatobj->hidden == 1 && ($userid != null && $userid != $USER->id)) {
                 $processedmanualgradeitem = new \stdClass();
-                $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
-                $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
-                . "' aria-hidden='true' role='img' aria-label='" . $icon_text . "'></i>";
-                $processedmanualgradeitem->item_name = $icon_alt . $manualgradeitem->itemname;
+                $icontext = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
+                $iconalt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icontext . "' alt='" . $icontext
+                . "' aria-hidden='true' role='img' aria-label='" . $icontext . "'></i>";
+                $processedmanualgradeitem->item_name = $iconalt . $manualgradeitem->itemname;
                 $processedmanualgradeitem->grade = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
                 $processedmanualgradeitem->grade_feedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
 
@@ -768,10 +766,10 @@ class activity {
         // but, have this appear in Student MyGrades Staff View, we need to carry out the following hack.
         if ($manualgradeitem->hidden == 1 && ($userid != null && $userid != $USER->id)) {
             $processedmanualgradeitem = new \stdClass();
-            $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
-            $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
-                . "' aria-hidden='true' role='img' aria-label='" . $icon_text . "'></i>";
-            $processedmanualgradeitem->item_name = $icon_alt . $manualgradeitem->itemname;
+            $icontext = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
+            $iconalt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icontext . "' alt='" . $icontext
+                . "' aria-hidden='true' role='img' aria-label='" . $icontext . "'></i>";
+            $processedmanualgradeitem->item_name = $iconalt . $manualgradeitem->itemname;
             $processedmanualgradeitem->grade = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
 
             return $processedmanualgradeitem;
@@ -810,7 +808,8 @@ class activity {
      * @param object $gradecategory
      * @return bool
      */
-    public static function get_display_activity_item_weights(object $gradecategoryweight, object $gradecategory = null): bool {
+    public static function get_display_activity_item_weights(object $gradecategoryweight,
+        object|null $gradecategory = null): bool {
         $displayweights = false;
 
         if (($gradecategory->aggregation == GRADE_AGGREGATE_WEIGHTED_MEAN ||

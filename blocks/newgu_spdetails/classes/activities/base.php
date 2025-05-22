@@ -220,7 +220,8 @@ abstract class base {
                 // For activity type 'assignment', when Marking Workflow is enabled, feedback becomes available for the
                 // student when the status is set to 'Released', even ^if^ Reveal Identities hasn't been triggered.
                 // Honour this same behaviour here.
-                if (isset($gradestatusobj->markingworkflow) && $gradestatusobj->markingworkflow && isset($gradestatusobj->workflowstate) && $gradestatusobj->workflowstate == 'released') {
+                if (isset($gradestatusobj->markingworkflow) && $gradestatusobj->markingworkflow &&
+                    isset($gradestatusobj->workflowstate) && $gradestatusobj->workflowstate == 'released') {
                     $feedbackobj->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
                     $feedbackobj->grade_feedback_link = $gradestatusobj->assessment_url . '#page-footer';
                 }

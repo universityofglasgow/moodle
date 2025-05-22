@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for retrieving grade, status and feedback.
  */
-class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * For a MyGrades course - we have the situation where if grades
@@ -43,14 +43,14 @@ class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external
      * them from gradebook. These tests should account for this, i.e.
      * as we're only dealing with released grades from local_gugrades -
      * there isn't a notion of provisional grades.
+     *
+     * @covers \blocks\newgu_spdetails\api
      */
-    public function test_get_grade_status_and_feedback_mygrades() {
+    public function test_get_grade_status_and_feedback_mygrades(): void {
         $userid = $this->student1->id;
-        $sortorder = 'asc';
 
-        
         global $DB;
-    
+
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -69,7 +69,7 @@ class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment1->id,
@@ -84,7 +84,7 @@ class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_NEW);
 
@@ -117,12 +117,11 @@ class get_grade_status_and_feedback_test extends \block_newgu_spdetails\external
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment2->id, $this->student1->id, $this->teacher->id, 35,
         ASSIGN_SUBMISSION_STATUS_NEW);
 
-
-        $mygradesgradeditems = $this->api->retrieve_gradable_activities('current', $userid, 'duedate', $sortorder,
+        $mygradesgradeditems = $this->api->retrieve_gradable_activities('current', $userid, 'duedate', 'asc',
         $mygradessummativesubcategoryid);
 
         $this->assertIsArray($mygradesgradeditems);

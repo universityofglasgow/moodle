@@ -25,16 +25,16 @@
 namespace block_newgu_spdetails\external;
 
 defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 
-require_once($CFG->dirroot .'/config.php');
 require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
 require_once($CFG->dirroot .'/blocks/newgu_spdetails/block_newgu_spdetails.php');
 
 /**
  * Unit tests for block_newgu_spdetails
  */
-class block_newgu_spdetails_test extends \advanced_testcase {
+final class block_newgu_spdetails_test extends \advanced_testcase {
 
     /**
      * @var object $spdetails
@@ -44,8 +44,8 @@ class block_newgu_spdetails_test extends \advanced_testcase {
     /**
      * Called before every test
      */
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest(true);
         $spdetails = new \block_newgu_spdetails();
 
@@ -58,8 +58,10 @@ class block_newgu_spdetails_test extends \advanced_testcase {
 
     /**
      * Check that has_config returns a bool
+     *
+     * @covers \blocks\newgu_spdetails\block_newgu_spdetails
      */
-    public function test_has_config() {
+    public function test_has_config(): void {
         $returned = $this->spdetails->has_config();
         $this->assertIsBool($returned);
     }
@@ -67,9 +69,9 @@ class block_newgu_spdetails_test extends \advanced_testcase {
     /**
      * Test the applicable_formats() method.
      *
-     * @return void
+     * @covers \blocks\newgu_spdetails\block_newgu_spdetails
      */
-    public function test_applicable_formats() {
+    public function test_applicable_formats(): void {
         $returned = $this->spdetails->applicable_formats();
         $this->assertEquals($returned, ['admin' => true]);
     }
@@ -77,10 +79,9 @@ class block_newgu_spdetails_test extends \advanced_testcase {
     /**
      * Test the get_content() method.
      *
-     * @return void
-     * @throws dml_exception
+     * @covers \blocks\newgu_spdetails\block_newgu_spdetails
      */
-    public function test_get_content() {
+    public function test_get_content(): void {
 
         $returned = $this->spdetails->get_content();
         $this->assertNotEmpty($returned->text);

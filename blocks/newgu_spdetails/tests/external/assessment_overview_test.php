@@ -40,12 +40,14 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for retrieving the assessments overview chart numbers.
  */
-class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class assessment_overview_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * Test that the assessment overview returns the specific key names.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview() {
+    public function test_get_assessment_overview(): void {
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -64,8 +66,10 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
     /**
      * Test that the number of submitted items match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_submitted() {
+    public function test_get_assessment_overview_submitted(): void {
         global $DB;
 
         // We're the test student.
@@ -88,7 +92,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment1->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -101,7 +105,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
@@ -118,7 +122,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment2->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -147,9 +151,11 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
     /**
      * Test that the number of items to be submitted match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_tosubmit() {
-        global $DB; 
+    public function test_get_assessment_overview_tosubmit(): void {
+        global $DB;
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -171,7 +177,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment1->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -184,7 +190,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_NEW);
 
@@ -201,7 +207,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment2->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -230,7 +236,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment3->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -259,8 +265,10 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
     /**
      * Test that the number of items that are overdue match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_overdue() {
+    public function test_get_assessment_overview_overdue(): void {
         global $DB;
 
         // We're the test student.
@@ -281,7 +289,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment1->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -294,7 +302,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_NEW);
 
@@ -311,8 +319,10 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
     /**
      * Test that the number of items that have been graded match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_gradebook_graded() {
+    public function test_get_assessment_overview_gradebook_graded(): void {
         global $DB;
 
         // We're the test student.
@@ -334,7 +344,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment1->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -347,7 +357,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
@@ -371,8 +381,10 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
     /**
      * Test for items processed in MyGrades but not released match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_mygrades_graded_but_unreleased() {
+    public function test_get_assessment_overview_mygrades_graded_but_unreleased(): void {
         global $DB;
 
         // We're the test student.
@@ -394,7 +406,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment1->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -407,7 +419,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
@@ -445,8 +457,10 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
     /**
      * Test for items processed in MyGrades and released match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_mygrades_graded_and_released() {
+    public function test_get_assessment_overview_mygrades_graded_and_released(): void {
         global $DB;
 
         // We're the test student.
@@ -468,7 +482,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
         $params = [
-            $this->mygrades_summative_subcategory->id,
+            $this->mygradessummativesubcategory->id,
             $mygradesassignment1->id,
         ];
         $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
@@ -541,11 +555,13 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
     }
 
     /**
-     * Test the method returns activities due, by type, e.g. due in 1 week
+     * Test the method returns activities due, by type, e.g. due in 1 week.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
      */
-    public function test_get_assessment_overview_by_type() {
+    public function test_get_assessment_overview_by_type(): void {
         global $DB;
-        
+
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -564,7 +580,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment->id,
@@ -594,7 +610,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment2->id,
@@ -610,7 +626,7 @@ class get_assessment_overview_test extends \block_newgu_spdetails\external\newgu
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
         // Check that our stats values for the given type are returned as expected.
-        $type = 0; // To be submitted
+        $type = 0; // To be submitted.
         $stats = get_assessmentsummarybytype::execute($type);
         $stats = external_api::clean_returnvalue(
             get_assessmentsummarybytype::execute_returns(),

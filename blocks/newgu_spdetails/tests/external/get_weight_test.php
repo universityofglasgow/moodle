@@ -34,9 +34,14 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Test get_weight function.
  */
-class get_weight_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class get_weight_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
-    public function test_return_weight() {
+    /**
+     * Test that a correct weight is returned for a given coefficient.
+     *
+     * @covers \blocks\newgu_spdetails\classes\course
+     */
+    public function test_return_weight(): void {
         $aggregationcoef = 10;
         $expected1 = round($aggregationcoef, 2);
         $this->assertEquals($expected1, $this->courseapi->return_weight($aggregationcoef));

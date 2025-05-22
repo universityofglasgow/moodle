@@ -158,7 +158,7 @@ class assign_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $dateinstance = $this->assign->get_instance();
         $rawdate = $dateinstance->duedate;
         if ($unformatteddate) {
@@ -176,7 +176,7 @@ class assign_activity extends base {
 
     /**
      * Method to return the current status of the assessment item.
-     * 
+     *
      * Specific to activity type Assignment however, we can have group or individual
      * submissions. Begin by taking the wider group centric view, but scale down to
      * the individual view if no group submissions have been set up.
@@ -338,7 +338,7 @@ class assign_activity extends base {
                         $assignsubmission->status = get_string('status_submissionunavailable', 'block_newgu_spdetails');
                     } else {
                         $cansubmitassessment = true;
-                    } 
+                    }
                 }
 
                 if (!$assigninstance->preventsubmissionnotingroup) {
@@ -371,7 +371,10 @@ class assign_activity extends base {
             }
 
             if (!$assigninstance->teamsubmission || $checkallteammembersubmissions == true) {
-                $assignsubmission = $DB->get_record('assign_submission', ['assignment' => $assigninstance->id, 'userid' => $userid]);
+                $assignsubmission = $DB->get_record('assign_submission', [
+                    'assignment' => $assigninstance->id,
+                    'userid' => $userid,
+                ]);
             }
 
             // Now check what state the assignmentsubmission object is in.
@@ -583,7 +586,6 @@ class assign_activity extends base {
             }
         }
 
-
         // Is this a group or individual assignment.
         if ($assignment->teamsubmission) {
             $cansubmitassessment = true;
@@ -595,7 +597,7 @@ class assign_activity extends base {
                 // Is the student in a group.
                 if ($isgroupmember = $DB->get_record('groups_members', ['userid' => $USER->id])) {
                     $cansubmitassessment = true;
-                } 
+                }
             }
 
             if (!$assignment->preventsubmissionnotingroup) {

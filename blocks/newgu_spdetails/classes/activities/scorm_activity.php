@@ -114,12 +114,12 @@ class scorm_activity extends base {
         }
 
         // SCORM appears similar to Quiz in that we can have 1 to multiple attempts, which means we should check for this
-        // in order to determine which grade to return, i.e. the highest, mean etc
+        // in order to determine which grade to return, i.e. the highest, mean etc.
         $scormgrade = scorm_get_user_grades($this->scorm, $userid);
         if ($scormgrade) {
             // Yes, we're keying on rawgrade - but I'm treating this as the final grade.
             $activitygrade->finalgrade = $scormgrade[$userid]->rawgrade;
-            
+
             $sql = "SELECT MAX(id)
             FROM {scorm_attempt}
             WHERE userid = ? AND scormid = ?";
@@ -170,7 +170,7 @@ class scorm_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $dateinstance = $this->scorm;
         $rawdate = $dateinstance->timeclose;
         if ($unformatteddate) {
@@ -281,12 +281,12 @@ class scorm_activity extends base {
             $lastmonth = usertime(mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y')));
 
             $params = [
-                'userid' => $USER->id, 
-                'lastmonth' => $lastmonth, 
-                'now' => $now
+                'userid' => $USER->id,
+                'lastmonth' => $lastmonth,
+                'now' => $now,
             ];
             $scormsubmissions = $DB->get_records_sql(
-                'SELECT scormid, value FROM {scorm_attempt} AS sa INNER JOIN {scorm_scoes_value} AS ssv ON ssv.attemptid = sa.id
+                'SELECT scormid, value FROM {scorm_attempt} sa INNER JOIN {scorm_scoes_value} ssv ON ssv.attemptid = sa.id
                 WHERE sa.userid = :userid AND ssv.timemodified BETWEEN :lastmonth AND :now',
                 $params);
 

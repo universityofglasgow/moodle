@@ -144,7 +144,7 @@ class lesson_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $dateinstance = $this->lesson;
         $rawdate = $dateinstance->deadline;
         if ($unformatteddate) {

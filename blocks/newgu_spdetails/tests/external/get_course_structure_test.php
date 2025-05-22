@@ -34,14 +34,16 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for the course structure that is returned.
  */
-class get_course_structure_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class get_course_structure_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
     /**
      * Test of the components of the course that get returned.
+     *
+     * @covers \blocks\newgu_spdetails\classes\course
      */
-    public function test_get_course_structure() {
+    public function test_get_course_structure(): void {
         // We're the test student.
         $this->setUser($this->student1->id);
-        
+
         $returned = $this->courseapi->get_course_structure([$this->mygradescourse], true);
 
         $this->assertIsArray($returned);
@@ -51,7 +53,7 @@ class get_course_structure_test extends \block_newgu_spdetails\external\newgu_sp
 
         $this->assertIsArray($returned['coursedata'][0]['subcategories']);
         $this->assertArrayHasKey('subcategories', $returned['coursedata'][0]);
-        $this->assertEquals($this->mygrades_summative_category->fullname, $returned['coursedata'][0]['subcategories'][0]['name']);
+        $this->assertEquals($this->mygradessummativecategory->fullname, $returned['coursedata'][0]['subcategories'][0]['name']);
         $this->assertEquals('Summative', $returned['coursedata'][0]['subcategories'][0]['assessmenttype']);
     }
 }

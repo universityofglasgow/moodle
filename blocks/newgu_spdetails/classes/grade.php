@@ -25,6 +25,8 @@
 
 namespace block_newgu_spdetails;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir . '/grade/grade_scale.php');
 
 use grade_scale;
@@ -43,11 +45,10 @@ class grade {
      * @param int $gradetype
      * @param int $scaleid
      * @param int $grademax
-     * @param string $coursetype - this is needed by the unit tests.
      * @return object
      */
     public static function get_grade_status_and_feedback(int $courseid, int $itemid, int $userid, int $gradetype,
-    int $scaleid = null, int $grademax, string $coursetype): object {
+    int $grademax, int|null $scaleid = null): object {
 
         $gradestatus = new \stdClass();
         $gradestatus->assessment_url = '';
@@ -74,7 +75,7 @@ class grade {
 
             if (property_exists($activitygrade, 'finalgrade') && $activitygrade->finalgrade != null &&
             $activitygrade->finalgrade >= 0) {
-                $grade = self::get_formatted_grade_from_grade_type($activitygrade->finalgrade, $gradetype, $scaleid, $grademax);
+                $grade = self::get_formatted_grade_from_grade_type($activitygrade->finalgrade, $gradetype, $grademax, $scaleid);
                 $gradestatus->grade_date = $activitygrade->gradedate;
                 $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
                 $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
@@ -93,8 +94,7 @@ class grade {
 
             // It's not been mentioned/specced w/regards provisional grades - do we treat rawgrades as such?
             if (property_exists($activitygrade, 'rawgrade') && $activitygrade->rawgrade != null && $activitygrade->rawgrade > 0) {
-                $grade = self::get_formatted_grade_from_grade_type($activitygrade->rawgrade, $gradetype,
-                $scaleid, $grademax);
+                $grade = self::get_formatted_grade_from_grade_type($activitygrade->rawgrade, $gradetype, $grademax, $scaleid);
                 $gradestatus->grade_status = get_string('status_provisional', 'block_newgu_spdetails');
                 $gradestatus->status_text = get_string('status_text_provisional', 'block_newgu_spdetails');
                 $gradestatus->status_class = get_string('status_class_provisional', 'block_newgu_spdetails');
@@ -142,7 +142,7 @@ class grade {
      * @return object
      */
     public static function get_manual_grade_item_grade_status_and_feedback(int $courseid, int $itemid, int $userid, int $gradetype,
-    int $scaleid = null, int $grademax): object {
+    int $grademax, int|null $scaleid = null): object {
 
         global $DB, $CFG;
 
@@ -172,13 +172,13 @@ class grade {
                 $gradestatus->hidden = 1;
             } else {
                 if ($grade->finalgrade != null && $grade->finalgrade > 0) {
-                    $manualgrade = self::get_formatted_grade_from_grade_type($grade->finalgrade, $gradetype, $scaleid, $grademax);
+                    $manualgrade = self::get_formatted_grade_from_grade_type($grade->finalgrade, $gradetype, $grademax, $scaleid);
                     $gradestatus->grade_to_display = $manualgrade;
                     $gradestatus->grade_class = true;
                     $gradestatus->grade_status = get_string('status_graded', 'block_newgu_spdetails');
                     $gradestatus->status_text = get_string('status_text_graded', 'block_newgu_spdetails');
                     $gradestatus->status_class = get_string('status_class_graded', 'block_newgu_spdetails');
-                    // @see MGU-1249 - It seems prudent however that if feedback ^has^ been added, then we provide a link to it.
+                    // See MGU-1249 - It seems prudent however that if feedback ^has^ been added, then we provide a link to it.
                     if ($grade->feedback != '') {
                         $gradestatus->grade_feedback = get_string('status_text_viewfeedback', 'block_newgu_spdetails');
                         $gradestatus->grade_feedback_link = $CFG->wwwroot . '/grade/report/index.php?id=' . $courseid;
@@ -204,8 +204,8 @@ class grade {
      * @param int $grademax
      * @return string
      */
-    public static function get_formatted_grade_from_grade_type(int|float $grade, int $gradetype, int $scaleid = null,
-    int $grademax): string {
+    public static function get_formatted_grade_from_grade_type(int|float $grade, int $gradetype, int $grademax,
+    int|null $scaleid = null): string {
 
         $returngrade = null;
         switch ($gradetype) {

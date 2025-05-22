@@ -39,10 +39,12 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
 
     /**
      * Test that only current course activities are returned.
+     *
+     * @covers \blocks\newgu_spdetails\api
      */
-    public function test_retrieve_gradable_activities_current_courses() {
+    public function test_retrieve_gradable_activities_current_courses(): void {
         global $DB;
-    
+
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -61,7 +63,7 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment1->id,
@@ -76,7 +78,7 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment1->id, $this->student1->id, $this->teacher->id, 40,
         ASSIGN_SUBMISSION_STATUS_NEW);
 
@@ -109,11 +111,12 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($mygradesassignment2->id, $this->student1->id, $this->teacher->id, 35,
         ASSIGN_SUBMISSION_STATUS_NEW);
-        
-        $activities = $this->api->retrieve_gradable_activities('current', $this->student1->id, 'duedate', 'asc', $mygradessummativesubcategoryid);
+
+        $activities = $this->api->retrieve_gradable_activities('current', $this->student1->id, 'duedate', 'asc',
+            $mygradessummativesubcategoryid);
 
         $this->assertIsArray($activities);
         $this->assertArrayHasKey('coursedata', $activities);
@@ -122,8 +125,10 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
 
     /**
      * Test that only past course activities are returned.
+     *
+     * @covers \blocks\newgu_spdetails\api
      */
-    public function test_retrieve_gradable_activities_past_courses() {
+    public function test_retrieve_gradable_activities_past_courses(): void {
         global $DB;
 
         // We're the test student.
@@ -133,7 +138,7 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         $startdate = mktime(0, 0, 0, date("m"), date("d"), date("Y") - 1);
         $enddate  = mktime(0, 0, 0, date("m") + 5, date("d"), date("Y") - 1);
 
-        $past_course = $this->getDataGenerator()->create_course([
+        $pastcourse = $this->getDataGenerator()->create_course([
             'fullname' => 'Past Course Test',
             'shortname' => 'PCT1',
             'startdate' => $startdate,
@@ -141,20 +146,20 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         ]);
 
         // We need to enrol our student onto this course.
-        $pastcoursecontext = \context_course::instance($past_course->id);
-        $this->getDataGenerator()->enrol_user($this->student1->id, $past_course->id, $this->get_roleid());
+        $pastcoursecontext = \context_course::instance($pastcourse->id);
+        $this->getDataGenerator()->enrol_user($this->student1->id, $pastcourse->id, $this->get_roleid());
         $this->getDataGenerator()->role_assign('student', $this->student1->id, $pastcoursecontext);
 
-        //  Create the parent grade category.
-        $past_summative_category = $this->getDataGenerator()->create_grade_category([
+        // Create the parent grade category.
+        $pastsummativecategory = $this->getDataGenerator()->create_grade_category([
             'fullname' => 'Summative Assessments',
-            'courseid' => $past_course->id,
+            'courseid' => $pastcourse->id,
         ]);
         // Now create the sub categories that live under this parent.
-        $past_summative_subcategory = $this->getDataGenerator()->create_grade_category([
+        $pastsummativesubcategory = $this->getDataGenerator()->create_grade_category([
             'fullname' => 'Past Assessments Aggregated',
-            'courseid' => $past_course->id,
-            'parent' => $past_summative_category->id,
+            'courseid' => $pastcourse->id,
+            'parent' => $pastsummativecategory->id,
         ]);
 
         // Fake some due dates.
@@ -164,7 +169,7 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
             'name' => 'Past lab 1A',
             'itemtype' => 'mod',
             'itemmodule' => 'assign',
-            'course' => $past_course->id,
+            'course' => $pastcourse->id,
             'duedate' => $duedate1,
             'gradetype' => 2,
             'grademax' => 40,
@@ -172,7 +177,7 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $pastsummativesubcategoryid = $past_summative_subcategory->id;
+        $pastsummativesubcategoryid = $pastsummativesubcategory->id;
         $params = [
             $pastsummativesubcategoryid,
             $pastassignment1->id,
@@ -187,11 +192,12 @@ final class gradable_activities_test extends \block_newgu_spdetails\external\new
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
-        // Create the assignment submission entries
+        // Create the assignment submission entries.
         $this->add_assignment_grade($pastassignment1->id, $this->student1->id, $this->teacher->id, 30,
         ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
-        $activities = $this->api->retrieve_gradable_activities('past', $this->student1->id, 'duedate', 'asc', $pastsummativesubcategoryid);
+        $activities = $this->api->retrieve_gradable_activities('past', $this->student1->id, 'duedate', 'asc',
+            $pastsummativesubcategoryid);
 
         $this->assertIsArray($activities);
         $this->assertArrayHasKey('coursedata', $activities);

@@ -47,7 +47,7 @@ class api extends external_api {
      * @return array $data
      */
     public static function retrieve_assessments(string $activetab, int $page, string $sortby, string $sortorder,
-    int $subcategory = null): array {
+    int|null $subcategory = null): array {
         global $USER, $OUTPUT, $PAGE;
         $PAGE->set_context(context_system::instance());
 
@@ -94,8 +94,8 @@ class api extends external_api {
      * @return array $gradableactivities
      * @throws dml_exception
      */
-    public static function retrieve_gradable_activities(string $activetab, int $userid, string $sortby = null, string $sortorder,
-    int $subcategory = null): array {
+    public static function retrieve_gradable_activities(string $activetab, int $userid, string|null $sortby = null,
+    string|null $sortorder = null, int|null $subcategory = null): array {
         $gradableactivities = [];
 
         // Start with getting the top level categories for all courses.
@@ -286,7 +286,7 @@ class api extends external_api {
      * @param object $cm - The course module object. Our key 'customdata' is an array.
      * @return int
      */
-    public static function get_activity_end_date_name(object $cm):int {
+    public static function get_activity_end_date_name(object $cm): int {
         $activitydate = 0;
         $keys = [
             'duedate',
@@ -295,11 +295,11 @@ class api extends external_api {
             'timeavailableto',
             'timedue',
             'deadline',
-            'submissionend'
+            'submissionend',
         ];
         $key = '';
         foreach ($cm->customdata as $k => $v) {
-            if(in_array($k, $keys)) {
+            if (in_array($k, $keys)) {
                 $key = $k;
                 break;
             }

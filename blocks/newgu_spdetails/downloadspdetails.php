@@ -45,17 +45,25 @@ $tdstl = 'border="1px" cellpadding="10" valign="middle" height="22" style="margi
 $tdstc = 'border="1px" cellpadding="10" valign="middle" height="22" style="text-align:center;"';
 $spdetailspdf = get_string('nocoursesfound', 'block_newgu_spdetails');
 
-// Quick and dirty way of getting all of the mygrades grade category items in the format we need.
+/**
+ * Quick and dirty way of getting all of the mygrades grade category items in the format we need.
+ *
+ * @param int $courseid
+ * @param int $gradeitemid
+ * @param int $userid
+ * @param array $items
+ * @return array $items
+ */
 function get_aggregation_items(int $courseid, int $gradeitemid, int $userid, array $items): array {
     $items = $items;
     if ($gradecat = \grade_item::fetch(['id' => $gradeitemid])) {
         $gradecatid = $gradecat->iteminstance;
         $tmp = \local_gugrades\api::get_aggregation_dashboard_user($courseid, $gradecatid, $userid);
         $tmpitems = $tmp->fields;
-        foreach($tmpitems as $tmpitem) {
+        foreach ($tmpitems as $tmpitem) {
             if ($tmpitem['iscategory'] == true) {
                 $aggitems = get_aggregation_items($courseid, $tmpitem['gradeitemid'], $userid, $items);
-                foreach($aggitems as $aggitem) {
+                foreach ($aggitems as $aggitem) {
                     $items[] = $aggitem;
                 }
             }
@@ -124,19 +132,19 @@ if ($coursestype) {
             $activities = \block_newgu_spdetails\course::get_activities($course->id, ['itemtype' => 'manual'], true);
 
             if ($mygradesenabled) {
-                // get_aggregation_dashboard_user() gets us items for the current category only.
+                // Method get_aggregation_dashboard_user() gets us items for the current category only.
                 // As we need every item in every category, we need to recursively fetch them.
                 if ($course->firstlevel) {
                     $mygradeitems = [];
-                    foreach($course->firstlevel as $firstlevel) {
+                    foreach ($course->firstlevel as $firstlevel) {
                         $firstlevelid = 0;
                         $firstlevelid = $firstlevel['id'];
                         $mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevelid, $USER->id);
                         $tmpitems = $mygradesdata->fields;
-                        foreach($tmpitems as $tmpitem) {
+                        foreach ($tmpitems as $tmpitem) {
                             if ($tmpitem['iscategory'] == true) {
                                 $fielditems = get_aggregation_items($course->id, $tmpitem['gradeitemid'], $USER->id, []);
-                                foreach($fielditems as $fielditem) {
+                                foreach ($fielditems as $fielditem) {
                                     $mygradeitems[$fielditem['gradeitemid']] = $fielditem;
                                 }
                             }
@@ -146,21 +154,21 @@ if ($coursestype) {
                         }
                     }
                 }
-                // MGU-1243 - only keep an item in $mygradeitem if there is a corresponding item in $activities
+                // MGU-1243 - only keep an item in $mygradeitem if there is a corresponding item in $activities.
                 foreach ($mygradeitems as $mygradeitem) {
-					$tempgradeitem = $mygradeitem['gradeitemid'];
-					if (!array_key_exists($tempgradeitem, $activities)){
-						unset($mygradeitems[$tempgradeitem]);
-					}
-				}
+                    $tempgradeitem = $mygradeitem['gradeitemid'];
+                    if (!array_key_exists($tempgradeitem, $activities)) {
+                        unset($mygradeitems[$tempgradeitem]);
+                    }
+                }
                 // MGU-1254 - do the same the other way around
-                // only keep items in $activities if they have equivalent in $mygradeitems
+                // only keep items in $activities if they have equivalent in $mygradeitems.
                 foreach ($activities as $activity) {
-					$tempactivityitem = $activity->id;
-					if (!array_key_exists($tempactivityitem, $mygradeitems)){
-						unset($activities[$tempactivityitem]);
-					}
-				}
+                    $tempactivityitem = $activity->id;
+                    if (!array_key_exists($tempactivityitem, $mygradeitems)) {
+                        unset($activities[$tempactivityitem]);
+                    }
+                }
                 // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
                 // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
                 // be/not able to access the arrays using the item id as an index.
@@ -207,11 +215,11 @@ if ($coursestype) {
                     // as long as the top parent name contains 'Formative' or 'Summative', and the item weight.
                     // As we have the original activities array, we can get the category id from there and
                     // use it to then work out the top category name for this item.
-                    $whichitemid = array_search($activityitem->id , array_column($activities,'id'));
+                    $whichitemid = array_search($activityitem->id, array_column($activities, 'id'));
                     $categoryid = $activities[$whichitemid]->categoryid;
                     $category = grade_category::fetch(['id' => $categoryid]);
                     // If the item is under the top (course level) category, then we don't want error,
-                    // as it has no level 1 parent,
+                    // as it has no level 1 parent.
                     if ($category->depth > 1) {
                         $topcategoryid = \local_gugrades\grades::get_level_one_parent($categoryid);
                     } else {
@@ -338,8 +346,8 @@ if ($spdetailstype == "pdf" && $spdetailspdf != "" && $strcoursestype != "") {
     // Add our report titles.
     $html = "<div>University of Glasgow";
     $doc->writeHTMLCell(0, 0, 115, 70, $html, '', 1, 0, true, 'C', true);
-    $style1 = array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(255,255,255));
-    $style2 = array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(255,255,255));
+    $style1 = ['width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [255, 255, 255]];
+    $style2 = ['width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [255, 255, 255]];
     $doc->Line(183, 76, 275, 76, $style1);
     $html = "<h1>" . $strcoursestype . " Report for</h1>";
     $doc->writeHTMLCell(0, 0, $cellwidth, 80, $html, '', 1, 0, true, 'C', true);
@@ -349,7 +357,7 @@ if ($spdetailstype == "pdf" && $spdetailspdf != "" && $strcoursestype != "") {
     $doc->Line(183, 98, 275, 98, $style2);
 
     // Set color for remaining text.
-    $doc->SetTextColor(0,0,0);
+    $doc->SetTextColor(0, 0, 0);
 
     // Set the starting point for the page content.
     $doc->setPageMark();
@@ -360,7 +368,8 @@ if ($spdetailstype == "pdf" && $spdetailspdf != "" && $strcoursestype != "") {
     $doc->setFont('helvetica', '', 9);
     $doc->setXY(245, 20);
     $doc->Cell(25, 10, $strcoursestype . " Report Date : " . date("d-m-Y"), 0, $ln = 0, 'C', 0, '', 0, false, 'B', 'B');
-    $doc->writeHTMLCell(80, 175, 110, 100, get_string('report_subheading_text', 'block_newgu_spdetails', $strcoursestype), 0, 1, 0, true, 'C', true);
+    $doc->writeHTMLCell(80, 175, 110, 100, get_string('report_subheading_text', 'block_newgu_spdetails', $strcoursestype), 0, 1, 0,
+        true, 'C', true);
     $doc->setMargins(5, 20, 5);
     $doc->setFont('helvetica', '', 10);
     $doc->setXY(5, 23);

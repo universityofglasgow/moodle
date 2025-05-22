@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdet
 /**
  * Unit tests for activities that are due in the near future.
  */
-class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * Test that the returned assessments due date falls into
@@ -44,8 +44,10 @@ class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_sp
      * 24 hours
      * 7 days
      * 1 month
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsduesoon
      */
-    public function test_get_assessments_due_soon() {
+    public function test_get_assessments_due_soon(): void {
         global $DB;
 
         // We're the test student.
@@ -66,7 +68,7 @@ class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_sp
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment->id,
@@ -99,11 +101,13 @@ class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_sp
     }
 
     /**
-     * Test the method returns activities due, by type, e.g. due in 1 week
+     * Test the method returns activities due, by type, e.g. due in 1 week.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsduebytype
      */
-    public function test_get_assessments_due_by_type() {
+    public function test_get_assessments_due_by_type(): void {
         global $DB;
-        
+
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -122,7 +126,7 @@ class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_sp
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment->id,
@@ -152,7 +156,7 @@ class assessments_due_soon_test extends \block_newgu_spdetails\external\newgu_sp
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygrades_summative_subcategory->id;
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment2->id,

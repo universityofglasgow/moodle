@@ -98,7 +98,7 @@ class quiz_activity extends base {
 
         $quizinstance = $this->quiz->get_quiz();
         $gradeitemhiddenval = $this->gradeitem->hidden;
-        // Has the gradeitem record been "hidden"
+        // Has the gradeitem record been "hidden"?
         if ($gradeitemhiddenval == 1) {
             return false;
         }
@@ -134,7 +134,7 @@ class quiz_activity extends base {
                 if ($unfinishedattempt->state == 'inprogress' || $unfinishedattempt->state == 'overdue') {
                     return $activitygrade;
                 }
-            } 
+            }
         }
 
         // Quiz setup has a feature which controls the visibility of grades.
@@ -150,12 +150,10 @@ class quiz_activity extends base {
                 case QUIZ_ATTEMPTFIRST:
                     $finishedattempt = reset($finishedattempts);
                     break;
-        
                 case QUIZ_ATTEMPTLAST:
                 case QUIZ_GRADEAVERAGE:
                     $finishedattempt = end($finishedattempts);
                     break;
-        
                 case QUIZ_GRADEHIGHEST:
                     $maxmark = 0;
                     foreach ($finishedattempts as $at) {
@@ -167,7 +165,7 @@ class quiz_activity extends base {
                     }
                     break;
             }
-            
+
             if ($finishedattempt->state == 'finished') {
                 // Work out if we can display the grade, taking account what data is available in each attempt.
                 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
@@ -200,7 +198,7 @@ class quiz_activity extends base {
             }
         }
 
-        // This is basically an object with pertinent field members set to null. 
+        // This is basically an object with pertinent field members set to null.
         return $activitygrade;
     }
 
@@ -231,7 +229,7 @@ class quiz_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $quizinstance = $this->quiz->get_quiz();
         $rawdate = $quizinstance->timeclose;
         if ($unformatteddate) {
@@ -381,7 +379,7 @@ class quiz_activity extends base {
                 // Given that there can be 1 to multiple attempts for a given quiz, pick off the last one
                 // here to see whether it's been abandoned or has since received a grade if its finished.
                 $finishedattempt = array_pop($finishedattempts);
-                
+
                 if ($finishedattempt->state == 'abandoned') {
                     if ($attemptsallowed > 0 && ($finishedattempt->attempt >= $attemptsallowed)) {
                         $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
@@ -392,18 +390,16 @@ class quiz_activity extends base {
                     }
                 }
                 if ($finishedattempt->state == 'finished') {
-                    
+
                     $finishedattempt = null;
                     switch ($quizinstance->grademethod) {
                         case QUIZ_ATTEMPTFIRST:
                             $finishedattempt = reset($finishedattempts);
                             break;
-                
                         case QUIZ_ATTEMPTLAST:
                         case QUIZ_GRADEAVERAGE:
                             $finishedattempt = end($finishedattempts);
                             break;
-                
                         case QUIZ_GRADEHIGHEST:
                             $maxmark = 0;
                             foreach ($finishedattempts as $at) {
@@ -415,7 +411,7 @@ class quiz_activity extends base {
                             }
                             break;
                     }
-                    
+
                     // Quiz setup has a feature which controls the visibility of grades.
                     // We need to check this here also.
                     // Work out if we can display the grade, taking account what data is available in each attempt.
@@ -520,11 +516,11 @@ class quiz_activity extends base {
         // We are calling the quiz object's get_quiz method here, not our local method.
         $quizobj = $this->quiz->get_quiz();
 
-        // Begin by using the main quiz settings
+        // Begin by using the main quiz settings.
         $quizopens = $quizobj->timeopen;
         $quizcloses = $quizobj->timeclose;
         $attemptsallowed = $quizobj->attempts;
-        // This is measured in seconds. If set, we add it to the 'due date' value
+        // This is measured in seconds. If set, we add it to the 'due date' value.
         $graceperiod = $quizobj->graceperiod;
 
         // Check if any individual overrides have been set up for this user.
@@ -622,9 +618,9 @@ class quiz_activity extends base {
                 // in the "Assements due in the next..." charts.
                 if (($quizopens != 0 && $quizopens < $now) && ($quizcloses != 0 && $quizcloses + $graceperiod > $now)) {
                     $obj->duedate = $quizcloses + $graceperiod;
-                    // Lets check this only for quizzes that have begun or are in an overdue state
-                    if (is_object($quizattempts[$quizobj->id]) && 
-                        ($quizattempts[$quizobj->id]->state == 'inprogress' || 
+                    // Lets check this only for quizzes that have begun or are in an overdue state.
+                    if (is_object($quizattempts[$quizobj->id]) &&
+                        ($quizattempts[$quizobj->id]->state == 'inprogress' ||
                         $quizattempts[$quizobj->id]->state == 'overdue') &&
                         property_exists($quizattempts[$quizobj->id], 'timecheckstate') &&
                         $quizattempts[$quizobj->id]->timecheckstate != 0) {
@@ -632,14 +628,14 @@ class quiz_activity extends base {
                         if ($quizattempts[$quizobj->id]->timecheckstate > $now) {
                             $obj->duedate = $quizattempts[$quizobj->id]->timecheckstate;
                         }
-                    } 
+                    }
 
                     if ($quizattempts[$quizobj->id]->state == 'abandoned') {
                         // A quiz can have 1 to unlimited attempts. Quizzes with only 1 attempt
-                        // recorded, that end up as 'abandoned' here, are meant to be automatically 
-                        // graded. Quizzes with 2 or more 'abandoned' attempts, won't get this 
+                        // recorded, that end up as 'abandoned' here, are meant to be automatically
+                        // graded. Quizzes with 2 or more 'abandoned' attempts, won't get this
                         // entry, but won't allow the student to submit any more attempts - and
-                        // should therefore no longer be considered as something that is due. 
+                        // should therefore no longer be considered as something that is due.
                         $quizgrades = $DB->get_record('quiz_grades', ['quiz' => $quizobj->id, 'userid' => $USER->id]);
                         // If we ^do^ find a grade at this point, it would suggest that there is an
                         // attempt that has 'finished' and wasn't picked up by the earlier search.

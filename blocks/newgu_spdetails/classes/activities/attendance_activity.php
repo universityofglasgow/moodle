@@ -156,7 +156,7 @@ class attendance_activity extends base {
      * @param int $unformatteddate
      * @return string
      */
-    public function get_formattedduedate(int $unformatteddate = null): string {
+    public function get_formattedduedate(int|null $unformatteddate = null): string {
         $duedate = '';
         $rawdate = null;
         if ($dateinstance = $this->attendance->sessions) {

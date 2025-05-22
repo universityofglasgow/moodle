@@ -34,31 +34,31 @@ global $CFG;
 require_once($CFG->dirroot . '/blocks/newgu_spdetails/tests/external/newgu_spdetails_advanced_testcase.php');
 
 /**
- * Unit tests for admin grades.
+ * Unit tests for manual grade items.
  */
-
-class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
+final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdetails_advanced_testcase {
 
     /**
      * Test that a manual grade item appears on Student MyGrades when initially created.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-    public function test_return_manual_grade_item() {
+    public function test_return_manual_grade_item(): void {
         // We're the test student.
         $this->setUser($this->student1->id);
 
-        // Create the manual grade item
+        // Create the manual grade item.
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
             'grademax' => 100,
         ]);
 
-        
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
 
         $this->assertCount(1, $activities->items);
         $this->assertEquals(0, $activities->items[0]->hidden);
@@ -68,30 +68,32 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
      * Test of a manual grade item being hidden using the global setting.
      * This item won't appear in Student MyGrades, however, in Student MyGrades Staff View this will appear
      * as a hidden item.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-     public function test_manual_grade_item_global_hidden_setting() {
-        // We're the test student.
+    public function test_manual_grade_item_global_hidden_setting(): void {
+        // We're the student during this test - but the teacher ID is needed when making the method call.
         $this->setUser($this->student1->id);
 
         // Create the manual grade item, set it to hidden to mock the global setting.
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item - hidden globally test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
             'grademax' => 100,
-            'hidden' => 1
+            'hidden' => 1,
         ]);
 
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
-        $processedmanualgradeitem = $this->activityapi->process_manual_grade_item($activities->items[0], 'manual', true,
-            $this->student1->id);
-        $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
-        $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
-            . "' aria-hidden='true' role='img' aria-label='" . $icon_text . "'></i>";
-        $expected = $icon_alt . $manualgradeitem->itemname;
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
+        $processedmanualgradeitem = $this->activityapi->process_manual_grade_item($activities->items[0], 'manual',
+            $this->teacher->id);
+        $icontext = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
+        $iconalt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icontext . "' alt='" . $icontext
+            . "' aria-hidden='true' role='img' aria-label='" . $icontext . "'></i>";
+        $expected = $iconalt . $manualgradeitem->itemname;
         $this->assertEquals($expected, $processedmanualgradeitem->item_name);
     }
 
@@ -99,8 +101,10 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
      * Test of a manual grade item being hidden using the local setting (grade_grades item).
      * This item won't appear in Student MyGrades, however, in Student MyGrades Staff View this will appear
      * as a hidden item.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-    public function test_manual_grade_item_individual_hidden_setting() {
+    public function test_manual_grade_item_individual_hidden_setting(): void {
         // We're the test student.
         $this->setUser($this->student1->id);
 
@@ -108,28 +112,27 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item - hidden for an individual student test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
-            'grademax' => 100
+            'grademax' => 100,
         ]);
 
         // Now mock a grade_grades record, but spoof it being hidden just for the student.
         $gradegradesitem = $this->getDataGenerator()->create_grade_grade([
-            'itemid' => $manualgradeitem->id, 
+            'itemid' => $manualgradeitem->id,
             'userid' => $this->student1->id,
-            'hidden' => 1
+            'hidden' => 1,
         ]);
-        
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
-        $processedmanualgradeitem = $this->activityapi->process_manual_grade_item($activities->items[0], 'manual', true,
-            $this->student1->id);
-        $icon_text = get_string('manual_grade_item_hidden_icon_alt_text', 'block_newgu_spdetails');
-        $icon_alt = "<i class='icon fa fa-eye-slash fa-fw' title='" . $icon_text . "' alt='" . $icon_text
-            . "' aria-hidden='true' role='img' aria-label='" . $icon_text . "'></i>";
-        $expected = $icon_alt . $manualgradeitem->itemname;
-        $this->assertEquals($expected, $processedmanualgradeitem->item_name);
+
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
+        $this->activityapi->process_manual_grade_item($activities->items[0], 'manual',
+            $this->teacher->id);
+        $expectedstudentview = $manualgradeitem->hidden;
+        $expectedstaffview = $gradegradesitem->hidden;
+        $this->assertEquals($expectedstudentview, 0);
+        $this->assertEquals($expectedstaffview, 1);
     }
 
     /**
@@ -137,8 +140,10 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
      * This item will appear in Student MyGrades as a hidden item but with the grade from MyGrades.
      * In Student MyGrades Staff View this item will appear as a hidden item but displaying the grade
      * that was set in MyGrades.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-    public function test_manual_grade_item_global_hidden_setting_released_in_mygrades() {
+    public function test_manual_grade_item_global_hidden_setting_released_in_mygrades(): void {
         global $DB;
 
         // We're the test student.
@@ -148,12 +153,12 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item - hidden globally, released in MyGrades test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
             'grademax' => 100,
-            'hidden' => 1
+            'hidden' => 1,
         ]);
 
         // Create the RELEASED entry in MyGrades and related tables.
@@ -163,21 +168,21 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'PROVISIONAL',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'FIRST',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $columnid = $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'RELEASED',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_grade', [
             'courseid' => $this->mygradescourse->id,
@@ -195,15 +200,15 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
             'audittimecreated' => $now,
         ]);
 
-        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygrades_summative_category->id,
+        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygradessummativecategory->id,
             $this->student1->id);
         $tmpitems = $gradedata->fields;
         $gradecategories = [];
         $gradeitems = [];
-        foreach($tmpitems as $tmpitem) {
+        foreach ($tmpitems as $tmpitem) {
             if ($tmpitem['iscategory'] == true) {
                 $gradecategories[] = $tmpitem;
-            } elseif ($tmpitem['iscategory'] == false) {
+            } else if ($tmpitem['iscategory'] == false) {
                 // Fudge some values here for this test to pass.
                 $tmpitem['grademissing'] = false;
                 $gradeitems[] = $tmpitem;
@@ -211,7 +216,7 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         }
 
         $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
             $ltiactivities, 'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
@@ -219,12 +224,11 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $expectedstatus = get_string('status_graded', 'block_newgu_spdetails');
         $expectedgrade = 28;
 
-        // This will be the student's view - Student MyGrades Staff View now displays "-".
-        $expectedfeedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');;
+        // Student MyGrades Staff View now display the feedback as "-".
         $this->assertEquals($expectedicontext, $processedmanualgradeitem->icon_alt);
         $this->assertEquals($expectedstatus, $processedmanualgradeitem->grade_status);
         $this->assertEquals($expectedgrade, $processedmanualgradeitem->grade);
-        $this->assertEquals($expectedfeedback, $processedmanualgradeitem->grade_feedback);
+        $this->assertEquals('-', $processedmanualgradeitem->grade_feedback);
     }
 
     /**
@@ -232,8 +236,10 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
      * This item will appear in Student MyGrades as a hidden item but with the grade from MyGrades.
      * In Student MyGrades Staff View this item will appear as a hidden item but displaying the grade
      * that was released in MyGrades.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-    public function test_manual_grade_item_individual_hidden_setting_released_in_mygrades() {
+    public function test_manual_grade_item_individual_hidden_setting_released_in_mygrades(): void {
         global $DB;
 
         // We're the test student.
@@ -243,18 +249,18 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item - hidden for an individual, released in MyGrades test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
-            'grademax' => 100
+            'grademax' => 100,
         ]);
 
         // Now mock a grade_grades record, but spoof it being hidden just for the student.
         $gradegradesitem = $this->getDataGenerator()->create_grade_grade([
-            'itemid' => $manualgradeitem->id, 
+            'itemid' => $manualgradeitem->id,
             'userid' => $this->student1->id,
-            'hidden' => 1
+            'hidden' => 1,
         ]);
 
         // Create the RELEASED entry in MyGrades and related tables.
@@ -264,21 +270,21 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'PROVISIONAL',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'FIRST',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $columnid = $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'RELEASED',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_grade', [
             'courseid' => $this->mygradescourse->id,
@@ -296,15 +302,15 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
             'audittimecreated' => $now,
         ]);
 
-        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygrades_summative_category->id,
+        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygradessummativecategory->id,
             $this->student1->id);
         $tmpitems = $gradedata->fields;
         $gradecategories = [];
         $gradeitems = [];
-        foreach($tmpitems as $tmpitem) {
+        foreach ($tmpitems as $tmpitem) {
             if ($tmpitem['iscategory'] == true) {
                 $gradecategories[] = $tmpitem;
-            } elseif ($tmpitem['iscategory'] == false) {
+            } else if ($tmpitem['iscategory'] == false) {
                 // Fudge some values here for this test to pass.
                 $tmpitem['grademissing'] = false;
                 $gradeitems[] = $tmpitem;
@@ -312,7 +318,7 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         }
 
         $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
             $ltiactivities, 'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
@@ -320,12 +326,11 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $expectedstatus = get_string('status_graded', 'block_newgu_spdetails');
         $expectedgrade = 28;
 
-        // This will be the student's view - Student MyGrades Staff View now displays "-".
-        $expectedfeedback = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');;
+        // Student MyGrades Staff View now displays the feedback as "-".
         $this->assertEquals($expectedicontext, $processedmanualgradeitem->icon_alt);
         $this->assertEquals($expectedstatus, $processedmanualgradeitem->grade_status);
         $this->assertEquals($expectedgrade, $processedmanualgradeitem->grade);
-        $this->assertEquals($expectedfeedback, $processedmanualgradeitem->grade_feedback);
+        $this->assertEquals('-', $processedmanualgradeitem->grade_feedback);
     }
 
     /**
@@ -333,8 +338,10 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
      * The item is then hidden in MyGrades.
      * This item will appear in Student MyGrades as a hidden item with no grade displaying.
      * In Student MyGrades Staff View this item will appear as a hidden item with no grade displaying.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-    public function test_manual_grade_item_global_hidden_setting_released_in_mygrades_hidden_from_student() {
+    public function test_manual_grade_item_global_hidden_setting_released_in_mygrades_hidden_from_student(): void {
         global $DB;
 
         // We're the test student.
@@ -344,36 +351,36 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item - hidden globally, released in MyGrades then hidden test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
             'grademax' => 100,
-            'hidden' => 1
+            'hidden' => 1,
         ]);
 
-        // Create the RELEASED entry in MyGrades and related tables, plus the hidden entry
+        // Create the RELEASED entry in MyGrades and related tables, plus the hidden entry.
         $now  = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'PROVISIONAL',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'FIRST',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $columnid = $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'RELEASED',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_grade', [
             'courseid' => $this->mygradescourse->id,
@@ -393,18 +400,18 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $hiddenid = $DB->insert_record('local_gugrades_hidden', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
-            'userid' => $this->student1->id
+            'userid' => $this->student1->id,
         ]);
 
-        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygrades_summative_category->id,
+        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygradessummativecategory->id,
             $this->student1->id);
         $tmpitems = $gradedata->fields;
         $gradecategories = [];
         $gradeitems = [];
-        foreach($tmpitems as $tmpitem) {
+        foreach ($tmpitems as $tmpitem) {
             if ($tmpitem['iscategory'] == true) {
                 $gradecategories[] = $tmpitem;
-            } elseif ($tmpitem['iscategory'] == false) {
+            } else if ($tmpitem['iscategory'] == false) {
                 // Fudge some values here for this test to pass.
                 $tmpitem['grademissing'] = false;
                 $gradeitems[] = $tmpitem;
@@ -412,7 +419,7 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         }
 
         $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
             $ltiactivities, 'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
@@ -433,8 +440,10 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
      * The item is then hidden in MyGrades.
      * This item will appear in Student MyGrades as a hidden item with no grade displaying.
      * In Student MyGrades Staff View this item will appear as a hidden item with no grade displaying.
+     *
+     * @covers \local\gugrades\classes\api::get_activities
      */
-    public function test_manual_grade_item_individual_hidden_setting_released_in_mygrades_hidden_from_student() {
+    public function test_manual_grade_item_individual_hidden_setting_released_in_mygrades_hidden_from_student(): void {
         global $DB;
 
         // We're the test student.
@@ -444,42 +453,42 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $manualgradeitem = $this->getDataGenerator()->create_grade_item([
             'itemname' => 'Manual grade item - hidden for an individual, released in MyGrades test',
             'itemtype' => 'manual',
-            'itemmodule' => NULL,
+            'itemmodule' => null,
             'courseid' => $this->mygradescourse->id,
-            'categoryid' => $this->mygrades_summative_category->id,
+            'categoryid' => $this->mygradessummativecategory->id,
             'gradetype' => 1,
-            'grademax' => 100
+            'grademax' => 100,
         ]);
 
         // Now mock a grade_grades record, but spoof it being hidden just for the student.
         $gradegradesitem = $this->getDataGenerator()->create_grade_grade([
-            'itemid' => $manualgradeitem->id, 
+            'itemid' => $manualgradeitem->id,
             'userid' => $this->student1->id,
-            'hidden' => 1
+            'hidden' => 1,
         ]);
 
-        // Create the RELEASED entry in MyGrades and related tables, plus the hidden entry
+        // Create the RELEASED entry in MyGrades and related tables, plus the hidden entry.
         $now  = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'PROVISIONAL',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'FIRST',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $columnid = $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
             'gradetype' => 'RELEASED',
             'other' => '',
-            'points' => 0
+            'points' => 0,
         ]);
         $DB->insert_record('local_gugrades_grade', [
             'courseid' => $this->mygradescourse->id,
@@ -499,18 +508,18 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         $hiddenid = $DB->insert_record('local_gugrades_hidden', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
-            'userid' => $this->student1->id
+            'userid' => $this->student1->id,
         ]);
 
-        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygrades_summative_category->id,
+        $gradedata = api::get_aggregation_dashboard_user($this->mygradescourse->id, $this->mygradessummativecategory->id,
             $this->student1->id);
         $tmpitems = $gradedata->fields;
         $gradecategories = [];
         $gradeitems = [];
-        foreach($tmpitems as $tmpitem) {
+        foreach ($tmpitems as $tmpitem) {
             if ($tmpitem['iscategory'] == true) {
                 $gradecategories[] = $tmpitem;
-            } elseif ($tmpitem['iscategory'] == false) {
+            } else if ($tmpitem['iscategory'] == false) {
                 // Fudge some values here for this test to pass.
                 $tmpitem['grademissing'] = false;
                 $gradeitems[] = $tmpitem;
@@ -518,7 +527,7 @@ class manual_grade_item_test extends \block_newgu_spdetails\external\newgu_spdet
         }
 
         $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
-        $activities = api::get_activities($this->mygradescourse->id, $this->mygrades_summative_category->id);
+        $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
             $ltiactivities, 'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];

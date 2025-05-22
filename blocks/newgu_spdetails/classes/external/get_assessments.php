@@ -61,7 +61,7 @@ class get_assessments extends external_api {
      * @throws \invalid_parameter_exception
      */
     public static function execute(string $activetab, int $page, string $sortby, string $sortorder,
-    int $subcategory = null): array {
+    int|null $subcategory = null): array {
         $params = self::validate_parameters(self::execute_parameters(),
             [
                 'activetab' => $activetab,
