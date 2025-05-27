@@ -331,7 +331,10 @@ class assign_activity extends base {
                     // if the user is "not members of a group", then they won't be able to submit this assessment. Pay close
                     // attention to the wording "not members of ^a^ group" - which, to me says "any group" and not one specific to
                     // this activity.
-                    if (!$isgroupmember = $DB->get_record('groups_members', ['userid' => $userid])) {
+                    // Ferenc: We need all the groups the student is a member of,
+                    // but only available to this specific assignment activity.
+                    $usergroups = $this->assign->get_all_groups($userid);
+                    if (count($usergroups) !== 1) {
                         $statusobj->grade_status = get_string('status_submissionunavailable', 'block_newgu_spdetails');
                         $statusobj->status_text = get_string('status_text_submissionunavailable', 'block_newgu_spdetails');
                         $assignsubmission = new stdClass();
