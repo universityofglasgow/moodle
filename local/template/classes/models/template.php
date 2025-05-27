@@ -865,7 +865,7 @@ class template extends \core\persistent implements renderable, templatable {
                 return $user;
             }
 
-            $this->userstatus = '';
+            //$this->userstatus = '';
 
             return $user;
         }
