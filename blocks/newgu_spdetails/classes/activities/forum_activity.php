@@ -179,6 +179,7 @@ class forum_activity extends base {
         $statusobj->due_date = $foruminstance->duedate;
         $statusobj->raw_due_date = $foruminstance->duedate;
         $statusobj->cutoff_date = $foruminstance->cutoffdate;
+        $statusobj->grade_date = '';
 
         $forumposts = [];
         // We need the discussionid for the forum in order to determine if any posts have been made.
