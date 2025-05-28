@@ -303,6 +303,12 @@ if ($ADMIN->fulltree) {
     $default = 0;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
+    $name = 'format_tiles/seczerocollapsible';
+    $title = get_string('seczerocollapsible', 'format_tiles');
+    $description = get_string('seczerocollapsible_desc', 'format_tiles');
+    $default = 1;
+    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
+
     $name = 'format_tiles/usetooltips';
     $title = get_string('usetooltips', 'format_tiles');
     $description = get_string('usetooltips_desc', 'format_tiles');

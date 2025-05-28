@@ -194,19 +194,20 @@ class course_output implements \renderable, \templatable {
             }
         }
         $data = $this->get_basic_data();
-        if (!$this->sectionnum) {
-            $data = $this->append_section_zero_data($data, $output);
-        }
-
         // We have assembled the "common data" needed for both single and multiple section pages.
         // Now we can go off and get the specific data for the single or multiple page as required.
-        if ($this->sectionnum !== null) {
-            // We are outputting a single section page.
-            if ($this->sectionnum == 0) {
-                return $this->append_section_zero_data($data, $output);
-            } else {
-                return $this->append_single_section_page_data($output, $data);
-            }
+
+        // Only show section zero if we need it.
+        $onmultisectionpage = !($this->sectionnum ?? false);
+        $processsectionzero = $onmultisectionpage || get_config('format_tiles', 'showseczerocoursewide');
+        if ($processsectionzero) {
+            // Only show section 0 on multi section page, or single sec page with admin setting to show course wide.
+            $data = $this->append_section_zero_data($data, $output);
+        } else {
+            $data['section_zero_show'] = 0;
+        }
+        if (!$onmultisectionpage) {
+            return $this->append_single_section_page_data($output, $data);
         } else {
             // We are outputting multi section page.
             return $this->append_multi_section_page_data($data);
@@ -365,15 +366,10 @@ class course_output implements \renderable, \templatable {
         $data['section_zero']['tileid'] = 0;
         $data['section_zero']['visible'] = true;
 
-        // Only show section zero if we need it.
-        $data['section_zero_show'] = 0;
-        if ($this->sectionnum == 0 || get_config('format_tiles', 'showseczerocoursewide')) {
-            // We only want to show section zero if we are on the landing page, or admin has said we should show it course wide.
-            if ($seczero->summary || !empty($data['section_zero']['content']['course_modules'])) {
-                // We do have something to show, so need to show it.
-                $data['section_zero_show'] = 1;
-            }
-        }
+        // Do not show if entirely empty.
+        $data['section_zero_show'] = $seczero->summary || !empty($data['section_zero']['content']['course_modules']);
+        $data['section_zero']['is_collapsible'] = get_config('format_tiles', 'seczerocollapsible');
+
         if ($this->courseformatoptions['courseusesubtiles'] && $this->courseformatoptions['usesubtilesseczero']) {
             $data['section_zero']['useSubtiles'] = 1;
         } else {

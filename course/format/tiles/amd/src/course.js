@@ -575,7 +575,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
                 }
             } else {
-                // Storage not available so we dont know if sec zero was previously collapsed - expand it.
+                // Storage not available, so we don't know if sec zero was previously collapsed - expand it.
                 buttonHideSecZero.addClass(ClassNames.OPEN).removeClass(ClassNames.CLOSED);
                 sectionZero.slideDown(300);
                 $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
@@ -859,7 +859,6 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             $('#sectionlink-' + currentSectionNumber).focus();
                         });
 
-                        setSectionZeroFromUserPref();
                         // Most filter button related JS is in filter_buttons.js module which is required below.
 
                         if (isMultiSectionPage) {
@@ -956,21 +955,26 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     const sectionZero = $(Selector.SECTION_ZERO);
 
                     // When the user presses the button to collapse or expand Section zero (section at the top of the course).
-                    pageContent.on(Event.CLICK, Selector.HIDE_SEC0_BTN, function (e) {
-                        if (sectionZero.css(CSS.DISPLAY) === "none") {
-                            // Sec zero is collapsed so expand it on user click.
-                            sectionZero.slideDown(250);
-                            $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
-                            $(e.currentTarget).addClass(ClassNames.OPEN).removeClass(ClassNames.CLOSED);
-                            browserStorage.setSecZeroCollapseStatus("collapsed");
-                        } else {
-                            // Sec zero is expanded so collapse it on user click.
-                            sectionZero.slideUp(250);
-                            $(Selector.ABOVE_TILES).addClass('sec-zero-closed');
-                            $(e.currentTarget).addClass(ClassNames.CLOSED).removeClass(ClassNames.OPEN);
-                            browserStorage.setSecZeroCollapseStatus("expanded");
-                        }
-                    });
+                    // Button will absent if site admin has disabled sec zero collapse, in which case nothing to do here.
+                    const buttonHideSecZero = $(Selector.HIDE_SEC0_BTN);
+                    if (buttonHideSecZero.length) {
+                        setSectionZeroFromUserPref();
+                        pageContent.on(Event.CLICK, Selector.HIDE_SEC0_BTN, function (e) {
+                            if (sectionZero.css(CSS.DISPLAY) === "none") {
+                                // Sec zero is collapsed so expand it on user click.
+                                sectionZero.slideDown(250);
+                                $(Selector.ABOVE_TILES).removeClass('sec-zero-closed');
+                                $(e.currentTarget).addClass(ClassNames.OPEN).removeClass(ClassNames.CLOSED);
+                                browserStorage.setSecZeroCollapseStatus("collapsed");
+                            } else {
+                                // Sec zero is expanded so collapse it on user click.
+                                sectionZero.slideUp(250);
+                                $(Selector.ABOVE_TILES).addClass('sec-zero-closed');
+                                $(e.currentTarget).addClass(ClassNames.CLOSED).removeClass(ClassNames.OPEN);
+                                browserStorage.setSecZeroCollapseStatus("expanded");
+                            }
+                        });
+                    }
 
                     if (useFilterButtons) {
                         require(["format_tiles/filter_buttons"], function (filterButtons) {
