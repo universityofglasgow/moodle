@@ -171,6 +171,7 @@ $string['status_text_tobesubmitted'] = 'To be submitted';
 $string['status_text_tosubmit'] = 'To submit';
 $string['status_text_viewfeedback'] = 'View Feedback';
 $string['status_tobeconfirmed'] = 'To be confirmed';
+$string['status_unavailable'] = 'Not Available';
 $string['submissionnotopen'] = 'Submission not open';
 $string['submitted'] = ' submitted';
 $string['summative'] = 'Summative';
