@@ -268,9 +268,7 @@ class workshop_activity extends base {
             $statusobj->status_class = get_string('status_class_notsubmitted', 'block_newgu_spdetails');
 
             if (!empty($workshopphase)) {
-                $statusobj->grade_status = $whichgrader->gradeoverby;
-
-                if ($statusobj->grade_status == null) {
+                if ($workshopphase->gradeoverby == null) {
                     $statusobj->grade_status = get_string('status_submitted', 'block_newgu_spdetails');
                     $statusobj->status_class = get_string('status_class_submitted', 'block_newgu_spdetails');
                     $statusobj->status_text = get_string('status_text_submitted', 'block_newgu_spdetails');
