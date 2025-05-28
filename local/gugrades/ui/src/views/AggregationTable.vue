@@ -60,7 +60,7 @@
 
         <EasyDataTable
             v-if="!loading"
-            buttons-pagination
+            ref="dataTable"
             alternating
             sort-by="displayname"
             sort-type="asc"
@@ -71,6 +71,7 @@
             :items="users"
             :headers="headers"
             :filter-options="table_filter"
+            hide-footer
         >
 
             <!-- additional information in header cells -->
@@ -203,8 +204,10 @@
                     </div>
                 </div>
             </template>
-
         </EasyDataTable>
+
+        <!-- Implementation of our own accessible footer. -->
+        <CustomPagination v-bind="paginationProps" />
 
         <!-- display debugging/timing information -->
         <div v-if="debug.length > 0" class="my-3 pt-2 rounded border text-monospace bg-secondary text-dark">
@@ -229,11 +232,10 @@
     import OverrideGrade from '@/components/Aggregation/OverrideGrade.vue';
     import DismissableAlert from '@/components/DismissableAlert.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import CustomPagination from '@/components/CustomPagination.vue';
 
     const toast = useToast();
-
     const mstrings = inject('mstrings');
-
     const level1category = ref(0);
     const loading = ref(true);
     const aggregationsupported = ref(true);
@@ -263,6 +265,25 @@
     const firstname = ref('');
     const lastname = ref('');
     const staffuserid = ref(0);
+    // pagination related.
+    const dataTable = ref();
+    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
+    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
+    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
+    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
+    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
+    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
+    const isLastPage = computed(() => dataTable.value?.isLastPage);
+    const paginationProps = {
+        dataTable: dataTable,
+        currentPageFirstIndex: currentPageFirstIndex,
+        currentPageLastIndex: currentPageLastIndex,
+        clientItemsLength: clientItemsLength,
+        maxPaginationNumber: maxPaginationNumber,
+        currentPaginationNumber: currentPaginationNumber,
+        isFirstPage: isFirstPage,
+        isLastPage: isLastPage
+    }
 
     /**
      * Table name filter

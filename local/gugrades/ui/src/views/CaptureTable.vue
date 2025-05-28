@@ -64,6 +64,7 @@
 
                 <!-- Note. The array 'users' contains the lines of data. One record for each user -->
                 <EasyDataTable
+                    ref="dataTable"
                     buttons-pagination
                     alternating
                     sort-by="displayname"
@@ -77,6 +78,7 @@
                     :header-item-class-name="header_item_class"
                     :filter-options="table_filter"
                     @xxupdate-page-items="pagination_clicked()"
+                    hide-footer
                     >
 
                     <!-- add header text and edit cog next to cell if required -->
@@ -157,6 +159,9 @@
                     </template>
                 </EasyDataTable>
 
+                <!-- Implementation of our own accessible footer. -->
+                <CustomPagination v-bind="paginationProps" />
+
                 <!-- button for saving cell edits -->
                 <div class="pb-1 clearfix mt-2" v-if="ineditcellmode">
                     <button class="btn btn-warning float-right mr-1" @click="edit_cell_cancelled">{{ mstrings.cancel }}</button>
@@ -182,6 +187,7 @@
     import { useWindowScroll, watchDebounced } from '@vueuse/core';
     import PleaseWait from '@/components/PleaseWait.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import CustomPagination from '@/components/CustomPagination.vue';
 
     const users = ref([]);
     const userids = ref([]);
@@ -226,10 +232,27 @@
     const firstname = ref('');
     const lastname = ref('');
     const staffuserid = ref(0);
-
     const toast = useToast();
-
     const emit = defineEmits(['refreshlogo']);
+    // pagination related.
+    const dataTable = ref();
+    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
+    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
+    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
+    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
+    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
+    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
+    const isLastPage = computed(() => dataTable.value?.isLastPage);
+    const paginationProps = {
+        dataTable: dataTable,
+        currentPageFirstIndex: currentPageFirstIndex,
+        currentPageLastIndex: currentPageLastIndex,
+        clientItemsLength: clientItemsLength,
+        maxPaginationNumber: maxPaginationNumber,
+        currentPaginationNumber: currentPaginationNumber,
+        isFirstPage: isFirstPage,
+        isLastPage: isLastPage
+    }
 
     /**
      * Table name filter

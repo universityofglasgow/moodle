@@ -10,7 +10,13 @@
                 {{ mstrings.noconversionmaps }}
             </div>
 
-            <EasyDataTable v-if="loaded" :headers="headers" :items="maps">
+            <EasyDataTable 
+                v-if="loaded" 
+                :headers="headers" 
+                :items="maps"
+                ref="dataTable"
+                hide-footer
+            >
                 <template #item-inuse="map">
                     <span v-if="map.inuse">{{ mstrings.yes }}</span>
                     <span v-else>{{ mstrings.no }}</span>
@@ -23,6 +29,9 @@
                     </div>
                 </template>
             </EasyDataTable>
+
+            <!-- Slightly more accessible footer -->
+            <CustomPagination v-bind="paginationProps" />
 
             <div class="mt-4">
                 <button class="btn btn-primary mr-1" @click="add_map">{{ mstrings.addconversionmap }}</button>
@@ -61,13 +70,14 @@
 </template>
 
 <script setup>
-    import {ref, inject, onMounted} from '@vue/runtime-core';
+    import {ref, computed, inject, onMounted} from '@vue/runtime-core';
     import { useToast } from "vue-toastification";
     import EditMap from '@/components/Conversion/EditMap.vue';
     import ConfirmModal from '@/components/ConfirmModal.vue';
     import { saveAs } from 'file-saver';
     import { useFileDialog } from '@vueuse/core';
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import CustomPagination from '@/components/CustomPagination.vue';
 
     const maps = ref([]);
     const editmap = ref(false);
@@ -78,10 +88,27 @@
     const showimportmodal = ref(false);
     const mstrings = inject('mstrings');
     const debug = ref({});
-
     const toast = useToast();
-
     const headers = ref([]);
+    // pagination related.
+    const dataTable = ref();
+    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
+    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
+    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
+    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
+    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
+    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
+    const isLastPage = computed(() => dataTable.value?.isLastPage);
+    const paginationProps = {
+        dataTable: dataTable,
+        currentPageFirstIndex: currentPageFirstIndex,
+        currentPageLastIndex: currentPageLastIndex,
+        clientItemsLength: clientItemsLength,
+        maxPaginationNumber: maxPaginationNumber,
+        currentPaginationNumber: currentPaginationNumber,
+        isFirstPage: isFirstPage,
+        isLastPage: isLastPage
+    }
 
     const { files, open, reset } = useFileDialog({
         accept: 'text/json', // Set to accept only json files
