@@ -124,7 +124,7 @@
                 el = ((document.getElementsByName('prev').length) ? 'prev' : 1);
             break;
             default:
-                el = ((elemname +1 > maxPaginationNumber.value) ? ((document.getElementsByName('next').length) ? 'next': ((document.getElementsByName('prev').length) ? 'prev' : 1)) : elemname +1);
+                el = ((elemname +1 > maxPaginationNumber.value) ? ((document.getElementsByName('next').length) ? 'next' : ((document.getElementsByName('prev').length) ? 'prev' : 1)) : elemname +1);
             break;
         }
         let tmp = document.getElementsByName(el);
@@ -145,6 +145,6 @@
             case 39: 
                 moveRight(elemname);
             break;
-      }
+        }
     }
 </script>
