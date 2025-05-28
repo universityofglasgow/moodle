@@ -243,18 +243,24 @@ class workshop_activity extends base {
                     'workshopid' => $workshopinstance->id,
                     'authorid' => $userid,
                 ]);
-                $whichgrader = $workshopphase->gradeoverby;
+                if (!empty($workshopphase)) {
+                    $whichgrader = $workshopphase->gradeoverby;
+                }
             } else if ($this->gradeitem->itemnumber == 1) {
                 // We need to get the submissionid via the submissions table.
                 $fk = $DB->get_record('workshop_submissions', [
                     'workshopid' => $workshopinstance->id,
                     'authorid' => $userid,
                 ]);
-                $workshopphase = $DB->get_record('workshop_assessments', [
-                    'submissionid' => $fk->id,
-                    'reviewerid' => $userid,
-                ]);
-                $whichgrader = $workshopphase->gradinggradeoverby;
+                if (!empty($fk)) {
+                    $workshopphase = $DB->get_record('workshop_assessments', [
+                        'submissionid' => $fk->id,
+                        'reviewerid' => $userid,
+                    ]);
+                    if (!empty($workshopphase)) {
+                        $whichgrader = $workshopphase->gradinggradeoverby;
+                    }
+                }
             }
 
             $statusobj->grade_status = get_string('status_notsubmitted', 'block_newgu_spdetails');
