@@ -169,7 +169,8 @@ class quiz_activity extends base {
             if ($finishedattempt->state == 'finished') {
                 // Work out if we can display the grade, taking account what data is available in each attempt.
                 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
-                list($someoptions, $alloptions) = quiz_get_combined_reviewoptions($quizinstance, $finishedattempt);
+                $attempts[] = $finishedattempt;
+                list($someoptions, $alloptions) = quiz_get_combined_reviewoptions($quizinstance, $attempts);
                 $activitygrade->gradecolumn = $someoptions->marks >= \question_display_options::MARK_AND_MAX &&
                 quiz_has_grades($quizinstance);
                 $activitygrade->feedbackcolumn = quiz_has_feedback($quizinstance) && $alloptions->overallfeedback;
@@ -415,7 +416,8 @@ class quiz_activity extends base {
                     // Quiz setup has a feature which controls the visibility of grades.
                     // We need to check this here also.
                     // Work out if we can display the grade, taking account what data is available in each attempt.
-                    list($someoptions, $alloptions) = quiz_get_combined_reviewoptions($quizinstance, $finishedattempt);
+                    $attempts[] = $finishedattempt;
+                    list($someoptions, $alloptions) = quiz_get_combined_reviewoptions($quizinstance, $attempts);
                     $statusobj->gradecolumn = $someoptions->marks >= \question_display_options::MARK_AND_MAX &&
                     quiz_has_grades($quizinstance);
                     $statusobj->feedbackcolumn = quiz_has_feedback($quizinstance) && $alloptions->overallfeedback;
