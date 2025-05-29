@@ -830,6 +830,7 @@ class course {
                 $activities = self::get_activities($course->id);
                 if ($activities) {
                     foreach ($activities as $activityitem) {
+                        $isgradehidden = false;
                         if (!in_array($activityitem->itemmodule, \block_newgu_spdetails\activity::$excludedactivities)) {
                             $cm = get_coursemodule_from_instance($activityitem->itemmodule, $activityitem->iteminstance,
                             $activityitem->courseid);
