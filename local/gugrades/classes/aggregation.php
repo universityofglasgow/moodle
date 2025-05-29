@@ -411,7 +411,7 @@ class aggregation {
 
         // If there are any left...
         foreach ($items as $item) {
-            $DB->delete_record('local_gugrades_grade', ['id' => $item->id]);
+            $DB->delete_records('local_gugrades_grade', ['id' => $item->id]);
         }
 
         return $returnitem;
