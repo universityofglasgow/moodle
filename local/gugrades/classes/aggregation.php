@@ -381,6 +381,43 @@ class aggregation {
     }
 
     /**
+     * Get CATEGORY grade and check/fix any duplication that's crept in
+     * Yes - this is a terrible bodge
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param int $userid
+     * @return object
+     */
+    private static function get_check_category(int $courseid, int $gradeitemid, int $userid) {
+        global $DB;
+
+        $items = $DB->get_records('local_gugrades_grade',
+            [
+                'courseid' => $courseid,
+                'gradeitemid' => $gradeitemid,
+                'gradetype' => 'CATEGORY',
+                'userid' => $userid,
+                'iscurrent' => 1,
+            ]);
+
+        // There must be at least one
+        $nitems = count($items);
+        if ($nitems == 0) {
+            throw new \moodle_exception('No CATEGORY record found');
+        }
+
+        // Get the item we are going to return
+        $returnitem = array_shift($items);
+
+        // If there are any left...
+        foreach ($items as $item) {
+            $DB->delete_record('local_gugrades_grade', ['id' => $item->id]);
+        }
+
+        return $returnitem;
+}
+
+    /**
      * Add aggregation data for a single user
      * @param int $courseid
      * @param int gradecategoryid
@@ -480,14 +517,16 @@ class aggregation {
 
         // Get original data for "aggregated category" as we may not have got it elsewhere.
         // This is needed if no aggregation is performed.
-        $item = $DB->get_record('local_gugrades_grade',
-            [
-                'courseid' => $courseid,
-                'gradeitemid' => $gradecatitem->id,
-                'gradetype' => 'CATEGORY',
-                'userid' => $user->id,
-                'iscurrent' => 1,
-            ], '*', MUST_EXIST);
+        // This is messy :( but check for duplicate CATEGORY grades here and fix. 
+        $item = self::get_check_category($courseid, $gradecatitem->id, $user->id);
+        //$item = $DB->get_record('local_gugrades_grade',
+        //    [
+        //        'courseid' => $courseid,
+        //        'gradeitemid' => $gradecatitem->id,
+        //        'gradetype' => 'CATEGORY',
+        //        'userid' => $user->id,
+        //        'iscurrent' => 1,
+        //    ], '*', MUST_EXIST);
         $user->rawgrade = $item->rawgrade;
         $user->total = $item->convertedgrade;
         $user->displaygrade = $converted && empty($item->admingrade) ? $item->displaygrade . ' (' . $item->rawgrade . ')' : $item->displaygrade;
