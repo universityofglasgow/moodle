@@ -38,11 +38,17 @@ if ($hassiteconfig) {
         // Get current site-wide settings.
         $scales = $DB->get_records('scale', ['courseid' => 0]);
         foreach ($scales as $scale) {
+
             $name = "local_gugrades/scalevalue_" . $scale->id;
 
             $items = explode(',', $scale->scale);
             $default = '';
             $typedefault = '';
+
+            // Scale MUST have either 23 or 8 items exactly to be valid
+            if ((count($items) != 23) && (count($items) != 8)) {
+                continue;
+            }
 
             // If id = 1 or 2 then leave them blank (built in scales).
             if ($scale->id > 2) {
@@ -102,6 +108,13 @@ if ($hassiteconfig) {
         70
     );
     $settingspage->add($mapbsetting);
+
+    /**
+     * General settings
+     */
+    $settingspage->add(new admin_setting_heading('local_gugrades/headinggeneral',
+    new lang_string('generalsettings', 'local_gugrades'),
+    new lang_string('generalsettingsinfo', 'local_gugrades')));
 
     // Maximum number of participants in course.
     $maxparticipants = new admin_setting_configtext(
