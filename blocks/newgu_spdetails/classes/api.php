@@ -298,14 +298,16 @@ class api extends external_api {
             'submissionend',
         ];
         $key = '';
-        foreach ($cm->customdata as $k => $v) {
-            if (in_array($k, $keys)) {
-                $key = $k;
-                break;
+        if ($cm->customdata) {
+            foreach ($cm->customdata as $k => $v) {
+                if (in_array($k, $keys)) {
+                    $key = $k;
+                    break;
+                }
             }
-        }
-        if ($key != null) {
-            $activitydate = $cm->customdata[$key];
+            if ($key != null) {
+                $activitydate = $cm->customdata[$key];
+            }
         }
 
         return $activitydate;

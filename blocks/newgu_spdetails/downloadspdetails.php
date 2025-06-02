@@ -379,6 +379,7 @@ EOD;
 
     $c = $thtml;
     $doc->writeHTML($c, true, false, false, false, '');
+    ob_end_clean();
     $doc->Output($strcoursestype . " Report - " . $myfirstlastname . '_' . date("d-m-Y") . '.pdf', 'D');
 
     exit(0);
