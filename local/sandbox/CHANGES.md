@@ -4,6 +4,12 @@ moodle-local_sandbox
 Changes
 -------
 
+### v4.5-r2
+
+* 2025-05-29 - Feature: Add admin setting to control if the course fullname should be reset as well or not, resolves #6
+* 2025-05-29 - Improvement: Print restore precheck errors to the scheduled task log, resolves #9
+* 2025-05-29 - Bugfix: Backup directory path was incorrect if CFG->backuptempdir is set, resolves #14.
+
 ### v4.5-r1
 
 * 2024-10-14 - Upgrade: Adopt changes from MDL-82183 and use new \core\output\html_writer
