@@ -644,3 +644,19 @@ Other
 4.5.0.10 (2025052751)
 =====================
 - Issue 268 add missing cachedef string
+
+4.5.0.11 (2025052752)
+=====================
+- Edit admin settings strings re animated navigation
+
+4.5.0.12 (2025052753)
+=====================
+- Remove format.js deprecated since 4.0 - see https://tracker.moodle.org/browse/MDL-74778.
+
+4.5.0.13 (2025052754)
+=====================
+- Remove redundant behat test steps
+
+4.5.0.14 (2025052755)
+=====================
+- Fix issue when clicking sub-section headings in course index

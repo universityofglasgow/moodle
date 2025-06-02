@@ -205,7 +205,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             if (html) {
                 // If section content is reloaded following a completion change, server does not know if sub-sections were expanded.
                 // We keep a local record of sub-sections which were expanded.
-                // When we get HTML from server, we adjust it to re-expand ny subsections which were expanded before displaying.
+                // When we get HTML from server, we adjust it to re-expand any subsections which were expanded before displaying.
                 const newHtml = $(html);
                 const subSections = newHtml.find('li.modtype_subsection');
                 subSections.each((i) => {
@@ -215,6 +215,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                         // If the user has previously expanded the section, its ID will be in expandedSubSectionIds.
                         const shouldBeExpanded = expandedSubSectionIds[subSectionId] !== undefined;
                         if (shouldBeExpanded) {
+                            // We are manipulating the new HTML before it's added to the DOM so cannot use .collapse('show').
                             subSection.find('a[data-toggle="collapse"]')
                                 .removeClass('collapsed').attr('aria-expanded', true);
                             subSection.find('.course-content-item-content')
@@ -229,8 +230,9 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                 // Keep a local record of which are expanded.
                 contentArea.find('li.modtype_subsection a[data-toggle="collapse"]').on(Event.CLICK, (e) => {
                     const clickedButton = $(e.currentTarget);
-                    const isCollapsed = clickedButton.hasClass('collapsed');
                     const subSectionId = clickedButton.data('subSectionId');
+                    const subSectionContent = $('#coursecontentcollapse' + subSectionId);
+                    const isCollapsed = subSectionContent && subSectionContent.length && !subSectionContent.hasClass('show');
                     if (isCollapsed && expandedSubSectionIds[subSectionId] === undefined) {
                         // Sub-section is being expanded - record that fact locally.
                         expandedSubSectionIds[subSectionId] = true;
@@ -662,7 +664,26 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                             if (sectionNumber === 0) {
                                 cancelTileSelections(0);
                             } else {
-                                populateAndExpandSection(courseContextId, sec.data('id'), sectionNumber);
+                                const subSectionParent = sec.parent().closest('.courseindex-section');
+                                if (subSectionParent && subSectionParent.length) {
+                                    // A subsection has been clicked - need to expand parent, then the subsection.
+                                    populateAndExpandSection(
+                                        courseContextId, subSectionParent.data('id'), subSectionParent.data('number')
+                                    );
+                                    // Need to wait for parent section content before we can expand subsection.
+                                    // Not ideal to use a timeout - temporary approach pending wider refactor.
+                                    setTimeout(() => {
+                                        const subSectionContent = $('#coursecontentcollapse' + sec.data('id'));
+                                        const needsExpanding = subSectionContent && subSectionContent.length
+                                            && !subSectionContent.hasClass('show');
+                                        if (needsExpanding) {
+                                            subSectionContent.collapse('show');
+                                            expandedSubSectionIds[sec.data('id')] = true;
+                                        }
+                                    }, 1000);
+                                } else {
+                                    populateAndExpandSection(courseContextId, sec.data('id'), sectionNumber);
+                                }
                             }
                         }
                     }
