@@ -45,6 +45,12 @@
                 </div>
             </div>
 
+            <!-- new drag/drop stuff -->
+            <div class="mt-3 p-4 mb-3 border rounded">
+
+                <FileDragDrop></FileDragDrop>
+            </div>
+
             <!-- Test-run / confirm page -->
             <div v-if="pagestate == 'showtestrun'">
                 <p>{{ mstrings.csvtestrun }}</p>
@@ -108,6 +114,7 @@
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import { saveAs } from 'file-saver';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import FileDragDrop from '@/components/FileDragDrop.vue';
     import { useFileDialog } from '@vueuse/core';
 
     const showcsvmodal = ref(false);
@@ -132,7 +139,7 @@
     const toast = useToast();
 
     const { files, open, reset } = useFileDialog({
-        accept: 'text/csv', // Set to accept only json files
+        accept: 'text/csv', // Set to accept only csv files
         multiple: false,
         directory: false, // Select directories instead of files if set true
     });
