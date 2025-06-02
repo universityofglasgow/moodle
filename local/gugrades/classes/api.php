@@ -1645,6 +1645,17 @@ class api {
     }
 
     /**
+     * Reset all caches
+     */
+    public static function reset_all_caches() {
+        $caches = ['gradeitems', 'availableusers', 'useraggdata', 'progress', 'provisionalgrade'];
+        foreach ($caches as $cache) {
+            $cache = \cache::make('local_gugrades', $cache);
+            $cache->purge();
+        }        
+    }
+
+    /**
      * Reset MyGrades for course
      * @param int $courseid
      */
@@ -1678,11 +1689,7 @@ class api {
         $GRADEITEMS = [];
 
         // As this will be a rarely used function we will take the liberty of purging the caches. 
-        $caches = ['gradeitems', 'availableusers', 'useraggdata', 'progress', 'provisionalgrade'];
-        foreach ($caches as $cache) {
-            $cache = \cache::make('local_gugrades', $cache);
-            $cache->purge();
-        }
+        self::reset_all_caches();
     }
 
     /**

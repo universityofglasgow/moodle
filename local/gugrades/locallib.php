@@ -134,4 +134,8 @@ function custom_course_field() {
         $field->timemodified = time();
         $DB->insert_record('customfield_field', $field);
     }
+
+    // Reset caches
+    \local_gugrades\api::reset_all_caches();
 }
+
