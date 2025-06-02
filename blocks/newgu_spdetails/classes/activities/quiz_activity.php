@@ -379,7 +379,7 @@ class quiz_activity extends base {
             if ($finishedattempts) {
                 // Given that there can be 1 to multiple attempts for a given quiz, pick off the last one
                 // here to see whether it's been abandoned or has since received a grade if its finished.
-                $finishedattempt = array_pop($finishedattempts);
+                $finishedattempt = end($finishedattempts);
 
                 if ($finishedattempt->state == 'abandoned') {
                     if ($attemptsallowed > 0 && ($finishedattempt->attempt >= $attemptsallowed)) {
