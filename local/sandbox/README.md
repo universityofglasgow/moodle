@@ -1,7 +1,7 @@
 moodle-local_sandbox
 ====================
 
-[![Moodle Plugin CI](https://github.com/moodle-an-hochschulen/moodle-local_sandbox/workflows/Moodle%20Plugin%20CI/badge.svg?branch=main)](https://github.com/moodle-an-hochschulen/moodle-local_sandbox/actions?query=workflow%3A%22Moodle+Plugin+CI%22+branch%3Amain)
+[![Moodle Plugin CI](https://github.com/moodle-an-hochschulen/moodle-local_sandbox/actions/workflows/moodle-plugin-ci.yml/badge.svg?branch=MOODLE_405_STABLE)](https://github.com/moodle-an-hochschulen/moodle-local_sandbox/actions?query=workflow%3A%22Moodle+Plugin+CI%22+branch%3AMOODLE_405_STABLE)
 
 Moodle plugin which programatically restores courses to predefined course states. It can be used to provide playground moodle courses which will be cleaned periodically
 
@@ -57,6 +57,9 @@ The filearea contains the file mylittlecourse.mbz. local_sandbox looks at the fi
 Additionally, in this section, there is an option to set the course start date to today instead of setting it to the date saved in the course backup file. Use this option if you need to provide playground courses in Moodle which pretend to be up-to-date.
 
 Additionally, in this section, there is an option to let local_sandbox keep the course ID when a course is restored. See the "How this plugin works" section below for details.
+
+Additionally, in this section, there is an option to let local_sandbox keep the course name when a course is restored. This setting is enabled by default and can be particularly helpful if you plan to reset multiple courses with distinct names from identical backup files.
+
 
 ### 3. Restore settings
 

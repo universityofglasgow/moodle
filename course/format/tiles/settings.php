@@ -230,7 +230,7 @@ if ($ADMIN->fulltree) {
     $settingscategory->add($page);
 
     // Javascript navigation settings.
-    $page = new admin_settingpage('format_tiles/tab-jsnav', get_string('jsnavsettings', 'format_tiles'));
+    $page = new admin_settingpage('format_tiles/tab-jsnav', get_string('jsactivate', 'format_tiles'));
 
     $name = 'format_tiles/usejavascriptnav';
     $title = get_string('usejavascriptnav', 'format_tiles');
