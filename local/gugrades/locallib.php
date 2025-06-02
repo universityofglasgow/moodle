@@ -80,6 +80,9 @@ function scale_setting_updated($name) {
             $DB->insert_record('local_gugrades_scaletype', ['scaleid' => $scale->id]);
         }
     }
+
+    // Reset caches
+    \local_gugrades\api::reset_all_caches();
 }
 
 /**
