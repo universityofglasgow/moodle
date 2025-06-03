@@ -62,6 +62,8 @@ class import_grades_users extends external_api {
      */
     public static function execute(int $courseid, int $gradeitemid, bool $additional, string $fillns, array $userlist) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

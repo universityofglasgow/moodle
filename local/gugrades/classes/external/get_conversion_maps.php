@@ -53,6 +53,8 @@ class get_conversion_maps extends external_api {
     public static function execute($courseid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

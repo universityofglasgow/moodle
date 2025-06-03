@@ -54,6 +54,8 @@ class is_mygrades_available extends external_api {
      */
     public static function execute($courseid) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

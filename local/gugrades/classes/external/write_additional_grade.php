@@ -71,6 +71,8 @@ class write_additional_grade extends external_api {
     public static function execute($courseid, $gradeitemid, $userid, $reason, $other, $admingrade, $scale, $grade, $notes, $delete = false) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

@@ -54,6 +54,8 @@ class recalculate extends external_api {
     public static function execute($courseid, $gradecategoryid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

@@ -65,6 +65,8 @@ class get_aggregation_export_data extends external_api {
      */
     public static function execute($courseid, $gradecategoryid, $groupid, $plugin, $form) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

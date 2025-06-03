@@ -62,6 +62,8 @@ class get_capture_page extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $firstname, $lastname, $groupid, $viewfullnames) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

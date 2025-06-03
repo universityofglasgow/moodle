@@ -54,6 +54,8 @@ class get_user_picture_url extends external_api {
      */
     public static function execute(int $courseid, int $userid) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

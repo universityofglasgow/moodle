@@ -58,6 +58,8 @@ class dashboard_get_courses extends external_api {
      */
     public static function execute($userid, $current, $past, $sort) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'userid' => $userid,

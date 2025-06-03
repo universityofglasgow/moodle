@@ -55,6 +55,8 @@ class delete_conversion_map extends external_api {
     public static function execute($courseid, $mapid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

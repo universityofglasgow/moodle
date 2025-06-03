@@ -56,6 +56,8 @@ class resit_required extends external_api {
      */
     public static function execute($courseid, $userid, $required) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

@@ -50,6 +50,9 @@ class get_all_strings extends external_api {
      * @return array
      */
     public static function execute() {
+
+        \local_gugrades\development::increase_debugging();
+
         return \local_gugrades\api::get_all_strings();
     }
 

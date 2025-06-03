@@ -58,6 +58,8 @@ class show_hide_grade extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $userid, $hide) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

@@ -65,6 +65,8 @@ class get_capture_export_data extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $groupid, $viewfullnames, $options) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

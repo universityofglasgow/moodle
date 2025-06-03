@@ -53,6 +53,8 @@ class get_activities extends external_api {
      */
     public static function execute($courseid, $categoryid) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'categoryid' => $categoryid]);
         $context = \context_course::instance($courseid);

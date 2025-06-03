@@ -57,6 +57,8 @@ class release_grades extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $groupid, $revert) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
