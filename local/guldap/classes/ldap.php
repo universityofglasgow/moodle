@@ -30,6 +30,12 @@ require_once($CFG->libdir.'/ldaplib.php');
 
 class ldap {
 
+    private $config = null;
+
+    private $ldapconns = null;
+
+    private $ldapconnection = null;
+
     /**
      * Constructor.
      */
@@ -108,11 +114,11 @@ class ldap {
 
     /**
      * Process weirdly formatted LDAP results into something
-     * We can display. 
+     * We can display.
      * @param array $entries
      */
     private function format_ldap($entries) {
-    
+
         // First entry is the count, don't need it
         array_shift($entries);
 
@@ -132,7 +138,7 @@ class ldap {
                 array_shift($value);
 
                 // Either store the single data value
-                // Or the array of data. 
+                // Or the array of data.
                 if (count($value) == 1) {
                     $newentry[$name] = $value[0];
                 } else {
@@ -140,7 +146,7 @@ class ldap {
                 }
             }
 
-            // Add dn value, which doesn't look like other data. 
+            // Add dn value, which doesn't look like other data.
             $newentry['dn'] = $entry['dn'];
 
             $formattedldap[] = $newentry;
