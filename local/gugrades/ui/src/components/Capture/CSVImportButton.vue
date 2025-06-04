@@ -40,15 +40,9 @@
                         </div>
                     </div>
                     <div class="mt-2">
-                        <button class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
+                        <button :disabled="!files" class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- new drag/drop stuff -->
-            <div class="mt-3 p-4 mb-3 border rounded">
-
-                <FileDragDrop></FileDragDrop>
             </div>
 
             <!-- Test-run / confirm page -->
@@ -114,7 +108,6 @@
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import { saveAs } from 'file-saver';
     import PleaseWait from '@/components/PleaseWait.vue';
-    import FileDragDrop from '@/components/FileDragDrop.vue';
     import { useFileDialog } from '@vueuse/core';
 
     const showcsvmodal = ref(false);
