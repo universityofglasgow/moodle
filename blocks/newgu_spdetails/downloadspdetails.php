@@ -110,7 +110,6 @@ if ($coursestype) {
     $spdetailspdf .= "</tr>";
 
     $row = 6;
-    $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
     foreach ($courses as $course) {
         // Make sure we are enrolled as a student on this course.
         if (\block_newgu_spdetails\api::return_isstudent($course->id, $USER->id)) {
@@ -188,8 +187,7 @@ if ($coursestype) {
                     $tmpactivities[] = $activity;
                 }
                 $activities = $tmpactivities;
-                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
-                $ltiactivities, '');
+                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype, '');
             }
 
             if (!$mygradesenabled) {
@@ -198,8 +196,7 @@ if ($coursestype) {
                     $tmpactivities[] = $activity;
                 }
                 $activities = $tmpactivities;
-                $activitydata = \block_newgu_spdetails\activity::process_default_items($activities, $coursestype,
-                $ltiactivities, '', true);
+                $activitydata = \block_newgu_spdetails\activity::process_default_items($activities, $coursestype, '', true);
             }
 
             if ($activitydata) {

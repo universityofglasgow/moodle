@@ -567,7 +567,6 @@ class course {
         }
 
         $assignmentdata = [];
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         foreach ($courses as $course) {
             // Make sure we are enrolled as a student on this course.
             if (\block_newgu_spdetails\api::return_isstudent($course->id, $USER->id)) {
@@ -583,15 +582,6 @@ class course {
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
                                 if ($cm->uservisible) {
-                                    // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                    // Note that LTI activities only become a "gradable" activity when they have
-                                    // been set to accept grades!
-                                    if ($activityitem->itemmodule == 'lti') {
-                                        if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
-                                            continue;
-                                        }
-                                    }
-
                                     // Get the activity based on its type...
                                     $activity = \block_newgu_spdetails\activity::activity_factory($activityitem->id,
                                     $activityitem->courseid, 0);
@@ -682,7 +672,6 @@ class course {
         $assessmentsdueheader = get_string('header_assessmentsdue', 'block_newgu_spdetails', $option);
 
         $assessmentdata = [];
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         foreach ($courses as $course) {
             // Make sure we are enrolled as a student on this course.
             if (\block_newgu_spdetails\api::return_isstudent($course->id, $USER->id)) {
@@ -697,15 +686,6 @@ class course {
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
                                 if ($cm->uservisible) {
-                                    // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                    // Note that LTI activities only become a "gradable" activity when they have
-                                    // been set to accept grades!
-                                    if ($item->itemmodule == 'lti') {
-                                        if (is_array($ltiactivities) && !in_array($item->iteminstance, $ltiactivities)) {
-                                            continue;
-                                        }
-                                    }
-
                                     // Get the activity based on its type...
                                     $activityitem = \block_newgu_spdetails\activity::activity_factory($item->id,
                                     $item->courseid, 0);
@@ -823,7 +803,6 @@ class course {
             return $stats;
         }
 
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         foreach ($currentcourses as $course) {
             // Make sure we are enrolled as a student on this course.
             if (\block_newgu_spdetails\api::return_isstudent($course->id, $USER->id)) {
@@ -868,14 +847,6 @@ class course {
                                 }
                                 // Everything else goes here.
                                 if ($cm->uservisible && !$done) {
-                                    // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                    // Note that LTI activities only become a "gradable" activity when they have
-                                    // been set to accept grades!
-                                    if ($activityitem->itemmodule == 'lti') {
-                                        if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
-                                            continue;
-                                        }
-                                    }
                                     // Get the activity based on its status.
                                     $gradestatus = \block_newgu_spdetails\grade::get_grade_status_and_feedback(
                                         $activityitem->courseid,
@@ -978,7 +949,6 @@ class course {
         $assessmentsummaryheader = get_string('header_assessmentsummary', 'block_newgu_spdetails', $option);
 
         $assessmentdata = [];
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         foreach ($courses as $course) {
             // Make sure we are enrolled as a student on this course.
             if (\block_newgu_spdetails\api::return_isstudent($course->id, $USER->id)) {
@@ -993,15 +963,6 @@ class course {
                             $cms = $modinfo->get_cms();
                             if (array_key_exists($cm->id, $cms)) {
                                 $cm = $modinfo->get_cm($cm->id);
-                                // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                                // Note that LTI activities only become a "gradable" activity when they have
-                                // been set to accept grades!
-                                if ($activityitem->itemmodule == 'lti') {
-                                    if (is_array($ltiactivities) && !in_array($activityitem->iteminstance, $ltiactivities)) {
-                                        continue;
-                                    }
-                                }
-
                                 // We had overlooked that we needed to check the course type when collating these numbers.
                                 // If the course that this activity belongs to is a MyGrades course, first check if we have
                                 // any 'Released' grades, for the Graded section.

@@ -227,56 +227,6 @@ class api extends external_api {
     }
 
     /**
-     * Method to return LTI activities selected to be included on the dashboard.
-     * These are selected via the MyGrades plugin Admin Settings page.
-     *
-     * @return array
-     */
-    public static function get_lti_activities(): array {
-        global $DB;
-
-        $configvalues = $DB->get_records_sql(
-            "SELECT name FROM {config} WHERE name LIKE :configname AND value = :configvalue",
-            [
-                "configname" => "%block_newgu_spdetails_include_%",
-                "configvalue" => 1,
-            ]
-        );
-
-        if (!$configvalues) {
-            return [];
-        }
-
-        $configltitypes = [];
-        foreach ($configvalues as $configlti) {
-            $name = $configlti->name;
-            $namepieces = explode("block_newgu_spdetails_include_", $name);
-            $ltitype = $namepieces[1];
-            $configltitypes[] = $ltitype;
-        }
-
-        if (empty($configltitypes)) {
-            return [];
-        }
-
-        $ltitypesparams = implode(",", $configltitypes);
-        $ltitypes = $DB->get_records_sql(
-            "SELECT id FROM {lti} WHERE typeid IN ($ltitypesparams)"
-        );
-
-        if (empty($ltitypes)) {
-            return [];
-        }
-
-        $ltiactivities = [];
-        foreach ($ltitypes as $ltitype) {
-            $ltiactivities[] = $ltitype->id;
-        }
-
-        return $ltiactivities;
-    }
-
-    /**
      * Method to return the value of the notional 'due' date column of the activity.
      *
      * The customdata property is an array of keys that we need to search and match.

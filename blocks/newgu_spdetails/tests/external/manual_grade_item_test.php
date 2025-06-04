@@ -215,10 +215,9 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             }
         }
 
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
-            $ltiactivities, 'summative');
+            'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
         $expectedicontext = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
         $expectedstatus = get_string('status_graded', 'block_newgu_spdetails');
@@ -317,10 +316,9 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             }
         }
 
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
-            $ltiactivities, 'summative');
+            'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
         $expectedicontext = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
         $expectedstatus = get_string('status_graded', 'block_newgu_spdetails');
@@ -418,10 +416,9 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             }
         }
 
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
-            $ltiactivities, 'summative');
+            'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
         $expectedicontext = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
         $expectedstatus = get_string('status_graded', 'block_newgu_spdetails');
@@ -526,10 +523,9 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             }
         }
 
-        $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
         $activities = api::get_activities($this->mygradescourse->id, $this->mygradessummativecategory->id);
         $processedmygradesitem = $this->activityapi->process_mygrades_items($gradeitems, $activities->items, 'current',
-            $ltiactivities, 'summative');
+            'summative');
         $processedmanualgradeitem = $processedmygradesitem[0];
         $expectedicontext = get_string('hidden_icon_alt_text', 'block_newgu_spdetails');
         $expectedstatus = get_string('status_graded', 'block_newgu_spdetails');

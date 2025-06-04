@@ -204,10 +204,8 @@ class activity {
                 $data['hasgradecategory'] = true;
             }
             if ($gradeitems) {
-                $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
                 $activitydata = [];
-                $activitydata = self::process_mygrades_items($gradeitems, $activityitems->items, $activetab, $ltiactivities,
-                $assessmenttype);
+                $activitydata = self::process_mygrades_items($gradeitems, $activityitems->items, $activetab, $assessmenttype);
                 $data['courseitems'] = array_merge((array) ((!empty($data['courseitems'])) ? $data['courseitems'] : []), (array)
                     $activitydata);
                 $data['hascourseitems'] = true;
@@ -232,11 +230,9 @@ class activity {
             }
 
             if ($activityitems->items) {
-                $ltiactivities = \block_newgu_spdetails\api::get_lti_activities();
                 $activitydata = [];
                 $displayweights = self::get_display_activity_item_weights($weighttowardscourse, $activityitems->category);
-                $activitydata = self::process_default_items($activityitems->items, $activetab, $ltiactivities, $assessmenttype,
-                $displayweights);
+                $activitydata = self::process_default_items($activityitems->items, $activetab, $assessmenttype, $displayweights);
                 $data['courseitems'] = array_merge((array) ((!empty($data['courseitems'])) ? $data['courseitems'] : []), (array)
                     $activitydata);
                 $data['hascourseitems'] = true;
@@ -262,12 +258,11 @@ class activity {
      * @param array $mygradesitems
      * @param array $tmpgradeitems
      * @param string $activetab
-     * @param array $ltiactivities
      * @param string $assessmenttype
      * @return array
      */
     public static function process_mygrades_items(array $mygradesitems, array $tmpgradeitems, string $activetab,
-    array $ltiactivities, string $assessmenttype): array {
+    string $assessmenttype): array {
 
         global $CFG;
         $mygradesdata = [];
@@ -473,8 +468,7 @@ class activity {
                         if ($tmpgradecategory = \grade_category::fetch(['id' => $tmpgradeitem->categoryid, 'hidden' => 0])) {
                             $displayweights = self::get_display_activity_item_weights($gradecategoryweight, $tmpgradecategory);
                         }
-                        $tmp = self::process_default_items([$tmpgradeitem], $activetab, $ltiactivities, $assessmenttype,
-                            $displayweights);
+                        $tmp = self::process_default_items([$tmpgradeitem], $activetab, $assessmenttype, $displayweights);
                         // We need to check if we do indeed get a valid record back before adding it back to the return data.
                         if ($tmp) {
                             $mygradesdata[] = array_shift($tmp);
@@ -498,14 +492,13 @@ class activity {
      *
      * @param array $defaultitems
      * @param string $activetab
-     * @param array $ltiactivities
      * @param string $assessmenttype
      * @param bool $displayweights
      * @param int $userid - this is being passed in by Student MyGrades Staff View - $USER would actually be the teacher here.
      * @return array
      */
-    public static function process_default_items(array $defaultitems, string $activetab, array $ltiactivities,
-    string $assessmenttype, bool $displayweights, int|null $userid = null): array {
+    public static function process_default_items(array $defaultitems, string $activetab, string $assessmenttype,
+        bool $displayweights, int|null $userid = null): array {
 
         global $USER;
         $whichuser = null;
@@ -535,14 +528,6 @@ class activity {
                         $modinfo = get_fast_modinfo($defaultitem->courseid);
                         $cms = $modinfo->get_cms();
                         if (array_key_exists($cm->id, $cms)) {
-                            // MGU-576/MGU-802 - Only include LTI activities if they have been selected.
-                            // Note that LTI activities only become a "gradable" activity when they have been set to accept grades!
-                            if ($defaultitem->itemmodule == 'lti') {
-                                if (is_array($ltiactivities) && !in_array($defaultitem->iteminstance, $ltiactivities)) {
-                                    continue;
-                                }
-                            }
-
                             $cm = $modinfo->get_cm($cm->id);
                             $itemicon = '';
                             $iconalt = '';
