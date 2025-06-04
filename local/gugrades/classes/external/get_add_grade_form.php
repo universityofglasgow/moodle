@@ -57,6 +57,8 @@ class get_add_grade_form extends external_api {
     public static function execute($courseid, $gradeitemid, $userid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

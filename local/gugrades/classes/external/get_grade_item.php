@@ -52,6 +52,8 @@ class get_grade_item extends external_api {
     public static function execute($itemid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), ['itemid' => $itemid]);
 

@@ -60,6 +60,8 @@ class import_grades_recursive extends external_api {
      */
     public static function execute(int $courseid, int $gradeitemid, int $groupid, bool $additional, string $fillns) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

@@ -68,6 +68,8 @@ class save_altered_weights extends external_api {
     public static function execute($courseid, $categoryid, $userid, $revert, $reason, $items) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

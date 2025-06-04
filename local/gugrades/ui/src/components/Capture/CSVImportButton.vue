@@ -40,7 +40,7 @@
                         </div>
                     </div>
                     <div class="mt-2">
-                        <button class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
+                        <button :disabled="!files" class="btn btn-info mr-1" @click="process_selected">{{ mstrings.upload }}</button>
                     </div>
                 </div>
             </div>
@@ -132,7 +132,7 @@
     const toast = useToast();
 
     const { files, open, reset } = useFileDialog({
-        accept: 'text/csv', // Set to accept only json files
+        accept: 'text/csv', // Set to accept only csv files
         multiple: false,
         directory: false, // Select directories instead of files if set true
     });

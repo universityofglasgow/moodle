@@ -53,6 +53,8 @@ class dashboard_get_grades extends external_api {
      */
     public static function execute($userid, $gradecategoryid) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(),
             ['userid' => $userid, 'gradecategoryid' => $gradecategoryid]);

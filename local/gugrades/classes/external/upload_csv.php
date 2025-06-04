@@ -64,6 +64,8 @@ class upload_csv extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $groupid, $testrun, $reason, $other, $csv) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

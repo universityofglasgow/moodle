@@ -57,6 +57,8 @@ class get_alter_weight_form extends external_api {
     public static function execute($courseid, $categoryid, $userid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

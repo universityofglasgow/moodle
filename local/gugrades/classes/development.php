@@ -41,12 +41,24 @@ class development {
         }
     }
 
-    /** 
+    /**
      * Stop XHPROF profiling and save results
      */
     public static function xhprof_stop() {
         if (function_exists('xhprof_disable')) {
             file_put_contents(XHPROF_PATH . time() . '.application.xhprof', serialize(xhprof_disable()));
         }
+    }
+
+    /**
+     * Update debugging - called from WS execute classes
+     */
+    public static function increase_debugging() {
+        global $CFG;
+
+        $CFG->debug = (E_ALL | E_STRICT);
+        $CFG->debugdisplay = 1;
+
+        return;
     }
 }

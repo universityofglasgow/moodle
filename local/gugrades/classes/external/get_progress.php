@@ -58,6 +58,8 @@ class get_progress extends external_api {
      */
     public static function execute($courseid, $uniqueid, $progresstype, $staffuserid) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

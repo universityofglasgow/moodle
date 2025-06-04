@@ -55,6 +55,8 @@ class get_settings extends external_api {
     public static function execute($courseid, $gradeitemid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

@@ -57,6 +57,8 @@ class get_selected_conversion extends external_api {
     public static function execute($courseid, $gradeitemid, $gradecategoryid) {
         global $DB;
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

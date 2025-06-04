@@ -56,6 +56,8 @@ class get_csv_download extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $groupid) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,

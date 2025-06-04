@@ -59,6 +59,8 @@ class get_capture_user extends external_api {
      */
     public static function execute($courseid, $gradeitemid, $userid, $viewfullnames) {
 
+        \local_gugrades\development::increase_debugging();
+
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
