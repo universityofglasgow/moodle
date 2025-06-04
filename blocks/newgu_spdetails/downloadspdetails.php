@@ -187,7 +187,8 @@ if ($coursestype) {
                     $tmpactivities[] = $activity;
                 }
                 $activities = $tmpactivities;
-                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype, '');
+                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
+                    '');
             }
 
             if (!$mygradesenabled) {
