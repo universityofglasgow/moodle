@@ -30,8 +30,11 @@
                 </template>
             </EasyDataTable>
 
-            <!-- Slightly more accessible footer -->
-            <CustomPagination v-bind="paginationProps" />
+            <!-- Implementation of our own accessible footer. -->
+            <CustomPagination
+                v-if="loaded"
+                v-bind="props"
+            />
 
             <div class="mt-4">
                 <button class="btn btn-primary mr-1" @click="add_map">{{ mstrings.addconversionmap }}</button>
@@ -92,22 +95,8 @@
     const headers = ref([]);
     // pagination related.
     const dataTable = ref();
-    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
-    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
-    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
-    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
-    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
-    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
-    const isLastPage = computed(() => dataTable.value?.isLastPage);
-    const paginationProps = {
+    const props = {
         dataTable: dataTable,
-        currentPageFirstIndex: currentPageFirstIndex,
-        currentPageLastIndex: currentPageLastIndex,
-        clientItemsLength: clientItemsLength,
-        maxPaginationNumber: maxPaginationNumber,
-        currentPaginationNumber: currentPaginationNumber,
-        isFirstPage: isFirstPage,
-        isLastPage: isLastPage
     }
 
     const { files, open, reset } = useFileDialog({

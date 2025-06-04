@@ -64,8 +64,6 @@
 
                 <!-- Note. The array 'users' contains the lines of data. One record for each user -->
                 <EasyDataTable
-                    ref="dataTable"
-                    buttons-pagination
                     alternating
                     sort-by="displayname"
                     sort-type="asc"
@@ -78,6 +76,7 @@
                     :header-item-class-name="header_item_class"
                     :filter-options="table_filter"
                     @xxupdate-page-items="pagination_clicked()"
+                    ref="dataTable"
                     hide-footer
                     >
 
@@ -160,7 +159,10 @@
                 </EasyDataTable>
 
                 <!-- Implementation of our own accessible footer. -->
-                <CustomPagination v-bind="paginationProps" />
+                <CustomPagination 
+                    v-if="loaded"
+                    v-bind="props"
+                />
 
                 <!-- button for saving cell edits -->
                 <div class="pb-1 clearfix mt-2" v-if="ineditcellmode">
@@ -236,22 +238,8 @@
     const emit = defineEmits(['refreshlogo']);
     // pagination related.
     const dataTable = ref();
-    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
-    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
-    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
-    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
-    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
-    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
-    const isLastPage = computed(() => dataTable.value?.isLastPage);
-    const paginationProps = {
+    const props = {
         dataTable: dataTable,
-        currentPageFirstIndex: currentPageFirstIndex,
-        currentPageLastIndex: currentPageLastIndex,
-        clientItemsLength: clientItemsLength,
-        maxPaginationNumber: maxPaginationNumber,
-        currentPaginationNumber: currentPaginationNumber,
-        isFirstPage: isFirstPage,
-        isLastPage: isLastPage
     }
 
     /**
@@ -311,7 +299,6 @@
         loaded.value = false;
     }
 
-
     /**
      * Get class name for table row depending on criteria
      * Used to show hidden rows
@@ -349,7 +336,6 @@
             return 'd-none';
         }
     }
-
 
     /**
      * Collapse selection area

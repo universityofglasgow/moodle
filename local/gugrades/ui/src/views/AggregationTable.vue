@@ -60,7 +60,6 @@
 
         <EasyDataTable
             v-if="!loading"
-            ref="dataTable"
             alternating
             sort-by="displayname"
             sort-type="asc"
@@ -71,6 +70,7 @@
             :items="users"
             :headers="headers"
             :filter-options="table_filter"
+            ref="dataTable"
             hide-footer
         >
 
@@ -207,7 +207,10 @@
         </EasyDataTable>
 
         <!-- Implementation of our own accessible footer. -->
-        <CustomPagination v-bind="paginationProps" />
+        <CustomPagination 
+            v-if="!loading"
+            v-bind="props"
+        />
 
         <!-- display debugging/timing information -->
         <div v-if="debug.length > 0" class="my-3 pt-2 rounded border text-monospace bg-secondary text-dark">
@@ -267,22 +270,9 @@
     const staffuserid = ref(0);
     // pagination related.
     const dataTable = ref();
-    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
-    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
-    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
-    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
-    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
-    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
-    const isLastPage = computed(() => dataTable.value?.isLastPage);
-    const paginationProps = {
+    const props = {
         dataTable: dataTable,
-        currentPageFirstIndex: currentPageFirstIndex,
-        currentPageLastIndex: currentPageLastIndex,
-        clientItemsLength: clientItemsLength,
-        maxPaginationNumber: maxPaginationNumber,
-        currentPaginationNumber: currentPaginationNumber,
-        isFirstPage: isFirstPage,
-        isLastPage: isLastPage
+        loading: loading
     }
 
     /**

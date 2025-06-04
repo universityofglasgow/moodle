@@ -9,7 +9,10 @@
             hide-footer
         ></EasyDataTable>
         <!-- Implementation of our own accessible footer. -->
-        <CustomPagination v-bind="paginationProps" />
+        <CustomPagination
+            v-if="loaded"
+            v-bind="props"
+        />
     </div>
     <div>
         <button class="mt-2 btn btn-success" @click="download_clicked">{{ mstrings.downloadtocsv }}</button>
@@ -28,24 +31,11 @@
     const headers = ref([]);
     const debug = ref({});
     const toast = useToast();
+    const loaded = ref(false);
     // pagination related.
     const dataTable = ref();
-    const currentPageFirstIndex = computed(() => dataTable.value?.currentPageFirstIndex);
-    const currentPageLastIndex = computed(() => dataTable.value?.currentPageLastIndex);
-    const clientItemsLength = computed(() => dataTable.value?.clientItemsLength);
-    const maxPaginationNumber = computed(() => dataTable.value?.maxPaginationNumber);
-    const currentPaginationNumber = computed(() => dataTable.value?.currentPaginationNumber);
-    const isFirstPage = computed(() => dataTable.value?.isFirstPage);
-    const isLastPage = computed(() => dataTable.value?.isLastPage);
-    const paginationProps = {
+    const props = {
         dataTable: dataTable,
-        currentPageFirstIndex: currentPageFirstIndex,
-        currentPageLastIndex: currentPageLastIndex,
-        clientItemsLength: clientItemsLength,
-        maxPaginationNumber: maxPaginationNumber,
-        currentPaginationNumber: currentPaginationNumber,
-        isFirstPage: isFirstPage,
-        isLastPage: isLastPage
     }
 
     /**
@@ -93,6 +83,7 @@
         }])[0]
         .then((result) => {
             items.value = result;
+            loaded.value = true;
 
         })
         .catch((error) => {
