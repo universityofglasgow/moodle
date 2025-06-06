@@ -70,16 +70,18 @@ class backup_local_gugrades_plugin extends backup_local_plugin {
         $gmvalue->set_source_table('local_gugrades_map_value', ['mapid' => backup::VAR_PARENTID]);
         $gugrades->add_child($mapsvalues);
 
-        // Add map items (converted items or categories).
-        $mapitems = new backup_nested_element('gugrades_map_items');
-        $mapitem = new backup_nested_element('gugrades_map_item', null, ['mapid', 'gradeitemid', 'gradecategoryid', 'userid', 'timemodified']);
-        $mapitem->annotate_ids('user', 'userid');
-        $mapitems->add_child($mapitem);
-        $mapitem->set_source_table('local_gugrades_map_item', ['courseid' => backup::VAR_COURSEID]);
-        $gugrades->add_child($mapitems);
-
         // If userdata is included (pretty much everything).
         if ($userdata) {
+
+            // Add map items (converted items or categories).
+            // This is part of userdata. If not, a grade item looks converted even though there is no
+            // data.
+            $mapitems = new backup_nested_element('gugrades_map_items');
+            $mapitem = new backup_nested_element('gugrades_map_item', null, ['mapid', 'gradeitemid', 'gradecategoryid', 'userid', 'timemodified']);
+            $mapitem->annotate_ids('user', 'userid');
+            $mapitems->add_child($mapitem);
+            $mapitem->set_source_table('local_gugrades_map_item', ['courseid' => backup::VAR_COURSEID]);
+            $gugrades->add_child($mapitems);
 
             // Backup columns
             $columns = new backup_nested_element('gugrades_columns');
