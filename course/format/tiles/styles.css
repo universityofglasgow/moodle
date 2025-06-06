@@ -48,13 +48,15 @@
     color: #fff;
     opacity: 0.8;
 }
-.format-tiles .sectiontitle::after,
 .format-tiles .badge-info {
     background-color: var(--format-tiles-colour);
 }
 .format-tiles .course-content .single-section .navigation-arrows .navigation-arrow:not(.dimmed):hover,
 .format-tiles .embed_cm_modal .embed_file_button:hover {
     background-color: var(--format-tiles-colour-1);
+}
+.format-tiles.single-section-page #course-header {
+    width: 100%;
 }
 
 .format-tiles .filterbutton:hover,
@@ -225,15 +227,6 @@
 
 .format-tiles .overall-progress.hidden {
     display: none;
-}
-
-.format-tiles .navigation-arrows {
-    min-width: 130px;
-    display: inline-block;
-    float: right;
-    margin-right: 40px;
-    z-index: 2;
-    /*z-index needs to be on top of pagesechead*/
 }
 
 .format-tiles #page .course-content  ul li.section.main.current {
@@ -584,6 +577,9 @@
     width: 20px;
     height: 20px;
 }
+.format-tiles .sectionbutton .icon.fa-home {
+    font-size: 1.3em;
+}
 .format-tiles a.sectionbutton:hover {
     text-decoration: none;
 }
@@ -666,30 +662,6 @@
 .format-tiles .single-section  .navigation-arrow:not(.dimmed):hover {
     transition: all 0.2s ease-in-out;
     transform: scale(1.05, 1.05);
-}
-
-.format-tiles .single-section .navigation-arrow,
-.format-tiles  .single-section .navigation-arrow img {
-    width: 40px;
-    height: 40px;
-    background-repeat: no-repeat;
-    display: inline-block;
-    text-align: center;
-}
-.format-tiles .single-section .navigation-arrow .icon {
-    font-size: 30px;
-    height: 35px;
-    width: 35px;
-    padding: 2px 3px 2px 3px;
-}
-.format-tiles .single-section .navigation-arrow.dimmed {
-    opacity: 0.5;
-}
-.format-tiles .navigation-arrows .navigation-arrow.dimmed:hover {
-    background-color: inherit;
-}
-.format-tiles .single-section .navigation-arrow {
-    color: grey;
 }
 
 /* the following items are to avoid lots of padding under section 0 in single section view */
@@ -910,7 +882,7 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     width: 100%;
 }
 .format-tiles #abovetiles.sec-zero-closed {
-    width: calc(100% - 80px);
+    width: calc(100% - 95px);
 }
 .format-tiles #abovetiles.section-zero-empty {
     width: calc(100% - 40px);
@@ -989,12 +961,12 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     padding-right: 7px;
 }
 .format-tiles .sectiontitle::after,
-.format-tiles .sectiontitle::after {
+.format-tiles.path-course-view-section .page-header-headings h1::after {
     content: "";
     display: block;
     height: 4px;
+    background-color: var(--format-tiles-colour);
 }
-
 .format-tiles .sectiontitle h2 {
     font-weight: 600;
     color: #666;
@@ -1070,6 +1042,9 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 }
 .format-tiles.editing .section .mod-indent-outer {
     max-width: calc(100% - 100px);
+}
+.format-tiles .section .activity-wrapper .activity-item {
+    width: 100%;
 }
 .format-tiles.editing .tile-icon i {
     margin-right: 0;
@@ -1494,12 +1469,14 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     padding-top: 3px;
     padding-bottom: 3px;
 }
-.format-tiles .above-tiles-buttons a.dropdown-item .custom-switch.checked .custom-control-label::before {
+.format-tiles .above-tiles-buttons a.dropdown-item .custom-switch.checked .custom-control-label::before,
+.format-tiles .navigation-arrows a.dropdown-item .custom-switch.checked .custom-control-label::before {
     color: #fff;
     border-color: #0f6cbf;
     background-color: #0f6cbf;
 }
-.format-tiles .above-tiles-buttons a.dropdown-item .custom-switch.checked .custom-control-label::after {
+.format-tiles .above-tiles-buttons a.dropdown-item .custom-switch.checked .custom-control-label::after,
+.format-tiles .navigation-arrows a.dropdown-item .custom-switch.checked .custom-control-label::after {
     background-color: #fff;
     left: -1.75rem;
 }
@@ -1952,6 +1929,9 @@ body.jsenabled.format-tiles #collapsiblesec0 {
     z-index: 2;
 }
 .format-tiles .moveablesection {
+    z-index: 3;
+}
+.format-tiles .drawer-toggles .drawer-toggler {
     z-index: 3;
 }
 .format-tiles .tile:not(.phototile) {

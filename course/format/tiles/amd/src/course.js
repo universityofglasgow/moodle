@@ -980,7 +980,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
                     const buttonHideSecZero = $(Selector.HIDE_SEC0_BTN);
                     if (buttonHideSecZero.length) {
                         setSectionZeroFromUserPref();
-                        pageContent.on(Event.CLICK, Selector.HIDE_SEC0_BTN, function (e) {
+                        $('#page').on(Event.CLICK, Selector.HIDE_SEC0_BTN, function (e) {
                             if (sectionZero.css(CSS.DISPLAY) === "none") {
                                 // Sec zero is collapsed so expand it on user click.
                                 sectionZero.slideDown(250);
