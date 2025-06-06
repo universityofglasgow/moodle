@@ -168,19 +168,10 @@ class lti_activity extends base {
         $statusobj->status_class = '';
         $statusobj->status_link = '';
         $statusobj->grade_to_display = get_string('status_text_tobeconfirmed', 'block_newgu_spdetails');
-        $statusobj->due_date = $ltiinstance->duedate;
-        $statusobj->raw_due_date = $ltiinstance->duedate;
+        $statusobj->due_date = 'N/A'; // LTI's don't have due dates.
+        $statusobj->raw_due_date = 0;
         $statusobj->grade_date = '';
         $statusobj->grade_class = false;
-
-        // Formatting this here as the integer format for the date is no longer needed for testing against.
-        if ($statusobj->due_date != 0) {
-            $statusobj->due_date = $this->get_formattedduedate($statusobj->due_date);
-            $statusobj->raw_due_date = $this->get_rawduedate();
-        } else {
-            $statusobj->due_date = 'N/A';
-            $statusobj->raw_due_date = 0;
-        }
 
         return $statusobj;
     }
