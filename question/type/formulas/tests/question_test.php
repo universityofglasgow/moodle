@@ -929,6 +929,38 @@ final class question_test extends \basic_testcase {
         self::assertTrue($q->is_gradable_response(['0_0' => 5]));
     }
 
+    public function test_is_gradable_response_multipart(): void {
+        $q = $this->get_test_formulas_question('testthreeparts');
+
+        self::assertFalse($q->is_gradable_response([]));
+        self::assertTrue($q->is_gradable_response(['0_0' => '1']));
+        self::assertTrue($q->is_gradable_response(['1_0' => '1']));
+        self::assertTrue($q->is_gradable_response(['2_0' => '1']));
+        self::assertTrue($q->is_gradable_response(['0_0' => '1', '1_0' => '2']));
+        self::assertTrue($q->is_gradable_response(['0_0' => '1', '2_0' => '2']));
+        self::assertTrue($q->is_gradable_response(['1_0' => '1', '2_0' => '2']));
+        self::assertTrue($q->is_gradable_response(['0_0' => '0', '1_0' => '1', '2_0' => '2']));
+    }
+
+    public function test_get_validation_error_multipart(): void {
+        $q = $this->get_test_formulas_question('testmethodsinparts');
+
+        $allempty = get_string('allfieldsempty', 'qtype_formulas');
+        $pleasefill = get_string('pleaseputananswer', 'qtype_formulas');
+
+        // If no fields are filled, the error should be "All fields are empty.".
+        self::assertEquals($allempty, $q->get_validation_error([]));
+
+        // If at least one field is filled, the error should instead be "Please put an answer in each input field.".
+        self::assertEquals($pleasefill, $q->get_validation_error(['0_' => '5 m/s']));
+        self::assertEquals($pleasefill, $q->get_validation_error(['1_0' => '5']));
+        self::assertEquals($pleasefill, $q->get_validation_error(['1_1' => 'm/s']));
+        self::assertEquals($pleasefill, $q->get_validation_error(['2_0' => '5']));
+        self::assertEquals($pleasefill, $q->get_validation_error(['3_0' => '5']));
+        // phpcs:ignore Universal.Arrays.DuplicateArrayKey.Found
+        self::assertEquals($pleasefill, $q->get_validation_error(['1_0' => '5', '1_1' => 'm/s']));
+    }
+
     /**
      * Data provider.
      *
