@@ -143,6 +143,7 @@ class course_output implements \renderable, \templatable {
      * @param \renderer_base|null $courserenderer the course renderer.
      */
     public function __construct($course, $fromajax = false, $sectionnum = null, \renderer_base|null $courserenderer = null) {
+        global $PAGE;
         $this->course = $course;
         $this->fromajax = $fromajax;
         $this->sectionnum = $sectionnum;
@@ -156,7 +157,8 @@ class course_output implements \renderable, \templatable {
         $this->format = course_get_format($this->course);
         $this->modinfo = get_fast_modinfo($this->course);
 
-        $this->isediting = false;
+        // User could be editing if this is called from /course/section.php.
+        $this->isediting = $PAGE->user_is_editing();
         $this->coursecontext = \context_course::instance($this->course->id);
         $this->canviewhidden = has_capability('moodle/course:viewhiddensections', $this->coursecontext);
         if ($this->course->enablecompletion && !isguestuser()) {
@@ -199,7 +201,8 @@ class course_output implements \renderable, \templatable {
 
         // Only show section zero if we need it.
         $onmultisectionpage = $this->sectionnum === null;
-        $processsectionzero = $onmultisectionpage || get_config('format_tiles', 'showseczerocoursewide');
+        $processsectionzero = $onmultisectionpage ||
+            (get_config('format_tiles', 'showseczerocoursewide') && !$this->isediting);
         if ($processsectionzero) {
             // Only show section 0 on multi section page, or single sec page with admin setting to show course wide.
             $data = $this->append_section_zero_data($data, $output);

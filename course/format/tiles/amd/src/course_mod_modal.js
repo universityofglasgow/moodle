@@ -417,7 +417,10 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
                                                 } else {
                                                     const newUrl = config.wwwroot
                                                         + `/course/section.php?id=${data.sectionid}&cmid=${cmId}`;
-                                                    if (!window.location.href.includes(`id=${data.sectionid}&cmid=`)) {
+                                                    const isDifferentSection =
+                                                        !window.location.href.endsWith(`id=${data.sectionid}`)
+                                                        && !window.location.href.includes(`id=${data.sectionid}&cmid=`);
+                                                    if (isDifferentSection) {
                                                         window.location.href = newUrl;
                                                     } else {
                                                         // We are in same section so just launch modal.

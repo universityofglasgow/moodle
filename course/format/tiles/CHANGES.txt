@@ -686,3 +686,9 @@ On section.php:
 4.5.0.19 (2025060256)
 =====================
 - Adjust modal cm JS for section.php
+
+4.5.0.20 (2025060257)
+=====================
+- If user is editing, ignore setting to show sec zero at top of every section.php page
+- If user requests course/view.php?section=xx, redirect to course/section.php
+- Improve modal JS on section.php page
