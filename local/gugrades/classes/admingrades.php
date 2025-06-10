@@ -161,6 +161,14 @@ class admingrades {
                 ],
                 'grandtotal' => true,
             ],
+            'INTERRUPTIONOFSTUDIES' => [
+                'default' => [
+                    'code' => 'IS',
+                    'description' => get_string('adminis', 'local_gugrades'),
+                ],
+                'grandtotal' => true,
+                'items' => true,
+            ]
         ];
     }
 

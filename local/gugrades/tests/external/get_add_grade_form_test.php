@@ -98,12 +98,16 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         $this->assertArrayHasKey('adminmenu', $form);
         $adminmenu = $form['adminmenu'];
         $this->assertGreaterThan(0, count($adminmenu));
-        $this->assertEquals('DEFERRED', $adminmenu[0]['value']);
-        $this->assertEquals('07 - Deferred', $adminmenu[0]['label']);
-        $this->assertEquals('NOSUBMISSION', $adminmenu[1]['value']);
-        $this->assertEquals('NS - No Submission', $adminmenu[1]['label']);
-        $this->assertEquals('GOODCAUSE_NR', $adminmenu[2]['value']);
-        $this->assertEquals('MV0 - Good cause (non replicable)', $adminmenu[2]['label']);
+        $this->assertEquals('INTERRUPTIONOFSTUDIES', $adminmenu[0]['value']);
+        $this->assertEquals('IS - Interruption of Studies', $adminmenu[0]['label']);
+        $this->assertEquals('DEFERRED', $adminmenu[1]['value']);
+        $this->assertEquals('07 - Deferred', $adminmenu[1]['label']);
+        $this->assertEquals('NOSUBMISSION', $adminmenu[2]['value']);
+        $this->assertEquals('NS - No Submission', $adminmenu[2]['label']);
+        $this->assertEquals('GOODCAUSE_NR', $adminmenu[3]['value']);
+        $this->assertEquals('MV0 - Good Cause (non replicable)', $adminmenu[3]['label']);
+        $this->assertEquals('GOODCAUSE_FO', $adminmenu[4]['value']);
+        $this->assertEquals('MV - Good Cause (further opportunity)', $adminmenu[4]['label']);
     }
 
     /**
