@@ -130,7 +130,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $adminmenu = $form['adminmenu'];
-        $this->assertCount(4, $adminmenu);
+        $this->assertCount(5, $adminmenu);
 
         // Try category 'Summer exam'.
         // Should still work
@@ -142,7 +142,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $adminmenu = $form['adminmenu'];
-        $this->assertCount(4, $adminmenu);
+        $this->assertCount(5, $adminmenu);
 
         // Try 'Question 1'.
         // Should still be available in menu (along with NS0).
@@ -154,7 +154,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $adminmenu = $form['adminmenu'];
-        $this->assertCount(5, $adminmenu);
+        $this->assertCount(6, $adminmenu);
     }
 
     /**

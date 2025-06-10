@@ -115,7 +115,7 @@ final class override_top_level_test extends \local_gugrades\external\gugrades_ag
         $this->assertTrue($form['available']);
         $this->assertFalse($form['error']);
         $this->assertCount(23, $form['scalemenu']);
-        $this->assertCount(13, $form['adminmenu']);
+        $this->assertCount(14, $form['adminmenu']);
 
         // Write grade to level one total.
         $nothing = write_additional_grade::execute(
