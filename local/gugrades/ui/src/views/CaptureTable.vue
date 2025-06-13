@@ -348,7 +348,6 @@
         } else {
             collapseclasses.value = ['collapse'];
         }
-        window.console.log(collapseclasses);
         collapsed.value = !collapsed.value;
     }
 
