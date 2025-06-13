@@ -10,7 +10,7 @@
                 </button>
             </div>
 
-            <div id="captureselect" class="collapse show">
+            <div id="captureselect" :class="collapseclasses">
                 <CaptureSelect @selecteditemid="selecteditemid"></CaptureSelect>
 
                 <div v-if="itemid">
@@ -234,6 +234,7 @@
     const firstname = ref('');
     const lastname = ref('');
     const staffuserid = ref(0);
+    const collapseclasses = ref(['collapse', 'show']);
     const toast = useToast();
     const emit = defineEmits(['refreshlogo']);
     // pagination related.
@@ -342,14 +343,12 @@
      */
     function selectcollapse() {
 
-        // Bodge to get jQuery needed for Bootstrap JS.
-        const $ = window.jQuery;
-
         if (collapsed.value) {
-            $('#captureselect').collapse('show');
+            collapseclasses.value = ['collapse', 'show'];
         } else {
-            $('#captureselect').collapse('hide');
+            collapseclasses.value = ['collapse'];
         }
+        window.console.log(collapseclasses);
         collapsed.value = !collapsed.value;
     }
 
