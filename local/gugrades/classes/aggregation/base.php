@@ -252,16 +252,13 @@ class base {
             }
         }
 
-        // Any 'IS' admin grades means aggregation is IS
-        // NOT CURRENTLY USED
-        /*
+        // Any 'INTERRUPTIONOFSTUDIES' admin grades means aggregation is IS (MGU-1002)
         foreach ($items as $item) {
-            if ($item->admingrade == 'IS') {
+            if ($item->admingrade == 'INTERRUPTIONOFSTUDIES') {
                 $this->explain = get_string('explain_anyis', 'local_gugrades');
-                return 'IS';
+                return 'INTERRUPTIONOFSTUDIES';
             }
         }
-        */
 
         // Any 'MV' admin grades means aggregation is MV
         foreach ($items as $item) {
