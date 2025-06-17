@@ -252,7 +252,7 @@ class base {
             }
         }
 
-        // Any 'INTERRUPTIONOFSTUDIES' admin grades means aggregation is IS (MGU-1002)
+        // Any 'INTERRUPTIONOFSTUDIES' admin grades potentially means aggregation is IS (MGU-1002)
         foreach ($items as $item) {
             if ($item->admingrade == 'INTERRUPTIONOFSTUDIES') {
                 $this->explain = get_string('explain_anyis', 'local_gugrades');
