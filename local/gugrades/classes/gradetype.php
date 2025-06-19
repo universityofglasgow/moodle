@@ -56,7 +56,7 @@ class gradetype {
             'CONDUCT' => get_string('gradetypeconduct', 'local_gugrades'),
             'OTHER' => get_string('gradetypeother', 'local_gugrades'),
             'CONVERTED' => get_string('converted', 'local_gugrades'),
-            'PROVISIONAL' => get_string('provisional', 'local_gugrades'),
+            'PROVISIONAL' => get_string('latestgrade', 'local_gugrades'),
             'RELEASED' => get_string('released', 'local_gugrades'),
         ];
 

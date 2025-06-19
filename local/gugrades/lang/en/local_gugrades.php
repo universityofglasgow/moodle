@@ -246,6 +246,7 @@ $string['invalidgradetype'] = 'One of the peers or children of this grade item h
 $string['itemname'] = 'Item name';
 $string['lastmodifiedgrade'] = 'Last modified (grade)';
 $string['lastname'] = 'Last name';
+$string['latestgrade'] = 'Latest grade';
 $string['lineswitherrors'] = 'Lines with errors';
 $string['manage'] = 'MyGrades Settings';
 $string['manageconversion'] = 'Manage conversion maps';
