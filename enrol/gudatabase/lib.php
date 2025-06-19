@@ -216,6 +216,9 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // Is user allowed to unenrol?
         // They must not be in the MyCampus feed.
         $usercourses = $this->get_user_courses($USER->username);
+        if (!$usercourses) {
+            return false;
+        }
         foreach ($usercourses as $uc) {
             if (in_array($uc->courses, $codes)) {
                 return false;
