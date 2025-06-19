@@ -174,12 +174,13 @@ class assign_activity extends base {
 
         // Valid possibilities are NULL (grade deleted) or -1 (never graded)
         // Either of these represent no grade for our purposes.
+        // MGU-1293: any kind of 'empty' grade means null (No grade).
         if (($assigngrade !== false) && ($assigngrade->grade != -1) && ($assigngrade->grade != null)) {
 
             return $assigngrade->grade;
+        } else {
+            return null;
         }
-
-        return false;
     }
 
     /**

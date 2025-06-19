@@ -614,10 +614,18 @@ class conversion {
                 );
             } else {
 
-                $convertedgrade = self::convert_grade($provisional->rawgrade, $gradeitem->grademax, $mapvalues);
-                if (!$convertedgrade) {
-                    throw new \moodle_exception('Unable to convert grade - ' .
-                        $provisional->rawgrade . ' (max: ' . $gradeitem->grademax . ')');
+                // MGU-1293: A null grade (No grade) just stays as No Grade
+                if (!is_null($provisional->rawgrade)) {
+                    $convertedgrade = self::convert_grade($provisional->rawgrade, $gradeitem->grademax, $mapvalues);
+                    if (!$convertedgrade) {
+                        throw new \moodle_exception('Unable to convert grade - ' .
+                            $provisional->rawgrade . ' (max: ' . $gradeitem->grademax . ')');
+                    }
+                } else {
+                    $convertedgrade = (object)[
+                        'scalevalue' => null,
+                        'band' => get_string('nograde', 'local_gugrades'),
+                    ];
                 }
 
                 \local_gugrades\grades::write_grade(

@@ -57,11 +57,17 @@ class points extends base {
     /**
      * Handle imported grade
      * Create both converted grade (actual value) and display grade
-     * @param float $grade
+     * @param float|null $floatgrade
      * @return [float, string]
      */
-    public function import(float $grade) {
-        return [$grade, $grade];
+    public function import(float|null $floatgrade) {
+
+        // MGU-1293 null represents no grade.
+        if (is_null($floatgrade)) {
+            return [null, get_string('nograde', 'local_gugrades')];
+        }
+
+        return [$floatgrade, "$floatgrade"];
     }
 
 }

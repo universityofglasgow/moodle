@@ -58,14 +58,10 @@
                 <FormKit
                     type="select"
                     :label="mstrings.importfillns + ':'"
-                    :help="fillnshelp"
                     :options="options"
                     name="importfillns"
                     v-model="importfillns"
                     >
-                    <template #help>
-                        <p><i class="fa fa-info-circle mt-2" aria-hidden="true"></i> {{ fillnshelp }}</p>
-                    </template>
                 </FormKit>
             </div>
 
@@ -115,7 +111,7 @@
     const recursiveavailable = ref(false);
     const recursivematch = ref(false);
     const recursiveselect = ref(false);
-    const importadditional = ref(false);
+    const importadditional = ref(true);
     const importfillns = ref('');
     const allgradesvalid = ref(false);
     const level = ref(0);
@@ -138,19 +134,6 @@
         }
 
         return options;
-    });
-
-    /**
-     * Correct message for NS/NS0 help
-     */
-    const fillnshelp = computed(() => {
-
-        // Mention NS0 if level >= 2
-        if (level.value > 1) {
-            return mstrings.importfillns0help;
-        } else {
-            return mstrings.importfillnshelp;
-        }
     });
 
     /**

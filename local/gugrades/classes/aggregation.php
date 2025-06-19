@@ -1338,7 +1338,9 @@ class aggregation {
                 //$usercapture = new \local_gugrades\usercapture($courseid, $child->itemid, $userid);
                 $usercapture = \local_gugrades\usercapture::create($courseid, $child->itemid, $userid);
                 $provisional = $usercapture->get_provisional();
-                if ($provisional) {
+
+                // MGU-1293: Additional check for null grade which counts as missing grade.
+                if ($provisional && !is_null($provisional->convertedgrade)) {
                     $item = (object)[
                         'itemid' => $child->itemid,
                         'iscategory' => false,
@@ -1393,6 +1395,9 @@ class aggregation {
             'error' => $error,
             'explain' => $explain,
         ];
+        if ($display == 'H') {
+            //die;
+        }
         self::write_aggregated_category($courseid, $userid, $aggregatedcategory);
 
         return [$total, $rawgrade, $admingrade, $display, $completion, $error, $explain];
