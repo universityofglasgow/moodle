@@ -97,7 +97,7 @@ class points22 extends schedulea {
 
         // MGU-1293 null represents no grade.
         if (is_null($floatgrade)) {
-            return [null, get_string('nograde', 'local_gugrades')];
+            return [-1, get_string('nograde', 'local_gugrades')];
         }
 
         // It's a scale, so it can't be a decimal.

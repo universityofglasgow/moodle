@@ -99,6 +99,9 @@ class conversion {
         // Get scale.
         $scaleitems = self::get_scale($schedule);
 
+        // MGU_1293: Get rid of No Grade option
+        unset($scaleitems[-1]);
+
         // Unpack defaults.
         $defaultpoints = array_map('trim', explode(',', $default));
         array_unshift($defaultpoints, 0);

@@ -99,7 +99,7 @@ class get_add_grade_form extends external_api {
             'grademax' => new external_value(PARAM_FLOAT, 'Maximum grade value - or 0 if not value'),
             'scalemenu' => new external_multiple_structure(
                 new external_single_structure([
-                    'value' => new external_value(PARAM_INT, 'Scale value'),
+                    'value' => new external_value(PARAM_CLEAN, 'Scale value'),
                     'label' => new external_value(PARAM_TEXT, 'Scale item name'),
                 ])
             ),

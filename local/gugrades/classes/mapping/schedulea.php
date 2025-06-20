@@ -113,6 +113,7 @@ class schedulea extends base {
      */
     public static function get_map() {
         return [
+            -1 => get_string('nograde', 'local_gugrades'),
             0 => 'H',
             1 => 'G2',
             2 => 'G1',

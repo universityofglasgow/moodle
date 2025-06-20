@@ -1395,9 +1395,6 @@ class aggregation {
             'error' => $error,
             'explain' => $explain,
         ];
-        if ($display == 'H') {
-            //die;
-        }
         self::write_aggregated_category($courseid, $userid, $aggregatedcategory);
 
         return [$total, $rawgrade, $admingrade, $display, $completion, $error, $explain];

@@ -47,7 +47,7 @@ class write_additional_grade extends external_api {
             'reason' => new external_value(PARAM_TEXT, 'Reason for grade - SECOND, AGREED etc.'),
             'other' => new external_value(PARAM_TEXT, 'Detail if reason == OTHER'),
             'admingrade' => new external_value(PARAM_TEXT, 'Admin grade code - overrides a grade'),
-            'scale' => new external_value(PARAM_INT, 'Scale value'),
+            'scale' => new external_value(PARAM_INT, 'Scale value (-1 is No grade)'),
             'grade' => new external_value(PARAM_FLOAT, 'Points grade'),
             'notes' => new external_value(PARAM_TEXT, 'Optional notes'),
             'delete' => new external_value(PARAM_BOOL, 'Delete overridden category', VALUE_DEFAULT, false),

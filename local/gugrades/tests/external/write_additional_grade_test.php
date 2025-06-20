@@ -125,6 +125,35 @@ final class write_additional_grade_test extends \local_gugrades\external\gugrade
         $grades = $fred['grades'];
         $this->assertEquals('A4', $grades[3]['displaygrade']);
         $this->assertEquals('PROVISIONAL', $grades[3]['gradetype']);
+
+        // Change agreed grade to 'No grade'.
+        $nothing = write_additional_grade::execute(
+            $this->course->id,
+            $this->gradeitemidassign2,
+            $this->student->id,
+            'AGREED',
+            '',
+            '',
+            -1,
+            0,
+            'Agreed grade is removed'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get capture page.
+        $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign2, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_capture_page::execute_returns(),
+            $page
+        );
+
+        $fred = $page['users'][0];
+        $grades = $fred['grades'];
+        $this->assertEquals('No grade', $grades[2]['displaygrade']);
+        $this->assertEquals('No grade', $grades[3]['displaygrade']);
     }
 
     /**

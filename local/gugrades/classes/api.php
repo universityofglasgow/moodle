@@ -978,9 +978,13 @@ class api {
         // Get scalemenu
         if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEA) {
             $scale = \local_gugrades\grades::get_scale(0, 'schedulea');
+
+            // MGU-1293: No grade option is not needed.
+            unset($scale[-1]);
             $scalemenu = self::formkit_menu($scale, true);
         } else if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEB) {
             $scale = \local_gugrades\grades::get_scale(0, 'scheduleb');
+            unset($scale[-1]);
             $scalemenu = self::formkit_menu($scale, true);
         } else {
             $scalemenu = [];
@@ -1142,6 +1146,7 @@ class api {
 
     /**
      * Write additional grade
+     * MGU-1293: $scale set to -1 is a proxy for No Grade.
      * @param int $courseid
      * @param int $gradeitemid
      * @param int $userid
@@ -1225,9 +1230,17 @@ class api {
             [$code, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $displaygrade = $code;
         } else if ($usescale) {
-            $displaygrade = $mapping->get_band($scale);
-            $rawgrade = $scale;
-            $convertedgrade = $scale;
+
+            // MGU-1293: Check for -1, which is No grade
+            if ($scale == -1) {
+                $displaygrade = get_string('nograde', 'local_gugrades');
+                $rawgrade = null;
+                $convertedgrade = null;
+            } else {
+                $displaygrade = $mapping->get_band($scale);
+                $rawgrade = $scale;
+                $convertedgrade = $scale;
+            }
         } else {
             $displaygrade = $grade;
             $rawgrade = $grade;
