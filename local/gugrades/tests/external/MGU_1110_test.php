@@ -162,7 +162,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_mv0_aggregation(): void {
+    public function test_EC0_aggregation(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -300,7 +300,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('MV0', $fred['displaygrade']);
+        $this->assertEquals('EC0', $fred['displaygrade']);
 
         // Get the grade category 'Summative'.
         $gradecatsummative = $DB->get_record('grade_categories', ['fullname' => 'Summative'], '*', MUST_EXIST);
@@ -357,7 +357,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('MV', $fred['displaygrade']);
+        $this->assertEquals('EC', $fred['displaygrade']);
         $this->assertEquals(50, $fred['completed']);
 
         // Add NS to Item 1.
@@ -422,7 +422,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('MV', $fred['displaygrade']);
+        $this->assertEquals('EC', $fred['displaygrade']);
 
         // Back to level 2 summer exam.
         // Add MV for Question 1. MGU-1110 CoS 15
@@ -452,7 +452,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('MV', $fred['displaygrade']);
+        $this->assertEquals('EC', $fred['displaygrade']);
     }
 
     /**
@@ -575,7 +575,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('MV0', $fred['displaygrade']);
+        $this->assertEquals('EC0', $fred['displaygrade']);
     }
 
 }

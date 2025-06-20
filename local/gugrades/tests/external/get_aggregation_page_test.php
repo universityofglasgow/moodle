@@ -258,7 +258,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         $fred = $page['users'][0];
         $this->assertEquals("42.857", $fred['completed']);
-        $this->assertEquals('MV', $fred['fields'][4]['display']);
+        $this->assertEquals('EC', $fred['fields'][4]['display']);
     }
 
     /**
@@ -898,9 +898,9 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
         );
 
         $users = $page['users'];
-        $this->assertEquals('MV', $users[0]['displaygrade']);
+        $this->assertEquals('EC', $users[0]['displaygrade']);
         $this->assertEquals('Schedule B exam', $users[0]['fields'][0]['itemname']);
-        $this->assertEquals('MV', $users[0]['fields'][0]['display']);
+        $this->assertEquals('EC', $users[0]['fields'][0]['display']);
 
         // Remove the overridden grade for Schedule B (0 for grade and scale) again.
         $nothing = write_additional_grade::execute(

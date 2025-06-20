@@ -221,7 +221,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals("EC", $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
     }
 
@@ -231,7 +231,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_mv(): void {
+    public function test_EC(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -276,7 +276,7 @@ final class aggregation_schema7_test extends \local_gugrades\external\gugrades_a
         $this->assertFalse($page['toplevel']);
         $this->assertEquals('A', $page['atype']);
         $fred = $page['users'][0];
-        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals("EC", $fred['displaygrade']);
         $this->assertEquals(0.0, $fred['rawgrade']);
 
         // Set IS for question 7. Should now be IS.

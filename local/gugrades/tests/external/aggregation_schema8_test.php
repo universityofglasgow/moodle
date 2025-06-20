@@ -124,7 +124,7 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(0.0, $fred['rawgrade']);
         $this->assertEquals(66.667, $fred['completed']);
 
-        // Change item 1 to an MV
+        // Change item 1 to an EC
         $this->apply_admingrade('Item 1', $this->student->id, 'GOODCAUSE_FO');
 
         // This should result in a GCW (MGU-1009)
@@ -136,11 +136,11 @@ final class aggregation_schema8_test extends \local_gugrades\external\gugrades_a
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals("MV", $fred['displaygrade']);
+        $this->assertEquals("EC", $fred['displaygrade']);
         $this->assertEquals(0.0, $fred['rawgrade']);
         $this->assertEquals(33.333, $fred['completed']);
 
-        // Change question 3 to 07 admingrade
+        // Change question 3 to DFR admingrade
         $this->apply_admingrade('Question 3', $this->student->id, 'DEFERRED');
 
         // Get aggregation page for above.
