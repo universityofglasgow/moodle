@@ -46,7 +46,7 @@ class admingrades {
         return [
             'GOODCAUSE_FO' => [
                 'default' => [
-                    'code' => 'MV',
+                    'code' => 'EC',
                     'description' => get_string('adminmv', 'local_gugrades'),
                 ],
                 'grandtotal' => true,
@@ -54,7 +54,7 @@ class admingrades {
             ],
             'GOODCAUSE_NR' => [
                 'default' => [
-                    'code' => 'MV0',
+                    'code' => 'EC0',
                     'description' => get_string('adminmv0', 'local_gugrades'),
                 ],
                 'items' => true,
@@ -76,7 +76,7 @@ class admingrades {
             ],
             'DEFERRED' => [
                 'default' => [
-                    'code' => '07',
+                    'code' => 'DFR',
                     'description' => get_string('admin07', 'local_gugrades'),
                 ],
                 'grandtotal' => true,
@@ -84,7 +84,7 @@ class admingrades {
             ],
             'GOODCAUSECREDITWITHHELD' => [
                 'default' => [
-                    'code' => 'GCW',
+                    'code' => 'ECW',
                     'description' => get_string('admingcw', 'local_gugrades'),
                 ],
                 'grandtotal' => true,
