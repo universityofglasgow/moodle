@@ -86,11 +86,13 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         // Check scalemenu.
         $this->assertArrayHasKey('scalemenu', $form);
         $scalemenu = $form['scalemenu'];
-        $this->assertCount(23, $scalemenu);
+        $this->assertCount(24, $scalemenu);
         $this->assertEquals(22, $scalemenu[0]['value']);
         $this->assertEquals('A1:22', $scalemenu[0]['label']);
         $this->assertEquals(12, $scalemenu[10]['value']);
         $this->assertEquals('C3:12', $scalemenu[10]['label']);
+        $this->assertEquals(-1, $scalemenu[23]['value']);
+        $this->assertEquals('No grade', $scalemenu[23]['label']);
 
         // Check adminmenu.
         $this->assertArrayHasKey('adminmenu', $form);

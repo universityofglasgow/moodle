@@ -1064,7 +1064,7 @@ class grades {
         }
 
         if ($items = $DB->get_records('local_gugrades_scalevalue', ['scaleid' => $scaleid])) {
-            $output = [];
+            $output = [-1 => get_string('nograde', 'local_gugrades')];
             foreach ($items as $item) {
                 $output[$item->value] = $item->item;
             }

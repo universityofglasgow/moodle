@@ -556,46 +556,45 @@ class api {
         // Ask activity for grade.
         $rawgrade = $activity->get_first_grade($userid);
 
-        // Ask conversion object for converted grade and display grade.
-        if ($rawgrade !== false) {
+        // If fillns not selected, then write whatever we got 
+        // MGU-1293: including null (no grade).
+        if (empty($fillns) || (!empty($fillns) && !is_null($rawgrade))) {
 
             // Can (sometimes) come back as string, for some reason.
-            $rawgrade = floatval($rawgrade);
+            if ($rawgrade) {
+                $rawgrade = floatval($rawgrade);
+            }
 
-            //if ($mapping->validate($rawgrade)) {
-                [$convertedgrade, $displaygrade] = $mapping->import($rawgrade);
+            [$convertedgrade, $displaygrade] = $mapping->import($rawgrade);
 
-                // TODO: Is rawgrade correct? For scheduleB this will be completely
-                // unrelated. E.g. rawgrade 6 = converted grade = 14.
-                \local_gugrades\grades::write_grade(
-                    courseid:       $courseid,
-                    gradeitemid:    $gradeitemid,
-                    userid:         $userid,
-                    admingrade:     '',
-                    //rawgrade:       $rawgrade,
-                    rawgrade:       $convertedgrade,
-                    convertedgrade: $convertedgrade,
-                    displaygrade:   $displaygrade,
-                    weightedgrade:  0,
-                    gradetype:      'FIRST',
-                    other:          '',
-                    iscurrent:      true,
-                    iserror:        false,
-                    auditcomment:   get_string('import', 'local_gugrades'),
-                    ispoints:       !$mapping->is_scale(),
-                );
+            // TODO: Is rawgrade correct? For scheduleB this will be completely
+            // unrelated. E.g. rawgrade 6 = converted grade = 14.
+            \local_gugrades\grades::write_grade(
+                courseid:       $courseid,
+                gradeitemid:    $gradeitemid,
+                userid:         $userid,
+                admingrade:     '',
+                //rawgrade:       $rawgrade,
+                rawgrade:       $convertedgrade,
+                convertedgrade: $convertedgrade,
+                displaygrade:   $displaygrade,
+                weightedgrade:  0,
+                gradetype:      'FIRST',
+                other:          '',
+                iscurrent:      true,
+                iserror:        false,
+                auditcomment:   get_string('import', 'local_gugrades'),
+                ispoints:       !$mapping->is_scale(),
+            );
 
-                // Re-aggregate this user
-                if (!$noaggregation && $aggregationsupported) {
-                    \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
-                }
+            // Re-aggregate this user
+            if (!$noaggregation && $aggregationsupported) {
+                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+            }
 
-                return true;
-            //} else {
-            //
-            //    throw new \moodle_exception("Cannot validate grade to be imported - " . $rawgrade);
-            //}
-        } else if (!empty($fillns)) {
+            return true;
+
+        } else {
 
             // If there's no grade and fillns is enabled, write
             // an NS grade, instead.
@@ -979,9 +978,13 @@ class api {
         // Get scalemenu
         if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEA) {
             $scale = \local_gugrades\grades::get_scale(0, 'schedulea');
+
+            // MGU-1293: No grade option is not needed.
+            unset($scale[-1]);
             $scalemenu = self::formkit_menu($scale, true);
         } else if ($category->atype == \local_gugrades\GRADETYPE_SCHEDULEB) {
             $scale = \local_gugrades\grades::get_scale(0, 'scheduleb');
+            unset($scale[-1]);
             $scalemenu = self::formkit_menu($scale, true);
         } else {
             $scalemenu = [];
@@ -1143,6 +1146,7 @@ class api {
 
     /**
      * Write additional grade
+     * MGU-1293: $scale set to -1 is a proxy for No Grade.
      * @param int $courseid
      * @param int $gradeitemid
      * @param int $userid
@@ -1226,9 +1230,17 @@ class api {
             [$code, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $displaygrade = $code;
         } else if ($usescale) {
-            $displaygrade = $mapping->get_band($scale);
-            $rawgrade = $scale;
-            $convertedgrade = $scale;
+
+            // MGU-1293: Check for -1, which is No grade
+            if ($scale == -1) {
+                $displaygrade = get_string('nograde', 'local_gugrades');
+                $rawgrade = null;
+                $convertedgrade = null;
+            } else {
+                $displaygrade = $mapping->get_band($scale);
+                $rawgrade = $scale;
+                $convertedgrade = $scale;
+            }
         } else {
             $displaygrade = $grade;
             $rawgrade = $grade;

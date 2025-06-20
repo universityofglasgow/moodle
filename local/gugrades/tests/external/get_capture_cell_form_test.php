@@ -90,7 +90,7 @@ final class get_capture_cell_form_test extends \local_gugrades\external\gugrades
 
         $this->assertTrue($usescale);
         $this->assertEquals(0, $grademax);
-        $this->assertCount(23, $scalemenu);
+        $this->assertCount(24, $scalemenu);
         $this->assertGreaterThan(0, count($admingrades));;
         $this->assertEquals('H:0', $scalemenu[22]['label']);
     }

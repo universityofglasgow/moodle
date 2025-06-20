@@ -253,7 +253,7 @@
                 admingrade: admingrade.value == 'GRADE' ? '' : admingrade.value,
                 reason: reason.value,
                 other: other.value,
-                scale: scale.value ? scale.value : 0, // WS expecting int
+                scale:scale.value ? scale.value : 0,
                 grade: grade.value,
                 notes: notes.value,
             }

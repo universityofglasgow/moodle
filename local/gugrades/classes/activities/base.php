@@ -213,13 +213,13 @@ abstract class base {
     public function get_first_grade(int $userid) {
         global $DB;
 
+        // MGU-1293: If there's no grade return null (No grade)
         if ($grade = $DB->get_record('grade_grades', ['itemid' => $this->gradeitemid, 'userid' => $userid])) {
-            if ($grade->finalgrade) {
-                return $grade->finalgrade;
-            }
-        }
 
-        return false;
+            return $grade->finalgrade;
+        } else {
+            return null;
+        }
     }
 
     /**

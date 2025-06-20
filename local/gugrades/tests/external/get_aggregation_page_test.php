@@ -181,6 +181,9 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
             $this->student->id,
         ];
 
+        // Reset caches
+        \local_gugrades\api::reset_all_caches();
+
         // Install test data for student.
         $this->load_data('data1c', $this->student->id);
 
@@ -192,13 +195,16 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
                 $status
             );
         }
-
+        $grades = $DB->get_records('local_gugrades_grade', ['userid' => $this->student->id]);
+        
         // Get first csv test string.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
+
+
 
         $fred = $page['users'][0];
         $this->assertEquals("0", $fred['completed']);

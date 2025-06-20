@@ -105,7 +105,7 @@ final class get_capture_export_options_data_test extends \local_gugrades\externa
         $this->assertEquals('SECOND', $options[6]['gradetype']);
         $this->assertEquals('2nd grade', $options[6]['description']);
         $this->assertEquals('PROVISIONAL', $options[7]['gradetype']);
-        $this->assertEquals('Provisional', $options[7]['description']);
+        $this->assertEquals('Latest grade', $options[7]['description']);
 
         // Add an 'other' additional grade.
         $nothing = write_additional_grade::execute(
