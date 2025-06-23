@@ -136,11 +136,11 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
     }
 
     /**
-     * Test GC admin grade
+     * Test EC admin grade
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      */
-    public function test_GC_admin_grade(): void {
+    public function test_EC_admin_grade(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -172,12 +172,12 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
         $category->droplow = 1;
         $DB->update_record('grade_categories', $category);
 
-        // Set MV for question 3.
+        // Set EC for question 3.
         // This is technically the lowest value grade but the MV should override the drop low
         $this->apply_admingrade('Question 3', $this->student->id, 'GOODCAUSE_FO');
 
         // Get aggregation page for sub-category.
-        // MV should override grades missing.
+        // EC should override grades missing.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummer->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
@@ -189,31 +189,31 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
         $this->assertEquals(0, $fred['rawgrade']);
 
         // Get aggregation page for total.
-        // MV should override grades missing.
+        // EC should override grades missing.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
 
-        // MV should 'bubble up' to top.
+        // EC should 'bubble up' to top.
         $fred = $page['users'][0];
         $this->assertEquals('EC', $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
 
-        // Set 07 for question 4.
-        // This is technically the lowest value grade but the 07 should override the drop low and MV.
+        // Set DFR for question 4.
+        // This is technically the lowest value grade but the DFR should override the drop low and MV.
         $this->apply_admingrade('Question 4', $this->student->id, 'DEFERRED');
 
         // Get aggregation page for total.
-        // Should change to 07.
+        // Should change to DFR.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
 
-        // 07 should 'bubble up' to top.
+        // DFR should 'bubble up' to top.
         $fred = $page['users'][0];
         $this->assertEquals('DFR', $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
@@ -273,20 +273,20 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
         $this->assertEquals(0, $fred['rawgrade']);
 
         // Get aggregation page for total.
-        // GC should override grades missing.
+        // EC should override grades missing.
         $page = get_aggregation_page::execute($this->course->id, $this->gradecatsummative->id, '', '', 0, false);
         $page = external_api::clean_returnvalue(
             get_aggregation_page::execute_returns(),
             $page
         );
 
-        // INTERRUPTIONOFSTUDIES should 'bubble up' to top.
+        // IS should 'bubble up' to the top.
         $fred = $page['users'][0];
         $this->assertEquals('IS', $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
 
         // Set DFR for question 4.
-        // This is technically the lowest value grade but DFR should override the drop low and IS.
+        // This is technically the lowest value grade but DFR should override the drop lowest and IS.
         $this->apply_admingrade('Question 4', $this->student->id, 'DEFERRED');
 
         // Get aggregation page for total.
@@ -297,7 +297,7 @@ final class admin_grades_test extends \local_gugrades\external\gugrades_aggregat
             $page
         );
 
-        // DFR should 'bubble up' to top.
+        // DFR should 'bubble up' to the top.
         $fred = $page['users'][0];
         $this->assertEquals('DFR', $fred['displaygrade']);
         $this->assertEquals(0, $fred['rawgrade']);
