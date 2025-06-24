@@ -48,28 +48,33 @@ class course_section_manager {
      * @return int
      * @throws \dml_exception
      */
-    public static function get_max_sections() {
+    public static function get_max_sections(): int {
         $maxsections = get_config('moodlecourse', 'maxsections');
         if (!$maxsections || !is_numeric($maxsections)) {
             $maxsections = 52;
         }
-        return $maxsections;
+        return (int)$maxsections;
     }
 
     /**
-     * Count course sections excluding section zero and any sub-sections.
-     * @param int $courseid
+     * Does course section count (excl section zero and sub-sections) exceed threshold?
+     * @param int $courseid the course ID we are checking
+     * @param int $threshold the threshold we are checking
+     * @return bool whether the section count exceeds the threshold
      */
-    public static function count_course_sections(int $courseid): int {
+    public static function course_section_count_exceeds(int $courseid, int $threshold): bool {
         $count = 0;
         $modinfo = get_fast_modinfo($courseid);
         $secsall = $modinfo->get_section_info_all();
         foreach ($secsall as $section) {
             if ($section->section > 0 && !$section->is_delegated()) {
                 $count++;
+                if ($count > $threshold) {
+                    return true;
+                }
             }
         }
-        return $count;
+        return false;
     }
 
     /**

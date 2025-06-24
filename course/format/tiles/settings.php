@@ -309,12 +309,6 @@ if ($ADMIN->fulltree) {
     $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
-    $name = 'format_tiles/usetooltips';
-    $title = get_string('usetooltips', 'format_tiles');
-    $description = get_string('usetooltips_desc', 'format_tiles');
-    $default = 0;
-    $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
-
     $setting = new admin_setting_configtext(
         'format_tiles/documentationurl',
         get_string('documentationurl', 'format_tiles'),

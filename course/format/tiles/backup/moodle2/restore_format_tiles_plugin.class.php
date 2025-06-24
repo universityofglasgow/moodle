@@ -430,13 +430,12 @@ class restore_format_tiles_plugin extends restore_format_plugin {
             $included = $this->get_setting_value('section_' . $sectionid . '_included');
             if ($included) {
                 $totalincluded++;
-                if ($totalincluded > $maxallowed + 1) {
+                if ($totalincluded > ($maxallowed + 1) * 5) {
                     // Allowing this section would mean we have too many secs - disallow.
-                    $a = new stdClass();
-                    $a->numsections = $totalincluded;
-                    $a->maxallowed = $maxallowed;
-                    \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $a));
-                    throw new moodle_exception('restoretoomanysections', 'format_tiles', '', $a);
+                    // Legacy check, included in 2020 to protect against issue 45 and should be very unlikely to happen now.
+                    // Check can probably be removed soon.
+                    \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $maxallowed));
+                    throw new moodle_exception('restoretoomanysections', 'format_tiles', '', $maxallowed);
                 }
             }
         }
@@ -461,8 +460,9 @@ class restore_format_tiles_plugin extends restore_format_plugin {
         }
 
         // If we are importing into a course we want to check it doesn't have too many sections already.
-        $countsections = \format_tiles\local\course_section_manager::count_course_sections($courseid);
-        if ($countsections > $maxallowed) {
+        // This is a legacy check which was included in 2020 to protect against issue 45 and should be very unlikely to happen now.
+        // Check can probably be removed soon.
+        if (\format_tiles\local\course_section_manager::course_section_count_exceeds($courseid, $maxallowed * 5)) {
             $a = new stdClass();
             $a->sectionnum = \format_tiles\local\course_section_manager::get_max_non_subsection_number($courseid);
             $a->maxallowed = $maxallowed;

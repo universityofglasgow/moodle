@@ -559,6 +559,7 @@ class format_tiles extends core_courseformat\base {
                 'courseId' => $COURSE->id,
                 get_config('format_tiles', 'allowphototiles'),
                 get_config('format_tiles', 'documentationurl'),
+                'activitydocsurl' => get_docs_url('Activity_completion_settings'),
             ];
             $PAGE->requires->js_call_amd('format_tiles/edit_form_helper', 'init', $jsparams);
         } else {

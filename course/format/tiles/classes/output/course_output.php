@@ -247,7 +247,6 @@ class course_output implements \renderable, \templatable {
         $data['hasabovetilescontrols'] = !empty($data['abovetilescontrols']);
 
         $data['useSubtiles'] = get_config('format_tiles', 'allowsubtilesview') && $this->courseformatoptions['courseusesubtiles'];
-        $data['usetooltips'] = get_config('format_tiles', 'usetooltips');
         $data['outerextraclasses'] = get_config('format_tiles', 'subtileiconcolourbackground')
             ? 'format-tiles-colour-subtile-icon-bg' : '';
 
@@ -286,19 +285,6 @@ class course_output implements \renderable, \templatable {
         $options->noclean = true;
         $options->overflowdiv = true;
         return format_text($summarytext, $section->summaryformat, $options);
-    }
-
-    /**
-     * Temporary function for Moodle 4.0 upgrade - todo to be replaced.
-     * @param object $section
-     * @return string|null
-     * @throws \coding_exception
-     */
-    protected function temp_section_activity_summary($section): ?string {
-        $widgetclass = $this->format->get_output_classname('content\\section\\cmsummary');
-        $widget = new $widgetclass($this->format, $section);
-        $result = $this->courserenderer->render($widget);
-        return trim(strip_tags($result)) ? $result : null;
     }
 
     /**
@@ -621,7 +607,6 @@ class course_output implements \renderable, \templatable {
                     'visible' => $section->visible,
                     'restrictionlock' => !($section->available),
                     'userclickable' => $section->available || $section->uservisible,
-                    'activity_summary' => $data['usetooltips'] ? self::temp_section_activity_summary($section) : '',
                     'titleclass' => strlen($title) >= $longtitlelength ? ' longtitle' : '',
                     'progress' => false,
                     'isactive' => $this->course->marker == $section->section,
@@ -772,9 +757,11 @@ class course_output implements \renderable, \templatable {
                     } else if ($issubsection && $includesubsectiondata) {
                         // Add completion data for the subsection to the parent section totals.
                         $delegatedsectioninfo = $thismod->get_delegated_section_info();
-                        $delegatedsectiondata = $this->section_progress($delegatedsectioninfo->sectionnum);
-                        $completed += $delegatedsectiondata['completed'];
-                        $outof += $delegatedsectiondata['outof'];
+                        if ($delegatedsectioninfo !== null && ($delegatedsectioninfo->sectionnum ?? null)) {
+                            $delegatedsectiondata = $this->section_progress($delegatedsectioninfo->sectionnum);
+                            $completed += $delegatedsectiondata['completed'];
+                            $outof += $delegatedsectiondata['outof'];
+                        }
                     }
                 }
             }

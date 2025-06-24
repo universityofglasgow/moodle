@@ -692,3 +692,10 @@ On section.php:
 - If user is editing, ignore setting to show sec zero at top of every section.php page
 - If user requests course/view.php?section=xx, redirect to course/section.php
 - Improve modal JS on section.php page
+
+4.5.0.21 (2025060258)
+=====================
+- Issue 274 remove tooltip for activity summary
+- Issue 277 fix progress count error where no subsection data
+- Issue 276 remove subsection icon in edit mode
+- Simplify legacy excess sections check

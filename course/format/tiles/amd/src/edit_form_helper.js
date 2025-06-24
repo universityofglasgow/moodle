@@ -32,7 +32,7 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
     function ($, Notification, str, Templates) {
         "use strict";
         return {
-            init: function (pageType, courseDefaultIcon, courseId, allowphototiles, documentationUrl) {
+            init: function (pageType, courseDefaultIcon, courseId, allowphototiles, documentationUrl, activitydocsurl) {
                 $(document).ready(function () {
                     const useSubTilesCheckBox = $("input#id_courseusesubtiles");
                     const useSubTilesSecZeroCheckBox = $("input#id_usesubtilesseczero");
@@ -64,12 +64,13 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
                                 enableCompBox.val("1");
                                 str.get_strings([
                                     {key: "completion", component: "completion"},
-                                    {key: "completionswitchhelp", component: "format_tiles"}
+                                    {
+                                        key: "completionswitchhelp",
+                                        component: "format_tiles",
+                                        param: `<a href="${activitydocsurl}" target="_blank">${activitydocsurl}</a>`
+                                    }
                                 ]).done(function (s) {
-                                    Notification.alert(
-                                        s[0],
-                                        s[1]
-                                    );
+                                    Notification.alert(s[0], s[1]);
                                 });
                             }
                         }

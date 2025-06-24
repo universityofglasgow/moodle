@@ -71,7 +71,7 @@ Depending on the setting, a tick may appear automatically when you have complete
 In other cases, you can click the empty circle when you think you have completed the activity and it will turn into a solid green tick. (Clicking it again removes the tick if you change your mind.)';
 $string['completionswitchhelp'] = '<p>You have selected to show completion tracking on each tile.  We have therefore set "Completion Tracking > Enable" further down this page to "Yes".</p>
 <p>In addition, you need to switch on completion tracking for <b>each item</b> that you are tracking.  e.g. for a PDF, click "Edit settings", look under Activity Completion, and pick the setting you need.</p>
-<p>You can also do this in <b>bulk</b> as explained in the <a href="https://docs.moodle.org/35/en/Activity_completion_settings" target="_blank">detailed explanation of completion tracking on moodle.org</a></p>';
+<p>You can also do this in <b>bulk</b> as explained in the detailed explanation of completion tracking at {$a}</a></p>';
 $string['completionwarning'] = 'You have completion tracking switched on at the course level, but at the individual activity level, no items have tracking enabled, so there is nothing to track.';
 $string['completionwarning_changeinbulk'] = 'Change in bulk';
 $string['completionwarning_help'] = 'You need to make individual items trackable by editing them (under Activity Completion > Completion tracking) or you can do this in bulk under Course Administration > Course Completion > Bulk edit activity completion';
@@ -337,7 +337,7 @@ $string['resetcolours_desc'] = 'Press this button to reset the tile colour for a
 $string['resetincomplete'] = 'Reset incomplete';
 $string['restorefailed'] = 'Restore failed';
 $string['restoreincorrectsections'] = 'Error: Cannot complete as source course contains incorrectly numbered sections (e.g. section number ({$a->sectionnum}) is higher than the max allowed ({$a->maxallowed} as defined in admin setting \'moodlecourse | maxsections\').  Try excluding or deleting sections with high numbers.';
-$string['restoretoomanysections'] = 'Error: Cannot backup or restore as too many course sections are included ({$a->numsections}) and this is more than permitted ({$a->maxallowed}).  Try excluding or deleting some sections.';
+$string['restoretoomanysections'] = 'Error: Cannot backup or restore as too many course sections are included (max {$a}).  Try excluding or deleting some sections.';
 $string['revealcontents'] = 'Reveal tile contents';
 $string['section0name'] = 'General';
 $string['sectionerrorstring'] = 'Your session may have expired.  Try refreshing this page.';
@@ -403,7 +403,5 @@ $string['usejsnavforsinglesection'] = 'Use JS navigation for single section page
 $string['usejsnavforsinglesection_desc'] = 'When checked, any call for a single section page (&section=xx) will be handled using JavaScript, by launching the course main page, animated to open at the requested section via JS, rather than calling the old style PHP single section page';
 $string['usesubtilesseczero'] = 'Use sub tiles in top section';
 $string['usesubtilesseczero_help'] = 'If selected, sub tiles will be used in top section of course as well as within all tiles.  Only available if using sub tiles in the course overall.  This is as the sub tiles take up a lot of room at the very top of the course.  It may be better to leave this unselected, so that any items in the top section are shown in standard list format instead.';
-$string['usetooltips'] = 'Use JavaScript tooltips';
-$string['usetooltips_desc'] = 'Use JavaScript tooltips when user hovers over certain items e.g. completion boxes, tiles for tile contents';
 $string['version'] = 'Version {$a}';
 $string['width'] = 'width';

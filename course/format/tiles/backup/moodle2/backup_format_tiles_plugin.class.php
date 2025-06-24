@@ -145,13 +145,11 @@ class backup_format_tiles_plugin extends backup_format_plugin {
             $admintoolsbutton = '';
         }
 
-        $countsections = \format_tiles\local\course_section_manager::count_course_sections($courseid);
-        if ($countsections && $countsections > $maxallowed * 5) {
-            // Course has a very high number of sections, so fail early as probably en error and we avoid further work.
-            $a = new stdClass();
-            $a->numsections = $countsections;
-            $a->maxallowed = $maxallowed;
-            \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $a) . $admintoolsbutton);
+        if (\format_tiles\local\course_section_manager::course_section_count_exceeds($courseid, $maxallowed * 5)) {
+            // Course has a very high number of sections, so fail early, as probably en error and we avoid further work.
+            // Legacy check, included in 2020 to protect against issue 45 and should be very unlikely to happen now.
+            // Check can probably be removed soon.
+            \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $maxallowed) . $admintoolsbutton);
             throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
         }
 
@@ -169,12 +167,13 @@ class backup_format_tiles_plugin extends backup_format_plugin {
             $included = $this->get_setting_value($settingname);
             if ($included) {
                 $totalincluded++;
-                if ($totalincluded > $maxallowed) {
+                if ($totalincluded > $maxallowed * 5) {
                     // Allowing this section to go in the backup would mean we have too many secs - disallow.
-                    $a = new stdClass();
-                    $a->numsections = $totalincluded;
-                    $a->maxallowed = $maxsectionsconfig;
-                    \core\notification::error(get_string('restoretoomanysections', 'format_tiles', $a) . $admintoolsbutton);
+                    // Legacy check, included in 2020 to protect against issue 45 and should be very unlikely to happen now.
+                    // Check can probably be removed soon.
+                    \core\notification::error(
+                        get_string('restoretoomanysections', 'format_tiles', $maxsectionsconfig) . $admintoolsbutton
+                    );
                     throw new moodle_exception('backupfailed', 'format_tiles', $admintoolsurl);
                 }
             }
