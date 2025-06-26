@@ -1,0 +1,62 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Item 1",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.25
+            },
+            {
+                "name": "Item 2",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.25
+            },
+            {
+                "name": "Item 3",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.25
+            },
+            {
+                "name": "Item 4",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.25
+            },
+            {
+                "name": "Summer exam",
+                "category": true,
+                "weight": 0.5,
+                "children": [
+                    {
+                        "name": "Question 1",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Question 2",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Question 3",
+                        "category": false,
+                        "type": "schedulea"
+                    },
+                    {
+                        "name": "Question 4",
+                        "category": false,
+                        "type": "schedulea"
+                    }
+                ]
+            }
+
+        ]
+    }
+]
