@@ -24,7 +24,7 @@
 
 import * as BetaNotification from 'block_newgu_spdetails/betanotification';
 import * as AssessmentsOverview from 'block_newgu_spdetails/assessmentsoverview';
-import * as AssessmentsDueSoon from 'block_newgu_spdetails/assessmentsduesoon-v2';
+import * as AssessmentsDueSoon from 'block_newgu_spdetails/assessmentsduesoon';
 import * as CourseTabs from 'block_newgu_spdetails/coursetabs';
 
 /**
