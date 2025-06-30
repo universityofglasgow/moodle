@@ -229,7 +229,7 @@
      */
     function import_button_click() {
         showimportmodal.value = true;
-        importadditional.value = false;
+        importadditional.value = true;
         recursiveselect.value = false;
         importfillns.value = false;
         loading.value = false;
