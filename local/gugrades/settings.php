@@ -135,6 +135,9 @@ if ($hassiteconfig) {
     );
     $settingspage->add($startdateafter);
 
+    // Make sure defaults are set for admin grades
+    \local_gugrades\admingrades::setting_defaults();
+
     /**
      * Admingrades definitions
      */

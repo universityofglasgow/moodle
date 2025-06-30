@@ -227,7 +227,7 @@ class admingrades {
         foreach ($defaults as $name => $default) {
             $tag = self::get_setting_tag($name);
             $setting = get_config('local_gugrades', $tag);
-            if (!$setting) {
+            if (empty($setting) || empty(json_decode($setting)->code)) {
                 set_config($tag, json_encode($default['default']), 'local_gugrades');
             }
         }
