@@ -205,7 +205,8 @@ abstract class base {
             if (!array_key_exists($csvgrade, $this->items)) {
 
                 // Failing that, we will accept the 'basic' grade (A1, A2...)
-                if (!$grade = array_search($csvgrade, $this->get_map())) {
+                $grade = array_search($csvgrade, $this->get_map());
+                if ($grade === false) {
                     return [false, 0];
                 }
             } else {
