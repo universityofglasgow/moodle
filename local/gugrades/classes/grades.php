@@ -122,6 +122,35 @@ class grades {
     }
 
     /**
+     * Is a grade category gradetype = GRADE_TYPE_NONE
+     * The grade type is stored in the record of the associated grade_item
+     * @param object $gradecategory
+     * @return boolean
+     */
+    public static function is_gradecategory_grade_type_none(object $gradecategory) {
+        global $DB;
+
+        // If there's no associated grade_item (which probably isn't good), just assume it's no grade.
+        if (!$gradeitem = $DB->get_record('grade_items', ['iteminstance' => $gradecategory->id, 'itemtype' => 'category'])) {
+            return true;
+        }
+
+        return $gradeitem->gradetype == GRADE_TYPE_NONE;
+    }
+
+    /**
+     * Is a grade item the *equivalent* of none.
+     * Currently, that's GRADE_TYPE_NONE or GRADE_TYPE_TEXT
+     * (Setting grade = none in Assignment sets GRADE_TYPE_TEXT in the db)
+     * @param object $gradeitem
+     * @return boolean
+     */
+    public static function is_gradeitem_grade_type_none(object $gradeitem) {
+
+        return ($gradeitem->gradetype == GRADE_TYPE_NONE) || ($gradeitem->gradetype == GRADE_TYPE_TEXT);
+    }
+
+    /**
      * Get first level categories (should be summative / formative and so on)
      * Actually depth==2 in the database (1 == top level)
      * @param int $courseid
@@ -138,9 +167,11 @@ class grades {
         ]);
 
         // We're only interested in categories that have some grade items
-        // Somewhere in their tree.
+        // Somewhere in their tree, and are not gradetype = none.
         foreach ($gradecategories as $category) {
             if (!self::find_child_item($category->id)) {
+                unset($gradecategories[$category->id]);
+            } else if (self::is_gradecategory_grade_type_none($category)) {
                 unset($gradecategories[$category->id]);
             }
         }
@@ -203,12 +234,28 @@ class grades {
         global $DB;
 
         $category = $DB->get_record('grade_categories', ['id' => $categoryid], '*', MUST_EXIST);
-        $gradeitems = $DB->get_records('grade_items', [
-            'courseid' => $courseid,
-        ]);
+        if (self::is_gradecategory_grade_type_none($category)) {
+            throw new \moodle_exception('Attempting to open GRADE_TYPE_NONE category');
+        }
+        $gradeitems = $DB->get_records('grade_items', ['courseid' => $courseid]);
+
+        // Remove any grade type non like items.
+        foreach ($gradeitems as $id => $gradeitem) {
+            if (self::is_gradeitem_grade_type_none($gradeitem)) {
+                unset($gradeitems[$id]);
+            }
+        }
+
         $gradecategories = $DB->get_records('grade_categories', [
             'courseid' => $courseid,
         ]);
+
+        // Remove any GRADE_TYPE_NONE categories.
+        foreach ($gradecategories as $id => $gradecategory) {
+            if (self::is_gradecategory_grade_type_none($gradecategory)) {
+                unset($gradecategories[$id]);
+            }
+        }
         $categorytree = self::recurse_activitytree($category, $gradeitems, $gradecategories);
 
         return $categorytree;
@@ -727,8 +774,11 @@ class grades {
 
         $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
+
+        // Grade type "none" is technically supported as we will deal with it elsewhere. 
+        // None means that the grade is ignored completely. Text is a proxy for None in some activities (just text)
         if (($gradetype == GRADE_TYPE_NONE) || ($gradetype == GRADE_TYPE_TEXT)) {
-            return false;
+            return true;
         }
         if ($gradetype == GRADE_TYPE_SCALE) {
             $scaleid = $gradeitem->scaleid;

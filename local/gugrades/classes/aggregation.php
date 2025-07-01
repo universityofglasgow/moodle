@@ -800,6 +800,9 @@ class aggregation {
         $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
         $gradeitem = $DB->get_record('grade_items',
             ['iteminstance' => $gradecategoryid, 'itemtype' => 'category'], '*', MUST_EXIST);
+        if (\local_gugrades\grades::is_gradeitem_grade_type_none($gradeitem)) {
+            throw new \moodle_exception('Trying to open category with gradetype of none');
+        }
 
         $categorynode = (object)[
             'iscategory' => true,
