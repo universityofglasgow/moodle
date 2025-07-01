@@ -556,7 +556,7 @@ class api {
         // Ask activity for grade.
         $rawgrade = $activity->get_first_grade($userid);
 
-        // If fillns not selected, then write whatever we got 
+        // If fillns not selected, then write whatever we got
         // MGU-1293: including null (no grade).
         if (empty($fillns) || (!empty($fillns) && !is_null($rawgrade))) {
 
@@ -650,6 +650,8 @@ class api {
      */
     public static function get_user_grades(int $userid) {
         global $DB;
+
+        throw new \moodle_exception('This function is now deprecated');
 
         // Load *current* grades for this user.
         if (!$grades = $DB->get_records('local_gugrades_grade', ['userid' => $userid, 'iscurrent' => 1])) {
@@ -1664,7 +1666,7 @@ class api {
         foreach ($caches as $cache) {
             $cache = \cache::make('local_gugrades', $cache);
             $cache->purge();
-        }        
+        }
     }
 
     /**
@@ -1700,7 +1702,7 @@ class api {
         // "Cached" gradeitems.
         $GRADEITEMS = [];
 
-        // As this will be a rarely used function we will take the liberty of purging the caches. 
+        // As this will be a rarely used function we will take the liberty of purging the caches.
         self::reset_all_caches();
     }
 
