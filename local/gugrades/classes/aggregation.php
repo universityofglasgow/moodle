@@ -156,7 +156,9 @@ class aggregation {
         // Run over above and fetch enhanced category information from (hopefully) cache.
         $gradecategories = [];
         foreach ($rawcats as $rawcat) {
-            $gradecategories[] = self::get_enhanced_grade_category($courseid, $rawcat->id);
+            if (!\local_gugrades\grades::is_gradecategory_grade_type_none($rawcat)) {
+                $gradecategories[] = self::get_enhanced_grade_category($courseid, $rawcat->id);
+            }
         }
 
         $sql = "SELECT * FROM {grade_items}
@@ -167,6 +169,13 @@ class aggregation {
             'courseid' => $courseid,
             'categoryid' => $gradecategoryid,
         ]);
+
+        // Remove gradetype == none items.
+        foreach ($gradeitems as $id => $item) {
+            if (\local_gugrades\grades::is_gradeitem_grade_type_none($item)) {
+                unset($gradeitems[$id]);
+            }
+        }
 
         // Short names for items.
         $gradeitems = array_map(function($gi) {
@@ -517,7 +526,7 @@ class aggregation {
 
         // Get original data for "aggregated category" as we may not have got it elsewhere.
         // This is needed if no aggregation is performed.
-        // This is messy :( but check for duplicate CATEGORY grades here and fix. 
+        // This is messy :( but check for duplicate CATEGORY grades here and fix.
         $item = self::get_check_category($courseid, $gradecatitem->id, $user->id);
         //$item = $DB->get_record('local_gugrades_grade',
         //    [
@@ -801,7 +810,7 @@ class aggregation {
         $gradeitem = $DB->get_record('grade_items',
             ['iteminstance' => $gradecategoryid, 'itemtype' => 'category'], '*', MUST_EXIST);
         if (\local_gugrades\grades::is_gradeitem_grade_type_none($gradeitem)) {
-            throw new \moodle_exception('Trying to open category with gradetype of none');
+            throw new \moodle_exception('Trying to open category with gradetype of none. grade_item id = ' . $gradeitem->id);
         }
 
         $categorynode = (object)[
@@ -825,12 +834,21 @@ class aggregation {
         // the (parent) categoryid field is null. So...
         $childcategories = $DB->get_records('grade_categories', ['parent' => $gradecategoryid]);
         foreach ($childcategories as $childcategory) {
-            $categorynode->children[] = self::recurse_tree($courseid, $childcategory->id, $force);
+
+            // Ignore gradetype == none grade categories.
+            if (!\local_gugrades\grades::is_gradecategory_grade_type_none($childcategory)) {
+                $categorynode->children[] = self::recurse_tree($courseid, $childcategory->id, $force);
+            }
         }
 
         // Get grade items in this grade category.
         $items = $DB->get_records('grade_items', ['categoryid' => $gradecategoryid]);
         foreach ($items as $item) {
+
+            // Ignore items that are gradetype == none.
+            if (\local_gugrades\grades::is_gradeitem_grade_type_none($item)) {
+                continue;
+            }
 
             // Get the conversion object, so we can tell what sort of grade we're dealing with.
             if (!($node = $cache->get($item->id)) || $force) {
@@ -888,7 +906,7 @@ class aggregation {
         $cachetag = 'CATEGORY_' . $courseid . '_';
 
         // Is the category in the cache. If not (re)build
-        // (anc cache) that part of the category tree.
+        // (and cache) that part of the category tree.
         return self::recurse_tree($courseid, $gradecategoryid, false);
         if ($gradecategory = $cache->get($cachetag . $gradeitem->id)) {
             return $gradecategory;
@@ -1095,7 +1113,7 @@ class aggregation {
         self::record_weights($items, $userid);
 
         // Now call the appropriate aggregation function to do the sums.
-  
+
         $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
 
         // If this is a scale convert the numeric grade to the appropriate.
@@ -1186,7 +1204,7 @@ class aggregation {
     }
 
     /**
-     * Clear ALL droplow for course 
+     * Clear ALL droplow for course
      * Used if gradebook has no drop low settings for this course
      * @param int $courseid
      */
@@ -1237,7 +1255,7 @@ class aggregation {
 
     /**
      * Are there *any* altered weights in this course?
-     * If not, we can skip making repeated checks. 
+     * If not, we can skip making repeated checks.
      * @param int $courseid
      * @return bool
      */
@@ -1271,7 +1289,7 @@ class aggregation {
      * @param object $category
      * @param int $userid
      * @param int $level
-     * @param bool $skipdroplow 
+     * @param bool $skipdroplow
      * @return array [total, $rawgrade, $displaygrade, completion, error]
      */
     protected static function aggregate_user(

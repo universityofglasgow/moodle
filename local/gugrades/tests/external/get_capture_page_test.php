@@ -120,9 +120,14 @@ final class get_capture_page_test extends \local_gugrades\external\gugrades_adva
             $page
         );
 
+        //var_dump($page); die;
+
         $this->assertIsArray($page);
-        $this->assertFalse($page['gradesupported']);
+        $this->assertTrue($page['gradesupported']);
         $users = $page['users'];
-        $this->assertCount(0, $users);
+        $this->assertCount(2, $users);
+        $columns = $page['columns'];
+        $this->assertCount(1, $columns);
+        $this->assertEquals('FIRST', $columns[0]['gradetype']);
     }
 }

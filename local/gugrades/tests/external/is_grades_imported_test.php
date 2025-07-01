@@ -124,10 +124,10 @@ final class is_grades_imported_test extends \local_gugrades\external\gugrades_ad
 
         // Check recursivematch field.
         $this->assertArrayHasKey('recursivematch', $gradesimported);
-        $this->assertFalse($gradesimported['recursivematch']);
+        $this->assertTrue($gradesimported['recursivematch']);
 
         // Check all grades valid.
         $this->assertArrayHasKey('allgradesvalid', $gradesimported);
-        $this->assertFalse($gradesimported['allgradesvalid']);
+        $this->assertTrue($gradesimported['allgradesvalid']);
     }
 }
