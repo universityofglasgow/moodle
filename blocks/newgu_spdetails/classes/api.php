@@ -258,6 +258,18 @@ class api extends external_api {
             if ($key != null) {
                 $activitydate = $cm->customdata[$key];
             }
+        } else {
+            // If there is no customdata we try one more time from scratch.
+            // Get the activity based on its type.
+            $courseid = 0;
+            if (isset($cm->course)) {
+                $courseid = $cm->course;
+            }
+            $gradinginfo = grade_get_grades($courseid, 'mod', $cm->modname, $cm->instance);
+            $activity = \block_newgu_spdetails\activity::activity_factory($gradinginfo->items[0]->id, $courseid, 0);
+            if ($records = $activity->get_assessmentsdue()) {
+                $activitydate = $records[0]->duedate;
+            }
         }
 
         return $activitydate;
