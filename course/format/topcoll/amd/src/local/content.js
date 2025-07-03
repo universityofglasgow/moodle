@@ -64,7 +64,7 @@ export default class TopcollComponent extends Component {
     }
 
     /**
-     * Static method to create a component instance form the mustache template.
+     * Static method to create a component instance form the mustahce template.
      *
      * @param {string} target the DOM main element or its ID
      * @param {object} selectors optional css selector overrides
