@@ -1,0 +1,130 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_topcoll/coursestyles
+
+    Collapsed Topics course styles template.
+
+    Context variables required for this template:
+    * tif - Toggle icon font.
+    * tiftogglealignment - Toggle icon font toggle alignment.
+    * togglebackground - Toggle background colour.
+    * toggleforegroundcolour - Toggle foreground colour.
+    * togglealignment - Toggle alignment.
+    * toggleiconposition - Toggle icon position.
+    * toggleforegroundhovercolour - Toggle foreground hover colour.
+    * togglebackgroundhovercolour - Toggle background hover colour.
+    * topcollsidewidthval - Side width.
+    * topcollsidewidthvalicons - Side width of icons.
+    * hulhc - Horizontal unordered list for horizontal columns.
+    * tcborderradiustl - Border radius top left.
+    * tcborderradiustr - Border radius top right.
+    * tcborderradiusbr - Border radius bottom right.
+    * tcborderradiusbl - Border radius bottom left.
+
+    Example context (json):
+    {
+        "tif": true,
+        "tiftogglealignment": "center",
+        "togglebackground": "rgba(226, 226, 242, 1.0)",
+        "toggleforegroundcolour": "rgba(0, 0, 0, 1.0)",
+        "togglealignment": "center",
+        "toggleiconposition": "left",
+        "toggleforegroundhovercolour": "rgba(136, 136, 136, 1.0)",
+        "togglebackgroundhovercolour": "rgba(238, 238, 255, 1.0)",
+        "topcollsidewidthval": "40px",
+        "topcollsidewidthvalicons": "40px",
+        "hulhc": true,
+        "tcborderradiustl": "0.7",
+        "tcborderradiustr": "0.7",
+        "tcborderradiusbr": "0.7",
+        "tcborderradiusbl": "0.7"
+    }
+}}
+<style type="text/css" media="screen">
+    /* <![CDATA[ */
+
+    /* -- Toggle -- */
+    .course-content ul.ctopics li.section .content .toggle,
+    .course-content ul.ctopics li.section .content.sectionhidden {
+        background-color: {{togglebackground}};
+    }
+    /* -- Toggle text -- */
+    .course-content ul.ctopics li.section .content .toggle .the_toggle,
+    .course-content ul.ctopics li.section .content.sectionhidden {
+        color: {{toggleforegroundcolour}};
+    }
+    {{#tif}}
+    .course-content ul.ctopics li.section .content .toggle.tif .the_toggle .sectionname {
+        justify-self: {{tiftogglealignment}};
+    }
+    {{/tif}}
+    {{^tif}}
+    .course-content ul.ctopics li.section .content .toggle .the_toggle {
+        text-align: {{togglealignment}};
+    }
+    {{/tif}}
+    .course-content ul.ctopics li.section .content.sectionhidden {
+        text-align: {{togglealignment}};
+    }
+    {{#toggleiconposition}}
+    /* Toggle icon position. */
+    .course-content ul.ctopics li.section .content .toggle .the_toggle,
+    #toggle-all .content .toggle-all {
+        background-position: {{toggleiconposition}} center;
+    }
+    {{/toggleiconposition}}
+    /* -- What happens when a toggle is hovered over -- */
+    .course-content ul.ctopics li.section .content .toggle:hover .the_toggle,
+    .course-content ul.ctopics li.section .content.sectionhidden .toggle:hover .the_toggle,
+    .course-content ul.ctopics li.section .content .toggle:focus .the_toggle,
+    .course-content ul.ctopics li.section .content.sectionhidden .toggle:focus .the_toggle {
+        color: {{toggleforegroundhovercolour}};
+    }
+    .course-content ul.ctopics li.section .content .toggle:hover,
+    .course-content ul.ctopics li.section .content .toggle:focus {
+        background-color: {{togglebackgroundhovercolour}};
+    }
+    .course-content ul.ctopics li.section.main > .content,
+    .course-content ul.ctopics li.tcsection > .content {
+        margin: 0 {{topcollsidewidthval}};
+    }
+    {{#topcollsidewidthvalicons}}
+    .course-content ul.ctopics li.section.main .side,
+    .course-content ul.ctopics li.tcsection .side {
+        width: {{topcollsidewidthvalicons}};
+    }
+    {{/topcollsidewidthvalicons}}
+    {{#hulhc}}
+    .course-content ul.ctopics li.section {
+        display: inline-block;
+        vertical-align: top;
+    }
+    .course-content ul.ctopics li.section.hidden {
+        display: inline-block !important; /* Only using '!important' because of Bootstrap 3. */
+    }
+    {{/hulhc}}
+    .course-content ul.ctopics li.section .content .toggle,
+    .course-content ul.ctopics li.section .content.sectionhidden {
+        border-top-left-radius: {{tcborderradiustl}}em;
+        border-top-right-radius: {{tcborderradiustr}}em;
+        border-bottom-right-radius: {{tcborderradiusbr}}em;
+        border-bottom-left-radius: {{tcborderradiusbl}}em;
+    }
+
+    /* ]]> */
+</style>
