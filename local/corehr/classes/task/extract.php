@@ -43,6 +43,7 @@ class extract extends \core\task\adhoc_task {
             // Instantiate boomi class and see if that's what we're going to use.
             $boomi = new \local_corehr\boomi();
             if ($boomi->is_getperson_configured()) {
+                mtrace('using Boomi');
                 $payload = $boomi->getpersonbyguid($guid);
                 if ($payload) {
                     \local_corehr\api::store_extract($user->id, $payload);
@@ -51,6 +52,7 @@ class extract extends \core\task\adhoc_task {
             } else {
 
                 // Old SOAP method it is, in that case.
+                mtrace('using SOAP');
                 $fullextract = \local_corehr\api::extract($guid);
                 if ($fullextract) {
                     $extract = \local_corehr\api::store_extract($user->id, $fullextract);
