@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2023042000;
-$plugin->requires = 2018051700;
+$plugin->version = 2025070200;
+$plugin->requires = 2024100700; // Moodle 4.5.0
 $plugin->component = 'local_corehr';
 $plugin->description = 'Sychronise completion data for CoreHR';

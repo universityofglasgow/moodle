@@ -243,7 +243,7 @@ class api {
         $data->collegedesc = $extract->collegeDesc;
         $data->costcentre = $extract->costCentre;
         $data->costcentredesc = $extract->costCentreDesc;
-        $data->title = $extract->title;
+        $data->title = empty($extract->title) ? '' : $extract->title;
         $data->forename = $extract->forename;
         $data->middlename = $extract->middleName;
         $data->surname = $extract->surname;

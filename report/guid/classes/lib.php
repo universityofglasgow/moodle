@@ -537,7 +537,6 @@ class lib {
             $category = new \stdClass;
             $category->name = $categoryname;
             \profile_save_category($category);
-            var_dump($category);
         }
 
         // Fields to check

@@ -136,5 +136,31 @@ function xmldb_local_corehr_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2022062000, 'local', 'corehr');
     }
 
+    if ($oldversion < 2025070200) {
+
+        // Define table local_corehr_boomi_log to be created.
+        $table = new xmldb_table('local_corehr_boomi_log');
+
+        // Adding fields to table local_corehr_boomi_log.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('url', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('errorcode', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('errormessage', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('executionid', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('payload', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_corehr_boomi_log.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for local_corehr_boomi_log.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Corehr savepoint reached.
+        upgrade_plugin_savepoint(true, 2025070200, 'local', 'corehr');
+    }
+
     return true; //have to be in else get an unknown error
 }

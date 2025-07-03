@@ -27,6 +27,25 @@ if ($hassiteconfig) {
             'local_corehr', get_string('pluginname', 'local_corehr'));
     $ADMIN->add('localplugins', $settings);
 
+    // BOOMI SETTINGS.
+
+    $settings->add(new admin_setting_heading('local_corehr/boomiws',
+        get_string('boomiheading', 'local_corehr'), ''));    
+
+    $settings->add(new admin_setting_configtext(
+        'local_corehr/getpersonurl', get_string('getpersonurl', 'local_corehr'),
+        get_string('configgetpersonurl', 'local_corehr'), '', PARAM_URL));
+
+    $settings->add(new admin_setting_configtext(
+        'local_corehr/boomiuser', get_string('boomiuser', 'local_corehr'),
+        '', '', PARAM_ALPHANUM));
+
+    $settings->add(new admin_setting_configpasswordunmask(
+            'local_corehr/boomipassword', get_string('boomipassword', 'local_corehr'),
+            '', '', PARAM_RAW));
+
+    // OLD SOAP SETTINGS.
+
     $settings->add(new admin_setting_heading('local_corehr/corehrws',
         get_string('corehrwsheading', 'local_corehr'), ''));
 

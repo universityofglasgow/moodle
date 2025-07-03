@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * LDAP authentication plugin tests.
+ * CoreHR plugin tests.
  *
  * NOTE: in order to execute this test you need to set up
  *       CoreHR test web server credentials in config.php or phpunit.xml

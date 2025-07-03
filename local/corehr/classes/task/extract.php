@@ -39,10 +39,23 @@ class extract extends \core\task\adhoc_task {
         mtrace('local_corehr: user record located for ' . fullname($user));
 
         if ($user) {
-            $fullextract = \local_corehr\api::extract($guid);
-            if ($fullextract) {
-                $extract = \local_corehr\api::store_extract($user->id, $fullextract);
-                \local_corehr\api::write_profile($user->id, $fullextract);
+
+            // Instantiate boomi class and see if that's what we're going to use.
+            $boomi = new \local_corehr\boomi();
+            if ($boomi->is_getperson_configured()) {
+                $payload = $boomi->getpersonbyguid($guid);
+                if ($payload) {
+                    \local_corehr\api::store_extract($user->id, $payload);
+                    \local_corehr\api::write_profile($user->id, $payload);
+                }
+            } else {
+
+                // Old SOAP method it is, in that case.
+                $fullextract = \local_corehr\api::extract($guid);
+                if ($fullextract) {
+                    $extract = \local_corehr\api::store_extract($user->id, $fullextract);
+                    \local_corehr\api::write_profile($user->id, $fullextract);
+                }
             }
         }
     }

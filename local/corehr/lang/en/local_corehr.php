@@ -20,6 +20,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['boomiheading'] = 'Boomi web service';
+$string['boomipassword'] = 'Boomi password';
+$string['boomiuser'] = 'Boomi username';
 $string['campuscourseid'] = 'Course id(s)';
 $string['campusendpoint'] = 'Campus card endpoint URL';
 $string['campuscardheading'] = 'Campus Card web service settings';
@@ -34,6 +37,7 @@ $string['configintro'] = '<div class="alert">This page configures synchronisatio
 $string['configcampuscourseid'] = 'Comma separated list of courses for Campus Card';
 $string['configcampusendpoint'] = 'URL of campus card web service';
 $string['configcampususername'] = 'Campus Card web service login username';
+$string['configgetpersonurl'] = 'URL of GetPersonByGUID REST endpoint';
 $string['configwsdltraining'] = 'URL of SOAP WSDL for training interface';
 $string['configwsdlextract'] = 'URL of SOAP WSDL for HR data extract';
 $string['coursecode'] = 'Course code (HR)';
@@ -42,6 +46,7 @@ $string['enable'] = 'Enable for this course';
 $string['enable_help'] = 'When deleting completion data and allowing data to rebuild, ensure this plugin is disabled until process is complete.';
 $string['enrolallstaff'] = 'Enrol all staff';
 $string['enrolallstaff_help'] = 'Enrol all confirmed staff accounts onto this course as they log in. Only with non-empty course code';
+$string['getpersonurl'] = 'GetPersonByGUID URL';
 $string['notconfigured'] = 'Plugin is not configured';
 $string['password'] = 'Password';
 $string['pluginname'] = 'CoreHR integration';
