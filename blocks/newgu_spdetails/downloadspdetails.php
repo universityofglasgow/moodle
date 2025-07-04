@@ -26,6 +26,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+ ob_start();
+
 require_once(dirname(dirname(__FILE__)) . '../../config.php');
 require_once("$CFG->libdir/excellib.class.php");
 
@@ -384,7 +386,6 @@ EOD;
 }
 
 if ($spdetailstype == "excel" && $spdetailspdf != "" && $strcoursestype != "") {
-
     $filename = clean_filename($strcoursestype . " Report - " . $myfirstlastname . "_" . date("d-M-Y") . '.xls');
     $workbook = new MoodleExcelWorkbook("-");
     // Send HTTP headers.
@@ -472,6 +473,7 @@ if ($spdetailstype == "excel" && $spdetailspdf != "" && $strcoursestype != "") {
             $myxls->write_string($cell["row"], $cell["col"], $cell["text"], $cellformat);
         }
     }
-
+    ob_end_clean();
     $workbook->close();
+
 }
