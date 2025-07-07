@@ -425,7 +425,6 @@ class api {
      */
     protected static function is_campus_course($courseid) {
         $config = get_config('local_corehr');
-        self::mtrace('Campus Card course(s) - ' . $config->campuscourseid);
         $ids = explode(',', $config->campuscourseid);
         foreach ($ids as $id) {
             $id = trim($id);
@@ -497,6 +496,7 @@ class api {
         }
 
         // Is this a campus card course?
+        /*
         if (self::is_campus_course($courseid)) {
 
             // Write details to status record.
@@ -515,6 +515,7 @@ class api {
 
             // self::mtrace('Adding user to Campus Card queue. Userid = ' . $userid);
         }
+        */
 
         return;
     }
