@@ -45,7 +45,7 @@ class send extends \core\task\scheduled_task {
         } else {
 
             // Shiny new Boomi thing.
-            $message = $boomi->trainingrecord($status->coursecode, (int)$status->pesonnelno, $status->completed);
+            $message = $boomi->trainingrecord($status->coursecode, (int)$status->personnelno, $status->completed);
 
             return $message;
         }
