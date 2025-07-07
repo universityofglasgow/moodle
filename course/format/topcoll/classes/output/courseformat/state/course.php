@@ -45,10 +45,22 @@ class course extends course_base {
     /**
      * Export this data so it can be used as state object in the course editor.
      *
-     * @param renderer_base $output typically, the renderer that's calling this function
-     * @return stdClass data context for a mustache template
+     * @param renderer_base $output typically, the renderer that's calling this function.
+     * @return stdClass data context for a mustache template.
      */
     public function export_for_template(\renderer_base $output): stdClass {
+        $shownsectionsinfo = $this->format->get_shown_sections();
+        return $this->ct_export_for_template($shownsectionsinfo, $output);
+    }
+
+    /**
+     * Export this data so it can be used as state object in the course editor.
+     *
+     * @param array $shownsectionsinfo Shown section information.
+     * @param renderer_base $output typically, the renderer that's calling this function.
+     * @return stdClass data context for a mustache template.
+     */
+    public function ct_export_for_template($shownsectionsinfo, \renderer_base $output): stdClass {
         global $CFG;
 
         $format = $this->format;
@@ -63,24 +75,23 @@ class course extends course_base {
         $data = (object)[
             'id' => $course->id,
             'numsections' => $format->get_last_section_number(),
-            'numsectionswithoutdeligated' => $format->get_last_section_number_without_deligated(),
+            'numsectionswithoutdelegated' => $format->get_last_section_number_without_delegated(),
             'sectionlist' => [],
             'editmode' => $format->show_editor(),
             'highlighted' => $format->get_section_highlighted_name(),
             'maxsections' => $format->get_max_sections(),
-            'maxsectionswithoutdeligated' => $format->get_max_sections_without_deligated(),
+            'maxsectionswithoutdelegated' => $format->get_max_sections_without_delegated(),
             'baseurl' => $url->out(),
             'statekey' => course_format::session_cache($course),
             'maxbytes' => $maxbytes,
             'maxbytestext' => display_size($maxbytes),
         ];
 
-        $sections = $modinfo->get_section_info_all();
-        unset($sections[0]); // Remove section zero.
-        foreach ($sections as $section) {
-            if ($format->is_section_visible($section)) {
-                $data->sectionlist[] = $section->id;
-            }
+        if (!empty($shownsectionsinfo['sectionzero'])) {
+            $data->sectionlist[] = $shownsectionsinfo['sectionzero']->id;
+        }
+        foreach ($shownsectionsinfo['sectionsdisplayed'] as $displayedsection) {
+            $data->sectionlist[] = $displayedsection->id;
         }
 
         return $data;
