@@ -21,6 +21,7 @@
  *       CoreHR test web server credentials in config.php or phpunit.xml
  *
  define('TEST_LOCAL_COREHR_GETPERSONURL', 'https://....');
+ define('TEST_LOCAL_COREHR_TRAININGRECORDURL', 'https://....');
  define('TEST_LOCAL_COREHR_BOOMIUSER', 'Moodle');
  define('TEST_LOCAL_COREHR_BOOMIPASSWORD', '*****');
  define('TEST_LOCAL_COREHR_VALID_COURSECODE', 'XYZ');
@@ -41,6 +42,12 @@ defined('MOODLE_INTERNAL') || die();
 
 class local_corehr_boomi_test extends advanced_testcase {
 
+    private $course1;
+    private $course2;
+
+    private $user1;
+    private $user2;
+
     /**
      * Called before every test
      */
@@ -52,6 +59,7 @@ class local_corehr_boomi_test extends advanced_testcase {
 
         // Configure config settings
         set_config('getpersonurl', TEST_LOCAL_COREHR_GETPERSONURL, 'local_corehr');
+        set_config('trainingrecordurl', TEST_LOCAL_COREHR_TRAININGRECORDURL, 'local_corehr');
         set_config('boomiuser', TEST_LOCAL_COREHR_BOOMIUSER, 'local_corehr');
         set_config('boomipassword', TEST_LOCAL_COREHR_BOOMIPASSWORD, 'local_corehr');
 
@@ -60,12 +68,26 @@ class local_corehr_boomi_test extends advanced_testcase {
 
         // Create test user
         $generator = $this->getDataGenerator();
-        $generator->create_user([
+        $this->user1 = $generator->create_user([
             'username' => TEST_LOCAL_COREHR_VALID_GUID,
+            'idnumber' => TEST_LOCAL_COREHR_VALID_PERSONNELNO,
         ]);
-        $generator->create_user([
+        $this->user2 = $generator->create_user([
             'username' => TEST_LOCAL_COREHR_INVALID_GUID,
+            'idnumber' => TEST_LOCAL_COREHR_INVALID_PERSONNELNO,
         ]);
+
+        // Create test courses.
+        $this->course1 = $generator->create_course();
+        $this->course2 = $generator->create_course();
+
+        // Add valid CoreHR code for course1.
+        $corehr = (object)[
+            'courseid' => $this->course1->id,
+            'enable' => true,
+            'coursecode' => TEST_LOCAL_COREHR_VALID_COURSECODE,
+        ];
+        $DB->insert_record('local_corehr', $corehr);
     }
 
     /**
@@ -153,5 +175,83 @@ class local_corehr_boomi_test extends advanced_testcase {
         $this->assertEquals('null', $log->payload);
         $this->assertEquals(400, $log->errorcode);
         $this->assertEquals("Missing or Empty personGUID query string parameter", $log->errormessage);
+    }
+
+    /**
+     * Test update training record - with a broken URL 
+     * (So it doesn't connect)
+     */
+    public function test_updatetraining_noconnect(): void {
+        global $DB;
+
+        // Set the endpoint to something invalid
+        set_config('trainingrecordurl', 'https://xxx.yyy.zz/', 'local_corehr');
+
+        $boomi = new \local_corehr\boomi();
+
+        // If boomi hasn't been configured, then there's nothing much to do. 
+        if (!$boomi->is_trainingrecord_configured()) {
+            return;
+        }
+
+        // Check course code for course1.
+        $coursecode = $boomi->get_course_code($this->course1->id);
+        $this->assertEquals(TEST_LOCAL_COREHR_VALID_COURSECODE, $coursecode);
+
+        // Check staff number for user1.
+        $staffnumber = $boomi->get_staff_number($this->user1->id);
+        $this->assertEquals(TEST_LOCAL_COREHR_VALID_PERSONNELNO, $staffnumber);
+
+        // Update training record
+        $boomi->trainingrecord($coursecode, $staffnumber, time());
+
+        // Get log
+        $id = $boomi->get_lastlogid();
+        $log = $DB->get_record('local_corehr_boomi_log', ['id' => $id], '*', MUST_EXIST);
+        $this->assertEquals("Could not resolve host: xxx.yyy.zz", $log->errormessage);
+    }
+
+    /**
+     * Test update training record - with valid data 
+     */
+    public function test_updatetraining_valid(): void {
+        global $DB;
+
+        $boomi = new \local_corehr\boomi();
+
+        // If boomi hasn't been configured, then there's nothing much to do. 
+        if (!$boomi->is_trainingrecord_configured()) {
+            return;
+        }
+
+        // Check course code for course1.
+        $coursecode = $boomi->get_course_code($this->course1->id);
+        $this->assertEquals(TEST_LOCAL_COREHR_VALID_COURSECODE, $coursecode);
+
+        // Check staff number for user1.
+        $staffnumber = $boomi->get_staff_number($this->user1->id);
+        $this->assertEquals(TEST_LOCAL_COREHR_VALID_PERSONNELNO, $staffnumber);
+
+        // Create random date stamp (as it has to be unique)
+        // Sometime in last 10 years
+        $startdate = time() - rand(0, 314360000);
+
+        // Update training record
+        $status = $boomi->trainingrecord($coursecode, $staffnumber, $startdate);
+        $this->assertEquals('OK', $status);
+
+        // Get log
+        $id = $boomi->get_lastlogid();
+        $log = $DB->get_record('local_corehr_boomi_log', ['id' => $id], '*', MUST_EXIST);
+        $this->assertEquals('', $log->errormessage);
+
+        // Do it again with the same date and we should get an error
+        $status = $boomi->trainingrecord($coursecode, $staffnumber, $startdate);
+        $this->assertEquals('RECORD_ALREADY_EXISTS', $status);
+
+        // Send a student ID.
+        $startdate = time() - rand(0, 314360000);
+        $status = $boomi->trainingrecord($coursecode, '1234567', $startdate);
+        $this->assertEquals('PERSON_IS_STUDENT', $status);
     }
 }

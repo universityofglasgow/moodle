@@ -32,6 +32,7 @@ class local_corehr_observer {
 
         $courseid = $event->courseid;
         $relateduserid = $event->relateduserid;
+
         \local_corehr\api::course_completed($courseid, $relateduserid);
         mtrace("local_corehr recording completion for courseid=" . $courseid . ", userid = " . $relateduserid);
 

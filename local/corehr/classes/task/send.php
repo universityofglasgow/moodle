@@ -31,6 +31,26 @@ class send extends \core\task\scheduled_task {
         return get_string('send', 'local_corehr');
     }
 
+    /**
+     * Send to CoreHR using prevailing method
+     * @param object $status
+     * @return string
+     */
+    private function send(object $status) {
+        $boomi = new \local_corehr\boomi();
+        if (!$boomi->is_trainingrecord_configured()) {
+
+            // Use old SOAP method.
+            return \local_corehr\api::send($status);
+        } else {
+
+            // Shiny new Boomi thing.
+            $message = $boomi->trainingrecord($status->coursecode, $status->pesonnelno, $status->completed);
+
+            return $message;
+        }
+    }
+
     public function execute() {
         global $DB;
 
@@ -52,7 +72,7 @@ class send extends \core\task\scheduled_task {
                 $campus = new \local_corehr\campus($config->campusendpoint, $config->campususername, $config->campuspassword);
                 $campus->send($status);
             } else {
-                $message = \local_corehr\api::send($status);
+                $message = $this->send($status);
 
                 // Deal sensibly with message
                 $message = trim($message);

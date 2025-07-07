@@ -37,6 +37,10 @@ if ($hassiteconfig) {
         get_string('configgetpersonurl', 'local_corehr'), '', PARAM_URL));
 
     $settings->add(new admin_setting_configtext(
+        'local_corehr/trainingrecordurl', get_string('trainingrecordurl', 'local_corehr'),
+        get_string('configtrainingrecordurl', 'local_corehr'), '', PARAM_URL));
+
+    $settings->add(new admin_setting_configtext(
         'local_corehr/boomiuser', get_string('boomiuser', 'local_corehr'),
         '', '', PARAM_ALPHANUM));
 
