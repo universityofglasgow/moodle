@@ -16,13 +16,21 @@
 
 /**
  * @package    local_loadtest
- * @copyright  2018 Howard miller
+ * @copyright  2025 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['cachedef_load'] = 'Stores moodle server load data.';
-$string['hosts'] = 'Hosts';
-$string['hosts_desc'] = 'List of hosts to interrogate one per line. If empty will log local server';
-$string['logload'] = 'Log load averages';
-$string['pluginname'] = 'Cluster loadtest';
-$string['privacy:metadata'] = 'The loadtest plugin does not store any personal data';
+namespace local_loadtest;
+
+class observer {
+
+    /**
+     * Whenever a course is viewed, measure the load
+     * @param  \core\event\course_viewed $event
+     */
+    public static function course_viewed(\core\event\course_viewed $event) {
+
+        \local_loadtest\load::write_load();
+    }
+
+}

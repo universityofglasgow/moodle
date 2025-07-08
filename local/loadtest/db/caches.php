@@ -16,13 +16,16 @@
 
 /**
  * @package    local_loadtest
- * @copyright  2018 Howard miller
+ * @copyright  2025 Howard miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['cachedef_load'] = 'Stores moodle server load data.';
-$string['hosts'] = 'Hosts';
-$string['hosts_desc'] = 'List of hosts to interrogate one per line. If empty will log local server';
-$string['logload'] = 'Log load averages';
-$string['pluginname'] = 'Cluster loadtest';
-$string['privacy:metadata'] = 'The loadtest plugin does not store any personal data';
+ defined('MOODLE_INTERNAL') || die();
+
+ $definitions = [
+    'load' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => false,
+        'staticacceleration' => true,
+    ],
+];
