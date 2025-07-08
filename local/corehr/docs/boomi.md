@@ -33,7 +33,7 @@ sure the appropriate records have been populated.
     * An invalid GUID is sent to the Boomi GetPerson service. It is checked that an appropriate error is returned. The boomi log is
 checked for the correct error log.
 * The new service was deployed on the testing site and configured.
-* Several members of staff in the team where asked to log in.
+* Several members of staff in the team were asked to log in.
     * The Moodle task logs where found and checked. These showed that the GetPerson tasks had completed without error
     for each person.
     * The database was (manualy) checked for each person. The local_corehr_extract entry was correct for each user.
