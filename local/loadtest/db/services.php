@@ -22,10 +22,25 @@
 
  defined('MOODLE_INTERNAL') || die();
 
+$services = [
+    'local_loadtest' => [
+        'functions' => [
+            'local_loadtest_get_loads',
+            'local_loadtest_get_redis',
+        ],
+        'enabled' => 1,
+    ]
+];
+
  $functions = [
     'local_loadtest_get_loads' => [
         'classname' => 'local_loadtest\external\get_loads',
         'description' => 'Read cached server loads',
+        'type' => 'read',
+    ],
+    'local_loadtest_get_redis' => [
+        'classname' => 'local_loadtest\external\get_redis',
+        'description' => 'Read current redis stats',
         'type' => 'read',
     ]
 ];

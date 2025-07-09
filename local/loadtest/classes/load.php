@@ -86,4 +86,44 @@ class load {
 
         return $list;
     }
+
+    /**
+     * Get Redis stats
+     */
+    public static function get_redis() {
+        $factory = \core_cache\factory::instance();
+        $config = $factory->create_config_instance();
+        $stores = $config->get_all_stores();
+
+        $servers = [];
+        foreach ($stores as $key => $store) {
+            if ($store['plugin'] != 'redis') {
+                continue;
+            }
+
+            $configuration = $store['configuration'];
+
+            $redis = new \Redis([
+                'host' => $configuration['server'],
+            ]);
+            
+            $count = $redis->dbSize();
+            $infoitems = $redis->info();
+            
+            $info = [];
+            foreach ($infoitems as $name => $value) {
+                $info[] = [
+                    'name' => $name,
+                    'value' => $value,
+                ];
+            }
+
+            $servers[] = [
+                'server' => $key,
+                'info' => $info,
+            ];
+        }
+
+        return $servers;
+    }
 }
