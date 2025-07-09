@@ -5,11 +5,11 @@ same.
 
 The same two functions of the CoreHR integration are supported.
 
-* A range of staff data is read from CoreHR. This is done by an adhoc task which is queued when a staff user logs into Moodle. The
+* **(INT0100 - Moodle to PXD, GET Staff Data)** A range of staff data is read from CoreHR. This is done by an adhoc task which is queued when a staff user logs into Moodle. The
 background process reads the data for an individual user and then writes all of it into a database table ('local_corehr_extract') and a
 selected number of fields into user's profile records. As the data is not critical, errors are not handled in any way. It will
 simply retry the next time they log in.
-* Completion data for staff training courses is written to CoreHR. Certain courses (use for staff training) are tagged with a
+* **(INT0101 - Moodle to PXD, POST Staff Training Record)** Completion data for staff training courses is written to CoreHR. Certain courses (use for staff training) are tagged with a
 unique code, allocated by HR. They are configured (in Moodle) to 'complete' when agreed criteria are met. The course completion
 event is trapped by this plugin. This then queues the completion event in a table ('local_corehr_status'). A Moodle scheduled task
 runs every few minutes and looks for any 'candidates' in the table. These are sent to CoreHR using the web service. As these are
@@ -24,7 +24,7 @@ All new Boomi functionality has been added to a new class - classes/boomi.php
 
 A new unit test has been created to test aspects of the Boomi integration in file tests/boomi_tests.php.
 
-### Testing GetPerson
+### Testing INT0100 - Moodle to PXD, GET Staff Data
 
 * The basic functionality of the web service is checked with the unit test
     * A valid user account is created in Moodle and the guid passed to Boomi GetPerson. It is checked that valid (looking) data
@@ -40,7 +40,7 @@ checked for the correct error log.
     * The user profiles were checked (manualy) for correct user profile fields.
     * The Boomi log table was checked for correct entries.
 
-### Testing TrainingRecord service
+### Testing INT0101 - Moodle to PXD, POST Staff Training Record
 
 * The basic functionality of the web service is checked with a unit test
     * The service is checked with an invalid URL. The response and Boomi log is confirmed to contain appropriate error messasges
