@@ -89,6 +89,7 @@ class load {
 
     /**
      * Get Redis stats
+     * @return array
      */
     public static function get_redis() {
         $factory = \core_cache\factory::instance();
@@ -110,7 +111,12 @@ class load {
             $count = $redis->dbSize();
             $infoitems = $redis->info();
             
-            $info = [];
+            $info = [
+                [
+                    'name' => 'keycount',
+                    'value' => $count,
+                ]
+            ];
             foreach ($infoitems as $name => $value) {
                 $info[] = [
                     'name' => $name,
@@ -125,5 +131,125 @@ class load {
         }
 
         return $servers;
+    }
+
+    /** 
+     * Get event counts
+     * @param int $startime
+     * @param array $events
+     * @return array
+     */
+    public static function get_eventcounts(int $starttime, array $events) {
+        global $DB;
+
+        $counts = [];
+        foreach ($events as $event) {
+            $component = $event['component'];
+            $action = $event['action'];
+            $target = $event['target'];
+            $sql = "
+                SELECT COUNT(*) FROM {logstore_standard_log} 
+                WHERE component = :component 
+                AND action = :action 
+                AND target = :target
+                AND timecreated > :starttime";
+            $count = $DB->count_records_sql($sql, [
+                'component' => $component,
+                'action' => $action,
+                'target' => $target,
+                'starttime' => $starttime,
+            ]);
+            $counts[] = [
+                'component' => $component,
+                'action' => $action,
+                'target' => $target,
+                'count' => $count
+            ];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Get various stats
+     * @return array
+     */
+    public static function get_stats() {
+        global $CFG, $DB;
+
+        // User count (not deleted).
+        $usercount = $DB->count_records('user', ['deleted' => 0]);
+
+        // User count (deleted).
+        $deletedusers = $DB->count_records('user', ['deleted' => 1]);
+
+        // Suspended users (not deleted).
+        $suspendedusercount = $DB->count_records('user', ['deleted' => 0, 'suspended' => 1]);
+
+        // Moodledata size
+        $moodledatasize = get_directory_size($CFG->dataroot);
+
+        // Filedir size
+        $filedirsize = get_directory_size($CFG->dataroot . '/filedir');
+
+        // Number of courses
+        $coursecount = $DB->count_records('course');
+
+        $stats = [
+            [
+                'name' => 'usercount',
+                'value' => $usercount,
+            ],
+            [
+                'name' => 'deletedusercount',
+                'value' => $deletedusers,
+            ],
+            [
+                'name' => 'suspendedusercount',
+                'value' => $suspendedusercount,
+            ],
+            [
+                'name' => 'moodledatasize',
+                'value' => $moodledatasize,
+            ],
+            [
+                'name' => 'filedirsize',
+                'value' => $filedirsize,
+            ],
+            [
+                'name' => 'coursecount',
+                'value' => $coursecount,
+            ],
+        ];
+
+        return $stats;
+    }
+
+    /**
+     * Get database connections and so forth.
+     * @return array
+     */
+    public static function get_database() {
+        global $DB;
+
+        // Processes
+        $sql = 'SHOW FULL PROCESSLIST';
+        $processes = $DB->get_records_sql($sql);
+
+        // Status
+        $sql = 'SHOW GLOBAL STATUS';
+        $statusitems = $DB->get_records_sql($sql);
+        $status = [];
+        foreach ($statusitems as $item) {
+            $status[] = [
+                'name' => $item->variable_name,
+                'value' => $item->value,
+            ];
+        }
+
+        return [
+            'processes' => array_values($processes),
+            'status' => $status,
+        ];
     }
 }

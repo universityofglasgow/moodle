@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2025070901;
+$plugin->version = 2025071002;
 $plugin->requires = 2018051700;
 $plugin->component = 'local_loadtest';
 $plugin->description = 'Load test on Moodle cluster';

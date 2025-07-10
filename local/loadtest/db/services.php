@@ -27,6 +27,9 @@ $services = [
         'functions' => [
             'local_loadtest_get_loads',
             'local_loadtest_get_redis',
+            'local_loadtest_get_eventcounts',
+            'local_loadtest_get_stats',
+            'local_loadtest_get_database',
         ],
         'enabled' => 1,
     ]
@@ -41,6 +44,21 @@ $services = [
     'local_loadtest_get_redis' => [
         'classname' => 'local_loadtest\external\get_redis',
         'description' => 'Read current redis stats',
+        'type' => 'read',
+    ],
+    'local_loadtest_get_eventcounts' => [
+        'classname' => 'local_loadtest\external\get_eventcounts',
+        'description' => 'Read event/log counts since time',
+        'type' => 'read',
+    ],
+    'local_loadtest_get_stats' => [
+        'classname' => 'local_loadtest\external\get_stats',
+        'description' => 'Bunch of random statistics about the site',
+        'type' => 'read',
+    ],
+    'local_loadtest_get_database' => [
+        'classname' => 'local_loadtest\external\get_database',
+        'description' => 'Get database processes and other stats',
         'type' => 'read',
     ]
 ];
