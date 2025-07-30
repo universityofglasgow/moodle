@@ -1968,7 +1968,7 @@ class api {
         \local_gugrades\grades::cleanup_unused_columns_course($courseid);
 
         // Are we collecting debug information
-        $debugon = $CFG->debug >= DEBUG_DEVELOPER;
+        $debugon = $CFG->debugdeveloper;
         $timestart = microtime(true);
 
         // Get the level 1 parent category.
