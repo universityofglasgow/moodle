@@ -154,7 +154,11 @@ class api {
         // Get CoreHR data and check for 'known as' name.
         // only if not a student
         $isstudent = preg_match("/\d{7}[a-z]/i", $user->username);
-        if (!$isstudent) {
+
+        // MOOD-393: Also ignore manual users, as they cannot exist in Core.
+        $ismanual = $user->auth == 'manual';
+
+        if (!$isstudent && !$ismanual) {
             $corehr = \local_corehr\api::get_extract($user->username);
             if ($corehr) {
                 $firstname = $corehr->knownas;
