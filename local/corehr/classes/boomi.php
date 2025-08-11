@@ -92,10 +92,10 @@ class boomi {
 
         if ($response && ($json = json_decode($response))) {
             $payload = empty($json->payload) ? '' : $json->payload;
-            $status = $json->status;
+            $status = empty($json->status) ? '' : $json->status;
             $errorcode = isset($status->errorCode) ? $status->errorCode: 0;
             $errormessage = isset($status->errorMessage) ? $status->errorMessage: '';
-            $executionid = $status->executionId;
+            $executionid = empty($status->executionid) ? '' : $status->executionId;
             $payload = json_encode($payload);
         } else {
             $errorcode = 0;
@@ -203,13 +203,14 @@ class boomi {
 
     /**
      * Update training record for 'course code' and personnel number
+     * NOTE: Staff "number" isn't a number because it can have a letter at the beginning
      * Returns status
      * @param string $coursecode;
-     * @param int $staffnumber
+     * @param string $staffnumber
      * @param int $startdate
      * @return string
      */
-    public function trainingrecord(string $coursecode, int $staffnumber, int $startdate) {
+    public function trainingrecord(string $coursecode, string $staffnumber, int $startdate) {
 
         $rest = new \local_corehr\restclient\restclient([
             'base_url' => $this->trainingrecordurl,
