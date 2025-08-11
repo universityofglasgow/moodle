@@ -27,7 +27,6 @@
 
 import * as Log from 'core/log';
 import * as ajax from 'core/ajax';
-import {getString} from 'core/str';
 import {getStrings} from 'core/str';
 import {exception as displayException} from 'core/notification';
 import Templates from 'core/templates';
@@ -43,334 +42,334 @@ const Selectors = {
 
 /**
  * @method fetchAssessmentsDueSoon - The main method of this script.
+ *
+ * Making this an async function to allow getStrings() to return correctly.
+ * Previously, the string variables weren't getting assigned in time and
+ * would not appear as expected on the chart.
  */
-const fetchAssessmentsDueSoon = () => {
-    let loading_text = '';
-    const loadingString = [
+async function fetchAssessmentsDueSoon() {
+    // Get the language specific strings first off.
+    const requiredStrings = [
         {key: 'loading_text', component: 'block_newgu_spdetails'},
+        {key: 'chart_24hrs', component: 'block_newgu_spdetails'},
+        {key: 'chart_7days', component: 'block_newgu_spdetails'},
+        {key: 'chart_1mth', component: 'block_newgu_spdetails'},
+        {key: 'chart_count', component: 'block_newgu_spdetails'},
+        {key: 'duesoon_aria_label_text', component: 'block_newgu_spdetails'},
+        {key: 'duesoon_accessibility_description', component: 'block_newgu_spdetails'},
+        {key: 'duesoon_tooltip_preamble', component: 'block_newgu_spdetails'}
     ];
-    getString(loadingString).then((result) => {
+    let loading_text = '';
+    let chart_24hrs = '';
+    let chart_7days = '';
+    let chart_1mth = '';
+    let chart_count = '';
+    let aria_label_text = '';
+    let accessibility_description = '';
+    let duesoon_tooltip_preamble = '';
+
+    await getStrings(requiredStrings).then((result) => {
         loading_text = result[0];
+        chart_24hrs = result[1];
+        chart_7days = result[2];
+        chart_1mth = result[3];
+        chart_count = result[4];
+        aria_label_text = result[5];
+        accessibility_description = result[6];
+        duesoon_tooltip_preamble = result[7];
         return;
     }).catch((err) => {
         Log.debug(err);
         return;
     });
+
     let tempPanel = document.querySelector(Selectors.DUESOON_BLOCK);
 
     tempPanel.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
         "<div class='spinner-border' role='status'><span class='hidden'>" + loading_text + "...</span></div></div>");
 
-        ajax.call([{
-            methodname: 'block_newgu_spdetails_get_assessmentsduesoon',
-            args: {},
-        }])[0].done(function(response) {
-            document.querySelector('.loader').remove();
-            let twentyfour_hours = response[0]['24hours'];
-            let one_week = response[0].week;
-            let one_month = response[0].month;
-            const requiredStrings = [
-                {key: 'chart_24hrs', component: 'block_newgu_spdetails'},
-                {key: 'chart_7days', component: 'block_newgu_spdetails'},
-                {key: 'chart_1mth', component: 'block_newgu_spdetails'},
-                {key: 'chart_count', component: 'block_newgu_spdetails'},
-                {key: 'duesoon_aria_label_text', component: 'block_newgu_spdetails'},
-                {key: 'duesoon_accessibility_description', component: 'block_newgu_spdetails'},
-                {key: 'duesoon_tooltip_preamble', component: 'block_newgu_spdetails'}
-            ];
-            let chart_24hrs = '';
-            let chart_7days = '';
-            let chart_1mth = '';
-            let chart_count = '';
-            let aria_label_text = '';
-            let accessibility_description = '';
-            let duesoon_tooltip_preamble = '';
-            getStrings(requiredStrings).then((result) => {
-                chart_24hrs = result[0];
-                chart_7days = result[1];
-                chart_1mth = result[2];
-                chart_count = result[3];
-                aria_label_text = result[4];
-                accessibility_description = result[5];
-                duesoon_tooltip_preamble = result[6];
-                return;
-            }).catch((err) => {
-                Log.debug(err);
-                return;
-            });
+    ajax.call([{
+        methodname: 'block_newgu_spdetails_get_assessmentsduesoon',
+        args: {},
+    }])[0].done(function(response) {
+        document.querySelector('.loader').remove();
+        let twentyfour_hours = response[0]['24hours'];
+        let one_week = response[0].week;
+        let one_month = response[0].month;
 
-            // Set specific colours/fonts/weights etc for the Highcharts config object.
-            let backgroundColour = '#FFFFFF';
-            let tmpFontColour = '#000';
-            let labelFontSize = '0.7em';
-            let tooltipBackgroundColour = '#FFFFFF';
-            let tooltipFontColour = '';
-            // Check for the contrast setting
-            if (document.querySelector('.hillhead40-night')) {
-                tmpFontColour = '#95B7E6';
-                backgroundColour = '#274163';
-                tooltipBackgroundColour = '#132030';
-                tooltipFontColour = '#95B7E6';
-                document.querySelector('.alert.alert-info a').style.color='#95B7E6';
-            }
-            if (document.querySelector('.hillhead40-contrast-wb')) {
-                tmpFontColour = '#eee';
-                backgroundColour = '#000000';
-                tooltipBackgroundColour = '#000000';
-                tooltipFontColour = '#FFFFFF';
-                document.querySelector('.alert.alert-info a').style.color='#eee';
-            }
-            if (document.querySelector('.hillhead40-contrast-yb')) {
-                tmpFontColour = '#ee6';
-                backgroundColour = '#000000';
-                tooltipBackgroundColour = '#000000';
-                tooltipFontColour = '#ee6';
-                document.querySelector('.alert.alert-info a').style.color='#ee6';
-            }
-            if (document.querySelector('.hillhead40-contrast-by')) {
-                document.querySelector('.alert.alert-info a').style.color='#000';
-                backgroundColour = '#ee6';
-                tooltipBackgroundColour = '#ee6';
-            }
-            if (document.querySelector('.hillhead40-contrast-wg')) {
-                tmpFontColour = '#eee';
-                backgroundColour = '#666';
-                tooltipBackgroundColour = '#666';
-                tooltipFontColour = '#eee';
-                document.querySelector('.alert.alert-info a').style.color='#eee';
-            }
-            if (document.querySelector('.hillhead40-contrast-br')) {
-                backgroundColour = '#EEB9B9';
-                tooltipBackgroundColour = '#EEB9B9';
-                document.querySelector('.alert.alert-info a').style.color='#000';
-            }
-            if (document.querySelector('.hillhead40-contrast-bb')) {
-                backgroundColour = '#B9D9EE';
-                tooltipBackgroundColour = '#B9D9EE';
-                document.querySelector('.alert.alert-info a').style.color='#000';
-            }
-            if (document.querySelector('.hillhead40-contrast-bw')) {
-                backgroundColour = '#F6F6F6';
-                tooltipBackgroundColour = '#F6F6F6';
-                document.querySelector('.alert.alert-info a').style.color='#000';
-            }
-            // Check for the font setting
-            let tmpFontFamily = "'Hillhead', 'Ubuntu', 'Trebuchet MS', 'Arial', sans-serif";
-            if (document.querySelector('.hillhead40-font-modern')) {
-                tmpFontFamily = "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
-            }
-            if (document.querySelector('.hillhead40-font-classic')) {
-                tmpFontFamily = "'Palatino', 'Times New Roman', serif";
-            }
-            if (document.querySelector('.hillhead40-font-comic')) {
-                tmpFontFamily = "'Hillhead Comic', 'Chalkboard', 'Comic Sans', 'Comic Sans MS', sans-serif";
-            }
-            if (document.querySelector('.hillhead40-font-mono')) {
-                tmpFontFamily = "'Hillhead Mono', 'Menlo', 'Courier New', monospace";
-            }
-            if (document.querySelector('.hillhead40-font-dyslexic')) {
-                tmpFontFamily = "'OpenDyslexic', 'Helvetica', 'Arial', sans-serif";
-            }
-            // Check for the size setting. We also further control the chart dimensions here.
-            let tmpFontSize = 20;
-            let tmpWidth = 400;
-            let tmpHeight = 300;
-            let tmpCardRem = '33rem';
-            if (document.querySelector('.hillhead40-size-120')) {
-                tmpFontSize = 'large';
-                tmpWidth = 500;
-                tmpHeight = 400;
-                tmpCardRem = '70rem';
-            }
-            if (document.querySelector('.hillhead40-size-140')) {
-                tmpFontSize = 'x-large';
-                tmpWidth = 600;
-                tmpHeight = 500;
-                tmpCardRem = '70rem';
-            }
-            if (document.querySelector('.hillhead40-size-160')) {
-                tmpFontSize = 'xx-large';
-                tmpWidth = 700;
-                tmpHeight = 600;
-                tmpCardRem = '70rem';
-            }
-            if (document.querySelector('.hillhead40-size-180')) {
-                tmpFontSize = 'xxx-large';
-                tmpWidth = 800;
-                tmpHeight = 700;
-                tmpCardRem = '70rem';
-            }
-            // Check for the bold setting
-            let tmpFontWeight = 'normal';
-            if (document.querySelector('.hillhead40-bold')) {
-                tmpFontWeight = 'bolder';
-            }
-            // Check for the spacing setting
-            let tmpLineHeight = '';
-            if (document.querySelector('.hillhead40-spacing')) {
-                tmpLineHeight = '2rem';
-            }
+        // Set specific colours/fonts/weights etc for the Highcharts config object.
+        let backgroundColour = '#FFFFFF';
+        let tmpFontColour = '#000';
+        let labelFontSize = '0.7em';
+        let tooltipBackgroundColour = '#FFFFFF';
+        let tooltipFontColour = '';
+        // Check for the contrast setting
+        if (document.querySelector('.hillhead40-night')) {
+            tmpFontColour = '#95B7E6';
+            backgroundColour = '#274163';
+            tooltipBackgroundColour = '#132030';
+            tooltipFontColour = '#95B7E6';
+            document.querySelector('.alert.alert-info a').style.color='#95B7E6';
+        }
+        if (document.querySelector('.hillhead40-contrast-wb')) {
+            tmpFontColour = '#eee';
+            backgroundColour = '#000000';
+            tooltipBackgroundColour = '#000000';
+            tooltipFontColour = '#FFFFFF';
+            document.querySelector('.alert.alert-info a').style.color='#eee';
+        }
+        if (document.querySelector('.hillhead40-contrast-yb')) {
+            tmpFontColour = '#ee6';
+            backgroundColour = '#000000';
+            tooltipBackgroundColour = '#000000';
+            tooltipFontColour = '#ee6';
+            document.querySelector('.alert.alert-info a').style.color='#ee6';
+        }
+        if (document.querySelector('.hillhead40-contrast-by')) {
+            document.querySelector('.alert.alert-info a').style.color='#000';
+            backgroundColour = '#ee6';
+            tooltipBackgroundColour = '#ee6';
+        }
+        if (document.querySelector('.hillhead40-contrast-wg')) {
+            tmpFontColour = '#eee';
+            backgroundColour = '#666';
+            tooltipBackgroundColour = '#666';
+            tooltipFontColour = '#eee';
+            document.querySelector('.alert.alert-info a').style.color='#eee';
+        }
+        if (document.querySelector('.hillhead40-contrast-br')) {
+            backgroundColour = '#EEB9B9';
+            tooltipBackgroundColour = '#EEB9B9';
+            document.querySelector('.alert.alert-info a').style.color='#000';
+        }
+        if (document.querySelector('.hillhead40-contrast-bb')) {
+            backgroundColour = '#B9D9EE';
+            tooltipBackgroundColour = '#B9D9EE';
+            document.querySelector('.alert.alert-info a').style.color='#000';
+        }
+        if (document.querySelector('.hillhead40-contrast-bw')) {
+            backgroundColour = '#F6F6F6';
+            tooltipBackgroundColour = '#F6F6F6';
+            document.querySelector('.alert.alert-info a').style.color='#000';
+        }
+        // Check for the font setting
+        let tmpFontFamily = "'Hillhead', 'Ubuntu', 'Trebuchet MS', 'Arial', sans-serif";
+        if (document.querySelector('.hillhead40-font-modern')) {
+            tmpFontFamily = "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+        }
+        if (document.querySelector('.hillhead40-font-classic')) {
+            tmpFontFamily = "'Palatino', 'Times New Roman', serif";
+        }
+        if (document.querySelector('.hillhead40-font-comic')) {
+            tmpFontFamily = "'Hillhead Comic', 'Chalkboard', 'Comic Sans', 'Comic Sans MS', sans-serif";
+        }
+        if (document.querySelector('.hillhead40-font-mono')) {
+            tmpFontFamily = "'Hillhead Mono', 'Menlo', 'Courier New', monospace";
+        }
+        if (document.querySelector('.hillhead40-font-dyslexic')) {
+            tmpFontFamily = "'OpenDyslexic', 'Helvetica', 'Arial', sans-serif";
+        }
+        // Check for the size setting. We also further control the chart dimensions here.
+        let tmpFontSize = 20;
+        let tmpWidth = 400;
+        let tmpHeight = 300;
+        let tmpCardRem = '33rem';
+        if (document.querySelector('.hillhead40-size-120')) {
+            tmpFontSize = 'large';
+            tmpWidth = 500;
+            tmpHeight = 400;
+            tmpCardRem = '70rem';
+        }
+        if (document.querySelector('.hillhead40-size-140')) {
+            tmpFontSize = 'x-large';
+            tmpWidth = 600;
+            tmpHeight = 500;
+            tmpCardRem = '70rem';
+        }
+        if (document.querySelector('.hillhead40-size-160')) {
+            tmpFontSize = 'xx-large';
+            tmpWidth = 700;
+            tmpHeight = 600;
+            tmpCardRem = '70rem';
+        }
+        if (document.querySelector('.hillhead40-size-180')) {
+            tmpFontSize = 'xxx-large';
+            tmpWidth = 800;
+            tmpHeight = 700;
+            tmpCardRem = '70rem';
+        }
+        // Check for the bold setting
+        let tmpFontWeight = 'normal';
+        if (document.querySelector('.hillhead40-bold')) {
+            tmpFontWeight = 'bolder';
+        }
+        // Check for the spacing setting
+        let tmpLineHeight = '';
+        if (document.querySelector('.hillhead40-spacing')) {
+            tmpLineHeight = '2rem';
+        }
 
-            // Set the width/height of the card (container) and chart.
-            let tempCard = document.querySelector(Selectors.DUESOON_CARD);
-            tempCard.style.width = tmpCardRem;
+        // Set the width/height of the card (container) and chart.
+        let tempCard = document.querySelector(Selectors.DUESOON_CARD);
+        tempCard.style.width = tmpCardRem;
 
-            tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentsDueSoonChart' width='" + tmpWidth +
-                "' height='" + tmpHeight + "'" +
-                " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
+        tempPanel.insertAdjacentHTML("afterbegin", "<figure><div id='assessmentsDueSoonChart' width='" + tmpWidth +
+            "' height='" + tmpHeight + "'" +
+            " aria-live='assertive' aria-atomic='true' aria-label='" + aria_label_text + "'></div></figure>");
 
-            // We can hook into require.js, which is dead handy.
-            require.config({
-                packages: [{
-                    name: 'highcharts',
-                    main: 'highcharts'
-                }],
-                paths: {
-                    'highcharts': 'https://code.highcharts.com'
-                }
-            });
-            require([
-                'highcharts',
-                'highcharts/modules/no-data-to-display',
-                'highcharts/modules/accessibility'
-            ], function (Highcharts) {
-                Highcharts.chart('assessmentsDueSoonChart', {
-                    chart: {
-                        type: 'bar',
-                        height: 300,
-                        backgroundColor: backgroundColour,
-                        style: {
-                            fontFamily: tmpFontFamily,
-                            fontWeight: tmpFontWeight,
-                            fontSize: tmpFontSize,
-                            lineHeight: tmpLineHeight
+        // We can hook into require.js, which is dead handy.
+        require.config({
+            packages: [{
+                name: 'highcharts',
+                main: 'highcharts'
+            }],
+            paths: {
+                'highcharts': 'https://code.highcharts.com'
+            }
+        });
+        require([
+            'highcharts',
+            'highcharts/modules/no-data-to-display',
+            'highcharts/modules/accessibility'
+        ], function (Highcharts) {
+            Highcharts.chart('assessmentsDueSoonChart', {
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    backgroundColor: backgroundColour,
+                    style: {
+                        fontFamily: tmpFontFamily,
+                        fontWeight: tmpFontWeight,
+                        fontSize: tmpFontSize,
+                        lineHeight: tmpLineHeight
+                    }
+                },
+                title: {
+                    text: ''
+                },
+                credits: {
+                    enabled: false
+                },
+                accessibility: {
+                    description: accessibility_description,
+                },
+                legend: {
+                    align: 'center',
+                    verticalAlign: 'top',
+                    layout: 'horizontal',
+                    symbolRadius: 5,
+                    symbolHeight: 20,
+                    symbolWidth: 20,
+                    itemStyle: {
+                        color: tmpFontColour,
+                        fontWeight: tmpFontWeight,
+                        fontSize: tmpFontSize,
+                    },
+                    itemHoverStyle: {
+                        color: tmpFontColour,
+                        textDecoration: 'underline',
+                    },
+                    events: {
+                        itemClick: function (e) {
+                            // This prevents the strikethrough and column from being removed from the chart.
+                            e.preventDefault();
+                            let index = e.legendItem.index;
+                            viewAssessmentsDueByChartType(index);
                         }
-                    },
-                    title: {
-                        text: ''
-                    },
-                    credits: {
-                        enabled: false
-                    },
-                    accessibility: {
-                        description: accessibility_description,
-                    },
-                    legend: {
-                        align: 'center',
-                        verticalAlign: 'top',
-                        layout: 'horizontal',
-                        symbolRadius: 5,
-                        symbolHeight: 20,
-                        symbolWidth: 20,
-                        itemStyle: {
-                            color: tmpFontColour,
-                            fontWeight: tmpFontWeight,
-                            fontSize: tmpFontSize,
-                        },
-                        itemHoverStyle: {
-                            color: tmpFontColour,
-                            textDecoration: 'underline',
-                        },
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        pointWidth: 50,
+                        borderRadius: 8,
+                        dataLabels: [{
+                            enabled: true,
+                            format: '{y}',
+                            style: {
+                                fontSize: labelFontSize,
+                            },
+                            x: -20
+                        }],
+                        showInLegend: true,
                         events: {
-                            itemClick: function (e) {
-                                // This prevents the strikethrough and column from being removed from the chart.
-                                e.preventDefault();
-                                let index = e.legendItem.index;
+                            click: function (event) {
+                                // Prevent the column from greying out when clicked.
+                                let index = event.point.category;
                                 viewAssessmentsDueByChartType(index);
                             }
-                        }
-                    },
-                    plotOptions: {
-                        series: {
-                            allowPointSelect: true,
-                            cursor: 'pointer',
-                            pointWidth: 50,
-                            borderRadius: 8,
-                            dataLabels: [{
-                                enabled: true,
-                                format: '{y}',
-                                style: {
-                                    fontSize: labelFontSize,
-                                },
-                                x: -20
-                            }],
-                            showInLegend: true,
-                            events: {
-                                click: function (event) {
-                                    // Prevent the column from greying out when clicked.
-                                    let index = event.point.category;
-                                    viewAssessmentsDueByChartType(index);
-                                }
-                            },
-                            states: {
-                                select: {
-                                    color: ''
-                                }
-                            },
-                        }
-                    },
-                    xAxis: {
-                        type: 'category',
-                        gridLineWidth: 1,
-                        gridLineColor: tmpFontColour,
-                        labels: {
-                            style: {
-                                color: tmpFontColour
-                            }
-                        }
-                    },
-                    yAxis: {
-                        title: {
-                            text: chart_count,
                         },
-                        tickInterval: 1,
-                        gridLineWidth: 1,
-                        gridLineColor: tmpFontColour,
-                        labels: {
-                            style: {
-                                color: tmpFontColour
+                        states: {
+                            select: {
+                                color: ''
                             }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: tooltipBackgroundColour,
+                        },
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    gridLineWidth: 1,
+                    gridLineColor: tmpFontColour,
+                    labels: {
                         style: {
-                            color: tooltipFontColour
-                        },
-                        format: '<span style="color:{color}">\u25CF</span>' + duesoon_tooltip_preamble + '{key}: <b>{y}</b><br/>',
-                        shared: true
+                            color: tmpFontColour
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: chart_count,
                     },
-                    series: [{
-                        data: [{
-                            name: chart_24hrs,
-                            y: twentyfour_hours
-                        }],
-                        color: 'rgba(255,0,0)',
+                    tickInterval: 1,
+                    gridLineWidth: 1,
+                    gridLineColor: tmpFontColour,
+                    labels: {
+                        style: {
+                            color: tmpFontColour
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: tooltipBackgroundColour,
+                    style: {
+                        color: tooltipFontColour
+                    },
+                    format: '<span style="color:{color}">\u25CF</span>' + duesoon_tooltip_preamble
+                    + '{key}: <b>{y}</b><br/>',
+                    shared: true
+                },
+                series: [{
+                    data: [{
                         name: chart_24hrs,
-                    }, {
-                        data: [{
-                            name: chart_7days,
-                            y: one_week
-                        }],
-                        color: 'rgba(255,153,0)',
-                        name: chart_7days
-                    }, {
-                        data: [{
-                            name: chart_1mth,
-                            y: one_month
-                        }],
-                        color: 'rgba(0,153,0)',
-                        name: chart_1mth
-                    }]
-                });
+                        y: twentyfour_hours
+                    }],
+                    color: 'rgba(255,0,0)',
+                    name: chart_24hrs,
+                }, {
+                    data: [{
+                        name: chart_7days,
+                        y: one_week
+                    }],
+                    color: 'rgba(255,153,0)',
+                    name: chart_7days
+                }, {
+                    data: [{
+                        name: chart_1mth,
+                        y: one_month
+                    }],
+                    color: 'rgba(0,153,0)',
+                    name: chart_1mth
+                }]
             });
-        }).fail(function(err) {
-            document.querySelector('.loader').remove();
-            tempPanel.insertAdjacentHTML("afterbegin", "<div class='d-flex justify-content-center'>\n" +
-                err.message + "</div>");
-            Log.debug(err);
         });
-};
+    }).fail(function(err) {
+        document.querySelector('.loader').remove();
+        tempPanel.insertAdjacentHTML("afterbegin", "<div class='d-flex justify-content-center'>\n" +
+            err.message + "</div>");
+        Log.debug(err);
+    });
+}
 
 /**
  * @method viewAssessmentsDueByChartType Click through to the relevant chart type.

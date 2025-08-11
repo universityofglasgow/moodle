@@ -45,20 +45,48 @@ const Selectors = {
 };
 
 /**
- * @method fetchAssessmentsOverview
+ * @method fetchAssessmentsOverview - The main method of this script.
+ *
+ * Making this an async function to allow getStrings() to return correctly.
+ * Previously, the string variables weren't getting assigned in time and
+ * would not appear as expected on the chart.
  */
-const fetchAssessmentsOverview = () => {
-    let loading_text = '';
-    const loadingString = [
+async function fetchAssessmentsOverview() {
+    // Get the language specific strings first off.
+    const requiredStrings = [
         {key: 'loading_text', component: 'block_newgu_spdetails'},
+        {key: 'status_text_tobesubmitted', component: 'block_newgu_spdetails'},
+        {key: 'status_text_overdue', component: 'block_newgu_spdetails'},
+        {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
+        {key: 'status_text_graded', component: 'block_newgu_spdetails'},
+        {key: 'overview_aria_label_text', component: 'block_newgu_spdetails'},
+        {key: 'overview_accessibility_description', component: 'block_newgu_spdetails'},
+        {key: 'overview_tooltip_preamble', component: 'block_newgu_spdetails'}
     ];
-    getString(loadingString).then((result) => {
+    let loading_text = '';
+    let status_text_tobesubmitted = '';
+    let status_text_overdue = '';
+    let status_text_submitted = '';
+    let status_text_graded = '';
+    let aria_label_text = '';
+    let accessibility_description = '';
+    let overview_tooltip_preamble = '';
+
+    await getStrings(requiredStrings).then((result) => {
         loading_text = result[0];
+        status_text_tobesubmitted = result[1];
+        status_text_overdue = result[2];
+        status_text_submitted = result[3];
+        status_text_graded = result[4];
+        aria_label_text = result[5];
+        accessibility_description = result[6];
+        overview_tooltip_preamble = result[7];
         return;
     }).catch((err) => {
         Log.debug(err);
         return;
     });
+
     let tempPanel = document.querySelector(Selectors.SUMMARY_BLOCK);
 
     tempPanel.insertAdjacentHTML("afterbegin", "<div class='loader d-flex justify-content-center'>\n" +
@@ -73,36 +101,6 @@ const fetchAssessmentsOverview = () => {
         let overdue = response[0].overdue;
         let submitted = response[0].sub_assess;
         let graded = response[0].assess_marked;
-        // Get language specific strings
-        const requiredStrings = [
-            {key: 'status_text_tobesubmitted', component: 'block_newgu_spdetails'},
-            {key: 'status_text_overdue', component: 'block_newgu_spdetails'},
-            {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
-            {key: 'status_text_graded', component: 'block_newgu_spdetails'},
-            {key: 'overview_aria_label_text', component: 'block_newgu_spdetails'},
-            {key: 'overview_accessibility_description', component: 'block_newgu_spdetails'},
-            {key: 'overview_tooltip_preamble', component: 'block_newgu_spdetails'}
-        ];
-        let status_text_tobesubmitted = '';
-        let status_text_overdue = '';
-        let status_text_submitted = '';
-        let status_text_graded = '';
-        let aria_label_text = '';
-        let accessibility_description = '';
-        let overview_tooltip_preamble = '';
-        getStrings(requiredStrings).then((result) => {
-            status_text_tobesubmitted = result[0];
-            status_text_overdue = result[1];
-            status_text_submitted = result[2];
-            status_text_graded = result[3];
-            aria_label_text = result[4];
-            accessibility_description = result[5];
-            overview_tooltip_preamble = result[6];
-            return;
-        }).catch((err) => {
-            Log.debug(err);
-            return;
-        });
 
         // Set specific colours/fonts/weights etc for the Highcharts config object.
         let tmpFontColour = '#000';
@@ -303,7 +301,7 @@ const fetchAssessmentsOverview = () => {
                             enabled: true,
                             format: '{y}',
                             style: {
-                                fontSize: labelFontSize
+                                fontSize: labelFontSize,
                             },
                             distance: labelDistance
                         }],
@@ -346,14 +344,13 @@ const fetchAssessmentsOverview = () => {
                 }]
             });
         });
-
     }).fail(function(err) {
         document.querySelector('.loader').remove();
         tempPanel.insertAdjacentHTML("afterbegin", "<div class='d-flex justify-content-center'>\n" +
             err.message + "</div>");
         Log.debug(err);
     });
-};
+}
 
 const viewAssessmentsOverviewByChartType = function(index) {
     const chartType = index;
@@ -362,7 +359,7 @@ const viewAssessmentsOverviewByChartType = function(index) {
     ];
     let loading_text = '';
     getString(loadingString).then((result) => {
-        loading_text = result[0];
+        loading_text = result;
         return;
     }).catch((err) => {
         Log.debug(err);
