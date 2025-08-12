@@ -301,7 +301,6 @@ class workshop_activity extends base {
 
         // Collect all the submissions and assessments for this user.
         $submissionbyuser = $workshop->get_submission_by_author($userid);
-        $assessmentsforsubmission = $workshop->get_assessments_of_submission($submissionbyuser->id);
         $assessmentsbyuser = $workshop->get_assessments_by_reviewer($userid);
         $pendingassessments = $workshop->get_pending_assessments_by_reviewer($userid);
 
