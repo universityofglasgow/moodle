@@ -346,7 +346,10 @@ class activity {
                         // Each activity has it's own notion of a 'due' date - so, until there's a better way...do this.
                         $activityduedate = 0;
                         if ($cm) {
-                            $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name($cm);
+                            $activityduedate = \block_newgu_spdetails\api::get_activity_end_date_name(
+                                                                            $cm,
+                                                                            $tmpgradeitems[$index]->itemnumber
+                                                                        );
                         }
                         // MGU-1025 - Due Dates not showing Correctly on Your Assessment details.
                         if ($activityduedate > 0) {
