@@ -236,17 +236,25 @@ class api extends external_api {
      * @param object $cm - The course module object. Our key 'customdata' is an array.
      * @return int
      */
-    public static function get_activity_end_date_name(object $cm): int {
+    public static function get_activity_end_date_name(object $cm, $itemnumber): int {
         $activitydate = 0;
-        $keys = [
-            'duedate',
-            'timeclose',
-            'sessdate',
-            'timeavailableto',
-            'timedue',
-            'deadline',
-            'submissionend',
-        ];
+        if ($itemnumber == 0) {
+            $keys = [
+                'duedate',         // Assignmnent, Forum (rating), Organizer(-), Peerwork.
+                'timeclose',       // Choice(-), Group choice(-), Feedback(-), SCORM, Quiz.
+                'sessdate',        // Attendance(-)? not implemented.
+                'timeavailableto', // Database.
+                'timedue',         // Kalvidassign? not implemented.
+                'deadline',        // Lesson.
+                'submissionend',   // Workshop.
+            ];
+        } else if ($itemnumber == 1) {
+            $keys = [
+                'assessmentend',    // Workshop.
+                'duedate',          // Forum (whole).
+            ];
+        }
+
         $key = '';
         if ($cm->customdata) {
             foreach ($cm->customdata as $k => $v) {
@@ -267,8 +275,8 @@ class api extends external_api {
             }
             $gradinginfo = grade_get_grades($courseid, 'mod', $cm->modname, $cm->instance);
             $activity = \block_newgu_spdetails\activity::activity_factory($gradinginfo->items[0]->id, $courseid, 0);
-            if ($records = $activity->get_assessmentsdue()) {
-                $activitydate = $records[0]->duedate;
+            if ($records = $activity->get_rawduedate()) { // The best way to get the due date no matter what.
+                $activitydate = $records;
             }
         }
 
