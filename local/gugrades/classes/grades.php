@@ -528,6 +528,12 @@ class grades {
     ) {
         global $DB, $USER;
 
+        // Must have editgrade capability to change anything at all
+        $context = \context_course::instance($courseid);
+        if (!has_capability('local/gugrades:editgrades', $context)) {
+            return;
+        }
+
         // Sanity
         if ($catoverride && ($gradetype != 'CATEGORY')) {
             throw new \moodle_exception('catoverride true when gradetype sis not CATEGORY');

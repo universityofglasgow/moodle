@@ -23,8 +23,9 @@
                 </template>
                 <template #item-actions="map">
                     <div class="btn-group" role="group" aria-label="Actions">
-                        <button class="btn btn-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.edit }}</button>
-                        <button class="btn btn-primary btn-sm mr-1" :class="{ disabled: map.inuse }" :disabled="map.inuse" @click="delete_clicked(map.id)">{{ mstrings.delete }}</button>
+                        <button v-if="caneditgrades" class="btn btn-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.edit }}</button>
+                        <button v-if="!caneditgrades" class="btn btn-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.view }}</button>
+                        <button v-if="caneditgrades" class="btn btn-primary btn-sm mr-1" :class="{ disabled: map.inuse }" :disabled="map.inuse" @click="delete_clicked(map.id)">{{ mstrings.delete }}</button>
                         <button class="btn btn-primary btn-sm mr-1" @click="export_clicked(map.id)">{{ mstrings.export }}</button>
                     </div>
                 </template>
@@ -36,7 +37,7 @@
                 v-bind="props"
             />
 
-            <div class="mt-4">
+            <div v-if="caneditmaps" class="mt-4">
                 <button class="btn btn-primary mr-1" @click="add_map">{{ mstrings.addconversionmap }}</button>
                 <button class="btn btn-info" @click="import_clicked">{{ mstrings.importconversionmap }}</button>
             </div>
@@ -44,7 +45,7 @@
 
         <!-- Map creation/editing -->
         <div v-if="editmap">
-            <EditMap :mapid="editmapid" @close="editmap_closed"></EditMap>
+            <EditMap :mapid="editmapid" :caneditgrades="caneditgrades" @close="editmap_closed"></EditMap>
         </div>
     </div>
 
@@ -93,6 +94,7 @@
     const debug = ref({});
     const toast = useToast();
     const headers = ref([]);
+    const caneditgrades = ref(false);
     // pagination related.
     const dataTable = ref();
     const props = {
@@ -235,6 +237,10 @@
      * Get all the maps for this course
      */
     onMounted(() => {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
         headers.value = [
             {text: mstrings.name, value: 'name'},
             {text: mstrings.scalehead, value: 'scale'},
@@ -244,6 +250,22 @@
             {text: mstrings.inuse, value: 'inuse'},
             {text: '', value: 'actions'},
         ];
+
+        // Check editing capability
+        fetchMany([{
+            methodname: 'local_gugrades_has_capability',
+            args: {
+                courseid: courseid,
+                capability: 'local/gugrades:editgrades'
+            }
+        }])[0]
+        .then((result) => {
+            caneditgrades.value = result.hascapability;
+        })
+        .catch((error) => {
+            window.console.log(error);
+            debug.value = error;
+        });
 
         get_maps();
     });

@@ -4,12 +4,13 @@
     <div class="alert alert-info mb-2">
         {{  mstrings.examplevalues }}
     </div>
-    <FormKit v-if="loaded" type="form" submit-label="Save" @submit="submit_form">
+    <FormKit v-if="loaded" type="form" submit-label="Save" :disabled="!caneditgrades" @submit="submit_form">
         <FormKit
             type="text"
             outer-class="mb-3"
             :label="mstrings.conversionmapname"
             :actions="ordervalidated"
+            :disabled="!caneditgrades"
             validation-visibility="live"
             validation="required"
             name="mapname"
@@ -19,6 +20,7 @@
             type="text"
             outer-class="mb-3"
             :label="mstrings.maxgrade"
+            :disabled="!caneditgrades"
             number="float"
             validation="required|between:0,200"
             validation-visibility="live"
@@ -28,7 +30,7 @@
         <FormKit
             type="select"
             :label="mstrings.scaletype"
-            :disabled="props.mapid != 0"
+            :disabled="(props.mapid != 0) || !caneditgrades"
             name="scaletype"
             v-model="scaletype"
             value="schedulea"
@@ -39,6 +41,7 @@
             v-model="entrytype"
             type="radio"
             :options="entrytypeoptions"
+            :disabled="!caneditgrades"
         ></FormKit>
         <div class="row mt-3">
             <div class="col-2"><h3>{{ mstrings.band }}</h3></div>
@@ -55,7 +58,7 @@
                     type="text"
                     number="float"
                     outer-class="mb-3"
-                    :disabled="(entrytype != 'percentage') || (item.band == 'H')"
+                    :disabled="(entrytype != 'percentage') || (item.band == 'H') || !caneditgrades"
                     :validation-rules="{ validate_order }"
                     validation="between:0,100"
                     validation-visibility="blur"
@@ -71,7 +74,7 @@
                     type="text"
                     number="float"
                     outer-class="mb-3"
-                    :disabled="(entrytype != 'points') || (item.band == 'H')"
+                    :disabled="(entrytype != 'points') || (item.band == 'H') || !caneditgrades"
                     :validation-rules="{ validate_points, validate_order }"
                     validation="validate_points|validate_order"
                     validation-visibility="blur"
@@ -121,6 +124,7 @@
 
     const props = defineProps({
         mapid: Number,
+        caneditgrades: Boolean,
     });
 
     const emits = defineEmits(['close']);

@@ -39,6 +39,7 @@
                         :revealnames="revealnames"
                         :showcsvimport="showcsvimport"
                         :staffuserid="staffuserid"
+                        :caneditgrades="caneditgrades"
                         @refreshtable="refresh"
                         @viewfullnames="viewfullnames"
                         @editcolumn="editcog_clicked"
@@ -84,7 +85,7 @@
                     <!-- component needs to return info about which column (which reason/gradetype has been selected)-->
                     <template #header="header">
                         {{ header.text }}
-                        <CaptureColumnEditCog v-if="header.editable  && !ineditcellmode" :header="header" :itemid="itemid" @editcolumn="editcog_clicked"></CaptureColumnEditCog>
+                        <CaptureColumnEditCog v-if="header.editable  && !ineditcellmode && caneditgrades" :header="header" :itemid="itemid" @editcolumn="editcog_clicked"></CaptureColumnEditCog>
                     </template>
 
                     <!-- User picture column -->
@@ -138,6 +139,7 @@
                             :awaitingcapture="item.awaitingcapture"
                             :gradehidden="item.gradehidden"
                             :converted="converted"
+                            :caneditgrades="caneditgrades"
                             @gradeadded = "get_user_data(item.id)"
                             >
                         </CaptureMenu>
@@ -177,7 +179,7 @@
 </template>
 
 <script setup>
-    import {ref, computed, inject, watch, defineEmits} from '@vue/runtime-core';
+    import {ref, computed, inject, watch, defineEmits, onMounted} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
     import CaptureSelect from '@/components/CaptureSelect.vue';
     import CaptureMenu from '@/components/CaptureMenu.vue';
@@ -235,6 +237,7 @@
     const lastname = ref('');
     const staffuserid = ref(0);
     const collapseclasses = ref(['collapse', 'show']);
+    const caneditgrades = ref(false);
     const toast = useToast();
     const emit = defineEmits(['refreshlogo']);
     // pagination related.
@@ -242,6 +245,30 @@
     const props = {
         dataTable: dataTable,
     }
+
+    /**
+     * onMounted, get write grades capability
+     */
+    onMounted(() => {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_has_capability',
+            args: {
+                courseid: courseid,
+                capability: 'local/gugrades:editgrades'
+            }
+        }])[0]
+        .then((result) => {
+            caneditgrades.value = result.hascapability;
+        })
+        .catch((error) => {
+            window.console.log(error);
+            debug.value = error;
+        });
+    });
 
     /**
      * Table name filter

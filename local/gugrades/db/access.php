@@ -44,6 +44,15 @@ $capabilities = [
             'editingteacher' => CAP_ALLOW,
         ],
     ],
+    'local/gugrades:editgrades' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
     'local/gugrades:viewhiddennames' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',

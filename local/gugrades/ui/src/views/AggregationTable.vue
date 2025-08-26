@@ -31,6 +31,7 @@
             :allowrelease="allowrelease"
             :released="released"
             :staffuserid="staffuserid"
+            :caneditgrades="caneditgrades"
             @refreshtable="table_update"
             ></AggregationButtons>
     </div>
@@ -140,6 +141,7 @@
                     :name = "item.displayname"
                     :showweights = "header.showweights"
                     :released = "header.released"
+                    :caneditgrades = "caneditgrades"
                     @gradeadded = "grade_changed(item.id)"
                 ></OverrideGrade>
             </template>
@@ -153,10 +155,14 @@
 
             <!-- Resit required -->
             <template #item-resitrequired="item">
-                <a href="#" @click="resit_clicked(item.id, !item.resitrequired)">
+                <a href="#" v-if="caneditgrades" @click="resit_clicked(item.id, !item.resitrequired)">
                     <span v-if="item.resitrequired" class="gug_pill badge badge-pill badge-success">{{ mstrings.yes }}</span>
                     <span v-else class="gug_pill badge badge-pill badge-secondary">{{ mstrings.no }}</span>
                 </a>
+                <span v-if="!caneditgrades">
+                    <span v-if="item.resitrequired" class="gug_pill badge badge-pill badge-success">{{ mstrings.yes }}</span>
+                    <span v-else class="gug_pill badge badge-pill badge-secondary">{{ mstrings.no }}</span>    
+                </span>
             </template>
 
             <!-- Completion -->
@@ -224,7 +230,7 @@
 </template>
 
 <script setup>
-    import {ref, computed, inject} from '@vue/runtime-core';
+    import {ref, computed, inject, onMounted} from '@vue/runtime-core';
     import LevelOneSelect from '@/components/LevelOneSelect.vue';
     import NameFilter from '@/components/NameFilter.vue';
     import GroupSelect from '@/components/GroupSelect.vue';
@@ -268,12 +274,37 @@
     const firstname = ref('');
     const lastname = ref('');
     const staffuserid = ref(0);
+    const caneditgrades = ref(false);
     // pagination related.
     const dataTable = ref();
     const props = {
         dataTable: dataTable,
         loading: loading
     }
+
+    /**
+     * onMounted, get write grades capability
+     */
+    onMounted(() => {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_has_capability',
+            args: {
+                courseid: courseid,
+                capability: 'local/gugrades:editgrades'
+            }
+        }])[0]
+        .then((result) => {
+            caneditgrades.value = result.hascapability;
+        })
+        .catch((error) => {
+            window.console.log(error);
+            debug.value = error;
+        });
+    })
 
     /**
      * Table name filter

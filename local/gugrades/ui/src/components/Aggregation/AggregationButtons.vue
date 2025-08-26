@@ -1,8 +1,8 @@
 <template>
     <div class="col-12 mt-2">
-        <RecalculateButton :categoryid="props.categoryid" :staffuserid="props.staffuserid" @recalculated="refreshtable"></RecalculateButton>
-        <ConversionButton v-if="allowconversion" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
-        <ReleaseCategoryButton v-if="!props.toplevel"
+        <RecalculateButton v-if="caneditgrades" :categoryid="props.categoryid" :staffuserid="props.staffuserid" @recalculated="refreshtable"></RecalculateButton>
+        <ConversionButton v-if="allowconversion && caneditgrades" :categoryid="props.categoryid" @converted="refreshtable"></ConversionButton>
+        <ReleaseCategoryButton v-if="!props.toplevel && caneditgrades"
             :disabled="!props.allowrelease"
             :gradeitemid="props.gradeitemid"
             :groupid="props.groupid"
@@ -30,6 +30,7 @@
         allowrelease: Boolean,
         released: Boolean,
         staffuserid: Number,
+        caneditgrades: Boolean,
     });
 
     const emits = defineEmits([
