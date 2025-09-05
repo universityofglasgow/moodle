@@ -774,16 +774,18 @@ class uofguser extends \gradereport_user\report\user {
                     $data['source']['content'] = '-';
                     $data['source']['class'] = $class;
                     $data['source']['headers'] = "$headercat $headerrow source$userid";
-                    if (
-                        $gradeitemdata['itemtype'] == 'mod' ||
-                        $gradeitemdata['itemtype'] == 'category' ||
-                        $gradeitemdata['itemtype'] == 'manual' ||
-                        $gradeitemdata['itemtype'] == 'course'
-                    ) {
+                    if ($gradeitemdata['itemtype'] == 'mod' || $gradeitemdata['itemtype'] == 'manual') {
                         $data['source']['content'] =
                             ($mygradesreleasedflag) ?
                                 get_string('source_mygrades', 'gradereport_uofguser') :
                                 get_string('source_gradebook', 'gradereport_uofguser');
+                    } else {
+                        if ($gradeitemdata['itemtype'] == 'category' || $gradeitemdata['itemtype'] == 'course') {
+                            $data['source']['content'] =
+                                ($mygradesactive) ?
+                                    get_string('source_mygrades', 'gradereport_uofguser') :
+                                    get_string('source_gradebook', 'gradereport_uofguser');
+                        }
                     }
                 }
 
