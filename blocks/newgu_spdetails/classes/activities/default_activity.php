@@ -52,7 +52,6 @@ class default_activity extends base {
 
         // Get the course module object.
         $this->cm = \local_gugrades\users::get_cm_from_grade_item($gradeitemid, $courseid);
-        $this->cm->coursemodulecontext = \context_module::instance($this->cm->id);
         $this->defaultactivity = $this->get_defaultactivity();
     }
 
