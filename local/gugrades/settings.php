@@ -160,6 +160,35 @@ if ($hassiteconfig) {
         $settingspage->add($admingradeconfig);
     }
 
+    /**
+     * Help
+     * 
+     */
+    $settingspage->add(new admin_setting_heading('local_gugrades/headinghelp',
+        new lang_string('helpsettings', 'local_gugrades'),
+        new lang_string('helpsettingsinfo', 'local_gugrades')
+    ));
+
+    // URL of link text.
+    $helpurl = new admin_setting_configtext(
+        'local_gugrades/helpurl',
+        new lang_string('helpurl', 'local_gugrades'),
+        new lang_string('helpurl_help', 'local_gugrades'),
+        'https://gla.sharepoint.com/sites/learning-innovation/SitePages/LISU-Guides-MyGrades.aspx',
+        PARAM_URL
+    );
+    $settingspage->add($helpurl);
+
+    // Help link text.
+    $helptext = new admin_setting_configtext(
+        'local_gugrades/helptext',
+        new lang_string('helptext', 'local_gugrades'),
+        new lang_string('helptext_help', 'local_gugrades'),
+        'LISU MyGrades help and support',
+        PARAM_TEXT
+    );
+    $settingspage->add($helptext);
+
     $ADMIN->add('localplugins', $settingspage);
 }
 
