@@ -32,11 +32,10 @@ $url = new moodle_url('/local/gugrades/ui/dist/index.php', ['id' => $courseid]);
 $PAGE->set_url($url);
 $PAGE->add_body_class("gugrades");
 
-// Clear docroot
+// Set docroot to our own location
 $helpurl = get_config('local_gugrades', 'helpurl');
 $helptext = get_config('local_gugrades', 'helptext');
-$olddocroot = $CFG->docroot;
-set_config('docroot', $helpurl);
+$CFG->docroot = $helpurl;
 
 // Stuff to include.
 $PAGE->requires->js_call_amd('local_gugrades/interface', 'init', [['courseid' => $courseid]]);
@@ -77,5 +76,3 @@ echo '<div class="text-center my-3">
       </div>';
 echo $OUTPUT->footer();
 
-// Put docroot back
-set_config('docroot', $olddocroot);
