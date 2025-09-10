@@ -37,7 +37,7 @@
                 v-bind="props"
             />
 
-            <div v-if="caneditmaps" class="mt-4">
+            <div v-if="caneditgrades" class="mt-4">
                 <button class="btn btn-primary mr-1" @click="add_map">{{ mstrings.addconversionmap }}</button>
                 <button class="btn btn-info" @click="import_clicked">{{ mstrings.importconversionmap }}</button>
             </div>
