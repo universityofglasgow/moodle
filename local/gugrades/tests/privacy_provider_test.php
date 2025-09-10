@@ -86,7 +86,10 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         // Basic course and user set up
         $course = $this->getDataGenerator()->create_course();
         $student = $this->getDataGenerator()->create_user(['idnumber' => '1234567', 'firstname' => 'Fred', 'lastname' => 'Bloggs']);
+        $teacher = $this->getDataGenerator()->create_user(['idnumber' => '123', 'firstname' => 'Jim', 'lastname' => 'Smith']);
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+        $this->setUser($teacher);
 
         // Test that no contexts were retrieved.
         $contextlist = $this->get_contexts_for_userid($student->id, 'local_gugrades');
@@ -103,7 +106,10 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         // Basic course and user set up
         $course = $this->getDataGenerator()->create_course();
         $student = $this->getDataGenerator()->create_user(['idnumber' => '1234567', 'firstname' => 'Fred', 'lastname' => 'Bloggs']);
+        $teacher = $this->getDataGenerator()->create_user(['idnumber' => '123', 'firstname' => 'Jim', 'lastname' => 'Smith']);
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+        $this->setUser($teacher);
         $gradeitem = $this->getDataGenerator()->create_grade_item(['courseid' => $course->id]);
 
         // Write grade to MyGrades
@@ -124,7 +130,10 @@ final class privacy_provider_test extends \core_privacy\tests\provider_testcase 
         // Basic course and user set up
         $course = $this->getDataGenerator()->create_course();
         $student = $this->getDataGenerator()->create_user(['idnumber' => '1234567', 'firstname' => 'Fred', 'lastname' => 'Bloggs']);
+        $teacher = $this->getDataGenerator()->create_user(['idnumber' => '123', 'firstname' => 'Jim', 'lastname' => 'Smith']);
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+        $this->setUser($teacher);
         $gradeitem = $this->getDataGenerator()->create_grade_item(['courseid' => $course->id]);
 
         // Write grade to MyGrades
