@@ -262,7 +262,7 @@ function gradereport_uofguser_status_icons($OUTPUT) {
         'status_text_submitted' => ['i/completion_self', 'status_text_submitted'],
         'status_text_notsubmitted' => ['i/excluded', 'status_text_notsubmitted'],
         'status_text_graded' => ['i/grade_correct', 'status_text_graded'],
-        'status_text_tobeconfirmed' => ['t/completion_incomplete', 'status_text_tobeconfirmed'],
+        'status_text_tobeconfirmed' => ['i/uncheckedcircle', 'status_text_tobeconfirmed'],
     ];
 
     $icons = [];
