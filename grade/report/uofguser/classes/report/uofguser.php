@@ -518,6 +518,15 @@ class uofguser extends \gradereport_user\report\user {
                     $data['weight']['class'] = $class;
                     $data['weight']['content'] = '-';
                     $data['weight']['headers'] = "$headercat $headerrow weight$userid";
+                    // Is there an altered weight for this item and user in MyGrades?
+                    [$originalweight, $alteredweight, $isaltered] = \local_gugrades\grades::get_altered_weight(
+                        $gradegrade->grade_item->id,
+                        $userid
+                    );
+                    if ($mygradesreleasedflag && $isaltered) {
+                        // We show the altered weight in the report.
+                        $hint['weight'] = $alteredweight;
+                    }
                     // Has a weight assigned, might be extra credit.
 
                     // This obliterates the weight because it provides a more informative description.
@@ -621,7 +630,7 @@ class uofguser extends \gradereport_user\report\user {
                             if (!$mygradesreleasedgrade) {
                                 // If the grade is not released in MyGrades, we do not show it.
                                 $gradeval = null;
-                                // Is it a non-released aggregated category grade?
+                                // Is it a non-released aggregated category normal grade?
                                 $mygradesaggregatedgrade = \local_gugrades\grades::get_aggregated_from_gradeitemid(
                                     $gradegrade->grade_item->id,
                                     $userid
@@ -647,6 +656,41 @@ class uofguser extends \gradereport_user\report\user {
                                 $gradegrade->grade_item, true) . $gradestatus;
                         $gradeitemdata['graderaw'] = $gradeval;
                     }
+                    // Dealing with admin grades in MyGrades.
+                    if ($mygradesreleasedgrade && $mygradesreleasedgrade->admingrade !== '') {
+                        $data['grade']['content'] = \local_gugrades\admingrades::get_displaygrade_from_name(
+                            $mygradesreleasedgrade->admingrade
+                        )[1];
+                    }
+                    // Dealing with unreleased aggregated admin grades if MyGrades active.
+                    if ($type !== 'item' && $mygradesactive) {
+                        if (!$mygradesreleasedgrade) {
+                            // Is it a non-released aggregated category admin grade?
+                            $mygradesaggregatedgrade = \local_gugrades\grades::get_aggregated_from_gradeitemid(
+                                $gradegrade->grade_item->id,
+                                $userid
+                            );
+                            if ($mygradesaggregatedgrade) {
+                                if (isset($this->viewasuser) && !$this->viewasuser) {
+                                    // If the user is a teacher, we show the admin grade.
+                                    $class .= ' dimmed_text';
+                                    $gradepassicon = $OUTPUT->pix_icon(
+                                        'i/grading',
+                                        get_string('unreleased', 'gradereport_uofguser'),
+                                        null,
+                                        ['class' => 'inline']
+                                    );
+                                    if ($mygradesaggregatedgrade->admingrade !== '') {
+                                        $data['grade']['content'] = $gradepassicon .
+                                        \local_gugrades\admingrades::get_displaygrade_from_name(
+                                            $mygradesaggregatedgrade->admingrade
+                                        )[1];
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     $data['grade']['headers'] = "$headercat $headerrow grade$userid";
                     $gradeitemdata['gradeformatted'] = $data['grade']['content'];
                     // If the current grade item need to show a grade action menu, generate the appropriate output.
