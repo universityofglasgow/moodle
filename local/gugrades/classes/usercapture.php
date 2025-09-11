@@ -210,6 +210,9 @@ class usercapture {
 
         $this->provisional = null;
 
+        // Get the gradeitem to sanity check grade, MGU-1344
+        $gradeitem = \local_gugrades\grades::get_gradeitem($this->gradeitemid);
+
         // ...id is a proxy for time added.
         // Cannot use the timestamp as the unit tests write the test grades all in the
         // same second (potentially).
@@ -222,6 +225,12 @@ class usercapture {
         // Work out / add provisional grade.
         if ($grades) {
             $provisional = $this->get_provisional_from_grades($grades);
+
+            // MGU-1344: If points grade, check for over-range. Can happen if grade item edited after import. 
+            if ($provisional->points && ($provisional->rawgrade > $gradeitem->grademax)) {
+                throw new \moodle_exception('Out of range grade detected for ' . $gradeitem->itemname . 
+                    '. gradeitemid = ' . $this->gradeitemid . ', userid = ' . $this->userid . ', rawgrade = ' . $provisional->rawgrade . ', grademax = ' . $gradeitem->grademax);
+            }
             $provisionalcolumn = \local_gugrades\grades::get_column($this->courseid, $this->gradeitemid, 'PROVISIONAL', '',
                 $provisional->points);
 

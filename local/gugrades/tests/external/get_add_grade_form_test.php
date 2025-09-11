@@ -105,7 +105,7 @@ final class get_add_grade_form_test extends \local_gugrades\external\gugrades_ad
         $this->assertEquals('NOSUBMISSION', $adminmenu[2]['value']);
         $this->assertEquals('NS - No Submission', $adminmenu[2]['label']);
         $this->assertEquals('GOODCAUSE_NR', $adminmenu[3]['value']);
-        $this->assertEquals('EC0 - Extenuating Circumstances (non replicable)', $adminmenu[3]['label']);
+        $this->assertEquals('ECC - Extenuating Circumstances (non replicable)', $adminmenu[3]['label']);
         $this->assertEquals('GOODCAUSE_FO', $adminmenu[4]['value']);
         $this->assertEquals('EC - Extenuating Circumstances (further opportunity)', $adminmenu[4]['label']);
     }

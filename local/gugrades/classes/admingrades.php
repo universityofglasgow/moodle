@@ -54,7 +54,7 @@ class admingrades {
             ],
             'GOODCAUSE_NR' => [
                 'default' => [
-                    'code' => 'EC0',
+                    'code' => 'ECC',
                     'description' => get_string('adminmv0', 'local_gugrades'),
                 ],
                 'items' => true,

@@ -300,7 +300,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('EC0', $fred['displaygrade']);
+        $this->assertEquals('ECC', $fred['displaygrade']);
 
         // Get the grade category 'Summative'.
         $gradecatsummative = $DB->get_record('grade_categories', ['fullname' => 'Summative'], '*', MUST_EXIST);
@@ -575,7 +575,7 @@ final class MGU_1110_test extends \local_gugrades\external\gugrades_aggregation_
         );
 
         $fred = $page['users'][0];
-        $this->assertEquals('EC0', $fred['displaygrade']);
+        $this->assertEquals('ECC', $fred['displaygrade']);
     }
 
 }

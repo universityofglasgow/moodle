@@ -1,0 +1,66 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Exam B",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.4
+            },
+            {
+                "name": "Exam A",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.4
+            },
+            {
+                "name": "Labs",
+                "category": false,
+                "type": "schedulea",
+                "weight": 0.1
+            },
+            {
+                "name": "Quizzes",
+                "category": true,
+                "weight": 0.1,
+                "children": [
+                    {
+                        "name": "Quiz 1",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 2",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 3",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 4",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 5",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.0
+                    }
+                ]
+            }
+
+        ]
+    }
+]
