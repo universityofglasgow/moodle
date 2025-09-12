@@ -783,16 +783,18 @@ class course {
 
         $PAGE->set_context(\context_system::instance());
 
-        $marked = 0;
+        $totalupcoming = 0;
+        $totaltosubmit = 0;
         $totaloverdue = 0;
         $totalsubmissions = 0;
-        $totaltosubmit = 0;
+        $marked = 0;
         $sortstring = 'shortname asc';
         $isgradehidden = false;
 
         $currentcourses = \local_gugrades\api::dashboard_get_courses($USER->id, true, false, $sortstring);
 
         $stats = [
+            'total_upcoming' => 0,
             'total_tosubmit' => 0,
             'total_overdue' => 0,
             'total_submissions' => 0,
@@ -857,6 +859,10 @@ class course {
                                         $activityitem->scaleid,
                                     );
                                     $status = $gradestatus->grade_status;
+                                    if ($status == get_string('status_submissionnotopen', 'block_newgu_spdetails')) {
+                                        $totalupcoming++;
+                                    }
+
                                     if ($status == get_string('status_submitted', 'block_newgu_spdetails')) {
                                         $totalsubmissions++;
                                     }
@@ -885,6 +891,7 @@ class course {
         }
 
         $stats = [
+            'total_upcoming' => $totalupcoming,
             'total_tosubmit' => $totaltosubmit,
             'total_overdue' => $totaloverdue,
             'total_submissions' => $totalsubmissions,
@@ -895,8 +902,9 @@ class course {
     }
 
     /**
-     * Return only the assessments that have been:
-     * Submitted
+     * Return only the assessments that:
+     * Are upcoming
+     * Have been Submitted
      * Are still to be submitted
      * Overdue
      * Marked/Graded
@@ -924,21 +932,26 @@ class course {
         $showgradecolumn = false;
         switch ($charttype) {
             case 0:
+                $option = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
+                $dateheader = get_string('header_duedate', 'block_newgu_spdetails');
+                $whichstatus = get_string('status_submissionnotopen', 'block_newgu_spdetails');
+                break;
+            case 1:
                 $option = get_string('status_text_tobesubmitted', 'block_newgu_spdetails');
                 $dateheader = get_string('header_duedate', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_submit', 'block_newgu_spdetails');
                 break;
-            case 1:
+            case 2:
                 $option = get_string('status_text_overdue', 'block_newgu_spdetails');
                 $dateheader = get_string('header_duedate', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_overdue', 'block_newgu_spdetails');
                 break;
-            case 2:
+            case 3:
                 $option = get_string('status_text_submitted', 'block_newgu_spdetails');
                 $dateheader = get_string('header_duedate', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_submitted', 'block_newgu_spdetails');
                 break;
-            case 3:
+            case 4:
                 $option = get_string('status_text_graded', 'block_newgu_spdetails');
                 $dateheader = get_string('header_dategraded', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_graded', 'block_newgu_spdetails');
@@ -974,7 +987,7 @@ class course {
                                 $iconalt = '';
                                 $iconhidden = false;
                                 $releasednadnothidden = false;
-                                if ($charttype == 3) {
+                                if ($charttype == 4) {
                                     if ($course->gugradesenabled) {
                                         $params = [
                                             'courseid' => $activityitem->courseid,
@@ -1170,7 +1183,7 @@ class course {
                                     }
 
                                     switch($charttype) {
-                                        case 3:
+                                        case 4:
                                             if (property_exists($gradestatus, 'grade_date') && $gradestatus->grade_date != '') {
                                                 $date = userdate($gradestatus->grade_date);
                                                 $rawduedate = $gradestatus->grade_date;
@@ -1237,5 +1250,4 @@ class course {
 
         return $assessmentsdue;
     }
-
 }

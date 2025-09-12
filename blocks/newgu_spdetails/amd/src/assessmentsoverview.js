@@ -55,6 +55,7 @@ async function fetchAssessmentsOverview() {
     // Get the language specific strings first off.
     const requiredStrings = [
         {key: 'loading_text', component: 'block_newgu_spdetails'},
+        {key: 'status_text_upcoming', component: 'block_newgu_spdetails'},
         {key: 'status_text_tobesubmitted', component: 'block_newgu_spdetails'},
         {key: 'status_text_overdue', component: 'block_newgu_spdetails'},
         {key: 'status_text_submitted', component: 'block_newgu_spdetails'},
@@ -64,6 +65,7 @@ async function fetchAssessmentsOverview() {
         {key: 'overview_tooltip_preamble', component: 'block_newgu_spdetails'}
     ];
     let loading_text = '';
+    let status_text_upcoming = '';
     let status_text_tobesubmitted = '';
     let status_text_overdue = '';
     let status_text_submitted = '';
@@ -74,13 +76,14 @@ async function fetchAssessmentsOverview() {
 
     await getStrings(requiredStrings).then((result) => {
         loading_text = result[0];
-        status_text_tobesubmitted = result[1];
-        status_text_overdue = result[2];
-        status_text_submitted = result[3];
-        status_text_graded = result[4];
-        aria_label_text = result[5];
-        accessibility_description = result[6];
-        overview_tooltip_preamble = result[7];
+        status_text_upcoming = result[1];
+        status_text_tobesubmitted = result[2];
+        status_text_overdue = result[3];
+        status_text_submitted = result[4];
+        status_text_graded = result[5];
+        aria_label_text = result[6];
+        accessibility_description = result[7];
+        overview_tooltip_preamble = result[8];
         return;
     }).catch((err) => {
         Log.debug(err);
@@ -97,6 +100,7 @@ async function fetchAssessmentsOverview() {
         args: {},
     }])[0].done(function(response) {
         document.querySelector('.loader').remove();
+        let upcoming = response[0].upcoming;
         let tobe_submitted = response[0].tobe_sub;
         let overdue = response[0].overdue;
         let submitted = response[0].sub_assess;
@@ -325,21 +329,25 @@ async function fetchAssessmentsOverview() {
                 series: [{
                     innerSize: '50%',
                     data: [{
+                        name: status_text_upcoming,
+                        y: upcoming,
+                        color: 'rgba(255,255,0, 1)',
+                    }, {
                         name: status_text_tobesubmitted,
                         y: tobe_submitted,
-                        color: 'rgba(255,153,0)',
+                        color: 'rgba(255,153,0, 1)',
                     }, {
                         name: status_text_overdue,
                         y: overdue,
-                        color: 'rgba(255,0,0)',
+                        color: 'rgba(255,0,0, 1)',
                     }, {
                         name: status_text_submitted,
                         y: submitted,
-                        color: 'rgba(0,153,0)',
+                        color: 'rgba(0,153,0, 1)',
                     }, {
                         name: status_text_graded,
                         y: graded,
-                        color: 'rgba(129,187,255)',
+                        color: 'rgba(129,187,255, 1)',
                     }]
                 }]
             });

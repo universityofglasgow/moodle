@@ -161,8 +161,32 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             'hidden' => 1,
         ]);
 
-        // Create the RELEASED entry in MyGrades and related tables.
+        // We need to fake a category for this manual item
         $now  = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
+        $categorycolid = $DB->insert_record('local_gugrades_column', [
+            'courseid' => $this->mygradescourse->id,
+            'gradeitemid' => $this->mygradessummativecategory->id,
+            'gradetype' => 'CATEGORY',
+            'other' => '',
+            'points' => 0,
+        ]);
+        $parentcategorygradeitemid = $DB->get_record("grade_items", ['iteminstance' => $this->mygradessummativecategory->id]);
+        $DB->insert_record('local_gugrades_grade', [
+            'courseid' => $this->mygradescourse->id,
+            'gradeitemid' => $parentcategorygradeitemid->id,
+            'userid' => $this->student1->id,
+            'points' => 1,
+            'rawgrade' => 0,
+            'convertedgrade' => 0,
+            'admingrade' => '',
+            'displaygrade' => 'Grades missing',
+            'gradetype' => 'CATEGORY',
+            'columnid' => $categorycolid,
+            'iscurrent' => 1,
+            'auditby' => 0,
+            'audittimecreated' => $now,
+        ]);
+        // Create the RELEASED entry in MyGrades and related tables.
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,
@@ -357,8 +381,32 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             'hidden' => 1,
         ]);
 
-        // Create the RELEASED entry in MyGrades and related tables, plus the hidden entry.
+        // We need to fake a category for this manual item
         $now  = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
+        $categorycolid = $DB->insert_record('local_gugrades_column', [
+            'courseid' => $this->mygradescourse->id,
+            'gradeitemid' => $this->mygradessummativecategory->id,
+            'gradetype' => 'CATEGORY',
+            'other' => '',
+            'points' => 0,
+        ]);
+        $parentcategorygradeitemid = $DB->get_record("grade_items", ['iteminstance' => $this->mygradessummativecategory->id]);
+        $DB->insert_record('local_gugrades_grade', [
+            'courseid' => $this->mygradescourse->id,
+            'gradeitemid' => $parentcategorygradeitemid->id,
+            'userid' => $this->student1->id,
+            'points' => 1,
+            'rawgrade' => 0,
+            'convertedgrade' => 0,
+            'admingrade' => '',
+            'displaygrade' => 'Grades missing',
+            'gradetype' => 'CATEGORY',
+            'columnid' => $categorycolid,
+            'iscurrent' => 1,
+            'auditby' => 0,
+            'audittimecreated' => $now,
+        ]);
+        // Create the RELEASED entry in MyGrades and related tables.
         $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
             'gradeitemid' => $manualgradeitem->id,

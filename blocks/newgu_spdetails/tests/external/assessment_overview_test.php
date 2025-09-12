@@ -318,6 +318,58 @@ final class assessment_overview_test extends \block_newgu_spdetails\external\new
     }
 
     /**
+     * Test that the number of items that are upcoming match.
+     *
+     * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary
+     */
+    public function test_get_assessment_overview_upcoming(): void {
+        global $DB;
+
+        // We're the test student.
+        $this->setUser($this->student1->id);
+
+        // Fake a "due" and "allow submissions from" date
+        $allowsubmissionsfromdate = mktime(date("H"), date("i"), date("s"), date("m"), date("d") +7, date("Y"));
+        $duedate1 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 14, date("Y"));
+        $mygradesassignment1 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'September lab 1A',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate1,
+            'allowsubmissionsfromdate' => $allowsubmissionsfromdate,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $params = [
+            $this->mygradessummativesubcategory->id,
+            $mygradesassignment1->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment1->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Check that our stats values are returned as expected.
+        $stats = get_assessmentsummary::execute();
+        $stats = external_api::clean_returnvalue(
+            get_assessmentsummary::execute_returns(),
+            $stats
+        );
+        $this->assertIsArray($stats);
+        $this->assertArrayHasKey('upcoming', $stats[0]);
+        $this->assertEquals(1, $stats[0]['upcoming']);
+    }
+
+    /**
      * Test that the number of items that have been graded match.
      *
      * @covers \blocks\newgu_spdetails\classes\external\get_assessmentsummary

@@ -42,7 +42,7 @@ class get_assessmentsummarybytype extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'charttype' => new external_value(PARAM_INT, 'The selected type', VALUE_DEFAULT),
+            'charttype' => new external_value(PARAM_INT, 'The selected type', VALUE_DEFAULT, 0),
         ]);
     }
 

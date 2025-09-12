@@ -45,6 +45,7 @@ $otherparams = [
     'originaluserid' => $USER->id,
     'originalemail' => $USER->email,
 ];
+
 if (isset($_SESSION['REALUSER'])) {
     $realuser = get_complete_user_data('id', $_SESSION['REALUSER']->id);
     $otherparams['realuser'] = fullname($realuser, true);
@@ -60,8 +61,8 @@ $event = \block_newgu_spdetails\event\view_dashboard::create([
 $event->trigger();
 
 $templatecontext = (array)[
-    'tab_current'       => get_string('tab_current', 'block_newgu_spdetails'),
-    'tab_past'          => get_string('tab_past', 'block_newgu_spdetails'),
+    'tab_current' => get_string('tab_current', 'block_newgu_spdetails'),
+    'tab_past' => get_string('tab_past', 'block_newgu_spdetails'),
     'showdetails' => true,
 ];
 
@@ -73,21 +74,21 @@ echo $OUTPUT->header();
 
 $helpurl = 'https://www.gla.ac.uk/myglasgow/sld/digitalskills/how-to-moodleforstudents/studentmygrades/';
 
-$helpbuttonattribs = ['class' => 'btn bg-info btn-lg icon-no-margin',
-                        'id' => 'UofG_MyGrades_help',
-                        'title' => 'Additional guidance',
-                    ];
+$helpbuttonattribs = [
+    'class' => 'btn bg-info btn-lg icon-no-margin',
+    'id' => 'UofG_MyGrades_help',
+    'title' => 'Additional guidance',
+];
 
-$helplinkattribs = ['target' => '_new',
-                        'HREF' => $helpurl,
-                        'class' => 'text-light',
-                    ];
+$helplinkattribs = [
+    'target' => '_new',
+    'HREF' => $helpurl,
+    'class' => 'text-light',
+];
 
 $helplink = html_writer::link($helpurl, '<i class="icon fa fa-question fa-fw fa-2x" aria-hidden="true"></i>', $helplinkattribs);
-
 $helpbutton = html_writer::tag('button', $helplink, $helpbuttonattribs);
 
 echo $helpbutton;
-
 echo $content;
 echo $OUTPUT->footer();
