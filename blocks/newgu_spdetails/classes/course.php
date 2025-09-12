@@ -932,7 +932,7 @@ class course {
         $showgradecolumn = false;
         switch ($charttype) {
             case 0:
-                $option = get_string('status_text_submissionnotopen', 'block_newgu_spdetails');
+                $option = get_string('status_text_upcoming', 'block_newgu_spdetails');
                 $dateheader = get_string('header_duedate', 'block_newgu_spdetails');
                 $whichstatus = get_string('status_submissionnotopen', 'block_newgu_spdetails');
                 break;

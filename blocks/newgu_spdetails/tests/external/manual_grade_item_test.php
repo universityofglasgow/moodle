@@ -161,7 +161,7 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             'hidden' => 1,
         ]);
 
-        // We need to fake a category for this manual item
+        // We need to fake a category for this manual item.
         $now  = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
         $categorycolid = $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,
@@ -381,7 +381,7 @@ final class manual_grade_item_test extends \block_newgu_spdetails\external\newgu
             'hidden' => 1,
         ]);
 
-        // We need to fake a category for this manual item
+        // We need to fake a category for this manual item.
         $now  = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
         $categorycolid = $DB->insert_record('local_gugrades_column', [
             'courseid' => $this->mygradescourse->id,

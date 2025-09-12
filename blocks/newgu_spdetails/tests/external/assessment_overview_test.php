@@ -328,8 +328,8 @@ final class assessment_overview_test extends \block_newgu_spdetails\external\new
         // We're the test student.
         $this->setUser($this->student1->id);
 
-        // Fake a "due" and "allow submissions from" date
-        $allowsubmissionsfromdate = mktime(date("H"), date("i"), date("s"), date("m"), date("d") +7, date("Y"));
+        // Fake a "due" and "allow submissions from" date.
+        $allowsubmissionsfromdate = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y"));
         $duedate1 = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 14, date("Y"));
         $mygradesassignment1 = $this->getDataGenerator()->create_module('assign', [
             'name' => 'September lab 1A',
@@ -678,7 +678,7 @@ final class assessment_overview_test extends \block_newgu_spdetails\external\new
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
         // Check that our stats values for the given type are returned as expected.
-        $type = 0; // To be submitted.
+        $type = 1; // To be submitted.
         $stats = get_assessmentsummarybytype::execute($type);
         $stats = external_api::clean_returnvalue(
             get_assessmentsummarybytype::execute_returns(),

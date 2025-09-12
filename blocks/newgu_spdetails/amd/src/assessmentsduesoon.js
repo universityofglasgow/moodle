@@ -376,7 +376,6 @@ async function fetchAssessmentsDueSoon() {
  * @param {*} index
  */
 const viewAssessmentsDueByChartType = function(index) {
-    window.console.log('viewAssessmentsDueByChartType called with:', index);
     const chartType = index;
 
     let containerBlock = document.querySelector(Selectors.COURSECONTENTS_BLOCK);
