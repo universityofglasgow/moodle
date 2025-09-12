@@ -1,0 +1,43 @@
+[
+
+    {
+        "name": "Summative",
+        "category": true,
+        "weight": 1.0,
+        "children": [
+            {
+                "name": "Quizzes",
+                "category": true,
+                "weight": 0.1,
+                "droplow": 1,
+                "children": [
+                    {
+                        "name": "Quiz 1",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 2",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 3",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    },
+                    {
+                        "name": "Quiz 4",
+                        "category": false,
+                        "type": "schedulea",
+                        "weight": 0.25
+                    }
+                ]
+            }
+
+        ]
+    }
+]
