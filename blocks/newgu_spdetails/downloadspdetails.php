@@ -25,13 +25,10 @@
  * @author     Greg Pedder <greg.pedder@glasgow.ac.uk> - updated this file.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
- ob_start();
-
 require_once(dirname(dirname(__FILE__)) . '../../config.php');
 require_once("$CFG->libdir/excellib.class.php");
 
-defined('MOODLE_INTERNAL') || die();
+ob_start();
 
 global $PAGE, $CFG, $DB, $OUTPUT, $USER;
 $PAGE->set_context(context_system::instance());
@@ -55,6 +52,11 @@ $spdetailspdf = get_string('nocoursesfound', 'block_newgu_spdetails');
  * @param int $userid
  * @param array $items
  * @return array $items
+ *
+ * @package    block_newgu_spdetails
+ * @copyright  2025
+ * @author     Greg Pedder
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 function get_aggregation_items(int $courseid, int $gradeitemid, int $userid, array $items): array {
     $items = $items;
