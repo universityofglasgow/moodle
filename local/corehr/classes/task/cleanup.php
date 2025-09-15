@@ -15,14 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Sychronise completion data for CoreHR
+ * Cleanup database tables
  *
  * @package    local_corehr
- * @copyright  2016 Howard Miller
+ * @copyright  2025 Howard Miller
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2025091500;
-$plugin->requires = 2024100700; // Moodle 4.5.0
-$plugin->component = 'local_corehr';
-$plugin->description = 'Sychronise completion data for CoreHR';
+namespace local_corehr\task;
+
+class cleanup extends \core\task\scheduled_task {
+
+    public function get_name() {
+        // Shown in admin screens
+        return get_string('cleanuptask', 'local_corehr');
+    }
+
+    /**
+     * Delete expired logs in local_corehr_boomi_log
+     */
+    public function execute() {
+        global $DB;
+
+        $keeplogsfor = get_config('local_corehr', 'keeplogsfor', 14);
+        $cutoff = time() - ($keeplogsfor * 86400);
+
+        $select = 'timestamp < :cutoff';
+        $DB->delete_records_select('local_corehr_boomi_log', $select, ['cutoff' => $cutoff]);
+
+        return true;
+    }
+}

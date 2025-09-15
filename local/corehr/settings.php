@@ -48,6 +48,10 @@ if ($hassiteconfig) {
             'local_corehr/boomipassword', get_string('boomipassword', 'local_corehr'),
             '', '', PARAM_RAW));
 
+    $settings->add(new admin_setting_configtext(
+        'local_corehr/keeplogsfor', get_string('keeplogsfor', 'local_corehr'),
+        get_string('configkeeplogsfor', 'local_corehr'), '14', PARAM_INT));
+
     // OLD SOAP SETTINGS.
 
     $settings->add(new admin_setting_heading('local_corehr/corehrws',

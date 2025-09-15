@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$tasks = array(                                                                                                                     
-    array(                                                                                                                          
+$tasks = [                                                                                                                     
+    [                                                                                                                          
         'classname' => 'local_corehr\task\send',                                                                            
         'blocking' => 0,                                                                                                            
         'minute' => '*',                                                                                                            
@@ -31,5 +31,14 @@ $tasks = array(
         'day' => '*',                                                                                                               
         'dayofweek' => '*',                                                                                                         
         'month' => '*'                                                                                                              
-    )
-);
+    ],
+    [                                                                                                                          
+        'classname' => 'local_corehr\task\cleanup',                                                                            
+        'blocking' => 0,                                                                                                            
+        'minute' => '0',                                                                                                            
+        'hour' => '04',                                                                                                              
+        'day' => '*',                                                                                                               
+        'dayofweek' => '*',                                                                                                         
+        'month' => '*'                                                                                                              
+    ]
+];
