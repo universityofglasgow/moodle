@@ -311,6 +311,20 @@ class workshop_activity extends base {
             $statusobj->grade_status = get_string('status_submitted', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submitted', 'block_newgu_spdetails');
             $statusobj->status_class = get_string('status_class_submitted', 'block_newgu_spdetails');
+            $statusobj->status_link = '';
+        }
+
+        // Do we have any assessments?
+        if ($workshopactivitytype == 'assessment' &&
+            empty($pendingassessments) &&
+            empty($assessmentsbyuser) &&
+            $workshopinstance->phase > \workshop::PHASE_SUBMISSION &&
+            ($allowsubmissionsfromdate <= $now && $workshopinstance->assessmentend > $now)
+            ) {
+            $statusobj->grade_status = get_string('status_unavailable', 'block_newgu_spdetails');
+            $statusobj->status_text = get_string('status_text_submissionunavailable', 'block_newgu_spdetails');
+            $statusobj->status_class = '';
+            $statusobj->status_link = '';
         }
 
         // Do we need more assessments?
@@ -333,6 +347,7 @@ class workshop_activity extends base {
             $statusobj->grade_status = get_string('status_submitted', 'block_newgu_spdetails');
             $statusobj->status_text = get_string('status_text_submitted', 'block_newgu_spdetails');
             $statusobj->status_class = get_string('status_class_submitted', 'block_newgu_spdetails');
+            $statusobj->status_link = '';
         }
 
         // Formatting this here as the integer format for the date is no longer needed for testing against.
