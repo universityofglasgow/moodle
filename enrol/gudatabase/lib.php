@@ -582,6 +582,16 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
             return false;
         }
 
+        // If multiple results, hunt down any ug_pg_ind == LLL
+        // ...we don't want Lifelong Learning if there are better options.
+        if (count($data) > 1) {
+            foreach ($data as $id => $plan) {
+                if ($plan->ug_pg_ind == 'LLL') {
+                    unset($data[$id]);
+                }
+            }
+        }
+
         // Horrid bodge
         $data = reset($data);
 
@@ -1667,6 +1677,10 @@ class enrol_gudatabase_plugin extends enrol_database_plugin {
         // If there aren't any then there's nothing to see here.
         if (empty($enrolments)) {
             mtrace('gudatabase: no external enrolments');
+
+            // Check programme data anyway.
+            $this->external_programdata($user);
+
             return true;
         }
 
