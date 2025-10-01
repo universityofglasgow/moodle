@@ -25,6 +25,7 @@
 $string['accessed'] = 'Accessed {$a}';
 $string['addgroups'] = 'Add groups';
 $string['addgroups_help'] = 'Additional columns will be used to add user to specified groups. Groups are created if they do not exist. If this is set to \'No\' additional columns are ignored';
+$string['adduser'] = 'Add missing user';
 $string['accountcreated'] = 'Account created for {$a}';
 $string['accountexists'] = 'Account not created, {$a} already exists';
 $string['allowmultiple'] = 'Allow multiple enrolment methods';
@@ -76,6 +77,7 @@ $string['gcat'] = 'GCAT';
 $string['groupadded'] = 'Group add {$a}';
 $string['groupnotadded'] = 'Group add failed {$a}';
 $string['guid'] = 'GUID Search';
+$string['guid:adduser'] = 'Create missing user account';
 $string['guid:courseupload'] = 'Access GUID course upload form';
 $string['guid:enroldownload'] = 'Download enrolments and groups to csv';
 $string['guid:view'] = 'View GUID form';

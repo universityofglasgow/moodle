@@ -24,38 +24,49 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
+$capabilities = [
 
-    'report/guid:view' => array(
+    'report/guid:view' => [
         'riskbitmask' => RISK_CONFIG,
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW
-        ),
+        ],
 
         'clonepermissionsfrom' => 'moodle/site:viewreports',
-    ),
+    ],
     'report/guid:courseupload' => array(
         'riskbitmask' => RISK_CONFIG,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
+        ],
 
         'clonepermissionsfrom' => 'moodle/site:viewreports',
     ),
-    'report/guid:enroldownload' => array(
+    'report/guid:enroldownload' => [
         'riskbitmask' => RISK_CONFIG,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
+        ],
 
         'clonepermissionsfrom' => 'moodle/site:viewreports',
-    )
-);
+    ],
+    'report/guid:adduser' => [
+        'riskbitmask' => RISK_CONFIG,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+        ],
+
+        'clonepermissionsfrom' => 'moodle/site:viewreports',
+    ]
+];

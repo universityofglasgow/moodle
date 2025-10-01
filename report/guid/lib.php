@@ -41,6 +41,13 @@ function report_guid_extend_navigation_course($navigation, $course, $context) {
         $navigation->add(get_string('courseupload', 'report_guid'), $url,
             navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
+
+    // Add user
+    //if (has_capability('report/guid:adduser', $context)) {
+    //    $url = new moodle_url('/report/guid/adduser.php', ['id' => $course->id]);
+    //    $navigation->add(get_string('adduser', 'report_guid'), $url,
+    //        navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+    //}
 }
 
 /**
