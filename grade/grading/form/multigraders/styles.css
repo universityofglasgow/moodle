@@ -1,0 +1,230 @@
+.gradingform_multigraders-regrade {
+    padding: 10px;
+    background: #fdd;
+    border: 1px solid #f00;
+    margin-bottom: 10px;
+}
+
+ .gradingform_multigraders-restored {
+    padding: 10px;
+    background: #ffd;
+    border: 1px solid #ff0;
+    margin-bottom: 10px;
+}
+
+ .gradingform_multigraders-error {
+    color: red;
+    font-weight: bold;
+     /*float: left;*/
+ }
+ .gradingform_multigraders-notice {
+     padding: 10px;
+     background: #FCF8E3;
+     margin-bottom: 10px;
+ }
+
+ .gradingform_multigraders_editform .status {
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: 60%;
+    padding: 0.25em;
+    border: 1px solid #eee;
+}
+
+ .gradingform_multigraders_editform .status.ready {
+    background-color: #e7f1c3;
+    border-color: #aea;
+}
+
+ .gradingform_multigraders_editform .status.draft {
+    background-color: #f3f2aa;
+    border-color: #ee2;
+}
+ .gradingform_multigraders{
+     width: 100%;
+ }
+ .gradingform_multigraders .instance_details{
+
+ }
+ .gradingform_multigraders .instance_details.highlight_red{
+    color: red;
+ }
+ .gradingform_multigraders .instance_details.highlight_green{
+     color: green;
+ }
+ .multigraders_criteria{
+     background: #fff;
+     margin-bottom: 5px !important;
+ }
+
+ .multigraders_grade {
+     background: #fff;
+     border-bottom: 1px solid #01325F;
+     padding: 5px;
+     margin-bottom: 5px !important;
+     position: relative;
+ }
+ .multigraders_grade .grade-wrap::after{
+     content: "";
+     display: table;
+     clear: both;
+ }
+ .multigraders_grade:hover {
+     background-color: #f5f5f5;
+ }
+ .multigraders_grade.finalGrade {
+     background: #cfefcf;
+     padding: 10px;
+ }
+ .multigraders_grade .grade-wrap{
+     width: 100%;
+     margin-bottom: 5px;
+ }
+ .multigraders_grade div.grade{
+     height: 3em;
+     float: left;
+     width: 8em;
+     border-radius: 1;
+ }
+ .multigraders_grade div.grade input,
+ .multigraders_grade div.grade select{
+     width: 7em;
+     text-align: right;
+     float: left;
+     border-radius: 1;
+     padding: 1px;
+     margin: 0;
+ }
+ .multigraders_grade div.grade input{
+    width: 8em !important;
+    margin-top: 1rem;
+ }
+ .multigraders_grade div.grade select{
+     width: 8em;
+     text-align: left;
+     padding-left: 12px;
+ }
+ .multigraders_grade span.grade_range{
+     float: left;
+     color: #999;
+     font-size: 12px;
+     padding-left: 2px;
+ }
+ .multigraders_grade .grade_feedback{
+     width: 100%;
+     min-width: 180px;
+     padding: 15px 0px 5px 0px;
+     }
+ .multigraders_grade .grade-outcomes{
+     clear: both;
+ }
+ .multigraders_grade .outcome .outcome_value{
+     font-weight: bold;
+ }
+
+ .multigraders_grade .edit_button{
+     width: 20px;
+     background: transparent url([[pix:i/edit]]) no-repeat center top;
+     -webkit-filter: invert(20);
+     -moz-filter: invert(20);
+     -o-filter: invert(20);
+     -ms-filter: invert(20));
+     filter: invert(20);
+     margin-top: 4px;
+     line-height: 0;
+     color: transparent;
+     display: block;
+     float: left;
+     height: 3em;
+ }
+ .multigraders_grade .edit_button.active{
+     -webkit-filter: unset;
+     -moz-filter: unset;
+     -o-filter: unset;
+     -ms-filter: unset);
+     filter: unset;
+ }
+ .multigraders_grade .final_grade_check{
+     display: none;
+ }
+ .multigraders_grade .grader{
+     float: left;
+     min-width: 80px;
+     padding:15px 6px 0px 6px;
+ }
+ .multigraders_grade .grader_name,
+.student_name{
+     color:#01325F;
+ }
+ .multigraders_grade .timestamp{
+
+     float: left;
+     min-width: 80px;
+     color: #666;
+     padding-top: 15px;
+ }
+ .multigraders_grade .visible_to_students{
+ }
+ .multigraders_grade.review .grader{
+     top: 1.8em;
+     width: 29%;
+ }
+ .multigraders_grade.review div.grade{
+     height: auto;
+     width: auto;
+     float:none;
+ }
+ .multigraders_grade.review .grade_feedback{
+     clear: both;
+ }
+
+ #gradingform_multigraders #fitem_id_advancedgrading{
+    display: none;
+ }
+
+ div.grader_feedback{
+    text-align: left;
+    background-color: white;
+    font-size: medium;
+    border: 1px solid rgba(0,0,0,.125);
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    margin: 0;
+    min-height: 40px;
+ }
+
+.gradingform_total{
+    background: #fff;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0,0,0,.125);
+    padding: 2.25rem;
+    margin-bottom: 1rem;
+}
+.grade_feedback .form-group.row.fitem.femptylabel.has-popout{
+    display: contents;
+}
+.grade_feedback .col-md-3{
+    border-bottom: none!important;
+    margin-bottom: 0px!important;
+}
+
+#fitem_id_currentgrade{
+    font-weight: bold!important;
+    padding-bottom: 10px;
+}
+
+#fitem_id_currentgrade .col-md-3{
+    max-width: 19%!important;
+}
+
+#require_second_grader,
+.visible_to_students{
+    display:flex;
+}
+#require_second_grader span,
+.visible_to_students span{
+    vertical-align: middle;
+    padding-left: 5px;
+}
