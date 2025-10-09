@@ -54,21 +54,27 @@ final class assessments_due_soon_test extends \block_newgu_spdetails\external\ne
         $this->setUser($this->student1->id);
 
         // Fake some due dates.
-        $duedate = mktime(date("H") + 5, date("i"), date("s"), date("m"), date("d"), date("Y"));
+        $duedate24hrs = mktime(date("H") + 5, date("i"), date("s"), date("m"), date("d"), date("Y"));
+        $duedate7days = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 4, date("Y"));
+        $duedate14days = mktime(date("H") + 5, date("i"), date("s"), date("m"), date("d") + 11, date("Y"));
+        $duedate1month = mktime(date("H") + 5, date("i"), date("s"), date("m"), date("d") + 21, date("Y"));
 
+        // Get a reference to the sub category id.
+        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
+
+        // Assignment due within the next 24 hours.
         $mygradesassignment = $this->getDataGenerator()->create_module('assign', [
             'name' => 'October lab 1A',
             'itemtype' => 'mod',
             'itemmodule' => 'assign',
             'course' => $this->mygradescourse->id,
-            'duedate' => $duedate,
+            'duedate' => $duedate24hrs,
             'gradetype' => 2,
             'grademax' => 50,
             'scaleid' => $this->scale->id,
         ]);
 
         // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
-        $mygradessummativesubcategoryid = $this->mygradessummativesubcategory->id;
         $params = [
             $mygradessummativesubcategoryid,
             $mygradesassignment->id,
@@ -83,6 +89,87 @@ final class assessments_due_soon_test extends \block_newgu_spdetails\external\ne
         ];
         $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
 
+        // Assignment due within the next 7 days.
+        $mygradesassignment2 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1B',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate7days,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment2->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Assignment due within the next 14 days.
+        $mygradesassignment3 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1C',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate14days,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment3->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment3->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
+        // Assignment due within the next 1 month.
+        $mygradesassignment4 = $this->getDataGenerator()->create_module('assign', [
+            'name' => 'October lab 1C',
+            'itemtype' => 'mod',
+            'itemmodule' => 'assign',
+            'course' => $this->mygradescourse->id,
+            'duedate' => $duedate1month,
+            'gradetype' => 2,
+            'grademax' => 50,
+            'scaleid' => $this->scale->id,
+        ]);
+
+        // Create_module gives us stuff for free, however, it doesn't set the categoryid correctly.
+        $params = [
+            $mygradessummativesubcategoryid,
+            $mygradesassignment4->id,
+        ];
+        $DB->execute("UPDATE {grade_items} SET categoryid = ? WHERE iteminstance = ?", $params);
+
+        // Create_module also doesn't allow us to set an assignment plugin, which we check for in the main class.
+        // Fake that we are allowing submissions.
+        $params = [
+            'nosubmissions' => 0,
+            'id' => $mygradesassignment4->id,
+        ];
+        $DB->execute("UPDATE {assign} SET nosubmissions = ? WHERE id = ?", $params);
+
         // Check that our stats values are returned as expected.
         $stats = get_assessmentsduesoon::execute();
         $stats = external_api::clean_returnvalue(
@@ -90,14 +177,21 @@ final class assessments_due_soon_test extends \block_newgu_spdetails\external\ne
             $stats
         );
         $this->assertIsArray($stats);
-        $this->assertArrayHasKey('24hours', $stats[0]);
-        $this->assertArrayHasKey('week', $stats[0]);
-        $this->assertArrayHasKey('month', $stats[0]);
+        $this->assertArrayHasKey('duein24hours', $stats[0]);
+        $this->assertArrayHasKey('duein7days', $stats[0]);
+        $this->assertArrayHasKey('duein14days', $stats[0]);
+        $this->assertArrayHasKey('duein1month', $stats[0]);
 
-        $this->assertIsNumeric($stats[0]['24hours']);
-        $this->assertIsNumeric($stats[0]['week']);
-        $this->assertIsNumeric($stats[0]['month']);
-        $this->assertEquals(1, $stats[0]['24hours']);
+        $this->assertIsNumeric($stats[0]['duein24hours']);
+        $this->assertIsNumeric($stats[0]['duein7days']);
+        $this->assertIsNumeric($stats[0]['duein14days']);
+        $this->assertIsNumeric($stats[0]['duein1month']);
+
+        // Each date range should have one activity due.
+        $this->assertEquals(1, $stats[0]['duein24hours']);
+        $this->assertEquals(1, $stats[0]['duein7days']);
+        $this->assertEquals(1, $stats[0]['duein14days']);
+        $this->assertEquals(1, $stats[0]['duein1month']);
     }
 
     /**

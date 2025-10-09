@@ -53,6 +53,7 @@ async function fetchAssessmentsDueSoon() {
         {key: 'loading_text', component: 'block_newgu_spdetails'},
         {key: 'chart_24hrs', component: 'block_newgu_spdetails'},
         {key: 'chart_7days', component: 'block_newgu_spdetails'},
+        {key: 'chart_14days', component: 'block_newgu_spdetails'},
         {key: 'chart_1mth', component: 'block_newgu_spdetails'},
         {key: 'chart_count', component: 'block_newgu_spdetails'},
         {key: 'duesoon_aria_label_text', component: 'block_newgu_spdetails'},
@@ -62,6 +63,7 @@ async function fetchAssessmentsDueSoon() {
     let loading_text = '';
     let chart_24hrs = '';
     let chart_7days = '';
+    let chart_14days = '';
     let chart_1mth = '';
     let chart_count = '';
     let aria_label_text = '';
@@ -72,11 +74,12 @@ async function fetchAssessmentsDueSoon() {
         loading_text = result[0];
         chart_24hrs = result[1];
         chart_7days = result[2];
-        chart_1mth = result[3];
-        chart_count = result[4];
-        aria_label_text = result[5];
-        accessibility_description = result[6];
-        duesoon_tooltip_preamble = result[7];
+        chart_14days = result[3];
+        chart_1mth = result[4];
+        chart_count = result[5];
+        aria_label_text = result[6];
+        accessibility_description = result[7];
+        duesoon_tooltip_preamble = result[8];
         return;
     }).catch((err) => {
         Log.debug(err);
@@ -93,9 +96,10 @@ async function fetchAssessmentsDueSoon() {
         args: {},
     }])[0].done(function(response) {
         document.querySelector('.loader').remove();
-        let twentyfour_hours = response[0]['24hours'];
-        let one_week = response[0].week;
-        let one_month = response[0].month;
+        let duein24hours = response[0]['duein24hours'];
+        let duein7days = response[0]['duein7days'];
+        let duein14days = response[0]['duein14days'];
+        let duein1month = response[0]['duein1month'];
 
         // Set specific colours/fonts/weights etc for the Highcharts config object.
         let backgroundColour = '#FFFFFF';
@@ -342,21 +346,28 @@ async function fetchAssessmentsDueSoon() {
                 series: [{
                     data: [{
                         name: chart_24hrs,
-                        y: twentyfour_hours
+                        y: duein24hours
                     }],
                     color: 'rgba(255,0,0)',
                     name: chart_24hrs,
                 }, {
                     data: [{
                         name: chart_7days,
-                        y: one_week
+                        y: duein7days
                     }],
                     color: 'rgba(255,153,0)',
                     name: chart_7days
                 }, {
                     data: [{
+                        name: chart_14days,
+                        y: duein14days
+                    }],
+                    color: 'rgba(255,255,0)',
+                    name: chart_14days
+                }, {
+                    data: [{
                         name: chart_1mth,
-                        y: one_month
+                        y: duein1month
                     }],
                     color: 'rgba(0,153,0)',
                     name: chart_1mth

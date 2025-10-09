@@ -59,14 +59,16 @@ class get_assessmentsduesoon extends external_api {
     public static function execute(): array {
 
         $assessmentsduesoon = \block_newgu_spdetails\api::get_assessmentsduesoon();
-        $twentyfourhours = $assessmentsduesoon['24hours'];
-        $week = $assessmentsduesoon['week'];
-        $month = $assessmentsduesoon['month'];
+        $duein24hours = $assessmentsduesoon['duein24hours'];
+        $duein7days = $assessmentsduesoon['duein7days'];
+        $duein14days = $assessmentsduesoon['duein14days'];
+        $duein1month = $assessmentsduesoon['duein1month'];
 
         $stats[] = [
-            '24hours' => $twentyfourhours,
-            'week' => $week,
-            'month' => $month,
+            'duein24hours' => $duein24hours,
+            'duein7days' => $duein7days,
+            'duein14days' => $duein14days,
+            'duein1month' => $duein1month,
         ];
 
         return $stats;
@@ -80,9 +82,10 @@ class get_assessmentsduesoon extends external_api {
     public static function execute_returns(): external_multiple_structure {
         return new external_multiple_structure(
             new external_single_structure([
-                '24hours' => new external_value(PARAM_INT, 'due in 24 hours'),
-                'week' => new external_value(PARAM_INT, 'due in the next week'),
-                'month' => new external_value(PARAM_INT, 'due by the end of the month'),
+                'duein24hours' => new external_value(PARAM_INT, 'due in the next 24 hours'),
+                'duein7days' => new external_value(PARAM_INT, 'due in the next week'),
+                'duein14days' => new external_value(PARAM_INT, 'due in the next 14 days'),
+                'duein1month' => new external_value(PARAM_INT, 'due by the end of the month'),
             ])
         );
     }
