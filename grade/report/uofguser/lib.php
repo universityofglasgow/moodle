@@ -275,3 +275,21 @@ function gradereport_uofguser_status_icons($OUTPUT) {
     }
     return $icons;
 }
+
+/**
+ * Find the first instance of a scale of type 'schedule' in the plugin config.
+ * This is used to identify scales if there is a converted grade item.
+ *
+ * @param string $schedule The schedule type to look for, defaults to 'schedulea'.
+ * @return int|null The scale number if found, or null if not found.
+ */
+function gradereport_uofguser_schedulescale_map($schedule = 'schedulea') {
+    $configs = get_config('local_gugrades');
+    foreach ($configs as $name => $value) {
+        if (strpos($name, 'scaletype_') === 0 && $value === $schedule) {
+            $number = substr($name, strlen('scaletype_'));
+            break;
+        }
+    }
+    return (int) $number ?? null;
+}
