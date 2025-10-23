@@ -497,7 +497,8 @@ class aggregation {
             }
 
             // If a module, check for visibility/availability.
-            if ($column->userids) {
+            // MGU-1350, incorrect check for column type (userids can be empty) if ($column->userids) {
+            if (!$column->categoryid) {
                 $available = in_array($user->id, $column->userids);
                 $data['available'] = $available;
                 if (!$available) {
