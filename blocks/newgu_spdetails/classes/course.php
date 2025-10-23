@@ -557,9 +557,10 @@ class course {
         $courses = \local_gugrades\api::dashboard_get_courses($USER->id, true, false, $sortstring);
 
         $stats = [
-            '24hours' => 0,
-            'week' => 0,
-            'month' => 0,
+            'duein24hours' => 0,
+            'duein7days' => 0,
+            'duein14days' => 0,
+            'duein1month' => 0,
         ];
 
         if (!$courses) {
@@ -603,11 +604,13 @@ class course {
         $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
         $next24hours = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y")));
         $next7days = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y")));
+        $next14days = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 14, date("Y")));
         $nextmonth = usertime(mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y")));
 
         $duein24hours = 0;
         $duein7days = 0;
-        $dueinnextmonth = 0;
+        $duein14days = 0;
+        $duein1month = 0;
 
         foreach ($assignmentdata as $assignment) {
             if (($assignment->duedate > $now) && ($assignment->duedate < $next24hours)) {
@@ -618,15 +621,20 @@ class course {
                 $duein7days++;
             }
 
-            if (($assignment->duedate > $now) && (($assignment->duedate > $next7days) && ($assignment->duedate < $nextmonth))) {
-                $dueinnextmonth++;
+            if (($assignment->duedate > $now) && (($assignment->duedate > $next7days) && ($assignment->duedate < $next14days))) {
+                $duein14days++;
+            }
+
+            if (($assignment->duedate > $now) && (($assignment->duedate > $next14days) && ($assignment->duedate < $nextmonth))) {
+                $duein1month++;
             }
         }
 
         $stats = [
-            '24hours' => $duein24hours,
-            'week' => $duein7days,
-            'month' => $dueinnextmonth,
+            'duein24hours' => $duein24hours,
+            'duein7days' => $duein7days,
+            'duein14days' => $duein14days,
+            'duein1month' => $duein1month,
         ];
 
         return $stats;
@@ -655,6 +663,7 @@ class course {
         $now = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y")));
         $next24hours = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 1, date("Y")));
         $next7days = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 7, date("Y")));
+        $next14days = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 14, date("Y")));
         $nextmonth = usertime(mktime(date("H"), date("i"), date("s"), date("m") + 1, date("d"), date("Y")));
         $option = '';
         switch($charttype) {
@@ -665,6 +674,9 @@ class course {
                 $option = get_string('chart_7days', 'block_newgu_spdetails');
                 break;
             case 2:
+                $option = get_string('chart_14days', 'block_newgu_spdetails');
+                break;
+            case 3:
                 $option = get_string('chart_1mth', 'block_newgu_spdetails');
                 break;
         }
@@ -706,9 +718,15 @@ class course {
                                                         < $next7days));
                                                     break;
                                                 case 2:
+                                                    $when = usertime(mktime(date("H"), date("i"), date("s"), date("m"), date("d") +
+                                                        14, date("Y")));
+                                                    $includeitem = (($assessment->duedate > $next7days) && ($assessment->duedate
+                                                        < $next14days));
+                                                    break;
+                                                case 3:
                                                     $when = usertime(mktime(date("H"), date("i"), date("s"), date("m") + 1,
                                                         date("d"), date("Y")));
-                                                    $includeitem = (($assessment->duedate > $next7days) && ($assessment->duedate <
+                                                    $includeitem = (($assessment->duedate > $next14days) && ($assessment->duedate <
                                                         $nextmonth));
                                                     break;
                                             }
