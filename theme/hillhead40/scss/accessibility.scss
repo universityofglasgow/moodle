@@ -100,6 +100,10 @@ body.hillhead40-spacing * {
     text-shadow: none !important;
   }
 
+  body.hillhead40-#{$class} video, .vjs-big-play-button {
+      z-index:1;
+  }
+
   // We need to remove the styling from navbar as there is a conflict going on.
   body.hillhead40-#{$class} nav.navbar.fixed-top {
     background-color: $background !important;
