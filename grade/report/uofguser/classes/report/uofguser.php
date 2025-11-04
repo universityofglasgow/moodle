@@ -356,6 +356,7 @@ class uofguser extends \gradereport_user\report\user {
                 $gradegrade->grade_item->id,
                 $userid
             );
+
             // Check (internal) MyGrades hidden flag.
             $mygradeshidden = $DB->record_exists(
                 'local_gugrades_hidden',
@@ -365,9 +366,15 @@ class uofguser extends \gradereport_user\report\user {
                 ]
             );
 
+            // Check if grade item is converted to a scale in MyGrades.
+            $mygradesconverted = \local_gugrades\conversion::is_conversion_applied(
+                $this->courseid,
+                $gradegrade->grade_item->id
+            );
+
             // If the grade is released in MyGrades, we flip the flag and let the user see it regardless of their role.
             $mygradesreleasedflag = false;
-            if ($mygradesreleasedgrade) {
+            if ($mygradesreleasedgrade && $mygradesactive) {
                 $mygradesreleasedflag = true;
                 $this->canviewhidden = true;
             }
@@ -411,6 +418,21 @@ class uofguser extends \gradereport_user\report\user {
                     $hide = false;
                 }
             }
+            // What should we do with uncategorised items?
+            // If MyGrades is inactive, we mimic normal Moodle hidden item rules.
+            $uncategorised = false;
+            if ($mygradesactive && $type == 'item' && $depth == 1) {
+                if (isset($this->viewasuser) && !$this->viewasuser) {
+                    // If the user is a teacher, we show uncategorised items but dimmed.
+                    // We add a special icon for uncategorised items later on.
+                    $hide = false;
+                    $hidden = ' dimmed_text';
+                    $uncategorised = true;
+                } else {
+                    // For students, we hide uncategorised items in the report.
+                    $hide = true;
+                }
+            }
 
             // Actual Grade - We need to calculate this whether the row is hidden or not.
             $gradeval = $gradegrade->finalgrade;
@@ -445,6 +467,21 @@ class uofguser extends \gradereport_user\report\user {
                 if (!is_null($gradeval)) {
                     $gradegrade->grade_item->grademax = $gradegrade->get_grade_max();
                     $gradegrade->grade_item->grademin = $gradegrade->get_grade_min();
+                }
+            }
+
+            if ($mygradesconverted && $mygradesreleasedflag) {
+                // If the grade item is converted to a scale in MyGrades, we have to change the gradetype.
+                // We have to make sure that the released grade is a scale, so hopefully the converted one.
+                $scalesa[] = array_values(\local_gugrades\mapping\schedulea::get_map());
+                $scalesb[] = array_values(\local_gugrades\mapping\scheduleb::get_map());
+                $scales = array_merge(array_values($scalesa[0]), array_values($scalesb[0]));
+                if (in_array($mygradesreleasedgrade->displaygrade, $scales)) {
+                    $gradegrade->grade_item->gradetype = GRADE_TYPE_SCALE;
+                    $result = \local_gugrades\grades::mapping_factory($this->courseid, $gradegrade->grade_item->id);
+                    $scheduleab = get_class($result);
+                    $schedule = substr($scheduleab, strrpos($scheduleab, '\\') + 1);
+                    $gradegrade->grade_item->scaleid = gradereport_uofguser_schedulescale_map($schedule);
                 }
             }
 
@@ -487,6 +524,15 @@ class uofguser extends \gradereport_user\report\user {
                         get_string('locked', 'grades'),
                         null,
                         ['class' => 'inline']
+                    ));
+                }
+                // If uncatetegorised, we add a special uncategorised icon.
+                if ($uncategorised) {
+                    $content .= \html_writer::div($OUTPUT->pix_icon(
+                        'i/flagged',
+                        get_string('uncategorised_help', 'gradereport_uofguser'),
+                        null,
+                        ['class' => 'inline text-danger']
                     ));
                 }
 
@@ -606,6 +652,7 @@ class uofguser extends \gradereport_user\report\user {
                         $gradestatusclass = '';
                         $gradepassicon = '';
                         $ispassinggrade = $gradegrade->is_passed($gradegrade->grade_item);
+                        $ispassinggrade = $mygradesreleasedflag ? null : $ispassinggrade;
                         if (!is_null($gradeval) && !is_null($ispassinggrade)) {
                             $gradestatusclass = $ispassinggrade ? 'gradepass' : 'gradefail';
                             if ($ispassinggrade) {
@@ -657,12 +704,12 @@ class uofguser extends \gradereport_user\report\user {
                         $gradeitemdata['graderaw'] = $gradeval;
                     }
                     // Dealing with admin grades in MyGrades.
-                    if ($mygradesreleasedgrade && $mygradesreleasedgrade->admingrade !== '') {
+                    if ($mygradesreleasedflag && $mygradesreleasedgrade->admingrade !== '') {
                         $data['grade']['content'] = \local_gugrades\admingrades::get_displaygrade_from_name(
                             $mygradesreleasedgrade->admingrade
                         )[1];
                     }
-                    // Dealing with unreleased aggregated admin grades if MyGrades active.
+                    // Dealing with unreleased aggregated admin or missing grades if MyGrades active.
                     if ($type !== 'item' && $mygradesactive) {
                         if (!$mygradesreleasedgrade) {
                             // Is it a non-released aggregated category admin grade?
@@ -680,11 +727,16 @@ class uofguser extends \gradereport_user\report\user {
                                         null,
                                         ['class' => 'inline']
                                     );
+                                    // Admin grade?
                                     if ($mygradesaggregatedgrade->admingrade !== '') {
                                         $data['grade']['content'] = $gradepassicon .
                                         \local_gugrades\admingrades::get_displaygrade_from_name(
                                             $mygradesaggregatedgrade->admingrade
                                         )[1];
+                                    }
+                                    // Missing grade?
+                                    if ($mygradesaggregatedgrade->convertedgrade == null) {
+                                        $data['grade']['content'] = $mygradesaggregatedgrade->displaygrade;
                                     }
                                 }
                             }
@@ -1011,6 +1063,7 @@ class uofguser extends \gradereport_user\report\user {
                 'context' => $this->context,
                 'courseid' => $this->courseid,
                 'relateduserid' => $this->user->id,
+                'other' => ['viewasuser' => $this->viewasuser ?? null],
             ]
         );
         $event->trigger();

@@ -52,6 +52,7 @@ $string['status_text_submissionunavailable'] = 'Not available';
 $string['status_text_submit'] = 'Submit';
 $string['status_text_submitted'] = 'Submitted';
 $string['status_text_tobeconfirmed'] = 'To be confirmed';
+$string['uncategorised_help'] = 'Uncategorised item, cannot be graded in Staff MyGrades, not visible to students in Student MyGrades.';
 $string['unreleased'] = 'Unreleased';
 $string['uofguser:mygradesstatus'] = 'Can view Mygrades active status in UofG User grade report';
 $string['uofguser:source'] = 'View Source column in UofG User grade report';
