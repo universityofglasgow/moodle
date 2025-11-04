@@ -150,7 +150,7 @@ class course_archiving_helper {
         list($qrypart, $params) = $DB->get_in_or_equal($categories);
         $params[] = $since;
         $params[] = $now;
-        $sql = 'SELECT * FROM {course} c WHERE category '.$qrypart.' AND timemodified < ? AND c.id NOT IN(select courseid from mdl_logstore_standard_log WHERE action <> \'viewed\')';
+        $sql = 'SELECT * FROM {course} c WHERE category '.$qrypart.' AND timemodified < ? AND c.id NOT IN(select courseid from mdl_logstore_standard_log WHERE action <> \'viewed\' AND timecreated < ?)';
         return $DB->get_records_sql($sql, $params);
     }
 

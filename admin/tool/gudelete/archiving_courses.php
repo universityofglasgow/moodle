@@ -38,6 +38,46 @@ $PAGE->set_pagelayout('course');
 require_once('archiving_courses_form.php');
 $mform = new archiving_courses_form();
 
+// Optional download of tables as Excel.
+$download = optional_param('download', '', PARAM_ALPHA);
+$format = optional_param('format', 'excel', PARAM_ALPHA);
+if (!empty($download)) {
+    $config = get_config('tool_gudelete');
+    $archivement = new tool_gudelete\course_archiving_helper();
+    $result = $archivement->check_courses($config);
+
+    $columns = array('fullname', 'category', 'id', 'url');
+    $data = array();
+    if ($download === 'archive' && !empty($result->archive)) {
+        foreach ($result->archive as $course) {
+            $category = \core_course_category::get($course->category);
+            $data[] = array(
+                'fullname' => format_string($course->fullname),
+                'category' => $category->get_nested_name(false),
+                'id' => $course->id,
+                'url' => (new moodle_url('/course/view.php', array('id' => $course->id)))->out(false)
+            );
+        }
+        \core\dataformat::download_data('gudelete_archive_'.userdate(time(), '%Y%m%d'), $format, $columns, $data);
+        exit;
+    } else if ($download === 'delete' && !empty($result->delete)) {
+        foreach ($result->delete as $course) {
+            $category = \core_course_category::get($course->category);
+            $data[] = array(
+                'fullname' => format_string($course->fullname),
+                'category' => $category->get_nested_name(false),
+                'id' => $course->id,
+                'url' => (new moodle_url('/course/view.php', array('id' => $course->id)))->out(false)
+            );
+        }
+        \core\dataformat::download_data('gudelete_delete_'.userdate(time(), '%Y%m%d'), $format, $columns, $data);
+        exit;
+    } else {
+        // Nothing to export.
+        redirect(new moodle_url('/admin/tool/gudelete/archiving_courses.php'));
+    }
+}
+
 // Execute the form
 if ($mform->is_cancelled()) {
     redirect($CFG->wwwroot);
@@ -53,4 +93,12 @@ $PAGE->set_heading($header);
 
 echo $OUTPUT->header();
 $mform->display();
+// Render download links.
+$downloadarchiveurl = new moodle_url($PAGE->url, array('download' => 'archive', 'format' => 'excel'));
+$downloaddeleteurl = new moodle_url($PAGE->url, array('download' => 'delete', 'format' => 'excel'));
+echo html_writer::div(
+    html_writer::link($downloadarchiveurl, get_string('download') . ' (Archive)') . ' | ' .
+    html_writer::link($downloaddeleteurl, get_string('download') . ' (Delete)'),
+    'mb-3'
+);
 echo $OUTPUT->footer();
