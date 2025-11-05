@@ -35,28 +35,23 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pageheader', 'tool_upgradecopy'));
 
 $form = new \tool_upgradecopy\forms\upgradecopy();
-
-if (!$data = $form->get_data()) {
-    $form->display();
-    echo $OUTPUT->footer();
-    die();
-}
+$form->display();
 
 // Scroll to the end when finished.
 $PAGE->requires->js_init_code("window.scrollTo(0, 5000000);");
 
-echo $OUTPUT->box_start();
-$paths = \tool_upgradecopy\process::get_paths();
-$fromprefix = $data->pathfrom;
-$toprefix = $data->pathto;
-$command = $data->command;
-echo "<pre>\n";
-foreach ($paths as $path) {
-    echo "$command $fromprefix$path->from $toprefix$path->to\n";
+if ($data = $form->get_data()) {
+    echo $OUTPUT->box_start();
+    $paths = \tool_upgradecopy\process::get_paths();
+    $fromprefix = $data->pathfrom;
+    $toprefix = $data->pathto;
+    $command = $data->command;
+    echo "<pre>\n";
+    foreach ($paths as $path) {
+        echo "$command $fromprefix$path->from $toprefix$path->to\n";
+    }
+    echo "</pre>";
+    echo $OUTPUT->box_end();
 }
-echo "</pre>";
-echo $OUTPUT->box_end();
-
-echo $OUTPUT->continue_button(new moodle_url('/admin/tool/upgradecopy/index.php'));
 
 echo $OUTPUT->footer();

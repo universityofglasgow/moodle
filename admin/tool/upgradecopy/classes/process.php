@@ -26,7 +26,24 @@ namespace tool_upgradecopy;
 
 class process {
 
-    public static function get_paths() {
+    /**
+     * Remove the $CFG->dirroot part from the beginning of the path
+     * @param string $path
+     * @return string
+     */
+    private static function strip_dirroot(string $path): string {
+        global $CFG;
+
+        return preg_replace('/^' . preg_quote($CFG->dirroot, '/') . '/', '', $path);
+    }
+
+    /**
+     * Return paths of optional plugins
+     * @return array
+     */
+    public static function get_paths(): array {
+        global $CFG;
+
         $manager = \core_plugin_manager::instance();
         $allplugins = $manager->get_plugins();
 
@@ -35,12 +52,13 @@ class process {
             $standard = \core_plugin_manager::standard_plugins_list($type);
             foreach ($typeplugins as $plugin => $info) {
                 if (!$standard || !in_array($plugin, $standard)) {
+
                     if ($info->rootdir) {
                         $from = $info->rootdir;
                         $to = $info->typerootdir;
                         $paths[] = (object)[
-                            'from' => $from,
-                            'to' => $to,
+                            'from' => self::strip_dirroot($from),
+                            'to' => self::strip_dirroot($to),
                         ];
                     }
                 }
