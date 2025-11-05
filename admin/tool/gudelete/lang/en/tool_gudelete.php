@@ -25,6 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['category'] = 'Category';
 $string['pluginname'] = 'GuDelete';
 $string['deleteallcourses'] = 'Delete all courses';
 $string['deleteconfirm'] = 'This page lets you delete all the courses in the category <strong>{$a}</strong> and its subcategories. This action cannot be undone.';
@@ -62,3 +63,4 @@ $string['targetcat'] = 'Archive category';
 $string['targettimestamp'] = 'Timestamp to check';
 $string['title'] = 'Course Archiving';
 $string['timemodified'] = 'Last Modified';
+$string['id'] = 'ID';

@@ -43,18 +43,50 @@ class archiving_courses_form extends moodleform {
         $a->deleted = '';
 
         if (!empty($result->archive)) {
-            $archive_list = '';
+            $archive_rows = '';
+            // Table header for archive list.
+            $archive_rows .= html_writer::tag('tr',
+                html_writer::tag('th', get_string('fullname')) .
+                html_writer::tag('th', get_string('category')) .
+                html_writer::tag('th', get_string('id', 'tool_gudelete'))
+            );
             foreach ($result->archive as $course) {
-                $archive_list .= $course->fullname."<br />";
+                $courselink = html_writer::link(
+                    new moodle_url('/course/view.php', array('id' => $course->id)),
+                    format_string($course->fullname)
+                );
+                $category = \core_course_category::get($course->category);
+                $breadcrumb = $category->get_nested_name();
+                $archive_rows .= html_writer::tag('tr',
+                    html_writer::tag('td', $courselink) .
+                    html_writer::tag('td', $breadcrumb) .
+                    html_writer::tag('td', (string)$course->id)
+                );
             }
-            $a->archived = $archive_list;
+            $a->archived = html_writer::tag('table', $archive_rows, array('class' => 'generaltable'));
         }
         if (!empty($result->delete)) {
-            $delete_list = '';
+            $delete_rows = '';
+            // Table header for delete list.
+            $delete_rows .= html_writer::tag('tr',
+                html_writer::tag('th', get_string('fullname')) .
+                html_writer::tag('th', get_string('category')) .
+                html_writer::tag('th', get_string('id', 'tool_gudelete'))
+            );
             foreach ($result->delete as $course) {
-                $delete_list .= $course->fullname."<br />";
-                $a->deleted = $delete_list;
+                $courselink = html_writer::link(
+                    new moodle_url('/course/view.php', array('id' => $course->id)),
+                    format_string($course->fullname)
+                );
+                $category = \core_course_category::get($course->category);
+                $breadcrumb = $category->get_nested_name();
+                $delete_rows .= html_writer::tag('tr',
+                    html_writer::tag('td', $courselink) .
+                    html_writer::tag('td', $breadcrumb) .
+                    html_writer::tag('td', (string)$course->id)
+                );
             }
+            $a->deleted = html_writer::tag('table', $delete_rows, array('class' => 'generaltable'));
         }
         
         $mform->addElement('header', '', get_string('confirm_header', 'tool_gudelete'));
@@ -64,8 +96,7 @@ class archiving_courses_form extends moodleform {
             $mform->addElement('static', '', '', get_string('confirm_archiving', 'tool_gudelete', $a));
         }
 
-        $mform->addElement('submit', 'submitbutton', get_string('archive', 'tool_gudelete'));
-        $mform->addElement('cancel', 'cancelbutton');
+        $this->add_action_buttons(true, get_string('archive', 'tool_gudelete'));
     }
 
 }

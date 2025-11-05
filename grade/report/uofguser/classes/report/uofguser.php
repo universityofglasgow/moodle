@@ -418,6 +418,21 @@ class uofguser extends \gradereport_user\report\user {
                     $hide = false;
                 }
             }
+            // What should we do with uncategorised items?
+            // If MyGrades is inactive, we mimic normal Moodle hidden item rules.
+            $uncategorised = false;
+            if ($mygradesactive && $type == 'item' && $depth == 1) {
+                if (isset($this->viewasuser) && !$this->viewasuser) {
+                    // If the user is a teacher, we show uncategorised items but dimmed.
+                    // We add a special icon for uncategorised items later on.
+                    $hide = false;
+                    $hidden = ' dimmed_text';
+                    $uncategorised = true;
+                } else {
+                    // For students, we hide uncategorised items in the report.
+                    $hide = true;
+                }
+            }
 
             // Actual Grade - We need to calculate this whether the row is hidden or not.
             $gradeval = $gradegrade->finalgrade;
@@ -509,6 +524,15 @@ class uofguser extends \gradereport_user\report\user {
                         get_string('locked', 'grades'),
                         null,
                         ['class' => 'inline']
+                    ));
+                }
+                // If uncatetegorised, we add a special uncategorised icon.
+                if ($uncategorised) {
+                    $content .= \html_writer::div($OUTPUT->pix_icon(
+                        'i/flagged',
+                        get_string('uncategorised_help', 'gradereport_uofguser'),
+                        null,
+                        ['class' => 'inline text-danger']
                     ));
                 }
 
