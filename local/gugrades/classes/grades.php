@@ -507,6 +507,7 @@ class grades {
      * @param bool $ispoints
      * @param bool $overwrite
      * @param bool $catoverride
+     * @param bool $notavailable (only applicable to categories)
      */
     public static function write_grade(
         int $courseid,
@@ -524,7 +525,8 @@ class grades {
         string $auditcomment,
         bool $ispoints,
         bool $overwrite = false,
-        bool $catoverride = false
+        bool $catoverride = false,
+        bool $notavailable = false,
     ) {
         global $DB, $USER;
 
@@ -603,6 +605,7 @@ class grades {
                 $gugrade->other = $other;
                 $gugrade->iscurrent = true;
                 $gugrade->iserror = $iserror;
+                $gugrade->notavailable = $notavailable;
                 $gugrade->auditby = $USER->id;
                 $gugrade->audittimecreated = time();
                 $gugrade->auditcomment = $auditcomment;
@@ -628,6 +631,7 @@ class grades {
         $gugrade->other = $other;
         $gugrade->iscurrent = true;
         $gugrade->iserror = $iserror;
+        $gugrade->notavailable = $notavailable;
         $gugrade->columnid = $column->id;
         $gugrade->auditby = $USER->id;
         $gugrade->audittimecreated = time();

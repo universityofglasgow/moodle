@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/gugrades/db" VERSION="20250513" COMMENT="XMLDB file for Moodle local/gugrades"
+<XMLDB PATH="local/gugrades/db" VERSION="20251106" COMMENT="XMLDB file for Moodle local/gugrades"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -59,6 +59,7 @@
         <FIELD NAME="columnid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Link to column table"/>
         <FIELD NAME="iscurrent" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="is this the latest grade?"/>
         <FIELD NAME="iserror" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Applies to categories than cannot be aggregated for some reason"/>
+        <FIELD NAME="notavailable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Notavailable flag used for categories (items worked out on the fly)"/>
         <FIELD NAME="auditby" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Who did this? Link to user.id"/>
         <FIELD NAME="audittimecreated" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Unix timestamp"/>
         <FIELD NAME="auditcomment" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Any additional auditing information/comments"/>

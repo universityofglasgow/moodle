@@ -157,6 +157,7 @@ $string['explain_lessthan75mv0level1'] = "If completion <75% at Level 1, and any
 $string['explain_lessthan75mv0level1ns'] = "If completion <75% at Level 1, and any MV0s ignored, and any NS grades remaining, result is CW";
 $string['explain_mixmvns'] = 'If there is a mix of MV and NS at Level 1, result is MV';
 $string['explain_noitems'] = 'If there are no items left to aggregate after initial processing, result is error';
+$string['explain_notavailable'] = 'All items in the Grade Category are not available';
 $string['explain_overridden'] = 'Aggregated grade has been overridden';
 $string['explain_points'] = 'Grades are aggregated in poiunts';
 $string['explain_schedule'] = 'Grades are aggregated according to Schedule A or B';

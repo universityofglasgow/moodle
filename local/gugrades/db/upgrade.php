@@ -293,5 +293,20 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025051301, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2025110600) {
+
+        // Define field notavailable to be added to local_gugrades_grade.
+        $table = new xmldb_table('local_gugrades_grade');
+        $field = new xmldb_field('notavailable', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'iserror');
+
+        // Conditionally launch add field notavailable.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2025110600, 'local', 'gugrades');
+    }
+
     return true;
 }

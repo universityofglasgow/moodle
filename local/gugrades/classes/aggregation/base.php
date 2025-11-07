@@ -121,7 +121,17 @@ class base {
 
         $filtereditems = [];
         foreach ($items as $id => $item) {
-            //$activity = \local_gugrades\users::activity_factory($item->itemid, $this->courseid, 0);
+
+            // MGU-1349 (et al): If this is a category, then it must be available
+            // UNLESS its $notavailable flag is true.
+            if ($item->iscategory) {
+                if (!$item->notavailable) {
+                    $filtereditems[$id] = $item;
+                }
+                continue;
+            }
+
+            // Ordinary items must be checked against list of valid users.
             $userids = $this->get_valid_userids($this->courseid, $item->itemid);
             if (empty($userids)) {
                 continue;
@@ -135,6 +145,31 @@ class base {
         }
 
         return $filtereditems;
+    }
+
+    /**
+     * If there are no items left after availability checked 
+     * (i.e. ALL items turned out to be not available) then
+     * determine what the category total should be. 
+     * This is mostly an issue for Level 1
+     * @param int $level
+     * @return [$admingrade, $error, $displaygrade]
+     */
+    public function all_unavailable_total(int $level) {
+
+        $strnotavailable = get_string('notavailable', 'local_gugrades');
+
+        // MGU-1349: At level 1, return CW and no error
+        if ($level == 1) {
+            $admingrade = 'CREDITWITHHELD';
+            [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
+            return [$admingrade, '', $displaygrade];
+        } else {
+
+            // If not L1, then the total is just 'Not available'.
+            return ['', $strnotavailable, $strnotavailable];
+        }
+
     }
 
     /**

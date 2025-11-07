@@ -1003,7 +1003,7 @@ class aggregation {
      * @param array $items
      * @param int $level
      * @param int $userid
-     * @return array ['rounded' grade, grade val, admingrade, grade disp, completion, error]
+     * @return array ['rounded' grade, grade val, admingrade, grade disp, completion, error, explain, not available]
      */
     protected static function aggregate_user_category(int $courseid, object $category, array $items, int $level, int $userid) {
 
@@ -1014,6 +1014,7 @@ class aggregation {
         $aggmethod = $category->aggregation;
         $atype = $category->atype;
         $itemid = $category->itemid;
+        $completion = 0;
 
         // Initialise 'explain' string.
         $explain = '';
@@ -1031,9 +1032,17 @@ class aggregation {
         // Used to drop unavailable
         $items = $aggregation->availability($items, $userid);
 
+        // MGU-1349: If there are now no 'available' items left, the
+        // aggregated category is 'not available'
+        if (count($items) == 0) {
+            $explain = get_string('explain_notavailable', 'local_gugrades');
+            [$admingrade, $error, $displaygrade] = $aggregation->all_unavailable_total($level);
+
+            return [0, 0, $admingrade, $displaygrade, $completion, $error, $explain, true]; 
+        }
+
         // If level 1 then calculate completion %age.
         // This can be calculated even though we can't run rest of aggregation (incomplete).
-        $completion = 0;
         if ($level == 1) {
             $weighted = $aggregation->is_strategy_weighted($aggmethod);
             $completion = $aggregation->completion($items, $weighted);
@@ -1042,7 +1051,8 @@ class aggregation {
         // Need to have a valid aggregation type to actually do the aggregation.
         if ($category->atype == \local_gugrades\GRADETYPE_ERROR) {
             $explain = get_string('explain_gradetypeerror', 'local_gugrades');
-            return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain];
+
+            return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
         }
 
         // Admingrade check for anything that happens before drop lowest and
@@ -1050,7 +1060,8 @@ class aggregation {
         if ($admingrade = $aggregation->admin_grade_precheck($level, $items)) {
             [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $explain = $aggregation->get_explain();
-            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
+
+            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
         }
 
         // Ignore unavailable weights for purposes of aggregation. MGU-1224.
@@ -1060,7 +1071,8 @@ class aggregation {
         foreach ($items as $item) {
             if ($item->grademissing) {
                 $explain = get_string('explain_gradesmissing', 'local_gugrades');
-                return [null, null, '', null, $completion, get_string('gradesmissing', 'local_gugrades'), $explain];
+
+                return [null, null, '', null, $completion, get_string('gradesmissing', 'local_gugrades'), $explain, false];
             }
         }
 
@@ -1069,7 +1081,8 @@ class aggregation {
         if ($admingrade) {
             [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $explain = $aggregation->get_explain();
-            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
+
+            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
         }
 
         // "drop lowest" items.
@@ -1085,10 +1098,12 @@ class aggregation {
         if (count($items) == 0) {
             if ($aggregation->get_mv0found()) {
                 [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name('GOODCAUSE_NR');
-                return [0, 0, 'GOODCAUSE_NR', $displaygrade, $completion, '', $explain];
+
+                return [0, 0, 'GOODCAUSE_NR', $displaygrade, $completion, '', $explain, false];
             } else {
                 $explain = get_string('explain_noitems', 'local_gugrades');
-                return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain];
+
+                return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
             }
         }
 
@@ -1097,7 +1112,8 @@ class aggregation {
             if ($admingrade = $aggregation->admin_grades_level2($items)) {
                 [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
                 $explain = $aggregation->get_explain();
-                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
+
+                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
             }
         }
 
@@ -1106,7 +1122,8 @@ class aggregation {
             if ($admingrade = $aggregation->admin_grades_level1($items, $completion)) {
                 [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
                 $explain = $aggregation->get_explain();
-                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain];
+
+                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
             }
         }
 
@@ -1129,12 +1146,14 @@ class aggregation {
                 $convertedgrade, $aggregatedgrade, $convertedgradevalue, $completion, $level);
 
             $explain = get_string('explain_schedule', 'local_gugrades');
-            return [$parentgrade, $aggregatedgrade, '', $displaygrade, $completion, '', $explain];
+
+            return [$parentgrade, $aggregatedgrade, '', $displaygrade, $completion, '', $explain, false];
         }
 
         // Return points grades.
         $explain = get_string('explain_points', 'local_gugrades');
-        return [$aggregatedgrade, $aggregatedgrade, '', $aggregatedgrade, $completion, '', $explain];
+
+        return [$aggregatedgrade, $aggregatedgrade, '', $aggregatedgrade, $completion, '', $explain, false];
     }
 
     /**
@@ -1182,6 +1201,7 @@ class aggregation {
             auditcomment:   $category->error,  // Hide the error message here
             ispoints:       !$category->isscale,
             overwrite:      true,
+            notavailable:   $category->notavailable,
         );
     }
 
@@ -1232,6 +1252,7 @@ class aggregation {
                 $grade->displaygrade,
                 0,
                 '',
+                $grade->notavailable,
             ];
         } else {
             return false;
@@ -1291,7 +1312,7 @@ class aggregation {
      * @param int $userid
      * @param int $level
      * @param bool $skipdroplow
-     * @return array [total, $rawgrade, $displaygrade, completion, error]
+     * @return array [$total, $rawgrade, $admingrade, $displaygrade, $completion, $error, $explain, $notavailable]
      */
     protected static function aggregate_user(
         int $courseid,
@@ -1333,9 +1354,9 @@ class aggregation {
 
                 // Is the category overridden? Nothing more to do if it is.
                 if ($overriddencategory = self::get_overridden_category($child->itemid, $userid)) {
-                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = $overriddencategory;
+                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error, $notavailable] = $overriddencategory;
                 } else {
-                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error] = self::aggregate_user(
+                    [$childcategorytotal, $rawgrade, $admingrade, $display, $completion, $error, $explain, $notavailable] = self::aggregate_user(
                         $courseid, $child, $userid, $level + 1, $skipdroplow
                     );
                 }
@@ -1352,6 +1373,7 @@ class aggregation {
                     'grademax' => $child->grademax,
                     'weight' => $weight,
                     'error' => $error,
+                    'notavailable' => $notavailable,
                 ];
             } else {
 
@@ -1391,7 +1413,7 @@ class aggregation {
 
         // List of items should hold list for this gradecategory only, ready
         // to aggregate.
-        [$total, $rawgrade, $admingrade, $display, $completion, $error, $explain] =
+        [$total, $rawgrade, $admingrade, $display, $completion, $error, $explain, $notavailable] =
             self::aggregate_user_category($courseid, $category, $items, $level, $userid);
 
         // If this is a points grade, level 2 or deeper, a grade is returned and a map exists then
@@ -1416,10 +1438,11 @@ class aggregation {
             'weight' => $category->weight, // TODO need gradeitem
             'error' => $error,
             'explain' => $explain,
+            'notavailable' => $notavailable,
         ];
         self::write_aggregated_category($courseid, $userid, $aggregatedcategory);
 
-        return [$total, $rawgrade, $admingrade, $display, $completion, $error, $explain];
+        return [$total, $rawgrade, $admingrade, $display, $completion, $error, $explain, $notavailable];
     }
 
     /**
