@@ -8,8 +8,14 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
+                <li class="nav-item" :class="{active: activetab == 'configure'}">
+                    <a class="nav-link" role="button" @click="clickTab('configure')" @keyup.enter="clickTab('configure')" @keyup.left="handleKeyNavigation('settings', $event)" @keyup.right="handleKeyNavigation('capture', $event)" name="configure" :aria-label="mstrings.configure" tabindex="0">
+                        <i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;
+                        {{ mstrings.configure }}
+                    </a>
+                </li>
                 <li class="nav-item" :class="{active: activetab == 'capture'}">
-                    <a class="nav-link" role="button" @click="clickTab('capture')" @keyup.enter="clickTab('capture')" @keyup.left="handleKeyNavigation('settings', $event)" @keyup.right="handleKeyNavigation('conversion', $event)" name="capture" :aria-label="mstrings.assessmentgradecapture" tabindex="0">
+                    <a class="nav-link" role="button" @click="clickTab('capture')" @keyup.enter="clickTab('capture')" @keyup.left="handleKeyNavigation('configure', $event)" @keyup.right="handleKeyNavigation('conversion', $event)" name="capture" :aria-label="mstrings.assessmentgradecapture" tabindex="0">
                         <i class="fa fa-download" aria-hidden="true"></i>&nbsp;
                         {{ mstrings.assessmentgradecapture }}
                     </a>
@@ -48,7 +54,7 @@
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
 
-    const activetab = ref('capture');
+    const activetab = ref('configure');
     const settingscapability = ref(false);
     const debug = ref({});
     const mstrings = inject('mstrings');

@@ -1482,6 +1482,37 @@ class aggregation {
     }
 
     /**
+     * Get explain.
+     * Somewhat like the above but only returns the aggregated result for the requested category.
+     * @param int $courseid
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return string
+     */
+    public static function get_explain(int $courseid, int $gradecategoryid, int $userid) {
+
+        // Invalidate their cached data.
+        self::invalidate_aggdata($courseid, $gradecategoryid, $userid);
+
+        // We need the recursed category tree for this categoryid. Hopefully, this should be cached.
+        $tree = self::recurse_tree($courseid, $gradecategoryid, false);
+
+        // Basic user object.
+        $user = self::get_user($courseid, $gradecategoryid, $userid);
+
+        // Is there any need to do droplow checks?
+        if (!$skipdroplow = !self::any_droplow($courseid)) {
+            self::clear_course_droplow($courseid);
+        }
+
+        // Aggregate this user.
+        $aggregated_result = self::aggregate_user($courseid, $tree, $userid, 1, $skipdroplow);
+        [,,,,,,$explain] = $aggregated_result;
+
+        return $explain;
+    }
+
+    /**
      * Entry point for calculating complete aggregations of array of users.
      * @param int $courseid
      * @param int $gradecategoryid

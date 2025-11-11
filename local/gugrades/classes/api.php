@@ -1884,9 +1884,10 @@ class api {
      */
     public static function get_explain_aggregation(int $courseid, int $gradecategoryid, int $userid) {
 
-        // Aggregate and get 'explanation'.
-        $aggregated_result = \local_gugrades\aggregation::aggregate_user_helper($courseid, $gradecategoryid, $userid);
-        [,,,,,,$explain] = $aggregated_result;
+        $explain = \local_gugrades\aggregation::get_explain($courseid, $gradecategoryid, $userid);
+
+        // Convert admin codes in string. MGU-1360.
+        $explain = \local_gugrades\admingrades::replace_explain($explain);
 
         // Get categories and items at this level.
         [$columns, $atype, $warnings] = \local_gugrades\aggregation::get_columns($courseid, $gradecategoryid);

@@ -253,6 +253,22 @@ class admingrades {
     }
 
     /**
+     * Filter explain string to convert any admingrade placeholders to code in config
+     * MGU-1360
+     * @param string $explain
+     * @return string
+     */
+    public static function replace_explain(string $explain) {
+        $defaults = self::defaults();
+        foreach ($defaults as $name => $default) {
+            [$admincode,] = self::get_displaygrade_from_name($name);
+            $explain = str_replace($name, $admincode, $explain);
+        }
+
+        return $explain;
+    }
+
+    /**
      * Updates *all* the instances of admingrades in the grade table
      * when an admingrade setting is changed.
      * @param string $name

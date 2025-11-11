@@ -103,7 +103,7 @@ class get_explain_aggregation extends external_api {
             'atype' => new external_value(PARAM_TEXT, 'Aggregated grade type (A, B, P, E - if mixed'),
             'formattedatype' => new external_value(PARAM_TEXT, 'Human readable form of atype'),
             'error' => new external_value(PARAM_TEXT, 'Error condition'),
-            'explain' => new external_value(PARAM_TEXT, 'Explanation'),
+            'explain' => new external_value(PARAM_RAW, 'Explanation'),
             'fields' => new external_multiple_structure(
                 new external_single_structure([
                     'fieldname' => new external_value(PARAM_TEXT, 'Identifier for column'),

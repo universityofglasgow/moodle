@@ -243,6 +243,7 @@ class grades {
         foreach ($gradeitems as $id => $gradeitem) {
             if (self::is_gradeitem_grade_type_none($gradeitem)) {
                 unset($gradeitems[$id]);
+                continue;
             }
         }
 
@@ -254,7 +255,11 @@ class grades {
         foreach ($gradecategories as $id => $gradecategory) {
             if (self::is_gradecategory_grade_type_none($gradecategory)) {
                 unset($gradecategories[$id]);
+                continue;
             }
+
+            // Add aggregation strategy
+            $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
         }
         $categorytree = self::recurse_activitytree($category, $gradeitems, $gradecategories);
 
@@ -275,12 +280,16 @@ class grades {
      * @return object
      */
     private static function recurse_activitytree($category, $gradeitems, $gradecategories) {
+        global $OUTPUT;
+
         $tree = [];
 
         // First find any grade items attached to the current category.
         $items = [];
         foreach ($gradeitems as $item) {
             if ($item->categoryid == $category->id) {
+                $item->info = (object) \local_gugrades\api::get_grade_item($item->id);
+                $item->icon = $OUTPUT->image_url('monologo', $item->itemmodule)->out();
                 $items[$item->id] = $item;
             }
         }
@@ -1051,7 +1060,7 @@ class grades {
 
             // See if scale is in our scaletype table.
             if (!$scaletype = $DB->get_record('local_gugrades_scaletype', ['scaleid' => $gradeitem->scaleid])) {
-                throw new \moodle_exception('Scale not found in gugrades_scaletype table. ID = ' . $gradeitem->scaleid);
+                throw new \moodle_exception('Scale not found in gugrades_scaletype table. ScaleID = ' . $gradeitem->scaleid . ' gradeitemid = ' . $gradeitemid);
             }
 
             // Get the name of the class and see if it exists.

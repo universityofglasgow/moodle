@@ -9,6 +9,10 @@
     <div v-else id="tabmenu">
         <TabsNav @tabchange="tabChange" :viewaggregation="viewaggregation"></TabsNav>
 
+        <div v-if="currenttab == 'configure'">
+            <ConfigPage></ConfigPage>
+        </div>
+
         <div v-if="currenttab == 'capture'">
             <CaptureTable @refreshlogo="refreshlogo"></CaptureTable>
         </div>
@@ -34,6 +38,7 @@
 <script setup>
     import {ref, onMounted} from '@vue/runtime-core';
     import TabsNav from '@/components/TabsNav.vue';
+    import ConfigPage from '@/views/ConfigPage.vue';
     import CaptureTable from '@/views/CaptureTable.vue';
     import AggregationTable from '@/views/AggregationTable.vue';
     import ConversionPage from '@/views/ConversionPage.vue';
@@ -43,7 +48,7 @@
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import GreyLogo from '@/components/GreyLogo.vue';
 
-    const currenttab = ref('capture');
+    const currenttab = ref('configure');
     const level1category = ref(0);
     const showactivityselect = ref(false);
     const itemid = ref(0);
