@@ -8,7 +8,6 @@
     </div>
 
     <div v-if="categoryid">
-        <a href="#">Identify resits</a>
     </div>
 
     <div v-if="loaded" class="mt-3 border rounded p-2">
