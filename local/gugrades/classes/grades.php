@@ -252,6 +252,7 @@ class grades {
         ]);
 
         // Remove any GRADE_TYPE_NONE categories.
+        $even = false;
         foreach ($gradecategories as $id => $gradecategory) {
             if (self::is_gradecategory_grade_type_none($gradecategory)) {
                 unset($gradecategories[$id]);
@@ -260,6 +261,15 @@ class grades {
 
             // Add aggregation strategy
             $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
+
+            // Add odd/even for style to second level only.
+            $level = self::get_category_level($id);
+            if ($level == 2) {
+                $gradecategories[$id]->even = $even;
+                $even = !$even;
+            } else {
+                $gradecategories[$id]->even = false;
+            }
         }
         $categorytree = self::recurse_activitytree($category, $gradeitems, $gradecategories);
 

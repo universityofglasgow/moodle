@@ -8,7 +8,7 @@
                 <span v-if="!item.info.isscale">&nbsp;{{ item.grademax }}</span>
             </small></i>
         </li>
-        <li v-for="category in props.nodes.categories" :key="category.id" class="pb-2">
+        <li v-for="category in props.nodes.categories" :key="category.id" class="pb-2" :class="{ 'bg-light': category.category.even }">
             <b>
                 <i v-if="props.depth == 1" class="fa fa-folder icon itemicon" :title="mstrings.gradecategory" aria-hidden="true"></i>
                 <i v-else class="fa fa-folder-o" :title="mstrings.gradecategory" aria-hidden="true"></i>
