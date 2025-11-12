@@ -47,5 +47,4 @@ class customTCPDF extends pdf {
 
         $this->Cell(0, 10, get_string('pagenumber', 'quiz_essaydownload', $pageno), 'T', 0, 'C');
     }
-
 }

@@ -36,7 +36,6 @@ require_once(__DIR__ . '/../../../../../../lib/behat/behat_base.php');
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_quiz_essaydownload extends behat_question_base {
-
     /**
      * Convert page names to URLs for steps like 'When I am on the "[identifier]" "quiz_essaydownload > [page type]" page'.
      *

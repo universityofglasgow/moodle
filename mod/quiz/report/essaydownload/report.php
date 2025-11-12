@@ -58,7 +58,6 @@ require_once($CFG->libdir . '/pdflib.php');
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
-
     /** @var object course object */
     protected object $course;
 
@@ -99,7 +98,7 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
         global $DB;
 
         // First, we call the parent init function...
-        list($currentgroup, $allstudentjoins, $groupstudentjoins, $allowedjoins) =
+        [$currentgroup, $allstudentjoins, $groupstudentjoins, $allowedjoins] =
             parent::init($mode, $formclass, $quiz, $cm, $course);
 
         $this->options = new quiz_essaydownload_options('essaydownload', $quiz, $cm, $course);
@@ -355,7 +354,10 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
                 // the attempt's rewrite_pluginfile_urls() function first. Afterwards, we run it through the HTML
                 // formatter, as with the response text.
                 $questiontext = $qa->rewrite_pluginfile_urls(
-                    $questiondefinition->questiontext, 'question', 'questiontext', $questiondefinition->id
+                    $questiondefinition->questiontext,
+                    'question',
+                    'questiontext',
+                    $questiondefinition->id,
                 );
                 $questionhtml = format_text($questiontext, $questiondefinition->questiontextformat, $formattingoptions);
 
@@ -406,7 +408,12 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
         $fs = get_file_storage();
         foreach ($webpaths as $webpath) {
             $file = $fs->get_file(
-                $webpath['context'], 'question', 'questiontext', $webpath['questionid'], '', $webpath['filename']
+                $webpath['context'],
+                'question',
+                'questiontext',
+                $webpath['questionid'],
+                '',
+                $webpath['filename'],
             );
 
             // Fetching the local path could fail in some cases. We don't want an error to be thrown,
@@ -797,5 +804,4 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
 
         return $res;
     }
-
 }
