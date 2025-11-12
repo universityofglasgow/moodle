@@ -86,6 +86,7 @@ $string['completed'] = 'Completed';
 $string['configure'] = 'Configure';
 $string['confirm'] = 'Confirm';
 $string['conversion'] = 'Conversion';
+$string['conversionhelp'] = 'Conversion maps can be applied to individual assessments (Grade capture) or later at the Aggregation stage. <a href="https://gla.sharepoint.com/sites/learning-innovation/SitePages/LISU-Guides-MyGrades-Stage-3.aspx" target="_blank" rel="noopener noreferrer">See LISU guidance for more details';
 $string['conversioninfo'] = 'Default values for conversion maps';
 $string['conversionmapname'] = 'Conversion map name';
 $string['conversionmaps'] = 'Conversion Maps';

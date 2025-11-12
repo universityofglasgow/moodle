@@ -4,6 +4,8 @@
     <div id="managemaps">
         <h2>{{ mstrings.conversionmaps }}</h2>
 
+        <div class="alert alert-info" v-html="mstrings.conversionhelp"></div>
+
         <!-- show available maps -->
         <div v-if="!editmap && loaded">
             <div v-if="!maps.length" class="alert alert-warning">
