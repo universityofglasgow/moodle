@@ -66,8 +66,8 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00039"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00006"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00043"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00008"));
 
     // Pass parameters from PHP to JavaScript.
 
@@ -328,7 +328,7 @@ function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) 
  * Same function as core, however we need to add files into the existing draft area!
  * Copied from hsuforum.
  */
-function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, array $options=null, $text=null) {
+function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, ?array $options=null, ?string $text=null) {
     global $CFG, $USER, $CFG, $DB;
 
     $options = (array)$options;
@@ -869,7 +869,7 @@ function pdfannotator_set_mainfile($data) {
     }
 }
 
-function pdfannotator_render_listitem_actions(array $actions = null) {
+function pdfannotator_render_listitem_actions(?array $actions = null) {
     $menu = new action_menu();
     $menu->attributes['class'] .= ' course-item-actions item-actions';
     $hasitems = false;
@@ -984,8 +984,8 @@ function pdfannotator_prepare_overviewpage($cmid, $myrenderer, $taburl, $action,
     $strings = $stringman->load_component_strings('pdfannotator', 'en'); // Method gets the strings of the language files.
     $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator'); // Method to use the language-strings in javascript.
     // 1.3 Add the javascript file that determines the dynamic behaviour of the page.
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00002"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/overview.js?ver=00002"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00008"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/overview.js?ver=00004"));
 
     // 1.4 Check user capabilities to view the different categories.
     // The argument 'false' disregards administrator's magical 'doanything' power.

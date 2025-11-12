@@ -126,6 +126,9 @@ class comment implements \renderable, \templatable {
         $comment->wrapperClass = 'chat-message comment-list-item';
         if ($comment->isquestion) {
             $comment->wrapperClass .= ' questioncomment';
+            if($comment->visibility == 'private' || $comment->visibility == 'protected') {
+                $comment->wrapperClass .= ' questions-private';
+            }
         } else if ($comment->solved) {
             $comment->wrapperClass .= ' correct';
         }

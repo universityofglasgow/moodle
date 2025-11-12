@@ -82,12 +82,14 @@ function addDropdownNavigation(Y, __capabilities, __cmid) {
     };
 
 }
-
-function renderMathJax(node) {
+/***** Removing this function for Moodle 5 ****/
+/*function renderMathJax(node) {
     var counter = 0;
     let mathjax = function (node) {
         if (typeof (MathJax) !== "undefined") {
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub, node]);
+            if (MathJax.Hub !== 'undefined') {
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub, node]);
+            }
         } else if (counter < 30) {
             counter++;
             setTimeout(mathjax, 100);
@@ -95,7 +97,7 @@ function renderMathJax(node) {
         }
     };
     mathjax(node);
-}
+}*/
 
 function fixCommentForm() {
     if ($('#comment-list-form').hasClass('fixtool')) {

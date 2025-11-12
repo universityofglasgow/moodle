@@ -1,3 +1,11 @@
+## 2025070803 v1.5.9
+* fix images not being displayed in comments
+* remove explicit mathjax calls for rendering
+* download comment as CSV feature
+* mathjax3 and php84 changes
+* Incorrect display of checkbox under editor for Moodle 5
+* Annotation separation: Public Private and All comments
+
 ## 2025032500 v1.5.8
 * Hotfix: correct further trailing junk after parameter 
 * Versioning error fix

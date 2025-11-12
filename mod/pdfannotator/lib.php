@@ -426,7 +426,8 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         array_shift($args);
         $relativepath = implode('/', $args);
         $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
-        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+        $file = $fs->get_file_by_hash(sha1($fullpath));
+        if (!$file || $file->is_directory()) {
             // Annotations from other documents might have another contextid.
             $pdfid = $DB->get_record('pdfannotator_comments', ['id' => $commentid], 'pdfannotatorid');
             if ($pdfid) {
