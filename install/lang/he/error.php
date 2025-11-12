@@ -21,7 +21,7 @@
  * needed during the very first steps of installation. This file was
  * generated automatically by export-installer.php (which is part of AMOS
  * {@link https://moodledev.io/general/projects/api/amos}) using the
- * list of strings defined in /install/stringnames.txt.
+ * list of strings defined in install/stringnames.txt file.
  *
  * @package   installer
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,6 +29,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['cannotcreatedboninstall'] = '<p>לא ניתן ליצור את מסד הנתונים.</p>
+<p>מסד הנתונים שצוין אינו קיים, ולמשתמש שצוין אין הרשאה ליצור את מסד הנתונים.</p>
+<p>מנהל האתר צריך לבדוק את הגדרות מסד הנתונים.</p>';
 $string['cannotcreatelangdir'] = 'לא ניתן ליצור סיפריית שפה.';
 $string['cannotcreatetempdir'] = 'לא ניתן ליצור סיפרייה זמנית.';
 $string['cannotdownloadcomponents'] = 'לא ניתן להוריד רכיבים.';
@@ -38,6 +41,7 @@ $string['cannotsavemd5file'] = 'לא ניתן לשמור קובץ md5';
 $string['cannotsavezipfile'] = 'לא ניתן לשמור קובץ ZIP';
 $string['cannotunzipfile'] = 'לא ניתן לפתוח את קובץ ה-ZIP.';
 $string['componentisuptodate'] = 'הרכיב מעודכן.';
+$string['dmlexceptiononinstall'] = '<p>אירעה שגיאת מסד נתונים [{$a->errorcode}].<br />{$a->debuginfo}</p>';
 $string['downloadedfilecheckfailed'] = 'הקובץ אשר ירד נמצא שגוי';
 $string['invalidmd5'] = 'md5 לא חוקי';
 $string['missingrequiredfield'] = 'חסר שדה נדרש כלשהו';
