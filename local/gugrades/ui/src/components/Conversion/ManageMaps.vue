@@ -25,10 +25,10 @@
                 </template>
                 <template #item-actions="map">
                     <div class="btn-group" role="group" aria-label="Actions">
-                        <button v-if="caneditgrades" class="btn btn-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.edit }}</button>
-                        <button v-if="!caneditgrades" class="btn btn-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.view }}</button>
-                        <button v-if="caneditgrades" class="btn btn-primary btn-sm mr-1" :class="{ disabled: map.inuse }" :disabled="map.inuse" @click="delete_clicked(map.id)">{{ mstrings.delete }}</button>
-                        <button class="btn btn-primary btn-sm mr-1" @click="export_clicked(map.id)">{{ mstrings.export }}</button>
+                        <button v-if="caneditgrades" class="btn btn-outline-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.edit }}</button>
+                        <button v-if="!caneditgrades" class="btn btn-outline-primary btn-sm mr-1" @click="edit_clicked(map.id)">{{ mstrings.view }}</button>
+                        <button v-if="caneditgrades" class="btn btn-outline-danger btn-sm mr-1" :class="{ disabled: map.inuse }" :disabled="map.inuse" @click="delete_clicked(map.id)">{{ mstrings.delete }}</button>
+                        <button class="btn btn-outline-secondary btn-sm mr-1" @click="export_clicked(map.id)">{{ mstrings.export }}</button>
                     </div>
                 </template>
             </EasyDataTable>
