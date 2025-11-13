@@ -44,7 +44,7 @@ class block_sharing_cart extends block_base
                 'confirm_delete_item',
                 'confirm_delete_items',
                 'backup_without_user_data',
-                'backup',
+                'copy',
                 'backup_item',
                 'into_sharing_cart',
                 'copy_user_data',
@@ -58,7 +58,6 @@ class block_sharing_cart extends block_base
                 'deselect_all',
             ], 'block_sharing_cart');
             $this->page->requires->strings_for_js([
-                'import',
                 'delete',
                 'cancel',
             ], 'core');
@@ -68,11 +67,21 @@ class block_sharing_cart extends block_base
             return $this->content;
         }
 
-        if (!$this->page->user_is_editing() || !has_capability(
+        if (!$this->page->user_is_editing()) {
+            return $this->content = '';
+        }
+
+        if (!has_capability(
                 'moodle/backup:backupactivity',
                 \context_course::instance($COURSE->id)
-            )) {
-            return $this->content = '';
+            ) &&
+            !has_capability(
+                'moodle/restore:restoreactivity',
+                \context_course::instance($COURSE->id)
+        )) {
+            return $this->content = (object)[
+                'text' => get_string('nopermissions', 'block_sharing_cart')
+            ];
         }
 
         $template = new \block_sharing_cart\output\block\content($base_factory, $USER->id, $COURSE->id);
