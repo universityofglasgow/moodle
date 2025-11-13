@@ -102,164 +102,226 @@ if ($ADMIN->fulltree) {
         }
     }
 
-    $settings->add(new admin_setting_heading('filter_jsxgraph/styles', '', $styles));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/styles',
+            '',
+            $styles
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/docs',
-                       get_string('header_docs', 'filter_jsxgraph'),
-                       get_string('docs', 'filter_jsxgraph')
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/docs',
+            get_string('header_docs', 'filter_jsxgraph'),
+            get_string('docs', 'filter_jsxgraph')
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/versions_info',
-                       get_string('header_versions', 'filter_jsxgraph'),
-                       get_string('filterversion', 'filter_jsxgraph') .
-                       get_jsxfilter_version() .
-                       get_recommended_version_with_prefix()
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/versions_info',
+            get_string('header_versions', 'filter_jsxgraph'),
+            get_string('filterversion', 'filter_jsxgraph') .
+            get_jsxfilter_version() .
+            get_recommended_version_with_prefix()
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/version_header',
-                       get_string('header_jsxversion', 'filter_jsxgraph'),
-                       ''
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/version_header',
+            get_string('header_jsxversion', 'filter_jsxgraph'),
+            ''
+        )
+    );
 
-    $settings->add(new admin_setting_configselect(
-                       'filter_jsxgraph/versionJSXGraph',
-                       get_string('versionJSXGraph', 'filter_jsxgraph'),
-                       get_string('versionJSXGraph_desc', 'filter_jsxgraph'),
-                       "auto",
-                       $versions
-                   ));
+    $settings->add(
+        new admin_setting_configselect(
+            'filter_jsxgraph/versionJSXGraph',
+            get_string('versionJSXGraph', 'filter_jsxgraph'),
+            get_string('versionJSXGraph_desc', 'filter_jsxgraph'),
+            "auto",
+            $versions
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/libs',
-                       get_string('header_libs', 'filter_jsxgraph'),
-                       ''
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/libs',
+            get_string('header_libs', 'filter_jsxgraph'),
+            ''
+        )
+    );
 
-    $settings->add(new admin_setting_configselect(
-                       'filter_jsxgraph/formulasextension',
-                       get_string('formulasextension', 'filter_jsxgraph'),
-                       get_string('formulasextension_desc', 'filter_jsxgraph'),
-                       '1',
-                       [get_string('off', 'filter_jsxgraph'), get_string('on', 'filter_jsxgraph')]
-                   ));
+    $settings->add(
+        new admin_setting_configselect(
+            'filter_jsxgraph/formulasextension',
+            get_string('formulasextension', 'filter_jsxgraph'),
+            get_string('formulasextension_desc', 'filter_jsxgraph'),
+            '1',
+            [get_string('off', 'filter_jsxgraph'), get_string('on', 'filter_jsxgraph')]
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/codingbetweentags',
-                       get_string('header_codingbetweentags', 'filter_jsxgraph'),
-                       ''
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/codingbetweentags',
+            get_string('header_codingbetweentags', 'filter_jsxgraph'),
+            ''
+        )
+    );
 
-    $settings->add(new admin_setting_configselect(
-                       'filter_jsxgraph/html_entities',
-                       get_string('html_entities', 'filter_jsxgraph'),
-                       get_string('html_entities_desc', 'filter_jsxgraph'),
-                       '1',
-                       [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
-                   ));
+    $settings->add(
+        new admin_setting_configselect(
+            'filter_jsxgraph/html_entities',
+            get_string('html_entities', 'filter_jsxgraph'),
+            get_string('html_entities_desc', 'filter_jsxgraph'),
+            '1',
+            [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
+        )
+    );
 
-    $settings->add(new admin_setting_configselect(
-                       'filter_jsxgraph/convertencoding',
-                       get_string('convertencoding', 'filter_jsxgraph'),
-                       get_string('convertencoding_desc', 'filter_jsxgraph'),
-                       '1',
-                       [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
-                   ));
+    $settings->add(
+        new admin_setting_configselect(
+            'filter_jsxgraph/convertencoding',
+            get_string('convertencoding', 'filter_jsxgraph'),
+            get_string('convertencoding_desc', 'filter_jsxgraph'),
+            '1',
+            [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/globaljs',
-                       get_string('header_globaljs', 'filter_jsxgraph'),
-                       ''
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/globaljs',
+            get_string('header_globaljs', 'filter_jsxgraph'),
+            ''
+        )
+    );
 
-    $settings->add(new admin_setting_configtextarea(
-                       'filter_jsxgraph/globalJS',
-                       get_string('globalJS', 'filter_jsxgraph'),
-                       get_string('globalJS_desc', 'filter_jsxgraph'),
-                       '', PARAM_RAW, 60, 20
-                   ));
+    $settings->add(
+        new admin_setting_configtextarea(
+            'filter_jsxgraph/globalJS',
+            get_string('globalJS', 'filter_jsxgraph'),
+            get_string('globalJS_desc', 'filter_jsxgraph'),
+            '',
+            PARAM_RAW,
+            60,
+            20
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/dimensions',
-                       get_string('header_dimensions', 'filter_jsxgraph'),
-                       get_string('dimensions', 'filter_jsxgraph')
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/dimensions',
+            get_string('header_dimensions', 'filter_jsxgraph'),
+            get_string('dimensions', 'filter_jsxgraph')
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/aspectratio',
-                       get_string('aspectratio', 'filter_jsxgraph'),
-                       get_string('aspectratio_desc', 'filter_jsxgraph'),
-                       '', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/aspectratio',
+            get_string('aspectratio', 'filter_jsxgraph'),
+            get_string('aspectratio_desc', 'filter_jsxgraph'),
+            '',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/fixwidth',
-                       get_string('fixwidth', 'filter_jsxgraph'),
-                       get_string('fixwidth_desc', 'filter_jsxgraph'),
-                       get_config('filter_jsxgraph', 'width') ?? '', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/fixwidth',
+            get_string('fixwidth', 'filter_jsxgraph'),
+            get_string('fixwidth_desc', 'filter_jsxgraph'),
+            get_config('filter_jsxgraph', 'width') ?? '',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/fixheight',
-                       get_string('fixheight', 'filter_jsxgraph'),
-                       get_string('fixheight_desc', 'filter_jsxgraph'),
-                       get_config('filter_jsxgraph', 'height') ?? '', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/fixheight',
+            get_string('fixheight', 'filter_jsxgraph'),
+            get_string('fixheight_desc', 'filter_jsxgraph'),
+            get_config('filter_jsxgraph', 'height') ?? '',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/maxwidth',
-                       get_string('maxwidth', 'filter_jsxgraph'),
-                       get_string('maxwidth_desc', 'filter_jsxgraph'),
-                       '', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/maxwidth',
+            get_string('maxwidth', 'filter_jsxgraph'),
+            get_string('maxwidth_desc', 'filter_jsxgraph'),
+            '',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/maxheight',
-                       get_string('maxheight', 'filter_jsxgraph'),
-                       get_string('maxheight_desc', 'filter_jsxgraph'),
-                       '', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/maxheight',
+            get_string('maxheight', 'filter_jsxgraph'),
+            get_string('maxheight_desc', 'filter_jsxgraph'),
+            '',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/fallbackaspectratio',
-                       get_string('fallbackaspectratio', 'filter_jsxgraph'),
-                       get_string('fallbackaspectratio_desc', 'filter_jsxgraph'),
-                       '1 / 1', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/fallbackaspectratio',
+            get_string('fallbackaspectratio', 'filter_jsxgraph'),
+            get_string('fallbackaspectratio_desc', 'filter_jsxgraph'),
+            '1 / 1',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/fallbackwidth',
-                       get_string('fallbackwidth', 'filter_jsxgraph'),
-                       get_string('fallbackwidth_desc', 'filter_jsxgraph'),
-                       '100%', PARAM_TEXT
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/fallbackwidth',
+            get_string('fallbackwidth', 'filter_jsxgraph'),
+            get_string('fallbackwidth_desc', 'filter_jsxgraph'),
+            '100%',
+            PARAM_TEXT
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/deprecated',
-                       get_string('header_deprecated', 'filter_jsxgraph'),
-                       ''
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/deprecated',
+            get_string('header_deprecated', 'filter_jsxgraph'),
+            ''
+        )
+    );
 
-    $settings->add(new admin_setting_configselect(
-                       'filter_jsxgraph/usedivid',
-                       get_string('usedivid', 'filter_jsxgraph'),
-                       get_string('usedivid_desc', 'filter_jsxgraph'),
-                       '0',
-                       [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
-                   ));
+    $settings->add(
+        new admin_setting_configselect(
+            'filter_jsxgraph/usedivid',
+            get_string('usedivid', 'filter_jsxgraph'),
+            get_string('usedivid_desc', 'filter_jsxgraph'),
+            '0',
+            [get_string('no', 'filter_jsxgraph'), get_string('yes', 'filter_jsxgraph')]
+        )
+    );
 
-    $settings->add(new admin_setting_configtext(
-                       'filter_jsxgraph/divid',
-                       get_string('divid', 'filter_jsxgraph'),
-                       get_string('divid_desc', 'filter_jsxgraph'),
-                       'box'
-                   ));
+    $settings->add(
+        new admin_setting_configtext(
+            'filter_jsxgraph/divid',
+            get_string('divid', 'filter_jsxgraph'),
+            get_string('divid_desc', 'filter_jsxgraph'),
+            'box'
+        )
+    );
 
-    $settings->add(new admin_setting_heading(
-                       'filter_jsxgraph/last',
-                       '',
-                       '<br><br>'
-                   ));
+    $settings->add(
+        new admin_setting_heading(
+            'filter_jsxgraph/last',
+            '',
+            '<br><br>'
+        )
+    );
 }
