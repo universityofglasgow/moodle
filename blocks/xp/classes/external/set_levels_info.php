@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * External function.
@@ -128,7 +130,7 @@ class set_levels_info extends external_api {
      */
     public static function clean_levels_info_data($levels, $algo) {
         // Sort levels.
-        usort($levels, function($l1, $l2) {
+        usort($levels, function ($l1, $l2) {
             return $l1['level'] - $l2['level'];
         });
 
@@ -138,7 +140,7 @@ class set_levels_info extends external_api {
 
         } else {
             $lastpts = null;
-            $levelsdata = array_reduce(array_keys($levels), function($carry, $key) use ($levels, &$lastpts) {
+            $levelsdata = array_reduce(array_keys($levels), function ($carry, $key) use ($levels, &$lastpts) {
                 $level = $levels[$key];
                 $levelnb = $level['level'];
 

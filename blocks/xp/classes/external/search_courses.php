@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * External function.
@@ -71,7 +73,8 @@ class search_courses extends external_api {
 
         $sitehome = get_string('frontpage', 'admin');
         if (strpos(core_text::strtolower($SITE->shortname), $query) !== false
-                || strpos(core_text::strtolower($sitehome), $query) !== false) {
+                || strpos(core_text::strtolower($sitehome), $query) !== false
+        ) {
 
             array_unshift($courses, array_merge((array) $SITE, [
                 'fullname' => $sitehome,
@@ -79,7 +82,7 @@ class search_courses extends external_api {
             ]));
         }
 
-        return array_values(array_map(function($course) {
+        return array_values(array_map(function ($course) {
             return [
                 'id' => $course['id'],
                 'fullname' => $course['fullname'],

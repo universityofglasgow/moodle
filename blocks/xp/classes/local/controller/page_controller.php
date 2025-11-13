@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Page controller.
@@ -131,7 +133,7 @@ abstract class page_controller extends course_route_controller {
 
                 // Remove potential duplicates.
                 $seen = [];
-                return array_values(array_filter($children, function($child) use (&$seen) {
+                return array_values(array_filter($children, function ($child) use (&$seen) {
                     if (in_array($child['id'], $seen)) {
                         return false;
                     }
@@ -183,8 +185,8 @@ abstract class page_controller extends course_route_controller {
             echo $output->notification_without_close(strip_tags(markdown_to_html(
                 get_string('erroraddondeactivated', 'block_xp', [
                     'docsurl' => (new \moodle_url('https://docs.levelup.plus/xp/docs/addon-deactivated'))->out(false),
-                ])), '<a><em><strong>')
-            , notification::NOTIFY_ERROR);
+                ])
+            ), '<a><em><strong>'), notification::NOTIFY_ERROR);
         }
 
         // Warn users that they are not where they should be.
@@ -195,13 +197,16 @@ abstract class page_controller extends course_route_controller {
             if (!$isforwholesite && $requestedcourseid == SITEID) {
                 // In per-course, but requesting front page.
                 echo $output->notification_without_close(get_string('errorcontextcoursemismatchpercourse', 'block_xp'),
-                    notification::NOTIFY_WARNING);
+                    notification::NOTIFY_WARNING
+                );
 
             } else if ($isforwholesite && $requestedcourseid != SITEID) {
                 // In for whole site, but requesting individual course.
                 $nexturl = $this->urlresolver->reverse($this->get_route_name(), ['courseid' => $this->courseid]);
-                echo $output->notification_without_close(get_string('errorcontextcoursemismatchforwholesite', 'block_xp',
-                    ['nexturl' => $nexturl->out(false)]), notification::NOTIFY_WARNING);
+                echo $output->notification_without_close(get_string('errorcontextcoursemismatchforwholesite',
+                    'block_xp',
+                    ['nexturl' => $nexturl->out(false)]
+                ), notification::NOTIFY_WARNING);
                 return;
             }
         }
@@ -225,7 +230,6 @@ abstract class page_controller extends course_route_controller {
         $this->page_content();
         echo html_writer::end_div();
         echo html_writer::end_div();
-
     }
 
     /**

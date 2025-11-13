@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Shortcode handler.
@@ -54,6 +56,20 @@ class handler {
     }
 
     /**
+     * Get the world from the context.
+     *
+     * Also check whether the current user has access to the world.
+     *
+     * @param object $env The environment.
+     * @return world|null
+     */
+    protected static function get_world_from_context(\context $context) {
+        $world = di::get('context_world_factory')->get_world_from_context($context);
+        $perms = $world->get_access_permissions();
+        return $perms->can_access() ? $world : null;
+    }
+
+    /**
      * Get the world from the env.
      *
      * Also check whether the current user has access to the world.
@@ -62,20 +78,7 @@ class handler {
      * @return world|null
      */
     protected static function get_world_from_env($env) {
-        $config = di::get('config');
-        $courseid = SITEID;
-
-        if ($config->get('context') == CONTEXT_COURSE) {
-            $context = $env->context->get_course_context(false);
-            if (!$context) {
-                return null;
-            }
-            $courseid = $context->instanceid;
-        }
-
-        $world = di::get('course_world_factory')->get_world($courseid);
-        $perms = $world->get_access_permissions();
-        return $perms->can_access() ? $world : null;
+        return static::get_world_from_context($env->context);
     }
 
     /**
@@ -144,7 +147,7 @@ class handler {
         $lessgreater = ['<' => null, '<=' => null, '>' => null, '>=' => null];
 
         // Attributes can be HTML encoded.
-        $args = array_combine(array_map(function($key) {
+        $args = array_combine(array_map(function ($key) {
             return html_entity_decode($key, ENT_COMPAT | ENT_HTML401);
         }, array_keys($args)), array_values($args));
 
@@ -166,7 +169,8 @@ class handler {
         }
 
         if ($lessgreater['<'] === null && $lessgreater['<='] === null
-                && $lessgreater['>'] === null && $lessgreater['>='] === null) {
+                && $lessgreater['>'] === null && $lessgreater['>='] === null
+        ) {
             return '';
         } else if ($lessgreater['<'] !== null && $level >= $lessgreater['<']) {
             return '';
@@ -193,7 +197,19 @@ class handler {
      */
     public static function xpladder($shortcode, $args, $content, $env, $next) {
         global $PAGE, $USER;
-        $world = static::get_world_from_env($env);
+
+        $ctxid = (int) ($args['ctx'] ?? 0);
+        $secret = (string) ($args['secret'] ?? '');
+        $context = null;
+        if (!empty($ctxid)) {
+            $context = \context::instance_by_id($ctxid, IGNORE_MISSING);
+            if (!$context || strlen($secret) < 7 || strpos(static::get_xpladder_secret($context), $secret) !== 0) {
+                return;
+            }
+        }
+
+        // If we have a context, it had to be validated.
+        $world = $context ? static::get_world_from_context($context) : static::get_world_from_env($env);
         if (!$world) {
             return;
         } else if (!$world->get_config()->get('enableladder')) {
@@ -396,4 +412,14 @@ class handler {
         return \html_writer::div(di::get('renderer')->progress_bar($state), 'block_xp', ['style' => 'max-width: 200px']);
     }
 
+    /**
+     * Get the ladder secret.
+     *
+     * @param \context $context
+     * @return string
+     */
+    public static function get_xpladder_secret(\context $context) {
+        $secret = di::get('shortcode_secret');
+        return substr(sha1("xpladder|{$secret}|{$context->id}"), 0, 7);
+    }
 }

@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Levels.
@@ -222,7 +224,7 @@ class algo_levels_info implements levels_info, levels_info_with_algo {
      * @return array Of metadata.
      */
     protected function get_level_metadata($level) {
-        return array_reduce($this->metadatakeys, function($carry, $name) use ($level) {
+        return array_reduce($this->metadatakeys, function ($carry, $name) use ($level) {
             $carry[$name] = isset($this->data[$name]) ? $this->data[$name][$level] ?? null : null;
             return $carry;
         }, []);
@@ -240,7 +242,7 @@ class algo_levels_info implements levels_info, levels_info_with_algo {
         $resolver = $this->resolver;
         $leveln = 1;
 
-        $levels = array_reduce(array_keys($this->data['xp']), function($carry, $key) use ($resolver, $data, &$leveln) {
+        $levels = array_reduce(array_keys($this->data['xp']), function ($carry, $key) use ($resolver, $data, &$leveln) {
             $level = $leveln++;
 
             if ($this->levelfactory) {
@@ -287,8 +289,12 @@ class algo_levels_info implements levels_info, levels_info_with_algo {
                 'incr' => self::DEFAULT_INCR,
             ],
             // Version 2 does not index points by level, version 1 used to.
-            'xp' => array_values(self::get_xp_with_algo(self::DEFAULT_COUNT, self::DEFAULT_BASE, self::DEFAULT_COEF,
-                self::DEFAULT_METHOD, self::DEFAULT_INCR)),
+            'xp' => array_values(self::get_xp_with_algo(self::DEFAULT_COUNT,
+                self::DEFAULT_BASE,
+                self::DEFAULT_COEF,
+                self::DEFAULT_METHOD,
+                self::DEFAULT_INCR
+            )),
             'name' => [],
             'desc' => [],
         ], $resolver, $levelfactory);
@@ -304,8 +310,13 @@ class algo_levels_info implements levels_info, levels_info_with_algo {
      * @param int $incr The incr value.
      * @return array level => xp required.
      */
-    public static function get_xp_with_algo($levelcount, $base, $coef, $method = self::DEFAULT_METHOD,
-            $incr = self::DEFAULT_INCR) {
+    public static function get_xp_with_algo(
+        $levelcount,
+        $base,
+        $coef,
+        $method = self::DEFAULT_METHOD,
+        $incr = self::DEFAULT_INCR
+    ) {
 
         if ($method === 'flat') {
             $list = [];

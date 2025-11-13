@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Course world factory.
@@ -64,10 +66,13 @@ class default_course_world_factory implements course_world_factory {
      * @param config $adminconfiglocked The locked config.
      * @param levels_info_factory $levelsinfofactory The levels info factory.
      */
-    public function __construct(config $adminconfig, moodle_database $db,
-            badge_url_resolver_course_world_factory $urlresolverfactory,
-            config $adminconfiglocked,
-            levels_info_factory $levelsinfofactory) {
+    public function __construct(
+        config $adminconfig,
+        moodle_database $db,
+        badge_url_resolver_course_world_factory $urlresolverfactory,
+        config $adminconfiglocked,
+        levels_info_factory $levelsinfofactory
+    ) {
 
         $this->adminconfig = $adminconfig;
         $this->db = $db;
@@ -100,8 +105,12 @@ class default_course_world_factory implements course_world_factory {
             $courseconfig = new course_world_config($this->adminconfig, $this->db, $courseid);
             $config = new config_stack([$this->configoverrides, $courseconfig]);
 
-            $this->worlds[$courseid] = new \block_xp\local\course_world($config, $this->db, $courseid, $this->urlresolverfactory,
-                $this->levelsinfofactory);
+            $this->worlds[$courseid] = new \block_xp\local\course_world($config,
+                $this->db,
+                $courseid,
+                $this->urlresolverfactory,
+                $this->levelsinfofactory
+            );
         }
         return $this->worlds[$courseid];
     }

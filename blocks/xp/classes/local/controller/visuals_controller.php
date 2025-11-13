@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Visuals controller.
@@ -136,11 +138,21 @@ class visuals_controller extends page_controller {
 
         // If the badges are missing, we copy them now.
         if ($config->get('enablecustomlevelbadges') == course_world_config::CUSTOM_BADGES_MISSING) {
-            file_prepare_draft_area($draftitemid, context_system::instance()->id, 'block_xp', 'defaultbadges', 0,
-                $this->get_filemanager_options());
+            file_prepare_draft_area($draftitemid,
+                context_system::instance()->id,
+                'block_xp',
+                'defaultbadges',
+                0,
+                $this->get_filemanager_options()
+            );
         } else {
-            file_prepare_draft_area($draftitemid, $this->get_filemanager_context()->id, 'block_xp', 'badges', 0,
-                $this->get_filemanager_options());
+            file_prepare_draft_area($draftitemid,
+                $this->get_filemanager_context()->id,
+                'block_xp',
+                'badges',
+                0,
+                $this->get_filemanager_options()
+            );
         }
 
         return [
@@ -169,8 +181,13 @@ class visuals_controller extends page_controller {
         $config = $this->world->get_config();
 
         // Save the area.
-        file_save_draft_area_files($data->badges, $this->get_filemanager_context()->id, 'block_xp', 'badges', 0,
-            $this->get_filemanager_options());
+        file_save_draft_area_files($data->badges,
+            $this->get_filemanager_context()->id,
+            'block_xp',
+            'badges',
+            0,
+            $this->get_filemanager_options()
+        );
 
         // When we save, we mark the flag as noop because either we copied the default badges,
         // when we loaded the draft area, or the user saved the page as they were in a legacy state,

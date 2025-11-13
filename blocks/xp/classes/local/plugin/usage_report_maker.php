@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Usage report maker.
@@ -95,17 +97,25 @@ class usage_report_maker {
         $data->xp_unique_users = $this->db->count_records_select('block_xp', '', null, 'COUNT(DISTINCT userid)');
         $data->xp_ladders = $this->db->count_records_select('block_xp_config', 'enableladder != ?', [0]);
 
+        $identitymodekey = $this->db->sql_concat("'v'", 'identitymode');
+        $identitymode = $this->db->get_records_sql_menu("SELECT {$identitymodekey}, COUNT(1)
+                                                           FROM {block_xp_config}
+                                                       GROUP BY identitymode");
+        $data->xp_ladders_anonymity = $identitymode;
+
         $data->xp_rules = $this->db->count_records_select('block_xp_filters', 'courseid > 0');
         $data->xp_rules_usage = $this->get_rules_usage($data->xp_rules > 5000 ? 5000 : 0);
 
         $data->xp_ruletypes = $this->db->count_records_select('block_xp_rule', 'contextid > 0');
         $data->xp_ruletypes_usage = $this->db->get_records_sql_menu(
-            'SELECT type, COUNT(1) AS n FROM {block_xp_rule} WHERE contextid > 0 GROUP BY type');
+            'SELECT type, COUNT(1) AS n FROM {block_xp_rule} WHERE contextid > 0 GROUP BY type'
+        );
         $data->xp_rulefilters_usage = $this->db->get_records_sql_menu(
-            'SELECT filter, COUNT(1) AS n FROM {block_xp_rule} WHERE contextid > 0 GROUP BY filter');
+            'SELECT filter, COUNT(1) AS n FROM {block_xp_rule} WHERE contextid > 0 GROUP BY filter'
+        );
 
         $components = ['availability_xp', 'block_stash', 'enrol_xp', 'filter_shortcodes'];
-        $data->plugins = array_reduce($components, function($carry, $component) use ($pluginman) {
+        $data->plugins = array_reduce($components, function ($carry, $component) use ($pluginman) {
             $plugininfo = $pluginman->get_plugin_info($component);
             if (!$plugininfo) {
                 return $carry;
@@ -183,7 +193,8 @@ class usage_report_maker {
                 && !empty($recordrules['property']) && $recordrules['property'] === 2
                 && !empty($recordrules['event__mod_book__event__course_module_viewed'])
                 && !empty($recordrules['event__mod_forum__event__discussion_subscription_created'])
-                && !empty($recordrules['event__mod_forum__event__subscription_created'])) {
+                && !empty($recordrules['event__mod_forum__event__subscription_created'])
+            ) {
                     continue;
             }
 

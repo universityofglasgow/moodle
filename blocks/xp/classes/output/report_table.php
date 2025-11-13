@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Block XP report table.
@@ -80,12 +82,12 @@ class report_table extends table_sql {
      * @param int $groupid The group ID.
      */
     public function __construct(
-            moodle_database $db,
-            course_world $world,
-            renderer_base $renderer,
-            course_user_state_store $store,
-            $groupid
-        ) {
+        moodle_database $db,
+        course_world $world,
+        renderer_base $renderer,
+        course_user_state_store $store,
+        $groupid
+    ) {
 
         parent::__construct('block_xp_report');
 
@@ -164,7 +166,7 @@ class report_table extends table_sql {
             $ids[$entry->userid] = $entry->userid;
         }
         $entries->close();
-        list($insql, $inparams) = $this->db->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'param', true, null);
+        [$insql, $inparams] = $this->db->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'param', true, null);
 
         // User filter.
         [$usersql, $userparams] = $this->generate_user_filter_sql();
@@ -292,7 +294,7 @@ class report_table extends table_sql {
      * @deprecated Since Level Up XP 3.12, please use self::get_columns_definition instead.
      */
     protected function get_headers() {
-        return array_map(function($header) {
+        return array_map(function ($header) {
             return (string) $header;
         }, array_values($this->get_columns_definition()));
     }
@@ -313,7 +315,8 @@ class report_table extends table_sql {
 
             $formattedrow = $this->format_row($row);
             $this->add_data_keyed($formattedrow,
-                $this->get_row_class($row));
+                $this->get_row_class($row)
+            );
         }
     }
 
@@ -343,14 +346,18 @@ class report_table extends table_sql {
         if ($this->logaccessperms && $this->logaccessperms->can_access_logs()) {
             $url = $this->urlresolver->reverse('log', ['courseid' => $this->world->get_courseid()]);
             $url->param('userid', $row->id);
-            $actions[] = new action_menu_link($url, new pix_icon('t/log', get_string('logs', 'core')),
-                get_string('viewlogs', 'block_xp'));
+            $actions[] = new action_menu_link($url,
+                new pix_icon('t/log', get_string('logs', 'core')),
+                get_string('viewlogs', 'block_xp')
+            );
         }
 
         if (isset($row->xp)) {
             $url = new moodle_url($this->baseurl, ['action' => '', 'delete' => 1, 'userid' => $row->id]);
-            $action = new action_menu_link($url, new pix_icon('t/delete', get_string('delete', 'core')),
-                get_string('delete', 'core'));
+            $action = new action_menu_link($url,
+                new pix_icon('t/delete', get_string('delete', 'core')),
+                get_string('delete', 'core')
+            );
             $action->add_class('text-danger');
             $actions[] = $action;
         }
@@ -546,7 +553,6 @@ class report_table extends table_sql {
             '',
             ['style' => 'margin: 1em 0']
         );
-
     }
 
 }

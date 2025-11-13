@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Setup trait.
@@ -29,6 +31,8 @@ namespace block_xp\tests;
 
 defined('MOODLE_INTERNAL') || die();
 
+// phpcs:disable PSR1.Classes.ClassDeclaration.MultipleClasses
+
 /**
  * Setup trait.
  *
@@ -36,6 +40,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2023 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Since XP 19, no longer needed.
  */
 trait setup_trait_310_onwards {
 
@@ -55,6 +60,7 @@ trait setup_trait_310_onwards {
  * @copyright  2023 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Since XP 19, no longer needed.
  */
 trait setup_trait_pre_310 {
 
@@ -67,40 +73,22 @@ trait setup_trait_pre_310 {
 
 }
 
-if ($CFG->branch < 310) {
-    /**
-     * Setup trait.
-     *
-     * @package    block_xp
-     * @copyright  2023 Frédéric Massart
-     * @author     Frédéric Massart <fred@branchup.tech>
-     * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-     */
-    trait setup_trait {
-        use setup_trait_pre_310;
+/**
+ * Setup trait.
+ *
+ * @package    block_xp
+ * @copyright  2023 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated Since XP 19, no longer needed.
+ */
+trait setup_trait {
+    use setup_trait_310_onwards;
 
-        /**
-         * Alias for the standard method.
-         */
-        protected function setup_test() {
-        }
-    }
-} else {
     /**
-     * Setup trait.
-     *
-     * @package    block_xp
-     * @copyright  2023 Frédéric Massart
-     * @author     Frédéric Massart <fred@branchup.tech>
-     * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+     * Alias for the standard method.
      */
-    trait setup_trait { // @codingStandardsIgnoreLine
-        use setup_trait_310_onwards;
-
-        /**
-         * Alias for the standard method.
-         */
-        protected function setup_test() {
-        }
+    protected function setup_test() {
     }
+
 }

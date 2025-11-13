@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Duration element.
@@ -33,6 +35,8 @@ global $CFG;
 
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/form/duration.php');
+
+// phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
 
 /**
  * Duration element class.
@@ -95,7 +99,7 @@ class block_xp_form_duration extends \MoodleQuickForm_duration {
                 86400 => get_string('days'),
                 604800 => get_string('weeks'),
             ];
-            $this->_units = array_reduce(array_keys($units), function($carry, $key) use ($units) {
+            $this->_units = array_reduce(array_keys($units), function ($carry, $key) use ($units) {
                 if ($key <= $this->_options['maxunit']) {
                     $carry[$key] = $units[$key];
                 }

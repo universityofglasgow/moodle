@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Levels controller.
@@ -59,7 +61,6 @@ class levels_controller extends page_controller {
                 $this->redirect(new url($this->pageurl));
             }
         }
-
     }
 
     protected function get_page_html_head_title() {
@@ -78,7 +79,7 @@ class levels_controller extends page_controller {
 
         $urlserializer = new url_serializer();
         $badgeurlresolver = di::get('badge_url_resolver_course_world_factory')->get_url_resolver($world);
-        $defaultbadges = array_reduce(range(1, 20), function($carry, $level) use ($badgeurlresolver, $urlserializer) {
+        $defaultbadges = array_reduce(range(1, 20), function ($carry, $level) use ($badgeurlresolver, $urlserializer) {
             $url = $badgeurlresolver->get_url_for_level($level);
             $carry[$level] = $urlserializer->serialize($url);
             return $carry;
@@ -120,7 +121,7 @@ class levels_controller extends page_controller {
             return;
         }
 
-        list($module, $props) = $this->get_react_module();
+        [$module, $props] = $this->get_react_module();
         echo $output->react_module($module, $props);
 
         $this->page_danger_zone_content();

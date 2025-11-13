@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Course world collection strategy.
@@ -67,13 +69,13 @@ class course_world_collection_strategy implements event_collection_strategy {
      * @param course_level_up_notification_service $levelupnotifificationservice The notification service.
      */
     public function __construct(
-            context $context,
-            config $config,
-            course_user_state_store $store,
-            course_filter_manager $filtermanager,
-            reason_collection_logger $logger,
-            course_level_up_notification_service $levelupnotifificationservice
-        ) {
+        context $context,
+        config $config,
+        course_user_state_store $store,
+        course_filter_manager $filtermanager,
+        reason_collection_logger $logger,
+        course_level_up_notification_service $levelupnotifificationservice
+    ) {
         $this->context = $context;
         $this->config = $config;
         $this->store = $store;
@@ -157,7 +159,7 @@ class course_world_collection_strategy implements event_collection_strategy {
             $SESSION->block_xp_cheatguard = [];
         } else {
             // Ensure that all entries are arrays, they may not be when we just upgraded the plugin.
-            $SESSION->block_xp_cheatguard = array_map(function($entry) {
+            $SESSION->block_xp_cheatguard = array_map(function ($entry) {
                 return is_array($entry) ? $entry : [$entry];
             }, $SESSION->block_xp_cheatguard);
         }
@@ -179,8 +181,8 @@ class course_world_collection_strategy implements event_collection_strategy {
         // the last 15min. We want to keep at least 15 min so that when teachers are testing changes,
         // they do not get confused because actions they had just performed no longer gets blocked.
         $timethreshold = $now - max([$maxtime, $actiontime, 900]);
-        $SESSION->block_xp_cheatguard = array_filter(array_map(function($times) use ($maxcount, $timethreshold) {
-            return array_slice(array_filter($times, function($time) use ($timethreshold) {
+        $SESSION->block_xp_cheatguard = array_filter(array_map(function ($times) use ($maxcount, $timethreshold) {
+            return array_slice(array_filter($times, function ($time) use ($timethreshold) {
                 return $time > $timethreshold;
             }), -$maxcount);
         }, $SESSION->block_xp_cheatguard));
@@ -206,8 +208,8 @@ class course_world_collection_strategy implements event_collection_strategy {
 
         if ($maxactions > 0 && $maxintime > 0) {
             $timethreshold = $now - $maxintime;
-            $actionsintimeframe = array_reduce($log, function($carry, $times) use ($timethreshold) {
-                return $carry + array_reduce($times, function($carry, $time) use ($timethreshold) {
+            $actionsintimeframe = array_reduce($log, function ($carry, $times) use ($timethreshold) {
+                return $carry + array_reduce($times, function ($carry, $time) use ($timethreshold) {
                     return $carry + ($time > $timethreshold ? 1 : 0);
                 });
             }, 0);

@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Default course world leaderboard factory.
@@ -203,8 +205,13 @@ class default_course_world_leaderboard_factory implements course_world_leaderboa
      * @param ranker|null $ranker The ranker.
      * @return leaderboard
      */
-    protected function get_leaderboard_instance_with_config(course_world $world, $groupid, array $columns,
-            config $config, ?ranker $ranker = null) {
+    protected function get_leaderboard_instance_with_config(
+        course_world $world,
+        $groupid,
+        array $columns,
+        config $config,
+        ?ranker $ranker = null
+    ) {
         return new course_user_leaderboard(
             $this->db,
             $world->get_levels_info(),
@@ -270,8 +277,11 @@ class default_course_world_leaderboard_factory implements course_world_leaderboa
 
         // Do we only display the neighbours?
         if ($config->get('neighbours')) {
-            $leaderboard = new neighboured_leaderboard($leaderboard, $USER->id, $config->get('neighbours'),
-                $world->get_access_permissions()->can_manage());
+            $leaderboard = new neighboured_leaderboard($leaderboard,
+                $USER->id,
+                $config->get('neighbours'),
+                $world->get_access_permissions()->can_manage()
+            );
         }
 
         return $leaderboard;

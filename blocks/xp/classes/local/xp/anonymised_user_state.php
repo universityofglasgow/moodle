@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Anonymised user state.
@@ -40,16 +42,16 @@ class anonymised_user_state extends user_state {
 
     /** @var stdClass The anonymous user. */
     protected $anonuser;
-    /** @var user_state The user state. */
+    /** @var state The user state. */
     protected $state;
 
     /**
      * Constructor.
      *
-     * @param user_state $state The state.
+     * @param state $state The state.
      * @param stdClass $anonuser The user object.
      */
-    public function __construct(user_state $state, stdClass $anonuser) {
+    public function __construct(state $state, stdClass $anonuser) {
         $this->anonuser = $anonuser;
         $this->state = $state;
     }

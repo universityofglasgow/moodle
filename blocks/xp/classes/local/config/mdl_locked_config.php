@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Moodle locked config.
@@ -50,7 +52,7 @@ class mdl_locked_config extends mdl_config {
      * @param string[] $keys The setting names that are lockable.
      */
     public function __construct($component, array $keys) {
-        parent::__construct($component, new static_config(array_reduce($keys, function($carry, $key) {
+        parent::__construct($component, new static_config(array_reduce($keys, function ($carry, $key) {
             return array_merge($carry, ["{$key}_locked" => false]);
         }, [])));
     }
@@ -72,7 +74,7 @@ class mdl_locked_config extends mdl_config {
      */
     public function get_all() {
         $all = parent::get_all();
-        return array_reduce(array_keys($all), function($carry, $key) use ($all) {
+        return array_reduce(array_keys($all), function ($carry, $key) use ($all) {
             $carry[substr($key, 0, -7)] = (bool) $all[$key];
             return $carry;
         }, []);

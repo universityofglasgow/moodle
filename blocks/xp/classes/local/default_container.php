@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Dependency container.
@@ -25,6 +27,7 @@
 
 namespace block_xp\local;
 
+use cache;
 use coding_exception;
 use moodle_url;
 
@@ -50,7 +53,9 @@ class default_container implements container {
         'badge_url_resolver_course_world_factory' => true,
         'base_url' => true,
         'block_class' => true,
+        'block_count_cache' => true,
         'block_edit_form_class' => true,
+        'bulk_world_config_setter' => true,
         'cheatguard_form_class' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
@@ -58,6 +63,7 @@ class default_container implements container {
         'config_locked' => true,
         'context_world_factory' => true,
         'course_world_block_any_instance_finder_in_context' => true,
+        'course_world_block_instance_checker' => true,
         'course_world_block_instance_finder' => true,
         'course_world_block_instances_finder_in_context' => true,
         'course_world_factory' => true,
@@ -79,6 +85,7 @@ class default_container implements container {
         'rule_type_resolver' => true,
         'serializer_factory' => true,
         'settings_maker' => true,
+        'shortcode_secret' => true,
         'shortcodes_definition_maker' => true,
         'tasks_definition_maker' => true,
         'url_resolver' => true,
@@ -214,12 +221,30 @@ class default_container implements container {
     }
 
     /**
+     * Block count cache.
+     *
+     * @return string
+     */
+    protected function get_block_count_cache() {
+        return cache::make('block_xp', 'block_count');
+    }
+
+    /**
      * Block edit form class.
      *
      * @return string
      */
     protected function get_block_edit_form_class() {
         return 'block_xp\form\edit_form';
+    }
+
+    /**
+     * Bulk world config setter.
+     *
+     * @return config\bulk_world_config_setter
+     */
+    protected function get_bulk_world_config_setter() {
+        return new config\bulk_world_config_setter();
     }
 
     /**
@@ -288,7 +313,7 @@ class default_container implements container {
     /**
      * Get the course world block any instance finder in context.
      *
-     * @return course_world_instance_finder
+     * @return block\course_world_instance_finder
      */
     protected function get_course_world_block_any_instance_finder_in_context() {
         // We know the implementation of the following includes what we need.
@@ -298,7 +323,17 @@ class default_container implements container {
     /**
      * Get the course world block instance finder.
      *
-     * @return course_world_instance_finder
+     * @return block\course_world_instance_finder
+     */
+    protected function get_course_world_block_instance_checker() {
+        // We know the implementation of the following includes what we need.
+        return $this->get('course_world_block_instance_finder');
+    }
+
+    /**
+     * Get the course world block instance finder.
+     *
+     * @return block\course_world_instance_finder
      */
     protected function get_course_world_block_instance_finder() {
         return new \block_xp\local\block\course_world_instance_finder($this->get('db'));
@@ -307,7 +342,7 @@ class default_container implements container {
     /**
      * Get the course world block instances finder in context.
      *
-     * @return course_world_instance_finder
+     * @return block\course_world_instance_finder
      */
     protected function get_course_world_block_instances_finder_in_context() {
         // We know the implementation of the following includes what we need.
@@ -386,8 +421,10 @@ class default_container implements container {
      * @return factory\levels_info_factory
      */
     protected function get_levels_info_factory() {
-        return new factory\levels_factory($this->get('config'), $this->get('badge_url_resolver'),
-            $this->get('badge_url_resolver_course_world_factory'));
+        return new factory\levels_factory($this->get('config'),
+            $this->get('badge_url_resolver'),
+            $this->get('badge_url_resolver_course_world_factory')
+        );
     }
 
     /**
@@ -519,6 +556,21 @@ class default_container implements container {
             $this->get('url_resolver'),
             $this->get('config_locked')
         );
+    }
+
+    /**
+     * Get the shortcode secret.
+     *
+     * @return string
+     */
+    protected function get_shortcode_secret() {
+        $config = $this->get('config');
+        $secret = $config->get('shortcodesecret');
+        if (!$secret) {
+            $secret = bin2hex(random_bytes(5));
+            $config->set('shortcodesecret', $secret);
+        }
+        return $secret;
     }
 
     /**

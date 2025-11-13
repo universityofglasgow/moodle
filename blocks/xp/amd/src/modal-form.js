@@ -1,17 +1,19 @@
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Modal form.
@@ -25,6 +27,7 @@
 import ModalForm from 'core_form/modalform';
 import * as Compat from 'block_xp/compat';
 import * as RoleButton from 'block_xp/role-button';
+import {extractNodeData} from 'block_xp/utils';
 
 const getButton = (modalForm, action) => {
     const saveBtnJq = modalForm.modal.getFooter().find(modalForm.modal.getActionSelector(action));
@@ -119,54 +122,6 @@ export function registerOpen(selector) {
     });
 }
 
-/**
- * Extract data from dataset.
- *
- * This extracts data at a prefix, and converts in nested objects if needed.
- *
- * @param {Node} node The HTML node.
- * @param {String} prefix The data prefix.
- * @returns {Object}
- */
-export function extractNodeData(node, prefix) {
-    return Object.keys(node.dataset).filter(k => k.indexOf(prefix) === 0).reduce((carry, k) => {
-        let value = node.dataset[k];
-        if (value === 'true' || value === 'false') {
-            value = value === 'true' ? true : false;
-        }
-        let key = k.charAt(prefix.length).toLocaleLowerCase() + k.substring(prefix.length + 1);
-
-        if (key.indexOf('__') > -1) {
-            return setAtDepth(carry, key.split('__'), value);
-        }
-
-        return {...carry, [key]: value};
-    }, {});
-}
-
-/**
- * Set a value at a specific depth in an object.
- *
- * @param {Object} obj
- * @param {String[]} keys
- * @param {Any} value
- * @returns {Object}
- */
-function setAtDepth(obj, keys, value) {
-    let currentObj = obj;
-
-    for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        currentObj[key] = typeof currentObj[key] === 'undefined' ? {} : currentObj[key];
-        currentObj = currentObj[key];
-    }
-
-    const lastKey = keys[keys.length - 1];
-    currentObj[lastKey] = value;
-
-    return obj;
-}
-
 let simpleOpenFormActionObserverRegistered = false;
 const simpleOpenFormActionObserverSelector = '[data-xp-action="open-form"][data-form-class]';
 
@@ -178,12 +133,5 @@ export function registerSimpleOpenFormActionObserver() {
         return;
     }
     simpleOpenFormActionObserverRegistered = true;
-    document.body.addEventListener('click', (e) => {
-        const node = e.target.closest(simpleOpenFormActionObserverSelector);
-        if (!node) {
-            return;
-        }
-        e.preventDefault();
-        open(node);
-    });
+    delegateOpen('body', simpleOpenFormActionObserverSelector);
 }

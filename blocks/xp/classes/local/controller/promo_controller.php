@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Promo controller.
@@ -147,8 +149,8 @@ class promo_controller extends route_controller {
             echo di::get('renderer')->notification_without_close(strip_tags(markdown_to_html(
                 get_string('erroraddondeactivated', 'block_xp', [
                     'docsurl' => (new \moodle_url('https://docs.levelup.plus/xp/docs/addon-deactivated'))->out(false),
-                ])), '<a><em><strong>')
-            , notification::NOTIFY_ERROR);
+                ])
+            ), '<a><em><strong>'), notification::NOTIFY_ERROR);
         }
 
         $addon = \block_xp\di::get('addon');
@@ -189,7 +191,7 @@ class promo_controller extends route_controller {
 
         $new = '🆕';
 
-        $renderitemstart = function($icon, $title, $subtitle) use ($output) {
+        $renderitemstart = function ($icon, $title, $subtitle) use ($output) {
             return <<<EOT
             <div class="xp-bg-slate-50 xp-rounded xp-p-4">
                 <div class="xp-pb-4 xp-mb-4 xp-flex xp-gap-4 xp-border-b-white xp-border-0 xp-border-b-2 xp-border-solid">
@@ -204,7 +206,7 @@ class promo_controller extends route_controller {
                 <div>
 EOT;
         };
-        $renderitemend = function() {
+        $renderitemend = function () {
             return "</div></div>";
         };
 
@@ -287,7 +289,6 @@ EOT;
     </a></p>
 </div>
 EOT;
-
     }
 
     protected function content_installed(bool $hasnewcontent = false) {

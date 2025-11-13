@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Report controller.
@@ -66,7 +68,7 @@ class report_controller extends page_controller {
             ['confirm', 0, PARAM_INT, false],
             ['delete', 0, PARAM_INT, false],
             ['term', null, PARAM_NOTAGS],
-            ['page', 0, PARAM_INT],     // To keep the table page in URL.
+            ['page', 0, PARAM_INT], // To keep the table page in URL.
 
             // Deprecated since XP 3.17.
             ['action', null, PARAM_ALPHA],
@@ -152,7 +154,7 @@ class report_controller extends page_controller {
             $form->set_data(['userid' => $userid, 'level' => $state->get_level()->get_level(), 'xp' => $state->get_xp()]);
             $this->form = $form;
         }
-        return $form;
+        return $this->form;
     }
 
     protected function get_table() {
@@ -212,7 +214,7 @@ class report_controller extends page_controller {
                     'danger' => true,
                     'href' => $reseturl,
                 ] : null,
-            ], function($value) {
+            ], function ($value) {
                 return $value !== null;
             }),
         ];
@@ -294,7 +296,7 @@ class report_controller extends page_controller {
         // Output the bottom actions.
         $actions = !$canmanage ? [] : $this->get_bottom_action_buttons();
         if (!empty($actions)) {
-            echo html_writer::tag('p', implode('', array_map(function($button) use ($output) {
+            echo html_writer::tag('p', implode('', array_map(function ($button) use ($output) {
                 return $output->render($button);
             }, $actions)));
         }

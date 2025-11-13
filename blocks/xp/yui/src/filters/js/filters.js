@@ -1,17 +1,19 @@
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Filters of level up.
@@ -272,16 +274,16 @@ Y.namespace('M.block_xp').Filters = Y.extend(FILTERS, Y.Base, {
             if (isFirstNode && !isLink) {
                 node.insert(this.addFilterLink.cloneNode(true), 'before');
 
-            // The add link is duplicated.
+                // The add link is duplicated.
             } else if (!isFirstNode && wasLink && isLink) {
                 node.remove();
                 return;
 
-            // There are two filters in a row.
+                // There are two filters in a row.
             } else if (!isFirstNode && !wasLink && !isLink) {
                 node.insert(this.addFilterLink.cloneNode(true), 'before');
 
-            // The last node is not a link.
+                // The last node is not a link.
             } else if (isLastNode && !isLink) {
                 node.insert(this.addFilterLink.cloneNode(true), 'after');
             }

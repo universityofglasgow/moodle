@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Admin visuals controller.
@@ -109,8 +111,13 @@ class admin_visuals_controller extends admin_route_controller {
      */
     protected function get_initial_form_data() {
         $draftitemid = file_get_submitted_draft_itemid('badges');
-        file_prepare_draft_area($draftitemid, $this->get_filemanager_context()->id, 'block_xp', 'defaultbadges',
-            0, $this->get_filemanager_options());
+        file_prepare_draft_area($draftitemid,
+            $this->get_filemanager_context()->id,
+            'block_xp',
+            'defaultbadges',
+            0,
+            $this->get_filemanager_options()
+        );
 
         return [
             'badges' => $draftitemid,
@@ -169,8 +176,13 @@ class admin_visuals_controller extends admin_route_controller {
      * @return void
      */
     protected function save_form_data($data) {
-        file_save_draft_area_files($data->badges, $this->get_filemanager_context()->id, 'block_xp', 'defaultbadges', 0,
-            $this->get_filemanager_options());
+        file_save_draft_area_files($data->badges,
+            $this->get_filemanager_context()->id,
+            'block_xp',
+            'defaultbadges',
+            0,
+            $this->get_filemanager_options()
+        );
     }
 
     /**

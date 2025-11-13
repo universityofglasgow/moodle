@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Event lister.
@@ -69,8 +71,8 @@ class event_lister {
         $list = [];
 
         $coreevents = $this->get_core_events();
-        $list[] = [get_string('coresystem') => array_reduce(array_keys($coreevents), function($carry, $prefix) use ($coreevents) {
-            return array_merge($carry, array_reduce($coreevents[$prefix], function($carry, $eventclass) use ($prefix) {
+        $list[] = [get_string('coresystem') => array_reduce(array_keys($coreevents), function ($carry, $prefix) use ($coreevents) {
+            return array_merge($carry, array_reduce($coreevents[$prefix], function ($carry, $eventclass) use ($prefix) {
                 $infos = self::get_event_infos($eventclass);
                 if ($infos) {
                     $carry[$infos['eventname']] = get_string('colon', 'block_xp', (object) [
@@ -229,7 +231,7 @@ class event_lister {
         $plugininfo = $pluginmanager->get_plugin_info($component);
 
         // Reduce to the participating, non-deprecated event.
-        $events = array_reduce($eventclasses, function($carry, $class) use ($plugininfo) {
+        $events = array_reduce($eventclasses, function ($carry, $class) use ($plugininfo) {
             $infos = self::get_event_infos($class);
             if (empty($infos)) {
                 // Skip rare case where infos aren't found.

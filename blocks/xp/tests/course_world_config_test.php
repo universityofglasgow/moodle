@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Block XP course world config test.
@@ -59,7 +61,7 @@ final class course_world_config_test extends base_testcase {
         // Validate that all keys match the admin value.
         $cfg1 = $this->get_world($c1->id)->get_config();
         foreach ($inheritable as $key) {
-            $this->assertEquals($cfg1->get($key), $config->get($key));;
+            $this->assertEquals($cfg1->get($key), $config->get($key));
         }
 
         // Validate that changing an admin value is populated in the course.
@@ -68,7 +70,7 @@ final class course_world_config_test extends base_testcase {
         $this->assertContains('neighbours', $inheritable);
         $cfg2 = $this->get_world($c2->id)->get_config();
         foreach ($inheritable as $key) {
-            $this->assertEquals($cfg2->get($key), $config->get($key));;
+            $this->assertEquals($cfg2->get($key), $config->get($key));
         }
 
         // After saving the configuration, any more changes to the admin won't have an impact.

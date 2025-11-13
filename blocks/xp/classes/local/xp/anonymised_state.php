@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Anonymise a state.
@@ -41,17 +43,17 @@ class anonymised_state implements state_with_subject {
     protected $name;
     /** @var moodle_url|null The pic. */
     protected $pic;
-    /** @var state_with_subject The state. */
+    /** @var state The state. */
     protected $state;
 
     /**
      * Constructor.
      *
-     * @param state_with_subject $state The state to anonymise.
+     * @param state $state The state to anonymise.
      * @param string $name The new name.
      * @param moodle_url $pic The new pic.
      */
-    public function __construct(state_with_subject $state, $name, $pic = null) {
+    public function __construct(state $state, $name, $pic = null) {
         $this->state = $state;
         $this->name = $name;
         $this->pic = $pic;

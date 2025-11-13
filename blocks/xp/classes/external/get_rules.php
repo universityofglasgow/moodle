@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * External function.
@@ -92,7 +94,7 @@ class get_rules extends external_api {
         $rules = $dictator->sort_rules_by_priority($rules);
 
         $filterhandler = di::get('rule_filter_handler');
-        $data = array_values(array_map(function($instance) use ($filterhandler) {
+        $data = array_values(array_map(function ($instance) use ($filterhandler) {
             $filter = $filterhandler->get_filter($instance->get_filter_name());
             $effectivectx = $instance->get_child_context() ?? $instance->get_context();
             $label = $filter ? $filter->get_label_for_config($instance->get_filter_config(), $effectivectx) : null;

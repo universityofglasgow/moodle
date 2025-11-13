@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Block instance finder.
@@ -36,7 +38,7 @@ use moodle_database;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class default_instance_finder implements instance_finder {
+class default_instance_finder implements instance_checker, instance_finder {
 
     /** @var moodle_database The DB. */
     protected $db;
@@ -48,6 +50,20 @@ class default_instance_finder implements instance_finder {
      */
     public function __construct(moodle_database $db) {
         $this->db = $db;
+    }
+
+    /**
+     * Count instances in context.
+     *
+     * @param string $name The block name, without 'block_'.
+     * @param context $context The context to search in.
+     * @return int
+     */
+    public function count_instances_in_context($name, context $context) {
+        return $this->db->count_records('block_instances', [
+            'blockname' => preg_replace('/^block_/i', '', $name),
+            'parentcontextid' => $context->id,
+        ]);
     }
 
     /**
@@ -75,6 +91,20 @@ class default_instance_finder implements instance_finder {
 
         $record = reset($records);
         return block_instance($record->blockname, $record);
+    }
+
+    /**
+     * Whether it has an instance in the context.
+     *
+     * @param string $name The block name, without 'block_'.
+     * @param context $context The context to search in.
+     * @return bool
+     */
+    public function has_instance_in_context($name, context $context) {
+        return $this->db->record_exists('block_instances', [
+            'blockname' => preg_replace('/^block_/i', '', $name),
+            'parentcontextid' => $context->id,
+        ]);
     }
 
 }

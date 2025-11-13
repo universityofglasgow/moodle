@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Block XP course world test.
@@ -219,7 +221,7 @@ final class course_world_test extends base_testcase {
             4 => 437,
             5 => 644,
             6 => 893,
-        ], array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        ], array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level->get_xp_required();
             return $carry;
         }, []));
@@ -252,7 +254,7 @@ final class course_world_test extends base_testcase {
             8 => 2110,
             9 => 2863,
             10 => 3842,
-        ], array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        ], array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level->get_xp_required();
             return $carry;
         }, []));
@@ -271,8 +273,12 @@ final class course_world_test extends base_testcase {
             ]),
             new default_course_world_config(),
         ]);
-        $world = new course_world($config, $DB, 1, di::get('badge_url_resolver_course_world_factory'),
-            di::get('levels_info_factory'));
+        $world = new course_world($config,
+            $DB,
+            1,
+            di::get('badge_url_resolver_course_world_factory'),
+            di::get('levels_info_factory')
+        );
         $levelsinfo = $world->get_levels_info();
 
         $this->assertInstanceOf(algo_levels_info::class, $levelsinfo);
@@ -286,7 +292,7 @@ final class course_world_test extends base_testcase {
             4 => 437,
             5 => 644,
             6 => 893,
-        ], array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        ], array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level->get_xp_required();
             return $carry;
         }, []));
@@ -301,8 +307,12 @@ final class course_world_test extends base_testcase {
             ]),
             new default_course_world_config(),
         ]);
-        $world = new course_world($config, $DB, 1, di::get('badge_url_resolver_course_world_factory'),
-            di::get('levels_info_factory'));
+        $world = new course_world($config,
+            $DB,
+            1,
+            di::get('badge_url_resolver_course_world_factory'),
+            di::get('levels_info_factory')
+        );
         $levelsinfo = $world->get_levels_info();
 
         $this->assertInstanceOf(algo_levels_info::class, $levelsinfo);
@@ -320,7 +330,7 @@ final class course_world_test extends base_testcase {
             8 => 2110,
             9 => 2863,
             10 => 3842,
-        ], array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        ], array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level->get_xp_required();
             return $carry;
         }, []));

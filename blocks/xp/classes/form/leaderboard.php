@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * File.
@@ -38,7 +40,6 @@ use core_form\dynamic_form;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class leaderboard extends dynamic_form {
-
     use dynamic_world_trait;
 
     /** @var string */
@@ -76,7 +77,7 @@ class leaderboard extends dynamic_form {
             get_string('ladderisodefault', 'block_xp'),
             get_string('ladderisocohorts', 'block_xp'),
         ], ['disabled' => 'disabled']);
-        $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function() {
+        $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function () {
             $renderer = di::get('renderer');
             return $renderer->render_from_template('block_xp/addon-required', [
                 'promourl' => di::get('url_resolver')->reverse('promo', ['courseid' => $this->world->get_courseid()])->out(false),
@@ -91,7 +92,7 @@ class leaderboard extends dynamic_form {
             get_string('ladderparticipationoptout', 'block_xp'),
             get_string('ladderparticipationoptin', 'block_xp'),
         ], ['disabled' => 'disabled']);
-        $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function() {
+        $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function () {
             $renderer = di::get('renderer');
             return $renderer->render_from_template('block_xp/addon-required', [
                 'promourl' => di::get('url_resolver')->reverse('promo', ['courseid' => $this->world->get_courseid()])->out(false),

@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Test case.
@@ -409,7 +411,7 @@ final class algo_levels_info_test extends base_testcase {
      * @param algo_levels_info $levelsinfo The levels info.
      */
     protected function get_xp_by_levels($levelsinfo) {
-        return array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        return array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level->get_xp_required();
             return $carry;
         }, []);
@@ -421,7 +423,7 @@ final class algo_levels_info_test extends base_testcase {
      * @param algo_levels_info $levelsinfo The levels info.
      */
     protected function get_description_by_levels($levelsinfo) {
-        return array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        return array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level instanceof level_with_description ? $level->get_description() : '';
             return $carry;
         }, []);
@@ -433,7 +435,7 @@ final class algo_levels_info_test extends base_testcase {
      * @param algo_levels_info $levelsinfo The levels info.
      */
     protected function get_name_by_levels($levelsinfo) {
-        return array_reduce($levelsinfo->get_levels(), function($carry, $level) {
+        return array_reduce($levelsinfo->get_levels(), function ($carry, $level) {
             $carry[$level->get_level()] = $level instanceof level_with_name ? $level->get_name() : '';
             return $carry;
         }, []);
