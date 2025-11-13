@@ -26,8 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/question/type/pmatch/pmatchlib.php');
 
-use qtype_pmatch\local\spell\qtype_pmatch_spell_checker;
 use qtype_pmatch\form_utils;
+use qtype_pmatch\utils;
+use qtype_pmatch\local\spell\qtype_pmatch_spell_checker;
 
 /**
  * Short answer question editing form definition.
@@ -42,10 +43,19 @@ class qtype_pmatch_edit_form extends question_edit_form {
     protected $otheranswer = null;
 
     /**
-     * @var string[] place holder for suggested rules.
+     * @var string[] placeholder for suggested rules.
      */
     protected $suggestedrules = null;
 
+    /**
+     * Constructor for the pattern match question editing form.
+     *
+     * @param string $submiturl The URL to submit the form to.
+     * @param stdClass $question The question object being edited.
+     * @param string $category The category of the question.
+     * @param context[] $contexts The contexts in which the question is being edited.
+     * @param bool $formeditable Whether the form is editable or not.
+     */
     public function __construct($submiturl, $question, $category, $contexts, $formeditable = true) {
         // Separate the Any other' answer from the list of normal answers.
         if (!empty($question->options->answers)) {
@@ -60,26 +70,56 @@ class qtype_pmatch_edit_form extends question_edit_form {
         parent::__construct($submiturl, $question, $category, $contexts, $formeditable = true);
     }
 
-    /**
-     * Add question-type specific form fields.
-     *
-     * @param MoodleQuickForm $mform the form being built.
-     */
+    #[\Override]
     protected function definition_inner($mform) {
         $this->general_answer_fields($mform);
+        $standardplaceholders = $this->get_possible_answer_placeholders(6);
+        $placeholders = array_map(
+            function($key, $placeholder) {
+                return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '22',
+                    'value' => $placeholder, 'onfocus' => 'this.select()',
+                    'class' => 'form-control-plaintext d-inline-block w-auto me-3',
+                    'name' => 'placeholder',
+                    'id' => 'possibleanswerplaceholder-' . $key]);
+            }, array_keys($standardplaceholders), $standardplaceholders);
+        $possibleanswerplaceholders = $mform->createElement('static', 'possibleanswerplaceholder',
+            get_string('modelanswer_possibleanswerplaceholders', 'qtype_pmatch'), implode("\n", $placeholders));
+        $mform->insertElementBefore($possibleanswerplaceholders, 'status');
+
         form_utils::add_synonyms($this, $mform, $this->question, true, 'synonymsdata', 3, 2);
 
         $this->add_per_answer_fields($mform, get_string('answerno', 'qtype_pmatch', '{no}'),
                 question_bank::fraction_options());
+        $this->_form->setDefault('answer', [0 => 'match ()']);
 
         $this->add_interactive_settings();
     }
 
+    /**
+     * Generates an array of standard placeholders based on the specified number.
+     * Example: get_possible_answer_placeholders(6).
+     * Output: ['______', '__6__', '__6x2__'].
+     *
+     * @param int $number The number of placeholders to add.
+     * @return array The array of placeholders.
+     */
+    protected function get_possible_answer_placeholders(int $number): array {
+        $codes = [];
+        // Create a default set of placeholders.
+        $codes[] = [str_repeat("_", $number), "__" . $number ."__", "__" . $number . "x2__"];
+        foreach ($codes as $value) {
+            $output = $value;
+        }
+
+        return $output;
+    }
+
+    #[\Override]
     protected function add_per_answer_fields(&$mform, $label, $gradeoptions,
             $minoptions = QUESTION_NUMANS_START, $addoptions = QUESTION_NUMANS_ADD) {
 
-        // Nasty hack. The auto suggest answers button is a no submit button so it doesn't
-        // appear in the normal form flow. Though it is in the $_FORM object so we access it
+        // Nasty hack. The auto suggest answers button is a no submit button, so it doesn't
+        // appear in the normal form flow. Though it is in the $_FORM object, so we access it
         // there to see if rules need to be suggested.
         $suggestrules = optional_param('answersuggestbutton', '', PARAM_TEXT);
         if ($suggestrules && $suggestrules !== '') {
@@ -87,23 +127,42 @@ class qtype_pmatch_edit_form extends question_edit_form {
         }
 
         parent::add_per_answer_fields($mform, $label, $gradeoptions);
-        $results = '';
 
+        // The 'Answers' section heading is added in parent::add_per_answer_fields, so to
+        // add fields at the top of that secion, we need to add them here, above the
+        // first field in the section (which is 'topborder[0]').
+
+        // Add Model answer field.
+        $answermodel = $mform->createElement('text', 'modelanswer', get_string('modelanswer', 'qtype_pmatch'),
+            'size="50"');
+        $mform->insertElementBefore($answermodel, 'topborder[0]');
+        $mform->addHelpButton('modelanswer', 'modelanswer', 'qtype_pmatch');
+        $mform->setType('modelanswer', PARAM_RAW_TRIMMED);
+        $mform->addRule('modelanswer', get_string('modelanswermissing', 'qtype_pmatch'),
+            'required', null, 'client');
+
+        // Prepare grading accuracy info to add to the static text.
+        $results = '';
         if (\qtype_pmatch\testquestion_responses::has_responses($this->question)) {
             $counts = \qtype_pmatch\testquestion_responses::get_question_grade_summary_counts($this->question);
             $results = html_writer::tag('p',
-                    get_string('testquestionresultssummary', 'qtype_pmatch', $counts),
-                    ["id" => 'testquestion_gradesummary']);
+                get_string('overallgradingaccuracy', 'qtype_pmatch'),
+                ['class' => 'font-weight-bold']);
+            $results .= html_writer::tag('p',
+                get_string('testquestionresultssummary', 'qtype_pmatch', $counts),
+                ["id" => 'testquestion_gradesummary']);
         }
+
+        // Add instructions.
         $answersinstruct = $mform->createElement('static', 'answersinstruct',
-                                                get_string('correctanswers', 'qtype_pmatch'),
-                                                get_string('filloutoneanswer', 'qtype_pmatch') .
-                                                $results);
+            get_string('correctanswers', 'qtype_pmatch'),
+            get_string('filloutoneanswer', 'qtype_pmatch') . $results);
         $mform->insertElementBefore($answersinstruct, 'topborder[0]');
+        $mform->addHelpButton('answersinstruct', 'correctanswers', 'qtype_pmatch');
 
         if (\qtype_pmatch\testquestion_responses::has_responses($this->question)) {
             // Add rule suggestion button.
-            $answerssuggest = $this->add_rule_suggestion_fields($mform);
+            $this->add_rule_suggestion_fields($mform);
         }
 
         $this->add_answer_accuracy_fields($mform);
@@ -192,12 +251,11 @@ class qtype_pmatch_edit_form extends question_edit_form {
         }
     }
 
-    /**
-     * Language string to use for 'Add {no} more {whatever we call answers}'.
-     */
+    #[\Override]
     protected function get_more_choices_string() {
         return get_string('addmoreanswerblanks', 'qtype_pmatch');
     }
+
     /**
      * Add answer options for any other (wrong) answer.
      *
@@ -219,69 +277,93 @@ class qtype_pmatch_edit_form extends question_edit_form {
      */
     protected function general_answer_fields($mform) {
         $mform->addElement('header', 'answeroptionsheader',
-                                                get_string('answeroptions', 'qtype_pmatch'));
+                get_string('answeroptions', 'qtype_pmatch'));
+
         $mform->addElement('static', 'generaldescription', '',
-                                                get_string('answeringoptions', 'qtype_pmatch'));
-        $menu = [
-            get_string('caseno', 'qtype_pmatch'),
-            get_string('caseyes', 'qtype_pmatch')
-        ];
-        $mform->addElement('select', 'usecase', get_string('casesensitive', 'qtype_pmatch'), $menu);
+                get_string('answeringoptions', 'qtype_pmatch'));
+
+        $mform->addElement('select', 'usecase', get_string('casesensitive', 'qtype_pmatch'), [
+                get_string('caseno', 'qtype_pmatch'),
+                get_string('caseyes', 'qtype_pmatch'),
+        ]);
         $mform->setDefault('usecase', $this->get_default_value('usecase', 0));
-        $mform->addElement('selectyesno', 'allowsubscript',
-                                                    get_string('allowsubscript', 'qtype_pmatch'));
-        $mform->setDefault('allowsubscript', $this->get_default_value('allowsubscript', 0));
-        $mform->addElement('selectyesno', 'allowsuperscript',
-                                                    get_string('allowsuperscript', 'qtype_pmatch'));
-        $mform->setDefault('allowsuperscript', $this->get_default_value('allowsuperscript', 0));
-        $menu = [
-            get_string('forcelengthno', 'qtype_pmatch'),
-            get_string('forcelengthyes', 'qtype_pmatch')
-        ];
-        $mform->addElement('select', 'forcelength',
-                                                get_string('forcelength', 'qtype_pmatch'), $menu);
+
+        $mform->addElement('select', 'quotematching', get_string('smart_straight_quote_matching', 'qtype_pmatch'), [
+            get_string('smart_straight_quote_matching_relaxed', 'qtype_pmatch'),
+            get_string('smart_straight_quote_matching_strict', 'qtype_pmatch'),
+        ]);
+        $mform->addHelpButton('quotematching', 'smart_straight_quote_matching', 'qtype_pmatch');
+        $mform->setDefault('quotematching', $this->get_default_value('quotematching', 0));
+
+        $supsubels = [];
+        $supsubels[] = $mform->createElement('selectyesno', 'allowsubscript',
+                get_string('allowsubscript', 'qtype_pmatch'));
+        $mform->setDefault('allowsubscript', $this->get_default_value('allowsubscript', false));
+        // Add hidden sub field so that we can retain the selected value when the field is disabled.
+        $mform->addElement('hidden', 'allowsubscriptselectedvalue', '');
+        $mform->setType('allowsubscriptselectedvalue', PARAM_BOOL);
+
+        $supsubels[] = $mform->createElement('selectyesno', 'allowsuperscript',
+                get_string('allowsuperscript', 'qtype_pmatch'));
+        $mform->setDefault('allowsuperscript', $this->get_default_value('allowsuperscript', false));
+        // Add hidden sup field so that we can retain the selected value when the field is disabled.
+        $mform->addElement('hidden', 'allowsuperscriptselectedvalue', '');
+        $mform->setType('allowsuperscriptselectedvalue', PARAM_BOOL);
+
+        $mform->addGroup($supsubels, 'supsubels',
+                get_string('allowsubscript', 'qtype_pmatch'), '', false);
+        $mform->addElement('static', 'spellcheckdescription', '', get_string('spellcheckdisabled', 'qtype_pmatch'));
+
+        $mform->addElement('select', 'forcelength', get_string('forcelength', 'qtype_pmatch'), [
+                get_string('forcelengthno', 'qtype_pmatch'),
+                get_string('forcelengthyes', 'qtype_pmatch'),
+        ]);
         $mform->setDefault('forcelength', $this->get_default_value('forcelength', 1));
-        list ($options, $disable) = qtype_pmatch_spell_checker::get_spell_checker_language_options($this->question);
+
+        [$options, $disable] =
+                qtype_pmatch_spell_checker::get_spell_checker_language_options($this->question);
         if ($disable) {
             $mform->addElement('select', 'applydictionarycheck',
                     get_string('applydictionarycheck', 'qtype_pmatch'), $options, ['disabled' => 'disabled']);
         } else {
             $mform->addElement('select', 'applydictionarycheck',
                     get_string('applydictionarycheck', 'qtype_pmatch'), $options);
-            $mform->setDefault('applydictionarycheck', $this->get_default_value('applydictionarycheck',
-                    get_string('iso6391', 'langconfig')));
+            $mform->setDefault('applydictionarycheck',
+                    $this->get_default_value('applydictionarycheck', get_string('iso6391', 'langconfig')));
+            // Add hidden spell-check field so that we can retain the selected value when the field is disabled.
+            $mform->addElement('hidden', 'applydictionarycheckselectedvalue', '');
+            $mform->setType('applydictionarycheckselectedvalue', PARAM_ALPHAEXT);
+
+            $mform->disabledIf('applydictionarycheck', 'allowsuperscript', 'eq', true);
+            $mform->disabledIf('applydictionarycheck', 'allowsubscript', 'eq', true);
+            $mform->disabledIf('allowsuperscript', 'applydictionarycheck', 'neq', qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
+            $mform->disabledIf('allowsubscript', 'applydictionarycheck', 'neq', qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
         }
+
         $mform->addElement('textarea', 'extenddictionary',
-                        get_string('extenddictionary', 'qtype_pmatch'),
-                        ['rows' => '5', 'cols' => '80']);
-        $mform->disabledIf('extenddictionary', 'applydictionarycheck', 'eq', qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
-        $mform->addElement('text', 'sentencedividers',
-                get_string('sentencedividers', 'qtype_pmatch'), ['size' => 50]);
+                get_string('extenddictionary', 'qtype_pmatch'), ['rows' => '5', 'cols' => '80']);
+        $mform->disabledIf('extenddictionary', 'applydictionarycheck', 'eq',
+                qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
+        $mform->disabledIf('extenddictionary', 'allowsuperscript', 'eq', true);
+        $mform->disabledIf('extenddictionary', 'allowsubscript', 'eq', true);
+
+        $mform->addElement('text', 'sentencedividers', get_string('sentencedividers', 'qtype_pmatch'), ['size' => 50]);
         $mform->addHelpButton('sentencedividers', 'sentencedividers', 'qtype_pmatch');
         $mform->setDefault('sentencedividers', $this->get_default_value('sentencedividers', '.?!'));
         $mform->setType('sentencedividers', PARAM_RAW_TRIMMED);
-        $mform->addElement('text', 'converttospace',
-                get_string('converttospace', 'qtype_pmatch'), ['size' => 50]);
+
+        $mform->addElement('text', 'converttospace', get_string('converttospace', 'qtype_pmatch'), ['size' => 50]);
         $mform->addHelpButton('converttospace', 'converttospace', 'qtype_pmatch');
         $mform->setDefault('converttospace', $this->get_default_value('converttospace', ',;:'));
         $mform->setType('converttospace', PARAM_RAW_TRIMMED);
 
-        $mform->addElement('text', 'modelanswer',
-                get_string('modelanswer', 'qtype_pmatch'), ['size' => 50]);
-        $mform->addHelpButton('modelanswer', 'modelanswer', 'qtype_pmatch');
-        $mform->setType('modelanswer', PARAM_RAW_TRIMMED);
+        $mform->addElement('text', 'responsetemplate',
+            get_string('prefillanswertext', 'qtype_pmatch'), ['size' => 50]);
+        $mform->addHelpButton('responsetemplate', 'prefillanswertext', 'qtype_pmatch');
+        $mform->setType('responsetemplate', PARAM_RAW_TRIMMED);
     }
 
-    /**
-     * Get the list of form elements to repeat, one for each answer.
-     * @param object $mform the form being built.
-     * @param string $label the label to use for each option.
-     * @param array $gradeoptions the possible grades for each answer.
-     * @param array $repeatedoptions reference to array of repeated options to fill
-     * @param string $answersoption reference to return the name of $question->options
-     *                       field holding an array of answers
-     * @return array of form fields.
-     */
+    #[\Override]
     protected function get_per_answer_fields($mform, $label, $gradeoptions,
                                                             &$repeatedoptions, &$answersoption) {
         $repeated = [];
@@ -310,6 +392,9 @@ class qtype_pmatch_edit_form extends question_edit_form {
         return $repeated;
     }
 
+    /**
+     * Add the try button to the form.
+     */
     protected function get_try_button() {
         $html = '';
         if (!\qtype_pmatch\testquestion_responses::has_responses($this->question)) {
@@ -324,6 +409,7 @@ class qtype_pmatch_edit_form extends question_edit_form {
 
     /**
      * Gets the rule creation assistant link.
+     *
      * @return string
      */
     protected function get_rc_title() {
@@ -335,6 +421,7 @@ class qtype_pmatch_edit_form extends question_edit_form {
     /**
      * Gets the rule creation assistant content.
      * This could be added as a template at a later stage.
+     *
      * @return string
      */
     protected function get_rc_content() {
@@ -398,9 +485,10 @@ EOT;
         return $html;
     }
 
-    /*
+    /**
      * Adds the rule suggestion fields to the form
-     * @param object $mform
+     *
+     * @param MoodleQuickForm $mform the form being built.
      */
     protected function add_rule_suggestion_fields($mform) {
         $feedback = '';
@@ -423,7 +511,8 @@ EOT;
 
     /**
      * Retrieves suggested answers processes them and appends to the existing question answers.
-     * @param object $fromform form contents
+     *
+     * @param MoodleQuickForm $mform the form being built.
      */
     protected function add_suggested_answers($mform) {
         try {
@@ -432,7 +521,7 @@ EOT;
             $this->suggestedrules = $suggestedrules;
 
             // Formslib.php::repeat_elements checks the submitted form to
-            // establish the number of answer fields required. To accomdate the suggested
+            // establish the number of answer fields required. To accommodate the suggested
             // rules we just added we must override this form parameter with the new
             // number of answers.
             $_POST['noanswers'] = count($this->question->options->answers);
@@ -447,6 +536,12 @@ EOT;
         }
     }
 
+    /**
+     * Prepares the question data for other answer.
+     *
+     * @param stdClass $question The question object to prepare.
+     * @return stdClass The prepared question object.
+     */
     protected function data_preprocessing_other_answer($question) {
         // Special handling of otheranswer.
         if ($this->otheranswer) {
@@ -458,7 +553,7 @@ EOT;
                 $this->context->id,
                 'question',
                 'answerfeedback',
-                !empty($answer->id) ? (int) $answer->id : null,
+                !empty($this->otheranswer->id) ? (int) $this->otheranswer->id : null,
                 $this->fileoptions,
                 $this->otheranswer->feedback
             );
@@ -469,40 +564,26 @@ EOT;
         return $question;
     }
 
+    #[\Override]
     protected function data_preprocessing($question) {
         $question = parent::data_preprocessing($question);
         $question = $this->data_preprocessing_other_answer($question); // Must come first.
         $question = $this->data_preprocessing_answers($question);
 
         $question = $this->data_preprocessing_hints($question);
-        if (isset($question->options)) {
-            $question->usecase = $question->options->usecase;
-            $question->allowsubscript = $question->options->allowsubscript;
-            $question->allowsuperscript = $question->options->allowsuperscript;
-            $question->forcelength = $question->options->forcelength;
-            $question->applydictionarycheck = $question->options->applydictionarycheck;
-            $question->extenddictionary = $question->options->extenddictionary;
-            $question->sentencedividers = $question->options->sentencedividers;
-            $question->converttospace = $question->options->converttospace;
-            $question->modelanswer = $question->options->modelanswer;
-        }
-        if (isset($question->options->synonyms)) {
-            $synonyms = $question->options->synonyms;
-            $question->synonymsdata = [];
-            $key = 0;
-            foreach ($synonyms as $synonym) {
-                $question->synonymsdata[$key]['word'] = $synonym->word;
-                $question->synonymsdata[$key]['synonyms'] = $synonym->synonyms;
-                $key++;
-            }
-        }
-        $this->js_call();
+        form_utils::data_preprocessing_pmatch_options($question);
+        form_utils::initialise_pmatch_form_js();
         return $question;
     }
 
-
+    #[\Override]
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+
+        // Convert smart quotes to straight quotes in the form data before validating.
+        if (isset($data['quotematching']) && !$data['quotematching']) {
+            $data = utils::convert_quote_to_straight_quote($data);
+        }
 
         // Check whether any chars of sentencedividers field exists in converttospace field.
         if (isset($data['sentencedividers'])) {
@@ -516,9 +597,8 @@ EOT;
         foreach ($data['answer'] as $key => $answer) {
             $trimmedanswer = trim($answer);
             if ($trimmedanswer !== '') {
-                $expression = new pmatch_expression($trimmedanswer);
-                if (!$expression->is_valid()) {
-                    $errors["answer[$key]"] = $expression->get_parse_error();
+                if ($message = form_utils::validate_pmatch_expression($trimmedanswer)) {
+                    $errors["answer[$key]"] = $message;
                 }
                 $answercount++;
                 if ($data['fraction'][$key] == 1) {
@@ -549,10 +629,17 @@ EOT;
         }
 
         $errors += $this->place_holder_errors($data['questiontext']['text'],
-                                              $data['allowsubscript'] || $data['allowsuperscript']);
+                                             ($data['allowsubscript'] ?? false) || ($data['allowsuperscript'] ?? false));
         return $errors;
     }
 
+    /**
+     * Validates the question text for placeholder errors.
+     *
+     * @param string $questiontext The question text to validate.
+     * @param bool $usesubsup Whether subscript and superscript are used in the question.
+     * @return array An array of errors found in the question text.
+     */
     protected function place_holder_errors($questiontext, $usesubsup) {
         // Check sizes of answer box within a reasonable range.
         $errors = [];
@@ -575,16 +662,9 @@ EOT;
         return $errors;
     }
 
+    #[\Override]
     public function qtype() {
         return 'pmatch';
-    }
-
-    public function js_call() {
-        global $PAGE;
-        $PAGE->requires->js_call_amd('qtype_pmatch/rulecreator', 'init');
-        $PAGE->requires->string_for_js('rulecreationtoomanyterms', 'qtype_pmatch');
-        $PAGE->requires->string_for_js('rulecreationtoomanyors', 'qtype_pmatch');
-        $PAGE->requires->js_call_amd('qtype_pmatch/tryrule', 'init');
     }
 }
 

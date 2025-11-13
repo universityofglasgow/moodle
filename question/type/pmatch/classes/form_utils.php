@@ -23,10 +23,13 @@
  */
 
 namespace qtype_pmatch;
+use qtype_pmatch\local\spell\qtype_pmatch_spell_checker;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../question.php');
-
+require_once(__DIR__ . '/../pmatchlib.php');
 
 /**
  * Pattern match form utils.
@@ -93,11 +96,11 @@ class form_utils {
     /**
      * Check whether any char of the first string appear in the second string.
      *
-     * @param string $fiststring
+     * @param string $firststring
      * @param string $secondstring
-     * @return string
+     * @return ?string
      */
-    public static function find_char_in_both_strings($firststring, $secondstring) {
+    public static function find_char_in_both_strings($firststring, $secondstring): ?string {
         if (empty($firststring)) {
             return null;
         }
@@ -196,8 +199,10 @@ class form_utils {
         if ($showheader) {
             $mform->addElement('header', 'synonymshdr', get_string('synonym', 'qtype_pmatch'));
         }
+
         $mform->addElement('static', 'synonymsdescription', '',
                 get_string('synonymsheader', 'qtype_pmatch'));
+
         $textboxgroup = [];
         $textboxgroup[] = $mform->createElement('group', $elementname,
                 get_string('synonymsno', 'qtype_pmatch', '{no}'), self::add_synonym($mform));
@@ -219,6 +224,43 @@ class form_utils {
     }
 
     /**
+     * Data_preprocessing implementation for common pmatch options
+     *
+     * @param stdClass $question
+     */
+    public static function data_preprocessing_pmatch_options(stdClass $question): void {
+        if (isset($question->options)) {
+            $question->usecase = $question->options->usecase;
+            $question->quotematching = $question->options->quotematching;
+            $question->allowsubscript = $question->options->allowsubscript;
+            $question->allowsuperscript = $question->options->allowsuperscript;
+            $question->forcelength = $question->options->forcelength;
+            // These options are incompatible, so of sup or sub is set, unset applydictionarycheck before showing the form.
+            if ($question->allowsubscript || $question->allowsuperscript) {
+                $question->applydictionarycheck = qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION;
+            } else {
+                $question->applydictionarycheck = $question->options->applydictionarycheck;
+            }
+            $question->extenddictionary = $question->options->extenddictionary;
+            $question->sentencedividers = $question->options->sentencedividers;
+            $question->converttospace = $question->options->converttospace;
+            $question->modelanswer = $question->options->modelanswer;
+            $question->responsetemplate = $question->options->responsetemplate;
+        }
+
+        if (isset($question->options->synonyms)) {
+            $synonyms = $question->options->synonyms;
+            $question->synonymsdata = [];
+            $key = 0;
+            foreach ($synonyms as $synonym) {
+                $question->synonymsdata[$key]['word'] = $synonym->word;
+                $question->synonymsdata[$key]['synonyms'] = $synonym->synonyms;
+                $key++;
+            }
+        }
+    }
+
+    /**
      * Add symnonym field: word and synonyms.
      *
      * @param \MoodleQuickForm $mquickform
@@ -231,5 +273,30 @@ class form_utils {
         $grouparray[] = $mquickform->createElement('text', 'synonyms',
                 get_string('synonym', 'qtype_pmatch'), ['size' => 50]);
         return $grouparray;
+    }
+
+    /**
+     * Check valid or invalid of expression.
+     *
+     * @param string $expressionstring Inputted expression data. E.g: match(example).
+     * @return string Error message when the expression is invalid or empty string if expression is valid.
+     */
+    public static function validate_pmatch_expression(string $expressionstring): string {
+        $expression = new \pmatch_expression($expressionstring);
+        return $expression->get_parse_error();
+    }
+
+    /**
+     * Initialise the javascript for the pattern match form.
+     */
+    public static function initialise_pmatch_form_js() {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('qtype_pmatch/check_valid_expression', 'init');
+        $PAGE->requires->js_call_amd('qtype_pmatch/rulecreator', 'init');
+        $PAGE->requires->string_for_js('rulecreationtoomanyterms', 'qtype_pmatch');
+        $PAGE->requires->string_for_js('rulecreationtoomanyors', 'qtype_pmatch');
+        $PAGE->requires->js_call_amd('qtype_pmatch/tryrule', 'init');
+        $PAGE->requires->js_call_amd('qtype_pmatch/formchanged', 'init', ['']);
+        $PAGE->requires->js_call_amd('qtype_pmatch/populate_placeholder', 'init', ['']);
     }
 }

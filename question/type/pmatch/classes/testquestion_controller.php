@@ -51,6 +51,12 @@ class testquestion_controller {
     /** @var object The options. */
     protected $options;
 
+    /**
+     * Constructor for the testquestion controller.
+     *
+     * @param object $question The question object.
+     * @param \context $context The context of the question.
+     */
     public function __construct($question, $context) {
         $this->question = $question;
         $this->testresponses = testquestion_responses::create_for_question($question);
@@ -63,6 +69,11 @@ class testquestion_controller {
         $this->responsestable->is_downloading('');
     }
 
+    /**
+     * Handle the display options form.
+     *
+     * @return string options form.
+     */
     public function handle_display_options_form(): string {
         // Handle any options form submission.
         if ($fromform = $this->optionsform->get_data()) {
@@ -75,6 +86,9 @@ class testquestion_controller {
         return $this->optionsform->render();
     }
 
+    /**
+     * Handle the responses table form.
+     */
     public function handle_responses_table_form(): void {
         // Handle any attempts form submission.
         $this->process_response_table_actions($this->options->get_url());
@@ -93,9 +107,10 @@ class testquestion_controller {
 
     /**
      * Process the results of the form.
-     * @return void.
+     * @param \moodle_url $redirecturl the URL.
+     * @return void
      */
-    protected function process_response_table_actions($redirecturl) {
+    protected function process_response_table_actions($redirecturl): void {
         global $OUTPUT;
         if (optional_param('test', 0, PARAM_BOOL) && confirm_sesskey()) {
             if ($responseids = optional_param_array('responseid', [], PARAM_INT)) {
@@ -119,6 +134,11 @@ class testquestion_controller {
         }
     }
 
+    /**
+     * Print the progress bar while grading responses.
+     *
+     * @param array $responseids The response IDs to grade.
+     */
     protected function print_grading_responses_progressbar($responseids) {
         $responses = \qtype_pmatch\testquestion_responses::get_responses_by_ids($responseids);
         $pbar = new \progress_bar('testingquestion', 500, true);

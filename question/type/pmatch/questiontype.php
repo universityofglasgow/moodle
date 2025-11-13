@@ -24,6 +24,8 @@
 
 use qtype_pmatch\testquestion_response;
 use qtype_pmatch\testquestion_responses;
+use qtype_pmatch\local\spell\qtype_pmatch_spell_checker;
+use qtype_pmatch\utils;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -40,6 +42,7 @@ require_once($CFG->dirroot . '/question/type/pmatch/question.php');
  */
 class qtype_pmatch extends question_type {
 
+    #[\Override]
     public function get_extra_question_bank_actions(stdClass $question): array {
         $actions = parent::get_extra_question_bank_actions($question);
 
@@ -53,6 +56,7 @@ class qtype_pmatch extends question_type {
         return $actions;
     }
 
+    #[\Override]
     public function get_question_options($question): bool {
         global $DB;
         parent::get_question_options($question);
@@ -62,28 +66,34 @@ class qtype_pmatch extends question_type {
         return true;
     }
 
+    #[\Override]
     public function extra_question_fields(): array {
         return ['qtype_pmatch', 'usecase', 'allowsubscript', 'allowsuperscript',
-                'forcelength', 'applydictionarycheck', 'extenddictionary', 'sentencedividers', 'converttospace', 'modelanswer'];
+            'forcelength', 'applydictionarycheck', 'extenddictionary', 'sentencedividers', 'converttospace',
+            'modelanswer', 'responsetemplate', 'quotematching'];
     }
 
+    #[\Override]
     public function move_files($questionid, $oldcontextid, $newcontextid) {
         parent::move_files($questionid, $oldcontextid, $newcontextid);
         $this->move_files_in_answers($questionid, $oldcontextid, $newcontextid);
         $this->move_files_in_hints($questionid, $oldcontextid, $newcontextid);
     }
 
+    #[\Override]
     protected function delete_files($questionid, $contextid) {
         parent::delete_files($questionid, $contextid);
         $this->delete_files_in_answers($questionid, $contextid);
         $this->delete_files_in_hints($questionid, $contextid);
     }
 
+    #[\Override]
     public function save_defaults_for_new_questions(stdClass $fromform): void {
         parent::save_defaults_for_new_questions($fromform);
         $this->set_default_value('usecase', $fromform->usecase);
-        $this->set_default_value('allowsubscript', $fromform->allowsubscript);
-        $this->set_default_value('allowsuperscript', $fromform->allowsuperscript);
+        $this->set_default_value('quotematching', $fromform->quotematching);
+        $this->set_default_value('allowsubscript', $fromform->allowsubscript ?? 0);
+        $this->set_default_value('allowsuperscript', $fromform->allowsuperscript ?? 0);
         $this->set_default_value('forcelength', $fromform->forcelength);
         if (isset($fromform->applydictionarycheck)) {
             $this->set_default_value('applydictionarycheck', $fromform->applydictionarycheck);
@@ -92,6 +102,7 @@ class qtype_pmatch extends question_type {
         $this->set_default_value('converttospace', $fromform->converttospace);
     }
 
+    #[\Override]
     public function save_question($question, $fromform): stdClass {
         global $CFG;
 
@@ -101,10 +112,17 @@ class qtype_pmatch extends question_type {
             $fromform->responsesdata = testquestion_responses::get_responses_by_questionid(
                     $previousversionquestionid);
         }
-
+        if (!$fromform->quotematching) {
+            foreach ($fromform as $property => $value) {
+                if (isset($value)) {
+                    $fromform->{$property} = utils::convert_quote_to_straight_quote($value);
+                }
+            }
+        }
         return parent::save_question($question, $fromform);
     }
 
+    #[\Override]
     public function save_question_options($fromform) {
         global $DB;
 
@@ -138,10 +156,24 @@ class qtype_pmatch extends question_type {
         foreach ($oldsynonyms as $oldsynonym) {
             $DB->delete_records('qtype_pmatch_synonyms', ['id' => $oldsynonym->id]);
         }
-
+        // The allowsubscriptselectedvalue/allowsuperscriptselectedvalue can be NULL.
+        // And they only existing when user change the select value of allowsubscript/allowsuperscript
+        // These options are incompatible, so of sup or sub is set, unset applydictionarycheck before saving to the database.
+        if (!empty($fromform->allowsubscriptselectedvalue) || !empty($fromform->allowsuperscriptselectedvalue)) {
+            $fromform->applydictionarycheck = qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION;
+        }
+        // The applydictionarycheckselectedvalue can be NULL.
+        // And it only existing when user change the select value of applydictionarycheck.
+        // These options are incompatible, applydictionarycheckselectedvalue is set.
+        // Unset allowsubscript/allowsuperscript before saving to the database.
+        if (!empty($fromform->applydictionarycheckselectedvalue) &&
+            ($fromform->applydictionarycheckselectedvalue !== qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION)) {
+            $fromform->allowsubscript = $fromform->allowsuperscript = 0;
+        }
         if (!isset($fromform->extenddictionary)) {
             $fromform->extenddictionary = '';
         }
+
         $parentresult = parent::save_question_options($fromform);
 
         if ($parentresult !== null) {
@@ -167,6 +199,11 @@ class qtype_pmatch extends question_type {
         return $savedanswersresult;
     }
 
+    /**
+     * Save the rule matches for the question.
+     *
+     * @param stdClass $question The question object.
+     */
     protected function save_rule_matches($question) {
         // Purge this question from the cache.
         question_bank::notify_question_edited($question->id);
@@ -176,6 +213,12 @@ class qtype_pmatch extends question_type {
         testquestion_responses::grade_responses_and_save_matches($questionobj);
     }
 
+    /**
+     * Save the answers for the question.
+     *
+     * @param stdClass $question The question object.
+     * @return ?stdClass If there is a problem with the answers, this will contain a notice message.
+     */
     protected function save_answers($question): ?stdClass {
         global $DB;
         $oldanswers = $DB->get_records('question_answers',
@@ -216,8 +259,8 @@ class qtype_pmatch extends question_type {
 
             if ($question->fraction[$key] > $maxfraction) {
                 $maxfraction = $question->fraction[$key];
+                $this->save_extra_answer_data($question, $key, $answer->id);
             }
-            $this->save_extra_answer_data($question, $key, $answer->id);
         }
 
         if (isset($question->otherfeedback) && !html_is_blank($question->otherfeedback['text'])) {
@@ -256,9 +299,18 @@ class qtype_pmatch extends question_type {
         }
     }
 
+    /**
+     * Save any extra data associated with an answer.
+     * This function will be used by the pmatchjme question type.
+     *
+     * @param stdClass $question The question object.
+     * @param string $key The key of the answer.
+     * @param int $answerid The id of the answer.
+     */
     public function save_extra_answer_data($question, $key, $answerid) {
     }
 
+    #[\Override]
     public function import_from_xml($data, $question, qformat_xml $format, $extra=null) {
         $question = parent::import_from_xml($data, $question, $format, $extra);
         if (!$question) {
@@ -285,7 +337,7 @@ class qtype_pmatch extends question_type {
     }
 
     /**
-     * Helper method used by {@link import_from_xml()}. Handle the data for test question responses text.
+     * Helper method used by {@see import_from_xml()}. Handle the data for test question responses text.
      *
      * @param qformat_xml $format the importer/exporter object.
      * @param stdClass $question the question.
@@ -317,12 +369,26 @@ class qtype_pmatch extends question_type {
         return $response;
     }
 
+    /**
+     * Import synonyms from XML.
+     *
+     * @param qformat_xml $format the importer/exporter object.
+     * @param stdClass $question the question.
+     * @param array $synonyms the bit of the XML representing synonyms data.
+     */
     public function import_synonyms(qformat_xml $format, stdClass $question, array $synonyms): void {
         foreach ($synonyms as $synonym) {
             $this->import_synonym($format, $question, $synonym);
         }
     }
 
+    /**
+     * Helper method used by {@see import_synonyms()}.
+     *
+     * @param qformat_xml $format the importer/exporter object.
+     * @param stdClass $question the question.
+     * @param array $synonym the bit of the XML representing one synonym.
+     */
     public function import_synonym(qformat_xml $format, stdClass $question, array $synonym): void {
         static $indexno = 0;
         $question->synonymsdata[$indexno]['word'] =
@@ -332,6 +398,7 @@ class qtype_pmatch extends question_type {
         $indexno++;
     }
 
+    #[\Override]
     public function export_to_xml($question, qformat_xml $format, $extra = null): string {
         $output = parent::export_to_xml($question, $format, $extra);
 
@@ -342,7 +409,7 @@ class qtype_pmatch extends question_type {
     }
 
     /**
-     * Helper method used by {@link export_to_xml()}.
+     * Helper method used by {@see export_to_xml()}.
      *
      * @param stdClass $question the question.
      * @param qformat_xml $format the importer/exporter object.
@@ -383,6 +450,13 @@ class qtype_pmatch extends question_type {
         return $output;
     }
 
+    /**
+     * Write XML fragment for synonyms.
+     *
+     * @param array $synonyms The synonyms to write.
+     * @param qformat_xml $format the importer/exporter object.
+     * @return string $output XML fragment.
+     */
     protected function write_synonyms(array $synonyms, qformat_xml $format): string {
         if (empty($synonyms)) {
             return '';
@@ -394,6 +468,13 @@ class qtype_pmatch extends question_type {
         return $output;
     }
 
+    /**
+     * Write XML fragment for one synonym.
+     *
+     * @param stdClass $synonym The synonym object.
+     * @param qformat_xml $format the importer/exporter object.
+     * @return string $output XML fragment.
+     */
     protected function write_synonym(stdClass $synonym, qformat_xml $format): string {
         $output = '';
         $output .= "    <synonym>\n";
@@ -407,6 +488,7 @@ class qtype_pmatch extends question_type {
         return $output;
     }
 
+    #[\Override]
     protected function initialise_question_instance(question_definition $question, $questiondata) {
         parent::initialise_question_instance($question, $questiondata);
 
@@ -418,19 +500,22 @@ class qtype_pmatch extends question_type {
         $question->pmatchoptions->sentencedividers = $questiondata->options->sentencedividers;
         $question->pmatchoptions->converttospace = $questiondata->options->converttospace;
         $question->pmatchoptions->set_synonyms($questiondata->options->synonyms);
-
+        $question->quotematching = $questiondata->options->quotematching;
         $question->allowsubscript = $questiondata->options->allowsubscript;
         $question->allowsuperscript = $questiondata->options->allowsuperscript;
         $question->forcelength = $questiondata->options->forcelength;
         $question->applydictionarycheck = $questiondata->options->applydictionarycheck;
         $question->modelanswer = $questiondata->options->modelanswer;
+        $question->responsetemplate = $questiondata->options->responsetemplate;
         $this->initialise_question_answers($question, $questiondata);
     }
 
+    #[\Override]
     public function get_random_guess_score($questiondata): float {
         return 0;
     }
 
+    #[\Override]
     public function get_possible_responses($questiondata): array {
         $responses = [];
 
@@ -451,6 +536,7 @@ class qtype_pmatch extends question_type {
         return [$questiondata->id => $responses];
     }
 
+    #[\Override]
     public function delete_question($questionid, $contextid): void {
         global $DB;
         $DB->delete_records('qtype_pmatch_synonyms', ['questionid' => $questionid]);
@@ -459,4 +545,5 @@ class qtype_pmatch extends question_type {
 
         parent::delete_question($questionid, $contextid);
     }
+
 }

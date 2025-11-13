@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
-/**
- * Admin settings class for chosing a spell-checker back-end.
- *
- * @package   qtype_pmatch
- * @copyright 2019 The Open University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace qtype_pmatch\admin;
 
 use qtype_pmatch\local\spell\qtype_pmatch_null_spell_checker;
@@ -42,11 +33,7 @@ require_once($CFG->libdir . '/adminlib.php');
  */
 class qtype_pmatch_admin_setting_environment_check extends \admin_setting_heading {
 
-    /**
-     * Returns an HTML string
-     *
-     * @return string Returns an HTML string
-     */
+    #[\Override]
     public function output_html($data, $query = '') {
         $results = [];
 

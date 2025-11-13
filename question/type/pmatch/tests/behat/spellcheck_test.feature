@@ -88,6 +88,26 @@ Feature: Test spelling check of a pmatch question
       | config       | value   | plugin       |
       | spellchecker | enchant | qtype_pmatch |
     When I am on the "English Spell Check pattern match question" "core_question > preview" page logged in as admin
+    And "//textarea[@spellcheck='true' and @lang='en-GB']" "xpath" should be visible
     And I set the field "Answer" to "Bonjour"
     And I press "Save"
     Then I should see "The following words are not in our dictionary: Bonjour. Please correct your spelling."
+
+  Scenario: Spell check disable
+    Given the following "questions" exist:
+      | questioncategory | qtype  | name                                                | template | applydictionarycheck |
+      | Test questions   | pmatch | My first pattern match question without spell check | listen   | -                    |
+    When I am on the "My first pattern match question without spell check" "core_question > preview" page logged in as admin
+    Then "//textarea[@spellcheck='false']" "xpath" should be visible
+    And I should see "testing one wto there fuor"
+    And I set the field "Answer" to "Bonjour"
+    And I press "Save"
+    And I should not see "testing one wto there fuor"
+
+  Scenario: Spell checking disable when use sup-sub.
+    Given I am on the "My first pattern match question" "core_question > edit" page logged in as admin
+    And I expand all fieldsets
+    When I set the field "Allow use of subscript" to "Yes"
+    Then the "Spell checking" "field" should be disabled
+    And the "Add these words to dictionary" "field" should be disabled
+    And I should see "Allowing use of sub- or superscript will disable spellchecking."

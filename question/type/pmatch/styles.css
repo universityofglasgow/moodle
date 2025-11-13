@@ -9,9 +9,9 @@
 }
 
 /* Editing form. Style repeated elements*/
-#page-question-type-pmatch .mform textarea.textareamonospace {
+#page-question-type-pmatch .mform .textareamonospace textarea {
     white-space: pre;
-    font-family: Andale Mono, Monaco, Courier New, DejaVu Sans Mono, monospace;
+    font-family: monospace;
 }
 
 /* Top */
@@ -47,6 +47,14 @@ body#page-question-type-pmatch #region-main #fgroup_id_updatebuttonar {
 }
 [id^='fitem_id_accuracyborder_'] {
     border: none !important; /* stylelint-disable-line declaration-no-important */
+}
+
+body#page-question-type-pmatch div#fgroup_id_supsubels label[for*='allowsubscript'],
+body#page-question-type-combined div[id^=fgroup_id_subqpmatch][id*=supsubels] label[for*='allowsubscript'] {
+    position: absolute;
+    left: -10000px;
+    font-weight: normal;
+    font-size: 1em;
 }
 
 /* Middle */
@@ -125,12 +133,19 @@ body.pagelayout-embedded .que.combined .combined-pmatch-input > a {
     padding: 1px;
     line-height: 1;
 }
+/* Styling the test link when we use sub-sup editor. */
 .combined-pmatch-input > .answerwrap + a {
-    top: 5px;
-    right: 5px;
+    top: -5px;
+    right: -21px;
     padding: 2px 4px;
     border: 1px solid #bbb;
+}
 
+/* Styling the test link when we use plain text field and when user receive feedback. */
+.combined-pmatch-input > input + img + a,
+.combined-pmatch-input > img + a {
+    top: -5px;
+    right: 5px;
 }
 
 #page-question-type-pmatch .rcw input[type=submit] {
@@ -189,7 +204,7 @@ body#page-question-type-pmatch-testquestion .resettable {
     vertical-align: top;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
     #page-question-type-pmatch-testquestion #attemptsform table .section-input,
     #page-question-type-pmatch-testquestion #attemptsform table .section-button {
         display: block;

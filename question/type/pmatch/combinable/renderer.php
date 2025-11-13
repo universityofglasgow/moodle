@@ -24,13 +24,7 @@
  */
 class qtype_pmatch_embedded_renderer extends qtype_combined_text_entry_renderer_base {
 
-    /**
-     * @param question_attempt $qa
-     * @param question_display_options $options
-     * @param qtype_combined_combinable_text_entry $subq
-     * @param integer $placeno
-     * @return string
-     */
+    #[\Override]
     public function subquestion(question_attempt $qa, question_display_options $options, qtype_combined_combinable_base $subq,
             $placeno) {
 
@@ -42,6 +36,29 @@ class qtype_pmatch_embedded_renderer extends qtype_combined_text_entry_renderer_
                     get_string('test', 'qtype_pmatch'), ['title' => get_string('testsubquestionx', 'qtype_pmatch',
                             $subq->get_identifier())]);
         }
-        return html_writer::tag('span', $result . $link, ['class' => 'combined-pmatch-input']);
+
+        /** @var qtype_pmatch_renderer $pmatchrenderer */
+        $pmatchrenderer = $this->page->get_renderer('qtype_pmatch');
+
+        return html_writer::tag('span', $result . $link, ['class' => 'combined-pmatch-input mw-100 pb-2']) .
+            $pmatchrenderer->reset_button($subq->question, $options,
+                $qa->get_qt_field_name($subq->step_data_name('resetbutton')),
+                $qa->get_qt_field_name($subq->step_data_name('answer')));
+    }
+
+    #[\Override]
+    protected function prepare_current_answer(question_display_options $options, ?string $currentanswer,
+            qtype_combined_combinable_base $subq): ?string {
+        $currentanswer = parent::prepare_current_answer($options, $currentanswer, $subq);
+        $currentanswer = $subq->question->modify_current_answer($currentanswer, $options);
+        return $currentanswer;
+    }
+
+    #[\Override]
+    protected function get_extra_input_attributes(question_graded_automatically $question): array {
+        $extra = parent::get_extra_input_attributes($question);
+        /** @var qtype_pmatch_renderer $pmatchrenderer */
+        $pmatchrenderer = $this->page->get_renderer('qtype_pmatch');
+        return array_merge($extra, $pmatchrenderer->display_spellcheck($question));
     }
 }

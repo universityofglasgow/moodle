@@ -37,6 +37,9 @@ use qtype_pmatch\local\spell\qtype_pmatch_spell_checker;
  */
 class behat_qtype_pmatch extends behat_base {
 
+    /**
+     * @var string File path to default responses csv file.
+     */
     public static $responsesfilepath = "fixtures/myfirstquestion_responses.csv";
 
     /**
@@ -98,7 +101,7 @@ class behat_qtype_pmatch extends behat_base {
      * @param string|null $pathtoresponses responses file to load. Defaults to self::$responsesfilepath.
      * @return array [$responses, $problems].
      */
-    protected function load_responses(qtype_pmatch_question $question, string $pathtoresponses = null): array {
+    protected function load_responses(qtype_pmatch_question $question, ?string $pathtoresponses = null): array {
         $pathtoresponses = $pathtoresponses ?? self::$responsesfilepath;
         $responsesfile = dirname(__FILE__) . '/../' . $pathtoresponses;
 
@@ -125,7 +128,7 @@ class behat_qtype_pmatch extends behat_base {
      * @param string $questionname the question name to use.
      * @param string|null $pathtoresponses the file of responses to load.
      */
-    protected function intialise_default_responses(string $questionname, string $pathtoresponses = null): void {
+    protected function intialise_default_responses(string $questionname, ?string $pathtoresponses = null): void {
         $question = $this->get_question_by_name($questionname);
 
         [$responses] = $this->load_responses($question, $pathtoresponses);
@@ -137,9 +140,12 @@ class behat_qtype_pmatch extends behat_base {
     /**
      * Check that the given Spell checking library already installed.
      *
+     * @param string $enginename the name of the spell checking engine to check.
+     * @throws \Moodle\BehatExtension\Exception\SkippedException if the spell checking library is not installed.
+     *
      * @Given /^I check the "(?P<spell_check_engine_string>(?:[^"]|\\")*)" spell checking library already installed$/
      */
-    public function is_spell_checking_library_install($enginename) {
+    public function is_spell_checking_library_install($enginename): void {
         if ($enginename == 'pspell') {
             if (!function_exists('pspell_new')) {
                 throw new \Moodle\BehatExtension\Exception\SkippedException();
@@ -164,18 +170,5 @@ class behat_qtype_pmatch extends behat_base {
         $availablelangs = qtype_pmatch_spell_checker::get_available_languages();
         $matched = qtype_pmatch_spell_checker::get_default_spell_check_dictionary($defaultlanguage, $availablelangs);
         set_config('spellcheck_languages', $matched, 'qtype_pmatch');
-    }
-
-    /**
-     * Check that the given Question type already installed.
-     *
-     * @Given /^I check the "(?P<question_type_string>(?:[^"]|\\")*)" question type already installed$/
-     */
-    public function check_question_type_installed($questiontype) {
-        $qtypes = question_bank::get_creatable_qtypes();
-        if (!array_key_exists($questiontype, $qtypes)) {
-            // Question type not available.
-            throw new \Moodle\BehatExtension\Exception\SkippedException();
-        }
     }
 }

@@ -43,7 +43,7 @@ define(['jquery'], function($) {
                 // Hide the 'show/hide rule creator assistant' unless there is no existing rule.
                 // It would be much better to not show this element unless js is enabled, but
                 // using a static element means we cannot add classes to enable this.
-                if ($(this).val() !== '') {
+                if ($(this).val() !== '' && $(this).val() !== 'match ()') {
                     $(this).parent().parent().next().addClass('rc-hidden');
                 } else {
                     $(this).parent().parent().next().addClass('rcw');
@@ -317,7 +317,7 @@ define(['jquery'], function($) {
             const ref = 'id_' + id;
             return this.store[ref].length;
         },
-
+        /* eslint-disable complexity, max-depth */
         getStoredResult: function(id) {
             const ref = 'id_' + id;
             let rule = '';
@@ -499,7 +499,7 @@ define(['jquery'], function($) {
             }
             return rule.trim();
         },
-
+        /* eslint-enable complexity, max-depth */
         displayResult: function(id) {
             const result = this.getStoredResult(id);
             $('#rc_result_' + id).text(result);

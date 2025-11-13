@@ -15,106 +15,197 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the hooks necessary to make the pmatch question type combinable
+ * Combinable pattern match question type.
  *
- * @package   qtype_pmatch
+ * This file defines the combinable pattern match question type, which is used
+ * as a sub-question in a combined question.
+ *
+ * @package    qtype_pmatch
  * @copyright  2013 The Open University
- * @author     Jamie Pratt <me@jamiep.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 use qtype_pmatch\local\spell\qtype_pmatch_spell_checker;
 
 defined('MOODLE_INTERNAL') || die();
+define('QTYPE_PMATCH_DEFAULT_PLACEHOLDER_SIZE', '__6__');
+
 use qtype_pmatch\form_utils;
+use qtype_pmatch\utils;
 
 require_once($CFG->dirroot.'/question/type/pmatch/pmatchlib.php');
 
+/**
+ * Defines the hooks necessary to make the pmatch question type combinable
+ *
+ * @package    qtype_pmatch
+ * @copyright  2013 The Open University
+ * @author     Jamie Pratt <me@jamiep.org>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class qtype_combined_combinable_type_pmatch extends qtype_combined_combinable_type_base {
 
+    /**
+     * The name of the question type.
+     * @var string
+     */
     protected $identifier = 'pmatch';
 
+    #[\Override]
     protected function extra_question_properties() {
         return ['forcelength' => '0'];
     }
 
+    #[\Override]
     protected function extra_answer_properties() {
         return ['fraction' => '1', 'feedback' => ['text' => '', 'format' => FORMAT_PLAIN]];
     }
 
+    #[\Override]
     public function subq_form_fragment_question_option_fields() {
-        return ['allowsubscript' => null,
-                     'allowsuperscript' => null,
-                     'usecase' => null,
-                     'applydictionarycheck' => null,
-                     'extenddictionary' => '',
-                     'sentencedividers' => '.?!',
-                     'converttospace' => ',;:',
-                     'modelanswer' => '',
-                     'synonymsdata' => []];
+        return [
+            'allowsubscript' => null,
+            'allowsuperscript' => null,
+            'usecase' => null,
+            'quotematching' => null,
+            'applydictionarycheck' => null,
+            'extenddictionary' => '',
+            'sentencedividers' => '.?!',
+            'converttospace' => ',;:',
+            'modelanswer' => '',
+            'responsetemplate' => '',
+            'synonymsdata' => [],
+        ];
+    }
+
+    #[\Override]
+    protected function third_param_for_default_question_text() {
+        return QTYPE_PMATCH_DEFAULT_PLACEHOLDER_SIZE;
     }
 }
 
-
+/**
+ * The combinable pattern match question type.
+ * This class defines the form fragment for the pattern match question type
+ * when it is used as a sub-question in a combined question.
+ *
+ * @package    qtype_pmatch
+ * @copyright  2013 The Open University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ **/
 class qtype_combined_combinable_pmatch extends qtype_combined_combinable_text_entry {
 
-    /**
-     * @param moodleform      $combinedform
-     * @param MoodleQuickForm $mform
-     * @param                 $repeatenabled
-     * @return mixed
-     */
+    #[\Override]
     public function add_form_fragment(moodleform $combinedform, MoodleQuickForm $mform, $repeatenabled) {
-        $susubels = [];
-        $susubels[] = $mform->createElement('selectyesno', $this->form_field_name('allowsubscript'),
-                                            get_string('allowsubscript', 'qtype_pmatch'));
-        $susubels[] = $mform->createElement('selectyesno', $this->form_field_name('allowsuperscript'),
-                                            get_string('allowsuperscript', 'qtype_pmatch'));
-        $mform->addGroup($susubels, $this->form_field_name('susubels'), get_string('allowsubscript', 'qtype_pmatch'),
-                                                                    '',
-                                                                    false);
-        $menu = [
+        $mform->addElement('select', $this->form_field_name('usecase'), get_string('casesensitive', 'qtype_pmatch'), [
             get_string('caseno', 'qtype_pmatch'),
-            get_string('caseyes', 'qtype_pmatch')
-        ];
-        $casedictels = [];
-        $casedictels[] = $mform->createElement('select', $this->form_field_name('usecase'),
-                                               get_string('casesensitive', 'qtype_pmatch'), $menu);
-        list ($options, $disable) = qtype_pmatch_spell_checker::get_spell_checker_language_options($this->questionrec);
+            get_string('caseyes', 'qtype_pmatch'),
+        ]);
+
+        $mform->addElement('select', $this->form_field_name('quotematching'),
+            get_string('smart_straight_quote_matching', 'qtype_pmatch'), [
+                get_string('smart_straight_quote_matching_relaxed', 'qtype_pmatch'),
+                get_string('smart_straight_quote_matching_strict', 'qtype_pmatch'),
+            ]);
+        $mform->addHelpButton($this->form_field_name('quotematching'), 'smart_straight_quote_matching', 'qtype_pmatch');
+
+        $supsubels = [];
+        $supsubels[] = $mform->createElement('selectyesno', $this->form_field_name('allowsubscript'),
+                get_string('allowsubscript', 'qtype_pmatch'));
+        $supsubels[] = $mform->createElement('selectyesno', $this->form_field_name('allowsuperscript'),
+                get_string('allowsuperscript', 'qtype_pmatch'));
+        $mform->addGroup($supsubels, $this->form_field_name('supsubels'),
+                get_string('allowsubscript', 'qtype_pmatch'), '', false);
+
+        // Add hidden sup field so that we can retain the value when the field is disabled.
+        $mform->addElement('hidden', $this->form_field_name('allowsuperscriptselectedvalue'), '');
+        $mform->setType($this->form_field_name('allowsuperscriptselectedvalue'), PARAM_BOOL);
+        // Add hidden sub field so that we can retain the value when the field is disabled.
+        $mform->addElement('hidden', $this->form_field_name('allowsubscriptselectedvalue'), '');
+        $mform->setType($this->form_field_name('allowsubscriptselectedvalue'), PARAM_BOOL);
+
+        $mform->addElement('static', 'spellcheckdescription', '', get_string('spellcheckdisabled', 'qtype_pmatch'));
+
+        [$options, $disable] = qtype_pmatch_spell_checker::get_spell_checker_language_options($this->questionrec);
         if ($disable) {
-            $casedictels[] = $mform->createElement('select', $this->form_field_name('applydictionarycheck'),
+            $mform->addElement('select', $this->form_field_name('applydictionarycheck'),
                     get_string('applydictionarycheck', 'qtype_pmatch'), $options, ['disabled' => 'disabled']);
         } else {
-            $casedictels[] = $mform->createElement('select', $this->form_field_name('applydictionarycheck'),
+            $mform->addElement('select', $this->form_field_name('applydictionarycheck'),
                     get_string('applydictionarycheck', 'qtype_pmatch'), $options);
-            $mform->setDefault('applydictionarycheck', get_string('iso6391', 'langconfig'));
+            $mform->setDefault($this->form_field_name('applydictionarycheck'), get_string('iso6391', 'langconfig'));
+            $mform->addElement('hidden', $this->form_field_name('applydictionarycheckselectedvalue'), '');
+            $mform->setType($this->form_field_name('applydictionarycheckselectedvalue'), PARAM_ALPHAEXT);
+
+            $mform->disabledIf($this->form_field_name('applydictionarycheck'), $this->form_field_name('allowsubscript'),
+                'eq', true);
+            $mform->disabledIf($this->form_field_name('applydictionarycheck'), $this->form_field_name('allowsuperscript'),
+                'eq', true);
+            $mform->disabledIf($this->form_field_name('allowsuperscript'),
+                $this->form_field_name('applydictionarycheck'), 'neq', qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
+            $mform->disabledIf($this->form_field_name('allowsubscript'),
+                $this->form_field_name('applydictionarycheck'), 'neq', qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
         }
-        $mform->addGroup($casedictels, $this->form_field_name('casedictels'),
-                                                                        get_string('casesensitive', 'qtype_pmatch'), '', false);
 
         $mform->addElement('textarea', $this->form_field_name('extenddictionary'), get_string('extenddictionary', 'qtype_pmatch'),
             ['rows' => '3', 'cols' => '57']);
         $mform->disabledIf($this->form_field_name('extenddictionary'),
                 $this->form_field_name('applydictionarycheck'),
                 'eq', qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION);
+        $mform->disabledIf($this->form_field_name('extenddictionary'), $this->form_field_name('allowsubscript'),
+            'eq', true);
+        $mform->disabledIf($this->form_field_name('extenddictionary'), $this->form_field_name('allowsuperscript'),
+            'eq', true);
 
         $mform->addElement('text', $this->form_field_name('sentencedividers'), get_string('sentencedividers', 'qtype_pmatch'));
         $mform->setDefault($this->form_field_name('sentencedividers'), '.?!');
+        $mform->setType($this->form_field_name('sentencedividers'), PARAM_RAW_TRIMMED);
+
         $mform->addElement('text', $this->form_field_name('converttospace'), get_string('converttospace', 'qtype_pmatch'));
         $mform->setDefault($this->form_field_name('converttospace'), ',;:');
-        $mform->addElement('text', $this->form_field_name('modelanswer'), get_string('modelanswer', 'qtype_pmatch'));
+        $mform->setType($this->form_field_name('converttospace'), PARAM_RAW_TRIMMED);
+
+        $mform->addElement('text', $this->form_field_name('responsetemplate'), get_string('prefillanswertext', 'qtype_pmatch'));
+        $mform->addHelpButton($this->form_field_name('responsetemplate'), 'prefillanswertext', 'qtype_pmatch');
+        $mform->setType($this->form_field_name('responsetemplate'), PARAM_RAW_TRIMMED);
+
         form_utils::add_synonyms($combinedform, $mform, $this->questionrec, false,
                 $this->form_field_name('synonymsdata'), 1, 0);
-
-        $mform->addElement('textarea', $this->form_field_name('answer[0]'), get_string('answer', 'question'),
-                                                             ['rows' => '6', 'cols' => '57', 'class' => 'textareamonospace']);
-        $mform->setType($this->form_field_name('answer'), PARAM_RAW_TRIMMED);
-        $mform->setType($this->form_field_name('sentencedividers'), PARAM_RAW_TRIMMED);
-        $mform->setType($this->form_field_name('converttospace'), PARAM_RAW_TRIMMED);
-        $mform->setType($this->form_field_name('modelanswer'), PARAM_RAW_TRIMMED);
         $mform->setType($this->form_field_name('synonymsdata'), PARAM_RAW_TRIMMED);
+
+        $modalanswer = [];
+        $modalanswer[] = $mform->createElement('text', $this->form_field_name('modelanswer'), null);
+        $modalanswer[] = $mform->createElement('static', 'appropriately-size-placeholder', '',
+            get_string('modelanswer_appropriateinputsize', 'qtype_pmatch'));
+        $htmlplaceholder = html_writer::empty_tag('input', [
+            'type' => 'text',
+            'readonly' => 'readonly',
+            'size' => '22',
+            'name' => $this->form_field_name('placeholder'),
+            'id' => $this->form_field_name('placeholder'),
+            'value' => QTYPE_PMATCH_DEFAULT_PLACEHOLDER_SIZE,
+            'onfocus' => 'this.select()',
+            'class' => 'form-control-plaintext d-inline-block w-auto me-3',
+        ]);
+        $modalanswer[] = $mform->createElement('static', 'possible-answer-placeholder',
+            get_string('modelanswer_possibleanswerplaceholders', 'qtype_pmatch'), $htmlplaceholder);
+        $mform->addGroup($modalanswer, $this->form_field_name('modelanswer'),
+            get_string('modelanswer', 'qtype_pmatch'), '', false);
+        $mform->setType($this->form_field_name('modelanswer'), PARAM_RAW_TRIMMED);
+        $mform->addRule($this->form_field_name('modelanswer'), get_string('modelanswermissing', 'qtype_pmatch'),
+            'required');
+        $mform->addHelpButton($this->form_field_name('modelanswer'), 'modelanswer', 'qtype_pmatch');
+
+        $mform->addElement('textarea', $this->form_field_name('answer[0]'), get_string('answermustmatch', 'qtype_pmatch'),
+                                                             ['rows' => '6', 'cols' => '57', 'class' => 'textareamonospace']);
+        $mform->addHelpButton($this->form_field_name('answer[0]'), 'correctanswers', 'qtype_pmatch');
+        $mform->setDefault($this->form_field_name('answer'), [0 => 'match ()']);
+        $mform->setType($this->form_field_name('answer'), PARAM_RAW_TRIMMED);
+
+        $this->js_call();
     }
 
+    #[\Override]
     public function data_to_form($context, $fileoptions) {
         $answers = ['answer' => []];
         if ($this->questionrec !== null) {
@@ -123,7 +214,10 @@ class qtype_combined_combinable_pmatch extends qtype_combined_combinable_text_en
         }
 
         $data = parent::data_to_form($context, $fileoptions) + $answers;
-
+        // These options are incompatible, so of sup or sub is set, unset applydictionarycheck before showing the form.
+        if (!empty($data['allowsubscript']) || !empty($data['allowsuperscript'])) {
+            $data['applydictionarycheck'] = qtype_pmatch_spell_checker::DO_NOT_CHECK_OPTION;
+        }
         if (isset($this->questionrec)) {
             // Convert synonyms from record into synonymsdata for form fields.
             $data['synonymsdata'] = array_values($this->questionrec->options->synonyms);
@@ -135,15 +229,18 @@ class qtype_combined_combinable_pmatch extends qtype_combined_combinable_text_en
         return $data;
     }
 
-
+    #[\Override]
     public function validate() {
         $errors = [];
 
+        // Convert smart quotes to straight quotes in the form data before validating.
+        if (isset($this->formdata->quotematching) && !$this->formdata->quotematching) {
+            $this->formdata = utils::convert_quote_to_straight_quote($this->formdata);
+        }
         $trimmedanswer = $this->formdata->answer[0];
         if ('' !== $trimmedanswer) {
-            $expression = new pmatch_expression($trimmedanswer);
-            if (!$expression->is_valid()) {
-                $errors[$this->form_field_name('answer[0]')] = $expression->get_parse_error();
+            if ($message = form_utils::validate_pmatch_expression($trimmedanswer)) {
+                $errors[$this->form_field_name('answer[0]')] = $message;
             }
         } else {
             $errors[$this->form_field_name('answer[0]')] = get_string('err_providepmatchexpression', 'qtype_pmatch');
@@ -173,6 +270,7 @@ class qtype_combined_combinable_pmatch extends qtype_combined_combinable_text_en
         return $errors;
     }
 
+    #[\Override]
     public function get_sup_sub_editor_option() {
         if ($this->question->allowsubscript && $this->question->allowsuperscript) {
             return 'both';
@@ -185,7 +283,21 @@ class qtype_combined_combinable_pmatch extends qtype_combined_combinable_text_en
         }
     }
 
+    #[\Override]
     public function has_submitted_data() {
         return $this->submitted_data_array_not_empty('answer') || parent::has_submitted_data();
+    }
+
+    /**
+     * Add the JavaScript required for the pattern match question type.
+     *
+     * This method is called to include the necessary JavaScript files and initialize
+     * the JavaScript modules for the pattern match question type.
+     */
+    public function js_call(): void {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('qtype_pmatch/check_valid_expression', 'init');
+        $PAGE->requires->js_call_amd('qtype_pmatch/formchanged', 'init', [$this->form_field_name_prefix()]);
+        $PAGE->requires->js_call_amd('qtype_pmatch/populate_placeholder', 'init' , [$this->form_field_name_prefix()]);
     }
 }

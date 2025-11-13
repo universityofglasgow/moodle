@@ -36,20 +36,38 @@ require_once($CFG->dirroot . '/question/type/pmatch/pmatchlib.php');
  * @covers \pmatch_options
  * @covers \pmatch_parsed_string
  */
-class pmatch_test extends \basic_testcase {
+final class pmatch_test extends \basic_testcase {
 
-    protected function match(string $string, string $expression, pmatch_options $options = null): bool {
+    /**
+     * Match expression matches a string.
+     *
+     * @param string $string The string to match against the expression.
+     * @param string $expression The pmatch expression to parse.
+     * @param pmatch_options|null $options Options for parsing the expression.
+     * @return bool True if the string matches the expression, false otherwise.
+     */
+    protected function match(string $string, string $expression, ?pmatch_options $options = null): bool {
         $string = new pmatch_parsed_string($string, $options);
         $expression = new pmatch_expression($expression, $options);
         $this->assertEquals('', $expression->get_parse_error());
         return $expression->matches($string);
     }
 
-    protected function error_message(string $expression, pmatch_options $options = null): string {
+    /**
+     * Returns an error message for a pmatch expression.
+     *
+     * @param string $expression The pmatch expression to parse.
+     * @param pmatch_options|null $options Options for parsing the expression.
+     * @return string The error message if there is a parse error, otherwise an empty string.
+     */
+    protected function error_message(string $expression, ?pmatch_options $options = null): string {
         $expression = new pmatch_expression($expression, $options);
         return $expression->get_parse_error();
     }
 
+    /**
+     * Test that the sentence divider is stripped from the end of a string.
+     */
     public function test_strip_sentence_divider(): void {
         $options = new pmatch_options();
 
@@ -66,7 +84,7 @@ class pmatch_test extends \basic_testcase {
      *
      * @return array
      */
-    public function pmatch_error_provider(): array {
+    public static function pmatch_error_provider(): array {
         return [
                 // No closing bracket.
                 ['match_mow([tom maud]|[sid jane]', get_string('ie_missingclosingbracket',
@@ -74,6 +92,12 @@ class pmatch_test extends \basic_testcase {
                 // No contents.
                 ['match_mow()', get_string('ie_unrecognisedsubcontents',
                         'qtype_pmatch', 'match_mow()')],
+                // Short contents and wrong format.
+                ['match_any([tom])', get_string('ie_unrecognisedsubcontents',
+                    'qtype_pmatch', 'match_any([tom])')],
+                // Long contents and wrong format.
+                ['match_any([tom maud])', get_string('ie_unrecognisedsubcontents',
+                    'qtype_pmatch', 'match_any([tom ma...')],
                 // Ends in an or character.
                 ['match_mow([tom maud]|)', get_string('ie_lastsubcontenttypeorcharacter',
                         'qtype_pmatch', '[tom maud]|')],
@@ -103,13 +127,14 @@ class pmatch_test extends \basic_testcase {
     }
 
     /**
-     * Test for messege error
+     * Test for error messages in pmatch expressions.
      *
      * @dataProvider pmatch_error_provider
-     * @param $expression
-     * @param $actual
+     * @param string $expression The pmatch expression to test.
+     * @param string $actual The expected error message.
+     * @return void
      */
-    public function test_pmatch_error($expression, $actual) {
+    public function test_pmatch_error($expression, $actual): void {
         $this->assertEquals($this->error_message($expression), $actual);
     }
 
@@ -118,7 +143,7 @@ class pmatch_test extends \basic_testcase {
      *
      * @return array
      */
-    public function pmatch_matching_provider(): array {
+    public static function pmatch_matching_provider(): array {
         $options = new pmatch_options();
         $options->sentencedividers = '|$';
 
@@ -480,11 +505,55 @@ EOF;
      *
      * @param string $string
      * @param string $expression
-     * @param bool|null $shouldmatch is method assert.
+     * @param bool $shouldmatch is method assert.
      * @param pmatch_options|null $options is options for method assert.
      */
     public function test_pmatch_matching(string $string, string $expression,
-            ?bool $shouldmatch, pmatch_options $options = null): void {
+            bool $shouldmatch, ?pmatch_options $options = null): void {
+        if ($shouldmatch) {
+            $this->assertTrue($this->match($string, $expression, $options));
+        } else {
+            $this->assertFalse($this->match($string, $expression, $options));
+        }
+    }
+
+    /**
+     * Data provider function for test_pmatch_matching_coverttospace.
+     *
+     * @return array test cases.
+     */
+    public static function pmatch_matching_coverttospace_provider(): array {
+        // These tests run with $options->converttospace = '"';.
+        return [
+            ['X', 'match(X)', true],
+            ['X"', 'match(X)', true],
+            ['"X', 'match(X)', true],
+            [' "X', 'match(X)', true],
+            ['X#', 'match(X)', false],
+            ['#X', 'match(X)', false],
+            ['X Y"', 'match(X Y)', true],
+            ['X"Y', 'match(X Y)', true],
+            ['X "Y', 'match(X Y)', true],
+            ['X" Y', 'match(X Y)', true],
+            ['X " Y', 'match(X Y)', true],
+            ['"X Y', 'match(X Y)', true],
+            ['X#Y', 'match(X)', false],
+        ];
+    }
+
+    /**
+     * For Test pmatch matching with coverttospace
+     *
+     * @dataProvider pmatch_matching_coverttospace_provider
+     *
+     * @param string $string a string to match.
+     * @param string $expression the pattern to match against.
+     * @param bool $shouldmatch whether this string should match this pattern.
+     */
+    public function test_pmatch_matching_coverttospace(string $string, string $expression, bool $shouldmatch): void {
+        $options = new pmatch_options();
+        $options->converttospace = '"';
+
         if ($shouldmatch) {
             $this->assertTrue($this->match($string, $expression, $options));
         } else {
@@ -497,7 +566,7 @@ EOF;
      *
      * @return array
      */
-    public function pmatch_formatting_provider(): array {
+    public static function pmatch_formatting_provider(): array {
         return [
                 ['match_all (
     match_any (
@@ -579,7 +648,12 @@ EOF;
         $this->assertEquals($expected, $expression->get_formatted_expression_string());
     }
 
-    public function pmatch_number_regex_testcases(): array {
+    /**
+     * Data provider function for test_pmatch_number_regex.
+     *
+     * @return array
+     */
+    public static function pmatch_number_regex_testcases(): array {
         return [
             ['1.981', 1],
             ['-1.981', 1],
@@ -602,16 +676,24 @@ EOF;
     }
 
     /**
+     * Test that the pmatch regex for numbers.
+     *
      * @dataProvider pmatch_number_regex_testcases
      *
      * @param string $string
-     * @param array $expectedmatches
+     * @param int $expectedmatches
+     * @return void
      */
     public function test_pmatch_number_regex(string $string, int $expectedmatches): void {
         $this->assertSame($expectedmatches, preg_match('!'.PMATCH_NUMBER.'$!A', $string));
     }
 
-    public function pmatch_number_matching_cases(): array {
+    /**
+     * Data provider function for test_pmatch_number_matching.
+     *
+     * @return array
+     */
+    public static function pmatch_number_matching_cases(): array {
         return [
             ['2', 'match(2)', true],
             ['1', 'match(1)', true],
@@ -670,9 +752,15 @@ EOF;
     }
 
     /**
+     * Test that the pmatch matching works with numbers.
+     *
      * @dataProvider pmatch_number_matching_cases
+     * @param string $string a string to match.
+     * @param string $expression the pattern to match against.
+     * @param bool $shouldmatch whether this string should match this pattern.
+     * @return void
      */
-    public function test_pmatch_number_matching($string, $expression, $shouldmatch) {
+    public function test_pmatch_number_matching($string, $expression, $shouldmatch): void {
         if ($shouldmatch) {
             $this->assertTrue($this->match($string, $expression));
         } else {
@@ -680,7 +768,10 @@ EOF;
         }
     }
 
-    public function test_pmatch_unicode_matching() {
+    /**
+     * Test that the pmatch matching works with unicode characters.
+     */
+    public function test_pmatch_unicode_matching(): void {
         // Unicode normalisation means that the same characters with two different
         // unicode representations should match.
         // "\xC3\x85" = 'LATIN CAPITAL LETTER A WITH RING ABOVE' (U+00C5)
@@ -688,7 +779,10 @@ EOF;
         $this->assertTrue($this->match("A\xCC\x8A", "match(\xC3\x85)"));
     }
 
-    public function test_pmatch_matching_countries() {
+    /**
+     * Test that the pmatch matching works with countries.
+     */
+    public function test_pmatch_matching_countries(): void {
         // This is a minimal failure in that doing any one of these things fixes it:
         // - Removing the set_synonyms call.
         // - Removing A from both the string and the pattern.
