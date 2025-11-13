@@ -4,6 +4,11 @@ moodle-local_sandbox
 Changes
 -------
 
+### v4.5-r3
+
+* 2025-10-15 - Make codechecker happy again
+* 2025-10-15 - Tests: Switch Github actions workflows to reusable workflows by Moodle an Hochschulen e.V.
+
 ### v4.5-r2
 
 * 2025-05-29 - Feature: Add admin setting to control if the course fullname should be reset as well or not, resolves #6
