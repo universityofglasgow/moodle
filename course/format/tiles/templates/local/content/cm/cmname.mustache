@@ -95,6 +95,11 @@
                             {{^editing}}
                                 {{! If user is not editing, we use this for non subtiles as we need to add data-action for modal launch}}
                                 <a id="cm-link-{{id}}" href="{{url}}"{{#modalType}} data-action="launch-tiles-cm-modal"{{/modalType}} class="aalink stretched-link"{{#onclick}} onclick="{{onclick}}"{{/onclick}}><span class="instancename">{{{cmtitle}}}</span></a>
+                        {{#modalDescriptionHTML}}
+                        {{! If this is a modal capable course module, we may include the description HTML here, hidden }}
+                        {{! This enables JS to grab it and add it to the modal }}
+                            <div class="modal-description" style="display: none;">{{{modalDescriptionHTML}}}</div>
+                        {{/modalDescriptionHTML}}
                             {{/editing}}
                         {{/activityname}}
                         {{#activitybadge}}

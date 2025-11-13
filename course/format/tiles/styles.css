@@ -495,8 +495,7 @@
     font-size: 55px;
 }
 .format-tiles:not(.editing) .course-content .tilestyle-1 .tile-icon .icon,
-.format-tiles:not(.editing) .course-content .tilestyle-2 .tile-icon .icon,
-.format-tiles .sectionbutton {
+.format-tiles:not(.editing) .course-content .tilestyle-2 .tile-icon .icon {
     color: #8c8c8c;
     opacity: 1;
 }
@@ -614,6 +613,7 @@
     display: inline-block;
     border-radius: 50%;
     border: none;
+    color: var(--bs-btn-color);
 }
 .format-tiles .expand-section,
 .format-tiles .collapse-section {
@@ -1825,12 +1825,6 @@ body.jsenabled.format-tiles #collapsiblesec0 {
 .format-tiles a#page-loading-icon {
     color: #0c0c0c;
     text-decoration: none;
-}
-
-#page-admin-setting-formatsettingtiles #docsbuttons {
-    float: right;
-    transform: translateY(-50px);
-    height: 0;
 }
 .format-tiles .course-content li.section .summary ul {
     list-style: disc;

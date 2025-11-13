@@ -108,7 +108,7 @@ define(["jquery", "core/modal_factory", "core/config", "core/templates", "core/n
             }).done(function (modal) {
                 modal.setLarge();
                 modal.show();
-                modal.setScrollable(false);
+                modal.setScrollable(true);
                 const modalRoot = $(modal.root);
                 const modalId = "embed_mod_modal_" + cmId;
                 // If modal exists from previous launch, remove.

@@ -32,7 +32,7 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
     function ($, Notification, str, Templates) {
         "use strict";
         return {
-            init: function (pageType, courseDefaultIcon, courseId, allowphototiles, documentationUrl, activitydocsurl) {
+            init: function (pageType, courseDefaultIcon, courseId, allowphototiles, activitydocsurl) {
                 $(document).ready(function () {
                     const useSubTilesCheckBox = $("input#id_courseusesubtiles");
                     const useSubTilesSecZeroCheckBox = $("input#id_usesubtilesseczero");
@@ -155,14 +155,14 @@ define(["jquery", "core/notification", "core/str", "core/templates"],
                             // We can hide the original select box now as users will use the button instead.
                             selectBox.hide();
                             require(["format_tiles/edit_icon_picker"], function(iconPicker) {
-                                iconPicker.init(courseId, pageType, false, documentationUrl);
+                                iconPicker.init(courseId, pageType, false);
                             });
                         });
                     }
 
-                    // Add a row to the page with link to plugin documentation.
+                    // Add a row to the page with link to plugin developer string.
                     Templates
-                        .render("format_tiles/edit_form_helptext", {documentationurl: documentationUrl + 'teachers'})
+                        .render("format_tiles/edit_form_helptext")
                         .done(function (html) {
                             $(html).appendTo($("#id_courseformathdr .fcontainer"));
                         });

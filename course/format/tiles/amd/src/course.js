@@ -393,7 +393,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
          * @param {number} sectionNumber to expand
          */
         var expandSection = function (contentArea, sectionNumber) {
-            const tile = $("#tile-" + sectionNumber);
+            const tile = document.getElementById('tile-' + sectionNumber);
 
             /**
              * Need to adjust the height of the overlay to ensure it covers full height of expanded section.
@@ -418,17 +418,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             var expandAndScroll = function () {
                 // Scroll to the top of content bearing section
                 // We have to wait until possible reOrg and slide down totally before calling this, else co-ords are wrong.
-                var scrollTo = tile.offset().top;
-                const MIN_SCROLL = 10;
-                if (Math.abs(scrollTo) > MIN_SCROLL) {
-                    if (scrollTo === $(window).scrollTop) {
-                        // Scroll by at least one pixel otherwise z-index on selected tile is not changed.
-                        // Until mouse moves.
-                        scrollTo += 1;
-                    }
-                    document.getElementById('page').scrollBy({top: scrollTo, left: 0, behavior: 'smooth'});
-                }
-
+                tile.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 // For users with screen readers, move focus to the first item within the tile.
                 // Short timeout for this to allow for animation to finish.
                 setTimeout(() => {
@@ -465,7 +455,7 @@ define(["jquery", "core/templates", "core/ajax", "format_tiles/browser_storage",
             contentArea.addClass(ClassNames.STATE_VISIBLE);
             setOverlayHeight();
             overlay.fadeIn(300);
-            tile.addClass(ClassNames.SELECTED);
+            tile.classList.add(ClassNames.SELECTED);
             $(Selector.BODY).addClass(ClassNames.HAS_OPEN_TILE);
             contentArea.slideDown(350, function () {
                 // Wait until we have finished sliding down before we work out where the top is for scroll.

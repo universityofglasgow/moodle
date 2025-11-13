@@ -699,3 +699,24 @@ On section.php:
 - Issue 277 fix progress count error where no subsection data
 - Issue 276 remove subsection icon in edit mode
 - Simplify legacy excess sections check
+
+4.5.0.22 (2025060259)
+=====================
+- Fix missing activity description in modal for non-subtile activities
+
+4.5.0.23 (2025070350)
+=====================
+- Issue 280 button icon colour darker to match core (accessibility)
+- Remove docs links
+
+4.5.0.24 (2025070351)
+=====================
+- Issue 289 fix page not scrolling when open tile
+
+4.5.0.25 (2025070352)
+=====================
+- Avoid deprecation warning
+
+4.5.0.26 (2025070353)
+=====================
+- Issue 291 and 292 fix malfunctioning modal iframe URL for file activities

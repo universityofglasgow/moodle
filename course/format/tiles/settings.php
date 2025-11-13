@@ -309,16 +309,6 @@ if ($ADMIN->fulltree) {
     $default = 1;
     $page->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 
-    $setting = new admin_setting_configtext(
-        'format_tiles/documentationurl',
-        get_string('documentationurl', 'format_tiles'),
-        get_string('documentationurl_descr', 'format_tiles'),
-        'https://evolutioncode.uk/tiles/docs',
-        PARAM_RAW,
-        50
-    );
-    $page->add($setting);
-
     // Custom css.
     $name = 'format_tiles/customcss';
     $title = get_string('customcss', 'format_tiles');
