@@ -19,6 +19,10 @@ namespace qtype_formulas\local;
 use qtype_formulas;
 use Throwable, Exception;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/question/type/formulas/questiontype.php');
+
 /**
  * Evaluator for qtype_formulas
  *
@@ -159,6 +163,12 @@ class evaluator {
                 if ($skiplists && in_array($result->type, [token::LIST, token::SET])) {
                     continue;
                 }
+                // If the result is a number, we try to localize it, unless the admin settings do not
+                // allow the decimal comma.
+                if ($result->type === token::NUMBER) {
+                    $result = qtype_formulas::format_float($result->value);
+                }
+
                 $text = str_replace("{{$match}}", strval($result), $text);
             } catch (Exception $e) {
                 // TODO: use non-capturing exception when we drop support for old PHP.
@@ -313,8 +323,11 @@ class evaluator {
     public function import_variable_context(array $data, bool $overwrite = true) {
         // If the data is invalid, unserialize() will issue an E_NOTICE. We suppress that,
         // because we have our own error message.
-        $randomvariables = @unserialize($data['randomvariables'], ['allowed_classes' => [random_variable::class, token::class]]);
-        $variables = @unserialize($data['variables'], ['allowed_classes' => [variable::class, token::class]]);
+        $randomvariables = @unserialize(
+            $data['randomvariables'],
+            ['allowed_classes' => [random_variable::class, token::class, lazylist::class, range::class]],
+        );
+        $variables = @unserialize($data['variables'], ['allowed_classes' => [variable::class, token::class, lazylist::class]]);
         if ($randomvariables === false || $variables === false) {
             throw new Exception(get_string('error_invalidcontext', 'qtype_formulas'));
         }
@@ -342,14 +355,20 @@ class evaluator {
      *
      * @param token $vartoken
      * @param token $value
-     * @param bool $israndomvar
+     * @param bool $definingrandomvar
      * @return token
      */
-    private function set_variable_to_value(token $vartoken, token $value, $israndomvar = false): token {
+    private function set_variable_to_value(token $vartoken, token $value, $definingrandomvar = false): token {
         // Get the "basename" of the variable, e.g. foo in case of foo[1][2].
         $basename = $vartoken->value;
         if (strpos($basename, '[') !== false) {
             $basename = strstr($basename, '[', true);
+        }
+
+        // We do not allow °, Ω and µ in variable names.
+        $isunit = preg_match('/[°\x{00B5}\x{03BC}\x{03A9}\x{2126}]/u', $basename);
+        if ($isunit) {
+            $this->die(get_string('error_invalidvarname', 'qtype_formulas', $basename), $value);
         }
 
         // Some variables are reserved and cannot be used as left-hand side in an assignment,
@@ -370,7 +389,7 @@ class evaluator {
         if ($basename === $vartoken->value) {
             // If we are assigning to a random variable, we create a new instance and
             // return the value of the first instantiation.
-            if ($israndomvar) {
+            if ($definingrandomvar) {
                 $useshuffle = $value->type === variable::LIST;
                 if (is_scalar($value->value)) {
                     $this->die(get_string('error_invalidrandvardef', 'qtype_formulas'), $value);
@@ -385,12 +404,9 @@ class evaluator {
             if ($value->type === token::SET) {
                 // Algebraic variables only accept a list of numbers; they must not contain
                 // strings or nested lists.
-                foreach ($value->value as $entry) {
-                    if ($entry->type != token::NUMBER) {
-                        $this->die(get_string('error_algvar_numbers', 'qtype_formulas'), $value);
-                    }
+                if (!$value->value->are_all_numeric()) {
+                    $this->die(get_string('error_algvar_numbers', 'qtype_formulas'), $value);
                 }
-
                 $value->type = variable::ALGEBRAIC;
             }
             $var = new variable($basename, $value->value, $value->type, microtime(true));
@@ -398,9 +414,20 @@ class evaluator {
             return token::wrap($var->value);
         }
 
-        // If there is an index and we are setting a random variable, we throw an error.
-        if ($israndomvar) {
+        // If there is an index, we MUST NOT be in an assignment of random variables (in the random variables
+        // section of the question). Also the target variable MUST NOT be a random variable, unless it is a
+        // "shuffle" variable, i. e. it containis a shuffled array.
+        $cannotsetelement = false;
+        if (array_key_exists($basename, $this->randomvariables)) {
+            $cannotsetelement = !$this->randomvariables[$basename]->shuffle;
+        }
+        if ($definingrandomvar || $cannotsetelement) {
             $this->die(get_string('error_setindividual_randvar', 'qtype_formulas'), $value);
+        }
+
+        // If there is an index and we are setting an algebraic variable, we throw an error.
+        if ($this->variables[$basename]->type === variable::ALGEBRAIC) {
+            $this->die(get_string('error_setindividual_algebraicvar', 'qtype_formulas'), $value);
         }
 
         // If there is an index, but the variable is a string, we throw an error. Setting
@@ -433,7 +460,7 @@ class evaluator {
      * Make sure the index is valid, i. e. an integer (as a number or string) and not out
      * of range. If needed, translate a negative index (count from end) to a 0-indexed value.
      *
-     * @param mixed $arrayorstring array or string that should be indexed
+     * @param mixed $arrayorstring array, lazylist or string that should be indexed
      * @param mixed $index the index
      * @param ?token $anchor anchor token used in case of error (may be the array or the index)
      * @return int
@@ -456,7 +483,7 @@ class evaluator {
         // Fetch the length of the array or string.
         if (is_string($arrayorstring)) {
             $len = strlen($arrayorstring);
-        } else if (is_array($arrayorstring)) {
+        } else if (is_array($arrayorstring) || $arrayorstring instanceof lazylist) {
             $len = count($arrayorstring);
         } else {
             $this->die(get_string('error_notindexable', 'qtype_formulas'), $anchor);
@@ -825,6 +852,10 @@ class evaluator {
      */
     private function evaluate_the_right_thing($input, bool $godmode = false) {
         if ($input instanceof expression) {
+            // If the expression is empty, we simply ignore it.
+            if (empty($input->body)) {
+                return;
+            }
             return $this->evaluate_single_expression($input, $godmode);
         }
         if ($input instanceof for_loop) {
@@ -926,12 +957,14 @@ class evaluator {
                 if ($value === '%%arrayindex') {
                     $this->stack[] = $this->fetch_array_element_or_char();
                 }
-                if ($value === '%%setbuild' || $value === '%%arraybuild') {
-                    $this->stack[] = $this->build_set_or_array($value);
+                if ($value === '%%setbuild') {
+                    $this->stack[] = $this->build_set();
+                }
+                if ($value === '%%arraybuild') {
+                    $this->stack[] = $this->build_array($token);
                 }
                 if ($value === '%%rangebuild') {
-                    $elements = $this->build_range();
-                    array_push($this->stack, ...$elements);
+                    array_push($this->stack, $this->build_range());
                 }
             }
 
@@ -991,12 +1024,12 @@ class evaluator {
     }
 
     /**
-     * Build a list of (NUMBER) tokens based on a range definition. The lower and upper limit
-     * and, if present, the step will be taken from the stack.
+     * Build a range of numbers. The lower and upper limit and, if present, the step will be taken from
+     * the stack.
      *
-     * @return array
+     * @return token
      */
-    private function build_range(): array {
+    private function build_range(): token {
         // Pop the number of parts. We generated it ourselves, so we know it will be 2 or 3.
         $parts = array_pop($this->stack)->value;
 
@@ -1036,41 +1069,79 @@ class evaluator {
             $step = -$step;
         }
 
-        $result = [];
-        $numofsteps = ($end - $start) / $step;
-        // Choosing multiplication of step instead of repeated addition for better numerical accuracy.
-        for ($i = 0; $i < $numofsteps; $i++) {
-            $result[] = new token(token::NUMBER, $start + $i * $step);
-        }
-        return $result;
+        return new token(token::RANGE, new range($start, $end, $step));
     }
 
     /**
-     * Create a SET or LIST token based on elements on the stack.
+     * Create a SET token based on elements and ranges on the stack.
      *
-     * @param string $type whether to build a SET or a LIST
      * @return token
      */
-    private function build_set_or_array(string $type): token {
-        if ($type === '%%setbuild') {
-            $delimitertype = token::OPENING_BRACE;
-            $outputtype = token::SET;
-        } else {
-            $delimitertype = token::OPENING_BRACKET;
-            $outputtype = token::LIST;
-        }
-        $elements = [];
+    private function build_set(): token {
+        // We use a lazy list for SET tokens in order to save memory.
+        $list = new lazylist();
+
         $head = end($this->stack);
         while ($head !== false) {
-            if ($head->type === $delimitertype) {
+            if ($head->type === token::OPENING_BRACE) {
                 array_pop($this->stack);
                 break;
             }
-            $elements[] = $this->pop_real_value();
+            // As the stack is LIFO, we *pre*pend the new value or range.
+            $token = $this->pop_real_value();
+            if ($head->type === token::RANGE) {
+                $list->prepend_range($token->value);
+            } else {
+                $list->prepend_value($token);
+            }
+            $head = end($this->stack);
+        }
+
+        return new token(token::SET, $list);
+    }
+
+    /**
+     * Create a LIST token based on elements on the stack.
+     *
+     * @param token $opener opening bracket token, used for error reporting
+     * @return token
+     */
+    private function build_array(token $opener): token {
+        $elements = [];
+        $head = end($this->stack);
+        $count = 0;
+        while ($head !== false) {
+            if ($head->type === token::OPENING_BRACKET) {
+                array_pop($this->stack);
+                break;
+            }
+            $element = $this->pop_real_value();
+            if ($element->type === token::RANGE) {
+                // Check whether the count will exceed the limit of 1000 list elements.
+                $count += count($element->value);
+                if ($count > qtype_formulas::MAX_LIST_SIZE) {
+                    $this->die(get_string('error_list_too_large', 'qtype_formulas', qtype_formulas::MAX_LIST_SIZE), $opener);
+                }
+
+                // Convert the range into an array that actually contains all the necessary values.
+                // As the stack is generally in LIFO order, we must reverse the generated array,
+                // in order to blend in with other values that might or might not have to be included
+                // in the list.
+                $rangearray = iterator_to_array($element->value);
+                $elements = array_merge($elements, array_reverse($rangearray));
+            } else {
+                $count += token::recursive_count($element);
+                if ($count > qtype_formulas::MAX_LIST_SIZE) {
+                    $this->die(get_string('error_list_too_large', 'qtype_formulas', qtype_formulas::MAX_LIST_SIZE), $opener);
+                }
+
+                $elements[] = $element;
+            }
+
             $head = end($this->stack);
         }
         // Return reversed list, because the stack ist LIFO.
-        return new token($outputtype, array_reverse($elements));
+        return new token(token::LIST, array_reverse($elements));
     }
 
     /**

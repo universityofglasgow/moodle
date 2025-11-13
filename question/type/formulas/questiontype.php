@@ -60,6 +60,9 @@ class qtype_formulas extends question_type {
     /** @var int */
     const ANSWER_TYPE_ALGEBRAIC = 1000;
 
+    /** @var int maximum allowed size for lists (arrays) */
+    const MAX_LIST_SIZE = 1000;
+
     /**
      * The following array contains some of the column names of the table qtype_formulas_answers,
      * the table that holds the parts (not just answers) of a question. These columns undergo similar
@@ -255,7 +258,7 @@ class qtype_formulas extends question_type {
         // Validate the data from the edit form.
         $filtered = $this->validate($formdata);
         if (!empty($filtered->errors)) {
-            return (object)['error' => get_string('error_damaged_question', 'qtype_formulas')];
+            return (object)['error' => implode("\n", $filtered->errors)];
         }
 
         // Order the parts according to how they appear in the question.
@@ -605,7 +608,14 @@ class qtype_formulas extends question_type {
         $question->varsglobal = $format->getpath($xml, ['#', 'varsglobal', 0, '#', 'text', 0, '#'], '', true);
         $question->answernumbering = $format->getpath($xml, ['#', 'answernumbering', 0, '#', 'text', 0, '#'], 'none', true);
 
-        // Loop over each answer block found in the XML.
+        // If there are no answers (parts) in the XML, fetch a pseudo-path in order to generate an error
+        // in the same format as for missing fields.
+        if (!isset($xml['#']['answers'])) {
+            $xml['#']['answers'] = [];
+            $errormessage = get_string('error_import_missing_parts', 'qtype_formulas', $question->name);
+            $format->getpath($xml, ['#', 'xxx'], null, false, $errormessage);
+        }
+        // Otherwise, loop over each answer block found in the XML.
         foreach ($xml['#']['answers'] as $i => $part) {
             $partindex = $format->getpath($part, ['#', 'partindex', 0 , '#' , 'text' , 0 , '#'], false);
             if ($partindex !== false) {
@@ -651,7 +661,7 @@ class qtype_formulas extends question_type {
         }
 
         // Make the defaultmark consistent if not specified.
-        $question->defaultmark = array_sum($question->answermark);
+        $question->defaultmark = array_sum($question->answermark ?? []);
 
         return $question;
     }
@@ -794,14 +804,15 @@ class qtype_formulas extends question_type {
      */
     public function check_and_filter_parts(object $data): object {
         // This function is also called when importing a question.
-        // The answers of imported questions already have their unitpenalty and ruleid set.
-        $isfromimport = property_exists($data, 'unitpenalty') && property_exists($data, 'ruleid');
+        $isfromimport = property_exists($data, 'import_process');
 
         $partdata = [];
         $errors = [];
         $hasoneanswer = false;
 
-        foreach (array_keys($data->answermark) as $i) {
+        // Note: If we are importing and the data is damaged, there might be no parts at all. Hence,
+        // it is safer to use the ?? operator.
+        foreach (array_keys($data->answermark ?? []) as $i) {
             // The answermark must not be empty or 0.
             $nomark = empty(trim($data->answermark[$i]));
 
@@ -847,7 +858,7 @@ class qtype_formulas extends question_type {
 
             // The grading criterion must not be empty. Also, if there is no grading criterion, it does
             // not make sense to continue the validation.
-            if (empty(trim($data->correctness[$i]))) {
+            if (empty(trim($data->correctness[$i])) && !is_numeric(trim($data->correctness[$i]))) {
                 $errors["correctness[$i]"] = get_string('error_criterion_empty', 'qtype_formulas');
                 continue;
             }
@@ -896,7 +907,7 @@ class qtype_formulas extends question_type {
             // the part was otherwise empty, that will not have triggered an error message so far,
             // because it might have been on purpose (to delete the unused part). But now that
             // there seems to be no part left, we should add an error message to the field.
-            if (empty($data->answermark[$i])) {
+            if (empty($data->answermark[0])) {
                 $errors['answermark[0]'] = get_string('error_mark', 'qtype_formulas');
             }
         }
@@ -920,9 +931,7 @@ class qtype_formulas extends question_type {
         // because they are defined at the question level, even though they affect the parts.
         // If we are importing a question, those fields will not be present, because the values
         // are already stored with the parts.
-        // Note: we validate this first, because the fields will be referenced during validation
-        // of the parts.
-        $isfromimport = property_exists($data, 'unitpenalty') && property_exists($data, 'ruleid');
+        $isfromimport = property_exists($data, 'import_process');
         if (!$isfromimport) {
             $errors += $this->validate_global_unit_fields($data);
         }
@@ -962,7 +971,7 @@ class qtype_formulas extends question_type {
         // depending on those variables (model answers, correctness criterion) and unit
         // stuff. This check also allows us to calculate the number of answers for each part,
         // a value that we store as 'numbox'.
-        $evaluationresult = $this->check_variables_and_expressions($data, $parts);
+        $evaluationresult = $this->check_variables_and_expressions($data, $parts, $isfromimport);
         $errors += $evaluationresult->errors;
         $parts = $evaluationresult->parts;
 
@@ -1024,9 +1033,10 @@ class qtype_formulas extends question_type {
      *
      * @param object $data
      * @param object[] $parts
+     * @param bool $fromimport whether the check is performed during an import process
      * @return object stdClass with 'errors' and 'parts'
      */
-    public function check_variables_and_expressions(object $data, array $parts): object {
+    public function check_variables_and_expressions(object $data, array $parts, bool $fromimport = false): object {
         // Collect all errors.
         $errors = [];
 
@@ -1221,7 +1231,11 @@ class qtype_formulas extends question_type {
             }
 
             // We used the model answers, so the grading criterion should always evaluate to 1 (or more).
-            if ($grade < 0.999) {
+            // This check is omitted when importing questions, because it did not exist in legacy versions,
+            // so teachers might have questions with "wrong" model answers and their import will fail.
+            $lenientimport = get_config('qtype_formulas', 'lenientimport');
+            $checkthis = !$lenientimport || !$fromimport;
+            if ($checkthis && $grade < 0.999) {
                 $errors["correctness[$i]"] = get_string('error_grading_not_one', 'qtype_formulas', $grade);
             }
 
@@ -1288,5 +1302,34 @@ class qtype_formulas extends question_type {
         ksort($ordered);
 
         return $ordered;
+    }
+
+    /**
+     * Similar to Moodle's format_float() function, this function will output a float number
+     * with the locale's decimal separator. It checks the admin setting (allowdecimalcomma)
+     * before doing so; if the decimal comma is not activated, the point will be used in
+     * all cases. We are not using the library function, because it can lead to unnecessary
+     * trailing zeroes. When using the function for LaTeX output, it will wrap the comma in
+     * curly braces for correct spacing.
+     *
+     * @param float|string $float a number or numeric string to be formatted
+     * @param bool $forlatex whether the output is for LaTeX code
+     * @return string
+     */
+    public static function format_float($float, bool $forlatex = false): string {
+        // If use of decimal comma (or other local decimal separator) is not allowed, we
+        // return the number as-is.
+        if (!get_config('qtype_formulas', 'allowdecimalcomma')) {
+            return strval($float);
+        }
+
+        // Get the correct decimal separator according to the user's locale. If necessary,
+        // put braces around it.
+        $decsep = get_string('decsep', 'langconfig');
+        if ($forlatex && $decsep === ',') {
+            $decsep = '{' . $decsep . '}';
+        }
+
+        return str_replace('.', $decsep, strval($float));
     }
 }

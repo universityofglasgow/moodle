@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/question/engine/lib.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/formulas/tests/test_base.php');
 require_once($CFG->dirroot . '/question/type/formulas/tests/helper.php');
+require_once($CFG->dirroot . '/question/type/formulas/questiontype.php');
 
 /**
  * Unit tests for the formulas question type.
@@ -212,6 +213,19 @@ final class renderer_test extends walkthrough_test_base {
         $this->check_output_contains_lang_string('correctansweris', 'qtype_formulas', '5 * x^2');
         $this->check_output_does_not_contain('a*x^2');
 
+        // Submit correct answer in quotes, which will be graded wrong.
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+        $this->process_submission(['0_0' => '"5x^2"', '-submit' => 1]);
+        $this->check_current_state(question_state::$gradedwrong);
+        $this->check_current_mark(0);
+        $this->check_current_output(
+                $this->get_contains_mark_summary(0),
+        );
+        $this->render();
+        $this->check_output_contains_text_input('0_0', '"5x^2"', false);
+        $this->check_output_contains_lang_string('correctansweris', 'qtype_formulas', '5 * x^2');
+        $this->check_output_does_not_contain('a*x^2');
+
         // Submit right answer.
         $this->start_attempt_at_question($q, 'immediatefeedback', 1);
         $this->process_submission(['0_0' => '5*x^2', '-submit' => 1]);
@@ -256,6 +270,22 @@ final class renderer_test extends walkthrough_test_base {
         $this->check_output_contains_text_input('0_0', '', true);
         $this->check_output_contains_text_input('0_1', '', true);
         $this->check_output_does_not_contain_text_input_with_class('0_');
+    }
+
+    public function test_substitution_of_local_variables(): void {
+        $q = $this->get_test_formulas_question('testsinglenum');
+        $q->parts[0]->subqtext = '{b} {c}';
+        $q->parts[0]->vars1 = 'b = 1; c = "x"';
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+        $this->render();
+        $this->check_output_does_not_contain_stray_placeholders();
+
+        $q = $this->get_test_formulas_question('testalgebraic');
+        $q->parts[0]->subqtext = '{b} {c}';
+        $q->parts[0]->vars1 = 'b = 1; c = "x"';
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+        $this->render();
+        $this->check_output_does_not_contain_stray_placeholders();
     }
 
     public function test_render_question_with_separate_unit_field(): void {
@@ -304,6 +334,244 @@ final class renderer_test extends walkthrough_test_base {
         $this->check_output_contains_text_input('0_1', 'm/s', false);
     }
 
+    /**
+     * Data provider.
+     *
+     * @return array
+     */
+    public static function provide_styles(): array {
+        return [
+            [['width: 3rem'], '{_0|w=3}'],
+            [['width: 3em'], '{_0|w=3em}'],
+            [['width: 3rem'], '{_0|w=3rem}'],
+            [['width: 3px'], '{_0|w=3px}'],
+            [['width: .3px'], '{_0|w=.3px}'],
+            [['width: 3.5px'], '{_0|w=3.5px}'],
+            [['background-color: yellow'], '{_0|bgcol=yellow}'],
+            [['background-color: #00AAFF'], '{_0|bgcol=#00AAFF}'],
+            [['background-color: #0AF'], '{_0|bgcol=#0AF}'],
+            [['background-color: #00AAFFFF'], '{_0|bgcol=#00AAFFFF}'],
+            [['background-color: #0AFF'], '{_0|bgcol=#0AFF}'],
+            [['color: yellow'], '{_0|txtcol=yellow}'],
+            [['color: #00AAFF'], '{_0|txtcol=#00AAFF}'],
+            [['color: #0AF'], '{_0|txtcol=#0AF}'],
+            [['color: #00AAFFFF'], '{_0|txtcol=#00AAFFFF}'],
+            [['color: #0AFF'], '{_0|txtcol=#0AFF}'],
+            [['text-align: left'], '{_0|align=left}'],
+            [['text-align: right'], '{_0|align=right}'],
+            [['text-align: center'], '{_0|align=center}'],
+            [['text-align: start'], '{_0|align=start}'],
+            [['text-align: end'], '{_0|align=end}'],
+            [['width: 3rem', 'background-color: yellow'], '{_0|w=3|bgcol=yellow}'],
+            [['width: 3rem', 'background-color: yellow'], '{_0|bgcol=yellow|w=3||}'],
+            [['background-color: yellow'], '{_0|bgcol=yellow|w=x}'],
+            [['background-color: yellow'], '{_0|bgcol=yellow|w=px}'],
+            [['background-color: yellow'], '{_0|bgcol=yellow|w=10cm}'],
+            [['background-color: yellow'], '{_0|bgcol=yellow|w=3.px}'],
+            [['width: 3rem'], '{_0|bgcol=#axcvaa|w=3|}'],
+            [['width: 3rem'], '{_0|txtcol=#axcvaa|w=3|}'],
+            [['width: 3rem'], '{_0|align=foobar|w=3|}'],
+        ];
+    }
+
+    /**
+     * Test CSS options are rendered as expected.
+     *
+     * @param array $styles style settings to be checked for
+     * @param string $placeholder placeholder definition with formatting
+     * @return void
+     *
+     * @dataProvider provide_styles
+     */
+    public function test_render_formatted_input_box($styles, $placeholder): void {
+        $q = $this->get_test_formulas_question('testsinglenum');
+        $q->parts[0]->subqtext = $placeholder;
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+        $expectations = [];
+        foreach ($styles as $style) {
+            $expectations[] = $this->get_contains_input_with_css_expectation($style);
+        }
+        $this->check_current_output(...$expectations);
+    }
+
+    /**
+     * Data provider.
+     *
+     * @return array
+     */
+    public static function provide_combined_box_formatting(): array {
+        return [
+            [[], '{_0}{_u}'],
+            [['width: 100px'], '{_0|w=100px}{_u}'],
+            [['width: 100px'], '{_0}{_u|w=100px}'],
+            [['width: 80px', 'background-color: blue'], '{_0|w=100px|bgcol=red}{_u|w=80px|bgcol=blue}'],
+            [['width: 100px', 'background-color: red'], '{_0|w=100px|bgcol=red}{_u}'],
+            [['width: 100px', 'background-color: red'], '{_0}{_u|w=100px|bgcol=red}'],
+            [['width: 80px', 'background-color: blue'], '{_0|w=100px|bgcol=red}{_u|w=80px|bgcol=blue}'],
+            [['width: 80px', 'background-color: blue', 'text-align: right'], '{_0|w=100px|align=right}{_u|w=80px|bgcol=blue}'],
+        ];
+    }
+
+    /**
+     * Test formatting of combined unit field works as expected.
+     *
+     * @param array $styles (combined) style settings to be checked for
+     * @param string $placeholder placeholder definition with formatting
+     * @return void
+     *
+     * @dataProvider provide_combined_box_formatting
+     */
+    public function test_formatting_of_combined_unit_box($styles, $placeholder): void {
+        $q = $this->get_test_formulas_question('testsinglenumunit');
+        $q->parts[0]->subqtext = $placeholder;
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+
+        // Check that there is a combined unit field and no other fields or stray placeholders.
+        $this->render();
+        $this->check_output_contains_text_input('0_');
+        $this->check_output_does_not_contain_text_input_with_class('0_0');
+        $this->check_output_does_not_contain_text_input_with_class('0_1');
+        $this->check_output_does_not_contain_stray_placeholders();
+
+        // Check the formatting.
+        $expectations = [];
+        foreach ($styles as $style) {
+            $expectations[] = $this->get_contains_input_with_css_expectation($style);
+        }
+        $this->check_current_output(...$expectations);
+    }
+
+    /**
+     * Test formatting of separate unit field works as expected.
+     *
+     * @param array $styles style settings to be checked for
+     * @param string $placeholder placeholder definition with formatting
+     * @return void
+     *
+     * @dataProvider provide_styles
+     */
+    public function test_formatting_of_separate_unit_box($styles, $placeholder): void {
+        // We take the formatting intended for the number box and use it for the unit box. Also,
+        // we add a placeholder for an unformatted number box in front of it.
+        $placeholder = str_replace('{_0', '{_0} {_u', $placeholder);
+        $q = $this->get_test_formulas_question('testsinglenumunit');
+        $q->parts[0]->subqtext = $placeholder;
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+
+        // There must be a number box and a unit box, no combined field and no stray placeholders.
+        $this->render();
+        $this->check_output_contains_text_input('0_0');
+        $this->check_output_contains_text_input('0_1');
+        $this->check_output_does_not_contain_text_input_with_class('0_');
+        $this->check_output_does_not_contain_stray_placeholders();
+
+        // Check the formatting.
+        $expectations = [];
+        foreach ($styles as $style) {
+            $expectations[] = $this->get_contains_input_with_css_expectation($style);
+        }
+        $this->check_current_output(...$expectations);
+    }
+
+    /**
+     * Data provider.
+     *
+     * @return array
+     */
+    public static function provide_answer_box_types(): array {
+        return [
+            ['px', qtype_formulas::ANSWER_TYPE_NUMBER],
+            ['px', qtype_formulas::ANSWER_TYPE_NUMERIC],
+            ['px', qtype_formulas::ANSWER_TYPE_NUMERICAL_FORMULA],
+            ['px', qtype_formulas::ANSWER_TYPE_ALGEBRAIC],
+            ['rem', qtype_formulas::ANSWER_TYPE_NUMBER],
+            ['rem', qtype_formulas::ANSWER_TYPE_NUMERIC],
+            ['rem', qtype_formulas::ANSWER_TYPE_NUMERICAL_FORMULA],
+            ['rem', qtype_formulas::ANSWER_TYPE_ALGEBRAIC],
+            ['em', qtype_formulas::ANSWER_TYPE_NUMBER],
+            ['em', qtype_formulas::ANSWER_TYPE_NUMERIC],
+            ['em', qtype_formulas::ANSWER_TYPE_NUMERICAL_FORMULA],
+            ['em', qtype_formulas::ANSWER_TYPE_ALGEBRAIC],
+            ['', qtype_formulas::ANSWER_TYPE_NUMBER],
+            ['', qtype_formulas::ANSWER_TYPE_NUMERIC],
+            ['', qtype_formulas::ANSWER_TYPE_NUMERICAL_FORMULA],
+            ['', qtype_formulas::ANSWER_TYPE_ALGEBRAIC],
+            ['!', qtype_formulas::ANSWER_TYPE_NUMBER],
+            ['!', qtype_formulas::ANSWER_TYPE_NUMERIC],
+            ['!', qtype_formulas::ANSWER_TYPE_NUMERICAL_FORMULA],
+            ['!', qtype_formulas::ANSWER_TYPE_ALGEBRAIC],
+        ];
+    }
+
+    /**
+     * Test that the default widths as configured in the admin settings are taken into account.
+     *
+     * @param string $unit the unit of length (px, rem, em or an invalid setting)
+     * @param int $answertype answer type constants, e. g. ANSWER_TYPE_NUMBER
+     * @return void
+     *
+     * @dataProvider provide_answer_box_types
+     */
+    public function test_render_uses_default_widths($unit, $answertype): void {
+        // Set the default width for the given answer type.
+        $answertypes = [
+            '0' => 'number',
+            '10' => 'numeric',
+            '100' => 'numerical_formula',
+            '1000' => 'algebraic_formula',
+        ];
+        $optionstring = 'defaultwidth_' . $answertypes[$answertype];
+        set_config($optionstring, '99', 'qtype_formulas');
+
+        // Set the default width unit according to received data.
+        set_config('defaultwidthunit', $unit, 'qtype_formulas');
+
+        // Also test that rendering works for an invalid default unit setting.
+        if ($unit === '') {
+            unset_config('defaultwidthunit', 'qtype_formulas');
+            $unit = 'px';
+        }
+
+        // Also test that rendering works for an invalid default unit setting.
+        if ($unit === '!') {
+            $unit = 'px';
+        }
+
+        // Use a simple question with just one box.
+        $q = $this->get_test_formulas_question('testsinglenum');
+        $q->parts[0]->answertype = $answertype;
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+        $this->check_current_output(
+            $this->get_contains_input_with_css_expectation("width: 99$unit")
+        );
+
+        // For all but the algebraic formula, we also test the combined unit field.
+        if ($answertype !== qtype_formulas::ANSWER_TYPE_ALGEBRAIC) {
+            set_config($optionstring . '_unit', '999', 'qtype_formulas');
+            $q = $this->get_test_formulas_question('testsinglenumunit');
+            $q->parts[0]->answertype = $answertype;
+            $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+            $this->check_current_output(
+                $this->get_contains_input_with_css_expectation("width: 999$unit")
+            );
+        }
+    }
+
+    public function test_render_uses_default_width_for_separate_unit_box(): void {
+        set_config('defaultwidth_unit', '99', 'qtype_formulas');
+        set_config('defaultwidthunit', 'px', 'qtype_formulas');
+
+        // Use a simple question with a separate unit box.
+        $q = $this->get_test_formulas_question('testsinglenumunitsep');
+        $q->parts[0]->subqtext = '{_0|w=123px} {_u}';
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+        $this->check_current_output(
+            $this->get_contains_input_with_css_expectation("width: 123px"),
+            $this->get_contains_input_with_css_expectation("width: 99px")
+        );
+    }
+
+
     public function test_render_question_with_multiple_parts(): void {
         $q = $this->get_test_formulas_question('testmethodsinparts');
         $this->start_attempt_at_question($q, 'immediatefeedback', 8);
@@ -339,6 +607,70 @@ final class renderer_test extends walkthrough_test_base {
                 $this->get_contains_mark_summary(6),
                 $this->get_contains_num_parts_correct(3)
         );
+    }
+
+    public function test_render_shuffled_mc(): void {
+        // Create a single part multiple choice (radio) question. Activate shuffling of the options
+        // and disable numbering of the answers, as that makes it easier to test.
+        $q = $this->get_test_formulas_question('testmc');
+        $q->answernumbering = '';
+        $q->parts[0]->subqtext = '{_0:mychoices:MCS}';
+
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+
+        // Count how many times each option appears first. Re-render the question until all options have been
+        // on the first position at least once. In case something is off, stop after 100 tries at latest.
+        $countfirst = ['Dog' => 0, 'Cat' => 0, 'Bird' => 0, 'Fish' => 0];
+        $allwerefirst = false;
+        $safety = 0;
+        while (!$allwerefirst && $safety < 100) {
+            $this->render();
+            $fieldset = preg_replace('=^(.*)<fieldset[^>]+>(.+)</fieldset>(.*)$=', '\\2', $this->currentoutput);
+            $answers = str_replace('Answer', '', strip_tags($fieldset));
+
+            foreach ($countfirst as $option => &$count) {
+                if (strstr($answers, $option, true) === '') {
+                    $count++;
+                }
+                $allwerefirst = (array_product($countfirst) > 0);
+            }
+            $safety++;
+        }
+
+        // Make sure we're not here just because of the safety switch.
+        self::assertTrue($allwerefirst);
+    }
+
+    public function test_render_shuffled_mce(): void {
+        // Create a single part multiple choice (dropdown) question. Activate shuffling of the options
+        // and disable numbering of the answers, as that makes it easier to test.
+        $q = $this->get_test_formulas_question('testmce');
+        $q->answernumbering = '';
+        $q->parts[0]->subqtext = '{_0:mychoices:MCES}';
+
+        $this->start_attempt_at_question($q, 'immediatefeedback', 1);
+
+        // Count how many times each option appears first. Re-render the question until all options have been
+        // on the first position at least once. In case something is off, stop after 100 tries at latest.
+        $countfirst = ['Dog' => 0, 'Cat' => 0, 'Bird' => 0, 'Fish' => 0];
+        $allwerefirst = false;
+        $safety = 0;
+        while (!$allwerefirst && $safety < 100) {
+            $this->render();
+            $select = preg_replace('=^(.*)<select[^>]+>(.+)</select>(.*)$=', '\\2', $this->currentoutput);
+            $answers = strip_tags($select);
+
+            foreach ($countfirst as $option => &$count) {
+                if (strstr($answers, $option, true) === '') {
+                    $count++;
+                }
+                $allwerefirst = (array_product($countfirst) > 0);
+            }
+            $safety++;
+        }
+
+        // Make sure we're not here just because of the safety switch.
+        self::assertTrue($allwerefirst);
     }
 
     public function test_render_mc_question(): void {
@@ -799,6 +1131,7 @@ final class renderer_test extends walkthrough_test_base {
      *
      * @param string $expectedfeedback the feedback that should be shown
      * @param array $input input data (behaviour, question name, simulated student response)
+     *
      * @dataProvider provide_responses_for_feedback_test
      */
     public function test_part_feedback($expectedfeedback, $input): void {

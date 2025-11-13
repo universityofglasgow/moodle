@@ -26,6 +26,7 @@ use question_hint_with_parts;
 use question_usage_by_activity;
 use qtype_formulas_part;
 use qtype_formulas_question;
+use qtype_formulas_test_helper;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -520,6 +521,48 @@ final class question_test extends \advanced_testcase {
         self::assertEquals($expectedsummary, $q->get_question_summary());
     }
 
+    public function test_get_correct_response_localised(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setting the localised decimal separator, but disallow the decimal comma in the admin settings.
+        qtype_formulas_test_helper::define_local_decimal_separator();
+        self::assertEquals('0', get_config('qtype_formulas', 'allowdecimalcomma'));
+
+        $q = $this->get_test_formulas_question('testsinglenum');
+        $q->parts[0]->answer = '3.5';
+        $q->start_attempt(new question_attempt_step(), 1);
+
+        // If the decimal comma is not activated in the admin settings, there should be no comma.
+        self::assertEquals(['0_0' => '3.5'], $q->get_correct_response());
+
+        // Now allowing the decimal comma to be used.
+        set_config('allowdecimalcomma', 1, 'qtype_formulas');
+        self::assertEquals('1', get_config('qtype_formulas', 'allowdecimalcomma'));
+        self::assertEquals(['0_0' => '3,5'], $q->get_correct_response());
+    }
+
+    public function test_get_correct_response_algebraic_localised(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setting the localised decimal separator, but disallow the decimal comma in the admin settings.
+        qtype_formulas_test_helper::define_local_decimal_separator();
+        self::assertEquals('0', get_config('qtype_formulas', 'allowdecimalcomma'));
+
+        $q = $this->get_test_formulas_question('testalgebraic');
+        $q->parts[0]->answer = '"1.5x"';
+        $q->start_attempt(new question_attempt_step(), 1);
+
+        // If the decimal comma is not activated in the admin settings, there should be no comma.
+        self::assertEquals(['0_0' => '1.5x'], $q->get_correct_response());
+
+        // Now allowing the decimal comma to be used.
+        set_config('allowdecimalcomma', 1, 'qtype_formulas');
+        self::assertEquals('1', get_config('qtype_formulas', 'allowdecimalcomma'));
+        self::assertEquals(['0_0' => '1,5x'], $q->get_correct_response());
+    }
+
     public function test_get_correct_response_singlenum(): void {
         $q = $this->get_test_formulas_question('testsinglenum');
         $q->start_attempt(new question_attempt_step(), 1);
@@ -991,9 +1034,15 @@ final class question_test extends \advanced_testcase {
      * @return array
      */
     public static function provide_answer_box_texts(): array {
+        $formatarray = [
+            'align' => 'center',
+            'bgcol' => 'red',
+            'w' => '10',
+        ];
         return [
             [[], ''],
             [[], '{ _0}'],
+            [[], '{_0'],
             [[], '{_ 0}'],
             [[], '{_0 }'],
             [[], '{_0::}'],
@@ -1006,36 +1055,108 @@ final class question_test extends \advanced_testcase {
             [[], '{_u }'],
             [[], '{_a}'],
             [[
-                '_0' => ['placeholder' => '{_0}', 'options' => '', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0}'],
             ], '{_0}'],
             [[
-                '_0' => ['placeholder' => '{_0}', 'options' => '', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0|}', 'format' => []],
+            ], '{_0|}'],
+            [[
+                '_0' => ['placeholder' => '{_0|w=2.5px}', 'format' => ['w' => '2.5px']],
+            ], '{_0|w=2.5px}'],
+            [[
+                '_0' => ['placeholder' => '{_0|align=center|bgcol=red|w=10}', 'format' => $formatarray],
+            ], '{_0|align=center|bgcol=red|w=10}'],
+            [[
+                '_0' => ['placeholder' => '{_0|align=center|}', 'format' => ['align' => 'center']],
+            ], '{_0|align=center|}'],
+            [[
+                '_0' => ['placeholder' => '{_0|align=center}', 'format' => ['align' => 'center']],
+            ], '{_0|align=center}'],
+            [[
+                '_0' => ['placeholder' => '{_0}'],
             ], '{_0} {_1:}'],
             [[
-                '_0' => ['placeholder' => '{_0:foo}', 'options' => 'foo', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0:foo}', 'options' => 'foo'],
             ], '{_0:foo}'],
             [[
-                '_0' => ['placeholder' => '{_0:MCE}', 'options' => 'MCE', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0:foo|align=center|bgcol=red|w=10}', 'options' => 'foo', 'format' => $formatarray],
+            ], '{_0:foo|align=center|bgcol=red|w=10}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCE}', 'options' => 'MCE'],
             ], '{_0:MCE}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MC}', 'options' => 'MC'],
+            ], '{_0:MC}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCS}', 'options' => 'MCS'],
+            ], '{_0:MCS}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCES}', 'options' => 'MCES'],
+            ], '{_0:MCES}'],
             [[
                 '_0' => ['placeholder' => '{_0:foo:MCE}', 'options' => 'foo', 'dropdown' => true],
             ], '{_0:foo:MCE}'],
             [[
-                '_0' => ['placeholder' => '{_0}', 'options' => '', 'dropdown' => false],
-                '_u' => ['placeholder' => '{_u}', 'options' => '', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0:foo:MC}', 'options' => 'foo'],
+            ], '{_0:foo:MC}'],
+            [[
+                '_0' => [
+                    'placeholder' => '{_0:foo:MCE|align=center|bgcol=red|w=10}',
+                    'options' => 'foo',
+                    'dropdown' => true,
+                    'format' => $formatarray,
+                ],
+            ], '{_0:foo:MCE|align=center|bgcol=red|w=10}'],
+            [[
+                '_0' => ['placeholder' => '{_0}'],
+                '_u' => ['placeholder' => '{_u}'],
             ], '{_0}{_u}'],
             [[
-                '_0' => ['placeholder' => '{_0:foo}', 'options' => 'foo', 'dropdown' => false],
-                '_u' => ['placeholder' => '{_u}', 'options' => '', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0:foo}', 'options' => 'foo'],
+                '_u' => ['placeholder' => '{_u}'],
             ], '{_0:foo} {_u}'],
             [[
-                '_0' => ['placeholder' => '{_0:MCE}', 'options' => 'MCE', 'dropdown' => false],
-                '_u' => ['placeholder' => '{_u}', 'options' => '', 'dropdown' => false],
+                '_0' => ['placeholder' => '{_0:MCE}', 'options' => 'MCE'],
+                '_u' => ['placeholder' => '{_u}'],
             ], '{_0:MCE} {_u}'],
             [[
+                '_0' => ['placeholder' => '{_0:MCS}', 'options' => 'MCS'],
+                '_u' => ['placeholder' => '{_u}'],
+            ], '{_0:MCS} {_u}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCES}', 'options' => 'MCES'],
+                '_u' => ['placeholder' => '{_u}'],
+            ], '{_0:MCES} {_u}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCE:MCE}', 'options' => 'MCE', 'dropdown' => true],
+            ], '{_0:MCE:MCE}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCS:MCS}', 'options' => 'MCS', 'shuffle' => true],
+            ], '{_0:MCS:MCS}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MC:MC}', 'options' => 'MC'],
+            ], '{_0:MC:MC}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MC:MCS}', 'options' => 'MC', 'shuffle' => true],
+            ], '{_0:MC:MCS}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCS:MC}', 'options' => 'MCS'],
+            ], '{_0:MCS:MC}'],
+            [[
+                '_0' => ['placeholder' => '{_0:MCES:MCES}', 'options' => 'MCES', 'dropdown' => true, 'shuffle' => true],
+            ], '{_0:MCES:MCES}'],
+            [[
                 '_0' => ['placeholder' => '{_0:foo:MCE}', 'options' => 'foo', 'dropdown' => true],
-                '_u' => ['placeholder' => '{_u}', 'options' => '', 'dropdown' => false],
+                '_u' => ['placeholder' => '{_u}'],
             ], '{_0:foo:MCE} {_u}'],
+            [[
+                '_0' => ['placeholder' => '{_0:foo:MCES}', 'options' => 'foo', 'dropdown' => true, 'shuffle' => true],
+                '_u' => ['placeholder' => '{_u}', 'options' => '', 'dropdown' => false, 'shuffle' => false],
+            ], '{_0:foo:MCES} {_u}'],
+            [[
+                '_0' => ['placeholder' => '{_0:foo:MCS}', 'options' => 'foo', 'dropdown' => false, 'shuffle' => true],
+                '_u' => ['placeholder' => '{_u}', 'options' => '', 'dropdown' => false, 'shuffle' => false],
+            ], '{_0:foo:MCS} {_u}'],
         ];
     }
 
@@ -1044,14 +1165,24 @@ final class question_test extends \advanced_testcase {
      *
      * @param array $expected associative array, key: answer variable (e. g. _0 or _u),
      *      value: 'placeholder' => string (original text), 'options' => string (name of var containing the options),
-     *      'dropdown' => bool
+     *      'dropdown' => bool, 'shuffle' => bool
      * @param string $input simulated input
      *
      * @dataProvider provide_answer_box_texts
      */
     public function test_scan_for_answer_boxes($expected, $input): void {
+        $default = [
+            'placeholder' => '',
+            'options' => '',
+            'dropdown' => false,
+            'shuffle' => false,
+            'format' => [],
+        ];
+        foreach ($expected as $key => $value) {
+            $expected[$key] = $value + $default;
+        }
         $boxes = qtype_formulas_part::scan_for_answer_boxes($input);
-        self::assertSame($expected, $boxes);
+        self::assertEquals($expected, $boxes);
     }
 
     /**
@@ -1066,6 +1197,11 @@ final class question_test extends \advanced_testcase {
             ['_0', '{_0:foo} {_0:bar}'],
             ['_0', '{_0:foo:MCE} {_0}'],
             ['_0', '{_0:foo:MCE} {_0:foo}'],
+            ['_0', '{_0:foo:MCS} {_0:foo}'],
+            ['_0', '{_0:foo:MCS} {_0:foo:MCE}'],
+            ['_0', '{_0:foo:MCES} {_0:foo}'],
+            ['_0', '{_0:foo:MCES} {_0:foo:MCE}'],
+            ['_0', '{_0:foo:MCES} {_0:foo:MCS}'],
             ['_u', '{_0}{_u} {_u}'],
         ];
     }
@@ -1324,11 +1460,11 @@ final class question_test extends \advanced_testcase {
         return [
             [['""'], ['']],
             [['"a"'], ['a']],
-            [['"a"'], ['"a"']],
+            ['!', ['"a"']],
             [['"1"', '"2"'], ['1', '2']],
             [['""', '""'], ['', '']],
-            [['""', '""'], ['""', '""']],
-            [['"1"', '"x"'], ['"1"', '"x"']],
+            ['!', ['""', '""']],
+            ['!', ['"1"', '"x"']],
         ];
     }
 
@@ -1344,7 +1480,17 @@ final class question_test extends \advanced_testcase {
         $func = new \ReflectionMethod(qtype_formulas_part::class, 'wrap_algebraic_formulas_in_quotes');
         $func->setAccessible(true);
 
-        $wrapped = $func->invoke(null, $input);
+        $error = false;
+        try {
+            $wrapped = $func->invoke(null, $input);
+        } catch (Exception $e) {
+            $error = true;
+        }
+
+        if ($expected === '!') {
+            self::assertTrue($error);
+            return;
+        }
 
         foreach ($expected as $i => $exp) {
             self::assertEquals($exp, $wrapped[$i]);

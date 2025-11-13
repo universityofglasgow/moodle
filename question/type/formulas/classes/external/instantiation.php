@@ -27,6 +27,7 @@ namespace qtype_formulas\external;
 
 use Exception;
 use qtype_formulas\local\evaluator;
+use qtype_formulas\local\lazylist;
 use qtype_formulas\local\parser;
 use qtype_formulas\local\random_parser;
 use qtype_formulas\local\token;
@@ -97,7 +98,7 @@ class instantiation extends \external_api {
     protected static function variable_context_to_array(array $data): array {
         // The data comes directly from the evaluator's export_variable_context() function, so
         // we don't have to expect an error.
-        $context = unserialize($data['variables'], ['allowed_classes' => [variable::class, token::class]]);
+        $context = unserialize($data['variables'], ['allowed_classes' => [variable::class, token::class, lazylist::class]]);
 
         $result = [];
         foreach ($context as $name => $var) {
@@ -297,7 +298,7 @@ class instantiation extends \external_api {
                         new \external_single_structure(
                             [
                                 'name' => new \external_value(PARAM_TEXT, 'variable name', VALUE_REQUIRED),
-                                'value' => new \external_value(PARAM_TEXT, 'value', VALUE_REQUIRED),
+                                'value' => new \external_value(PARAM_RAW, 'value', VALUE_REQUIRED),
                             ],
                             'description of each random variable',
                             VALUE_REQUIRED
@@ -309,7 +310,7 @@ class instantiation extends \external_api {
                         new \external_single_structure(
                             [
                                 'name' => new \external_value(PARAM_TEXT, 'variable name', VALUE_REQUIRED),
-                                'value' => new \external_value(PARAM_TEXT, 'value', VALUE_REQUIRED),
+                                'value' => new \external_value(PARAM_RAW, 'value', VALUE_REQUIRED),
                             ],
                             'description of each global variable',
                             VALUE_REQUIRED
@@ -322,7 +323,7 @@ class instantiation extends \external_api {
                             new \external_single_structure(
                                 [
                                     'name' => new \external_value(PARAM_TEXT, 'variable name', VALUE_REQUIRED),
-                                    'value' => new \external_value(PARAM_TEXT, 'value', VALUE_REQUIRED),
+                                    'value' => new \external_value(PARAM_RAW, 'value', VALUE_REQUIRED),
                                 ]
                             ),
                             'list of variables for the corresponding part',

@@ -233,6 +233,14 @@ class qtype_formulas_question extends question_graded_automatically_with_countba
                 $summary .= $chunk;
             }
         }
+
+        // For the question summary, it seems useful to simplify the answer box placeholders.
+        $summary = preg_replace(
+            '/\{(_u|_\d+)(:(_[A-Za-z]|[A-Za-z]\w*)(:(MC|MCE|MCES|MCS))?)?((\|[\w =#]*)*)\}/',
+            '{\1}',
+            $summary,
+        );
+
         return $summary;
     }
 
@@ -951,9 +959,18 @@ class qtype_formulas_part {
 
         // Furthermore, there must be either a {_0}{_u} without whitespace in the part's text
         // (meaning the user explicitly wants a combined unit field) or no answer box placeholders
-        // at all, neither for the answer nor for the unit.
-        $combinedrequested = strpos($this->subqtext, '{_0}{_u}') !== false;
-        $noplaceholders = strpos($this->subqtext, '{_0}') === false && strpos($this->subqtext, '{_u}') === false;
+        // at all, neither for the answer nor for the unit. As the placeholders may contain formatting
+        // options, it makes sense to first simplify the part's question text by removing those. Note
+        // that the regex is different from e. g. the one in scan_for_answer_boxes(), because there
+        // MUST NOT be an :options-variable or a :MC/:MCE/:MCES/:MCS part.
+        $simplifiedtext = preg_replace(
+            '/\{(_u|_\d+)((\|[\w =#]*)*)\}/',
+            '{\1}',
+            $this->subqtext,
+        );
+
+        $combinedrequested = strpos($simplifiedtext, '{_0}{_u}') !== false;
+        $noplaceholders = strpos($simplifiedtext, '{_0}') === false && strpos($this->subqtext, '{_u}') === false;
         return $combinedrequested || $noplaceholders;
     }
 
@@ -1018,8 +1035,10 @@ class qtype_formulas_part {
      * Answer box placeholders have one of the following forms:
      * - {_u} for the unit box
      * - {_n} for an answer box, n must be an integer
-     * - {_n:str} for radio buttons, str must be a variable name
+     * - {_n:str} or {_n:str:MC} for radio buttons, str must be a variable name
+     * - {_n:str:MCS} for *shuffled* radio buttons, str must be a variable name
      * - {_n:str:MCE} for a drop down field, MCE must be verbatim
+     * - {_n:str:MCES} for a *shuffled* drop down field, MCE must be verbatim
      * Note: {_0:MCE} is valid and will lead to radio boxes based on the variable MCE.
      * Every answer box in the array will itself be an associative array with the
      * keys 'placeholder' (the entire placeholder), 'options' (the name of the variable containing
@@ -1033,7 +1052,7 @@ class qtype_formulas_part {
      */
     public static function scan_for_answer_boxes(string $text): array {
         // Match the text and store the matches.
-        preg_match_all('/\{(_u|_\d+)(:(_[A-Za-z]|[A-Za-z]\w*)(:(MCE))?)?\}/', $text, $matches);
+        preg_match_all('/\{(_u|_\d+)(:(_[A-Za-z]|[A-Za-z]\w*)(:(MC|MCE|MCS|MCES))?)?((\|[\w .=#]*)*)\}/', $text, $matches);
 
         $boxes = [];
 
@@ -1047,16 +1066,39 @@ class qtype_formulas_part {
             // text is later needed to replace the placeholder by the input element.
             // With $matches[3], we can access the name of the variable containing the options for the radio
             // boxes or the drop down list.
-            // Finally, the array $matches[4] will contain ':MCE' in case this has been specified. Otherwise,
-            // there will be an empty string.
-            // TODO: add option 'size' (for characters) or 'width' (for pixel width).
+            // Finally, the array $matches[4] will contain ':MC', ':MCE', ':MCES' or ':MCS' in case this has been
+            // specified. Otherwise, there will be an empty string.
             $boxes[$match] = [
                 'placeholder' => $matches[0][$i],
                 'options' => $matches[3][$i],
-                'dropdown' => ($matches[4][$i] === ':MCE'),
+                'dropdown' => (substr($matches[4][$i], 0, 4) === ':MCE'),
+                'shuffle' => (substr($matches[4][$i], -1) === 'S'),
+                'format' => self::parse_box_formatting_options(substr($matches[6][$i], 1)),
             ];
         }
         return $boxes;
+    }
+
+    /**
+     * Parse a string of format options, as used in the definition of a text box placeholder,
+     * e. g. |w=10px|bgcol=yellow.
+     *
+     * @param string $settings format settings
+     * @return array associative array 'optionname' => 'value', e. g. 'w' => '50px'
+     */
+    protected static function parse_box_formatting_options(string $settings): array {
+        $options = explode('|', $settings);
+
+        $result = [];
+        foreach ($options as $option) {
+            if (strstr($option, '=') === false) {
+                continue;
+            }
+            $namevalue = explode('=', $option);
+            $result[$namevalue[0]] = $namevalue[1];
+        }
+
+        return $result;
     }
 
     /**
@@ -1301,10 +1343,12 @@ class qtype_formulas_part {
      */
     private static function wrap_algebraic_formulas_in_quotes(array $formulas): array {
         foreach ($formulas as &$formula) {
-            // If the formula is aready wrapped in quotes (e. g. after an earlier call to this
-            // function), there is nothing to do.
+            // If the formula is aready wrapped in quotes, we throw an Exception, because that
+            // should not happen. It will happen, if the student puts quotes around their response, but
+            // we want that to be graded wrong. The exception will be caught and dealt with upstream,
+            // so we do not need to be more precise.
             if (preg_match('/^\"[^\"]*\"$/', $formula)) {
-                continue;
+                throw new Exception();
             }
 
             $formula = '"' . $formula . '"';
@@ -1461,7 +1505,12 @@ class qtype_formulas_part {
         // formulas, we must wrap the answers in quotes before we move on. Also, we reset the conversion
         // factor, because it is not needed for algebraic answers.
         if ($isalgebraic) {
+            try {
                 $response = self::wrap_algebraic_formulas_in_quotes($response);
+            } catch (Throwable $t) {
+                // TODO: convert to non-capturing catch.
+                return ['answer' => 0, 'unit' => $unitcorrect];
+            }
             $conversionfactor = 1;
         }
 
@@ -1574,15 +1623,32 @@ class qtype_formulas_part {
         // Fetch the evaluated answers.
         $answers = $this->get_evaluated_answers();
 
+        // Numeric answers should be localized, if that functionality is enabled.
+        foreach ($answers as &$answer) {
+            if (is_numeric($answer)) {
+                $answer = qtype_formulas::format_float($answer);
+            }
+        }
+        // Make sure we do not accidentally write to $answer later.
+        unset($answer);
+
         // If we have a combined unit field, we return both the model answer plus the unit
         // in "i_". Combined fields are only possible for parts with one signle answer.
         if ($this->has_combined_unit_field()) {
             return ["{$this->partindex}_" => trim($answers[0] . ' ' . $this->postunit)];
         }
 
+        // As algebraic formulas are not numbers, we must replace the decimal point separately.
+        // Also, if the answer is requested for feedback, we must strip the quotes.
         // Strip quotes around algebraic formulas, if the answers are used for feedback.
-        if ($forfeedback && $this->answertype === qtype_formulas::ANSWER_TYPE_ALGEBRAIC) {
-            $answers = str_replace('"', '', $answers);
+        if ($this->answertype === qtype_formulas::ANSWER_TYPE_ALGEBRAIC) {
+            if (get_config('qtype_formulas', 'allowdecimalcomma')) {
+                $answers = str_replace('.', get_string('decsep', 'langconfig'), $answers);
+            }
+
+            if ($forfeedback) {
+                $answers = str_replace('"', '', $answers);
+            }
         }
 
         // Otherwise, we build an array with all answers, according to our naming scheme.
@@ -1672,4 +1738,6 @@ class qtype_formulas_part {
         }
         return $result;
     }
+
+
 }

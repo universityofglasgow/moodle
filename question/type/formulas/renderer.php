@@ -95,7 +95,11 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
      */
     public function head_code(question_attempt $qa): string {
         global $CFG;
-        $this->page->requires->js_call_amd('qtype_formulas/answervalidation', 'init');
+        $this->page->requires->js_call_amd(
+            'qtype_formulas/answervalidation',
+            'init',
+            [get_config('qtype_formulas', 'debouncedelay')]
+        );
 
         // Include backwards-compatibility layer for Bootstrap 4 data attributes, if available.
         // We may safely assume that if the uncompiled version is there, the minified one exists as well.
@@ -228,12 +232,13 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
      * @param int|string $answerindex index of the answer (starting at 0) or special value for combined/separate unit field
      * @param question_attempt $qa question attempt that will be displayed on the page
      * @param array $answeroptions array of strings containing the answer options to choose from
+     * @param bool $shuffle whether the options should be shuffled
      * @param question_display_options $displayoptions controls what should and should not be displayed
      * @param string $feedbackclass
      * @return string HTML fragment
      */
     protected function create_radio_mc_answer(qtype_formulas_part $part, $answerindex, question_attempt $qa,
-            array $answeroptions, question_display_options $displayoptions, string $feedbackclass = ''): string {
+            array $answeroptions, bool $shuffle, question_display_options $displayoptions, string $feedbackclass = ''): string {
         /** @var qype_formulas_question $question */
         $question = $qa->get_question();
 
@@ -258,6 +263,18 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
             'sr-only'
         );
         $output .= html_writer::end_tag('legend');
+
+        // If needed, shuffle the options while maintaining the keys.
+        if ($shuffle) {
+            $keys = array_keys($answeroptions);
+            shuffle($keys);
+
+            $shuffledoptions = [];
+            foreach ($keys as $key) {
+                $shuffledoptions[$key] = $answeroptions[$key];
+            }
+            $answeroptions = $shuffledoptions;
+        }
 
         // Iterate over all options.
         foreach ($answeroptions as $i => $optiontext) {
@@ -307,6 +324,59 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
     }
 
     /**
+     * Translate an array containing formatting options into a CSS format string, e. g. from
+     * ['w' => '50px', 'bgcol' => 'yellow'] to 'width: 50px; background-color: yellow'. Note:
+     * - colors can be defined in 3 or 6 digit hex RGB, in 4 or 8 digit hex RGBA or as CSS named color
+     * - widths can be defined as a number followed by the units px, rem or em; if the unit is omitted, rem will be used
+     * - alignment can be defined as left, right, center, start or end
+     *
+     * @param array $options associative array containing options (in our own denomination) and their settings
+     * @return string
+     */
+    protected function get_css_properties(array $options): string {
+        // Define some regex pattern.
+        $hexcolor = '#([0-9A-F]{8}|[0-9A-F]{6}|[0-9A-F]{3}|[0-9A-F]{4})';
+        $namedcolor = '[A-Z]+';
+        // We accept floating point numbers with or without a leading integer part and integers.
+        // Floating point numbers with a trailing decimal point do not work in all browsers.
+        $length = '(\d+\.\d+|\d*\.\d+|\d+)(px|em|rem)?';
+        $alignment = 'start|end|left|right|center';
+
+        $styles = [];
+        foreach ($options as $name => $value) {
+            switch ($name) {
+                case 'bgcol':
+                    if (!preg_match("/^(($hexcolor)|($namedcolor))$/i", $value)) {
+                        break;
+                    }
+                    $styles[] = "background-color: $value";
+                    break;
+                case 'txtcol':
+                    if (!preg_match("/^(($hexcolor)|($namedcolor))$/i", $value)) {
+                        break;
+                    }
+                    $styles[] = "color: $value";
+                    break;
+                case 'w':
+                    if (!preg_match("/^($length)$/i", $value)) {
+                        break;
+                    }
+                    // If no unit is given, append rem.
+                    $styles[] = "width: $value" . (preg_match('/\d$/', $value) ? 'rem' : '');
+                    break;
+                case 'align':
+                    if (!preg_match("/^($alignment)$/i", $value)) {
+                        break;
+                    }
+                    $styles[] = "text-align: $value";
+                    break;
+            }
+        }
+
+        return implode(';', $styles);
+    }
+
+    /**
      * Create a <label> element for a given input control (e. g. a text field). Returns the
      * HTML and the label's ID.
      *
@@ -340,11 +410,12 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
      * @param int|string $answerindex index of the answer (starting at 0) or special value for combined/separate unit field
      * @param question_attempt $qa question attempt that will be displayed on the page
      * @param array $answeroptions array of strings containing the answer options to choose from
+     * @param bool $shuffle whether the options should be shuffled
      * @param question_display_options $displayoptions controls what should and should not be displayed
      * @return string HTML fragment
      */
     protected function create_dropdown_mc_answer(qtype_formulas_part $part, $answerindex, question_attempt $qa,
-            array $answeroptions, question_display_options $displayoptions): string {
+            array $answeroptions, bool $shuffle, question_display_options $displayoptions): string {
         /** @var qype_formulas_question $question */
         $question = $qa->get_question();
 
@@ -355,6 +426,7 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
         $inputattributes['name'] = $inputname;
         $inputattributes['value'] = $currentanswer;
         $inputattributes['id'] = $inputname;
+        $inputattributes['class'] = 'formulas-select';
 
         $label = $this->create_label_for_input(
             $this->generate_accessibility_label_text($answerindex, $part->numbox, $part->partindex, $question->numparts),
@@ -377,6 +449,19 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
                 $optiontext, $part->subqtextformat , $qa, 'qtype_formulas', 'answersubqtext', $part->id, false
             );
         }
+
+        // If needed, shuffle the options while maintaining the keys.
+        if ($shuffle) {
+            $keys = array_keys($entries);
+            shuffle($keys);
+
+            $shuffledentries = [];
+            foreach ($keys as $key) {
+                $shuffledentries[$key] = $entries[$key];
+            }
+            $entries = $shuffledentries;
+        }
+
         $output .= html_writer::select($entries, $inputname, $currentanswer, ['' => ''], $inputattributes);
         $output .= html_writer::end_tag('span');
 
@@ -433,11 +518,13 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
      * @param int|string $answerindex index of the answer (starting at 0) or special value for combined/separate unit field
      * @param question_attempt $qa question attempt that will be displayed on the page
      * @param question_display_options $displayoptions controls what should and should not be displayed
+     * @param array $formatoptions associative array 'optionname' => 'value', e. g. 'w' => '50px'
      * @param string $feedbackclass
      * @return string HTML fragment
      */
     protected function create_input_box(qtype_formulas_part $part, $answerindex,
-            question_attempt $qa, question_display_options $displayoptions, string $feedbackclass = ''): string {
+            question_attempt $qa, question_display_options $displayoptions, array $formatoptions = [],
+            string $feedbackclass = ''): string {
         /** @var qype_formulas_question $question */
         $question = $qa->get_question();
 
@@ -480,22 +567,51 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
         }
         $title = get_string($titlestring, 'qtype_formulas');
 
+        // Fetch the configured default width and use it, if the setting exists. Otherwise,
+        // the plugin's default as defined in styles.css will be used. If the user did not
+        // specify a unit, we use pixels (px). Note that this is different from the renderer
+        // where rem is used in order to allow for the short syntax 'w=3' (3 chars wide).
+        $defaultformat = [];
+        $defaultwidth = get_config('qtype_formulas', "defaultwidth_{$titlestring}");
+        // If the default width has not been set for the current answer box type, $defaultwidth will
+        // be false and thus not numeric.
+        if (is_numeric($defaultwidth)) {
+            $defaultwidthunit = get_config('qtype_formulas', "defaultwidthunit");
+            if (!in_array($defaultwidthunit, ['px', 'rem', 'em'])) {
+                $defaultwidthunit = 'px';
+            }
+            $defaultformat = ['w' => $defaultwidth . $defaultwidthunit];
+        }
+        // Using the union operator the values from the left array will be kept.
+        $formatoptions = $formatoptions + $defaultformat;
+
         $inputattributes = [
             'type' => 'text',
             'name' => $inputname,
             'value' => $currentanswer,
             'id' => $inputname,
+            'style' => $this->get_css_properties($formatoptions),
 
             'data-answertype' => ($answerindex === self::UNIT_FIELD ? 'unit' : $part->answertype),
             'data-withunit' => ($answerindex === self::COMBINED_FIELD ? '1' : '0'),
 
-            'data-toggle' => 'tooltip',
-            'data-title' => $title,
-            'data-custom-class' => 'qtype_formulas-tooltip',
             'title' => $title,
             'class' => "form-control formulas_{$titlestring} {$feedbackclass}",
             'maxlength' => 128,
         ];
+
+        // If the answer type is "Number" and it is not a combined field, we only add the tooltip, if the
+        // corresponding option is set.
+        $iscombined = $inputattributes['data-withunit'] === '1';
+        $isnumber = !$iscombined && $inputattributes['data-answertype'] === qtype_formulas::ANSWER_TYPE_NUMBER;
+        $shownumbertooltip = get_config('qtype_formulas', 'shownumbertooltip');
+        if (!$isnumber || $shownumbertooltip) {
+            $inputattributes += [
+                'data-toggle' => 'tooltip',
+                'data-title' => $title,
+                'data-custom-class' => 'qtype_formulas-tooltip',
+            ];
+        }
 
         if ($displayoptions->readonly) {
             $inputattributes['readonly'] = 'readonly';
@@ -549,17 +665,31 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
                 continue;
             }
             $placeholder = ($i == $part->numbox) ? '_u' : "_{$i}";
-            // If the placeholder does not exist yet, we create it with default settings, i. e. no multi-choice.
+            // If the placeholder does not exist yet, we create it with default settings, i. e. no multi-choice
+            // and no styling.
             if (!array_key_exists($placeholder, $boxes)) {
-                $boxes[$placeholder] = ['placeholder' => '{' . $placeholder . '}', 'options' => '', 'dropdown' => false];
+                $boxes[$placeholder] = [
+                    'placeholder' => '{' . $placeholder . '}',
+                    'options' => '',
+                    'dropdown' => false,
+                    'format' => [],
+                ];
                 $subqreplaced .= '{' . $placeholder . '}';
             }
         }
 
         // If part has combined unit answer input.
         if ($part->has_combined_unit_field()) {
-            $combinedfieldhtml = $this->create_input_box($part, self::COMBINED_FIELD, $qa, $options, $sub->feedbackclass);
-            return str_replace('{_0}{_u}', $combinedfieldhtml, $subqreplaced);
+            // For a combined unit field, we try to merge the formatting options from the {_0} and the
+            // {_u} placeholder, giving precedence to the latter.
+            $mergedformat = $boxes['_u']['format'] + $boxes['_0']['format'];
+            $combinedfieldhtml = $this->create_input_box(
+                $part, self::COMBINED_FIELD, $qa, $options, $mergedformat, $sub->feedbackclass
+            );
+            // The combined field must be placed where the user has the {_0}{_u} placeholders, possibly with
+            // their formatting options.
+            $boxplaceholders = $boxes['_0']['placeholder'] . $boxes['_u']['placeholder'];
+            return str_replace($boxplaceholders, $combinedfieldhtml, $subqreplaced);
         }
 
         // Iterate over all boxes again, this time creating the appropriate input control and insert it
@@ -590,12 +720,16 @@ class qtype_formulas_renderer extends qtype_with_combined_feedback_renderer {
             }
 
             if ($optiontexts === null) {
-                $inputfieldhtml = $this->create_input_box($part, $answerindex, $qa, $options, $sub->feedbackclass);
+                $inputfieldhtml = $this->create_input_box(
+                    $part, $answerindex, $qa, $options, $boxes[$placeholder]['format'], $sub->feedbackclass
+                );
             } else if ($boxes[$placeholder]['dropdown']) {
-                $inputfieldhtml = $this->create_dropdown_mc_answer($part, $i, $qa, $optiontexts->value, $options);
+                $inputfieldhtml = $this->create_dropdown_mc_answer(
+                    $part, $i, $qa, $optiontexts->value, $boxes[$placeholder]['shuffle'], $options
+                );
             } else {
                 $inputfieldhtml = $this->create_radio_mc_answer(
-                    $part, $i, $qa, $optiontexts->value, $options, $sub->feedbackclass
+                    $part, $i, $qa, $optiontexts->value, $boxes[$placeholder]['shuffle'], $options, $sub->feedbackclass
                 );
             }
 

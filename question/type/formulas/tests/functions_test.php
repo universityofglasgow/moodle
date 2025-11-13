@@ -268,6 +268,9 @@ final class functions_test extends \advanced_testcase {
             [2, 'fact(2)'],
             [6, 'fact(3)'],
             [720, 'fact(6)'],
+            [15511210043330985984000000, 'fact(25)'],
+            [403291461126605635584000000, 'fact(26)'],
+            [10888869450418352160768000000, 'fact(27)'],
             ['fact() expects its argument to be a non-negative integer.', 'fact(-2)'],
             ['fact() expects its argument to be a non-negative integer.', 'fact(2.5)'],
             ['Cannot compute 250! on this platform, the result is bigger than PHP_MAX_INT.', 'fact(250)'],
@@ -1020,6 +1023,7 @@ final class functions_test extends \advanced_testcase {
             [false, 'a=diff(1, 2);'],
             [true, 'a=fill(3, "x");'],
             [true, 'a=fill(3, 0);'],
+            [false, 'a=fill(2000, 0);'],
             [false, 'a=fill(0);'],
             [false, 'a=fill(3, 3, 3);'],
             [true, 'a=join(" ", ["a", "b"]);'],
@@ -1246,7 +1250,7 @@ final class functions_test extends \advanced_testcase {
      */
     public static function provide_various_function_calls(): array {
         return [
-            [get_config('qtype_formulas')->version, 'fqversionnumber()'],
+            [get_config('qtype_formulas', 'version'), 'fqversionnumber()'],
             ['str() expects a scalar argument, e. g. a number.', 's = str([])'],
             ['str() expects a scalar argument, e. g. a number.', 's = str([1, 2, 3])'],
         ];

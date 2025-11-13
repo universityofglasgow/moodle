@@ -312,6 +312,10 @@ final class questiontype_test extends \advanced_testcase {
             [[], ['answer' => [0 => '\sin(20)']]],
             [[], ['answer' => [0 => '[1, 2]']]],
             [[], ['answer' => [0 => '0']]],
+            [[], ['answer' => [0 => '5'], 'postunit' => [0 => '°']]],
+            [[], ['answer' => [0 => '5'], 'postunit' => [0 => '%']]],
+            [[], ['answer' => [0 => '1'], 'postunit' => [0 => 'Ω']]],
+            [[], ['answer' => [0 => '1'], 'postunit' => [0 => 'µs']]],
             [[], ['vars2' => [0 => 'x=_0'], 'correctness' => [0 => 'x']]],
             [[], ['globalunitpenalty' => 0]],
             [[], ['globalunitpenalty' => 1]],
@@ -461,6 +465,12 @@ final class questiontype_test extends \advanced_testcase {
                 ['correctness[0]' => get_string('error_grading_not_one', 'qtype_formulas', 0.5)],
                 [
                     'correctness' => [0 => '0.5'],
+                ],
+            ],
+            [
+                ['correctness[0]' => get_string('error_grading_not_one', 'qtype_formulas', 0)],
+                [
+                    'correctness' => [0 => '0'],
                 ],
             ],
             [
@@ -675,7 +685,7 @@ final class questiontype_test extends \advanced_testcase {
      * Test to make sure that loading of question options works, including in an error case.
      */
     public function test_get_question_options(): void {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -710,17 +720,28 @@ final class questiontype_test extends \advanced_testcase {
         // Now we are going to delete the options record.
         $DB->delete_records('qtype_formulas_options', ['questionid' => $question->id]);
 
-        // Notifications we expect due to missing options.
-        $this->expectOutputString('!! Failed to load question options from the table qtype_formulas_options' .
-                                  ' for questionid ' . $question->id . ' !!' . "\n" .
-                                  '!! Failed to load question options from the table qtype_formulas_options for '.
-                                  'questionid ' . $question->id . ' !!' . "\n");
-
         // Now see what happens.
         $question = $DB->get_record('question', ['id' => $returnedfromsave->id], '*', MUST_EXIST);
         $this->qtype->get_question_options($question);
 
-        self::assertDebuggingCalled('Formulas question ID '.$question->id.' was missing an options record. Using default.');
+        // With MDL-85721, the error reporting has changed for Moodle 4.5 and later. Instead of a notification,
+        // the "Failed to load question options" error is now output via debugging as well.
+        // is now output via debugging.
+        if ($CFG->branch < 405) {
+            self::assertDebuggingCalled("Formulas question ID {$question->id} was missing an options record. Using default.");
+
+            // Notifications we expect due to missing options. We expect it twice, because we do two tests (one further down).
+            $this->expectOutputString('!! Failed to load question options from the table qtype_formulas_options' .
+                                    ' for questionid ' . $question->id . ' !!' . "\n" .
+                                    '!! Failed to load question options from the table qtype_formulas_options for ' .
+                                    'questionid ' . $question->id . ' !!' . "\n");
+        } else {
+            self::assertdebuggingcalledcount(2, [
+                "Formulas question ID {$question->id} was missing an options record. Using default.",
+                "Failed to load question options from the table qtype_formulas_options for questionid {$question->id}",
+            ]);
+        }
+
         self::assertInstanceOf(stdClass::class, $question->options);
         $options = $question->options;
         self::assertEquals($question->id, $options->questionid);
@@ -736,7 +757,14 @@ final class questiontype_test extends \advanced_testcase {
         $question = $DB->get_record('question', ['id' => $returnedfromsave->id], '*', MUST_EXIST);
         $this->qtype->get_question_options($question);
 
-        self::assertDebuggingCalled('Formulas question ID '.$question->id.' was missing an options record. Using default.');
+        if ($CFG->branch < 405) {
+            self::assertDebuggingCalled("Formulas question ID {$question->id} was missing an options record. Using default.");
+        } else {
+            self::assertdebuggingcalledcount(2, [
+                "Formulas question ID {$question->id} was missing an options record. Using default.",
+                "Failed to load question options from the table qtype_formulas_options for questionid {$question->id}",
+            ]);
+        }
         self::assertInstanceOf(stdClass::class, $question->options);
         $options = $question->options;
         self::assertEquals($question->id, $options->questionid);
@@ -862,7 +890,7 @@ final class questiontype_test extends \advanced_testcase {
         $formdata->varsrandom = 'foo = {1,2,3}';
         $formdata->varsglobal = 'bar = foo * 2';
         $formdata->globalunitpenalty = '0.9';
-        $formdata->globalruleid = 99;
+        $formdata->globalruleid = 1;
         $formdata->subqtext = [['text' => 'testing text for part', 'format' => FORMAT_HTML]];
         $formdata->answertype = [qtype_formulas::ANSWER_TYPE_NUMERICAL_FORMULA];
         $formdata->vars1 = ['local = 1 + foo + bar'];
@@ -880,7 +908,7 @@ final class questiontype_test extends \advanced_testcase {
         // should now be stored with the part (as unitpenalty and ruleid) and not with the question.
         self::assertEquals('foo = {1,2,3}', $savedquestion->options->varsrandom);
         self::assertEquals('bar = foo * 2', $savedquestion->options->varsglobal);
-        self::assertEquals('99', $savedpart->ruleid);
+        self::assertEquals('1', $savedpart->ruleid);
         self::assertEquals('0.9', $savedpart->unitpenalty);
         self::assertEquals('testing text for part', $savedpart->subqtext);
         self::assertEquals('local = 1 + foo + bar', $savedpart->vars1);
@@ -977,7 +1005,7 @@ final class questiontype_test extends \advanced_testcase {
     }
 
     /**
-     * Data provider.
+     * Data provider. For invalid imports, we introduce the expected error message by adding an exclamation mark.
      *
      * @return array
      */
@@ -990,16 +1018,30 @@ final class questiontype_test extends \advanced_testcase {
                 $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_5.3.0.xml',
             ],
             [
+                '!At least one answer is required.',
+                $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_invalid_no_answer.xml',
+            ],
+            [
+                '!The grading criterion should evaluate to 1 for correct answers.',
+                $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_invalid_grading_model_answer.xml',
+            ],
+            [
+                '?Question "Formulas question with no parts" does not contain any parts.',
+                $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_invalid_no_parts.xml',
+            ],
+            [
                 'For a minimal question, you must define a subquestion with (1) mark, (2) answer, (3) grading criteria',
                 $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_5.2.0.xml',
             ],
         ];
     }
+
     /**
      * Test importing a question from a prior XML export.
      *
-     * @param string $expected expected output after XML import
+     * @param string $expected expected output after XML import (starting with ! for expected errors)
      * @param string $filename path of fixture file to be used
+     *
      * @dataProvider provide_import_filenames
      */
     public function test_import_from_xml($expected, $filename): void {
@@ -1035,7 +1077,99 @@ final class questiontype_test extends \advanced_testcase {
 
         // Import our XML file.
         self::assertTrue($qformat->importpreprocess());
-        self::assertTrue($qformat->importprocess());
+        if ($expected[0] === '!') {
+            $prefix = '\+\+ Importing 1 questions from file \+\+.*';
+            $expected = substr($expected, 1);
+            self::assertFalse($qformat->importprocess());
+        } else if ($expected[0] === '?') {
+            $prefix = '\+\+ Parsing questions from import file. \+\+.*';
+            $expected = substr($expected, 1);
+            if ($CFG->branch < 404) {
+                self::assertTrue($qformat->importprocess());
+            } else {
+                self::assertFalse($qformat->importprocess());
+            }
+        } else {
+            $prefix = '';
+            self::assertTrue($qformat->importprocess());
+        }
+        self::assertTrue($qformat->importpostprocess());
+
+        // Importing generates output. Make sure the tests expects that.
+        $this->expectOutputRegex('/' . $prefix . preg_quote($expected, '/') . '/s');
+    }
+
+    /**
+     * Data provider. For invalid imports, we introduce the expected error message by adding an exclamation mark.
+     *
+     * @return array
+     */
+    public static function provide_import_filenames_for_lenient_import(): array {
+        global $CFG;
+
+        return [
+            [
+                '!At least one answer is required.',
+                $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_invalid_no_answer.xml',
+            ],
+            [
+                'Question text',
+                $CFG->dirroot . '/question/type/formulas/tests/fixtures/qtype_sample_formulas_invalid_grading_model_answer.xml',
+            ],
+        ];
+    }
+
+    /**
+     * Test lenient check of imported question.
+     *
+     * @param string $expected expected output after XML import (starting with ! for expected errors)
+     * @param string $filename path of fixture file to be used
+     *
+     * @dataProvider provide_import_filenames_for_lenient_import
+     */
+    public function test_lenient_import_from_xml($expected, $filename): void {
+        global $CFG;
+
+        // Login as admin user.
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        // Create a course and a question category.
+        $course = $this->getDataGenerator()->create_course();
+        $context = context_system::instance();
+        /** @var \core_question_generator $questiongenerator */
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $questiongenerator->create_question_category(['contextid' => $context->id]);
+
+        // Prepare the XML format class.
+        require_once($CFG->dirroot . '/question/format/xml/format.php');
+        $qformat = new \qformat_xml();
+        $qformat->setCategory($category);
+        if (class_exists('\core_question\local\bank\question_edit_contexts')) {
+            $contexts = new \core_question\local\bank\question_edit_contexts($context);
+        } else {
+            $contexts = new \question_edit_contexts($context);
+        }
+        $qformat->setContexts($contexts);
+        $qformat->setCourse($course);
+        $qformat->setFilename($filename);
+        $qformat->setMatchgrades(false);
+        $qformat->setCatfromfile(false);
+        $qformat->setContextfromfile(false);
+        $qformat->setStoponerror(true);
+
+        // Activate lenient import.
+        set_config('lenientimport', 1, 'qtype_formulas');
+        self::assertEquals('1', get_config('qtype_formulas', 'lenientimport'));
+
+        // Import our XML file.
+        self::assertTrue($qformat->importpreprocess());
+        if ($expected[0] !== '!') {
+            self::assertTrue($qformat->importprocess());
+        } else {
+            $expected = substr($expected, 1);
+            self::assertFalse($qformat->importprocess());
+        }
         self::assertTrue($qformat->importpostprocess());
 
         // Importing generates output. Make sure the tests expects that.
@@ -1176,5 +1310,30 @@ final class questiontype_test extends \advanced_testcase {
                 self::assertEquals($originalparts[$i]->{$field . 'format'}, $importedparts[$i]->{$field . 'format'});
             }
         }
+    }
+
+    public function test_format_float(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // The following number will be formatted as '2.800000000000000' by Moodle's format_float()
+        // with auto-detection of decimal places.
+        $float = 2.1 + 7 * 0.1;
+
+        // Setting the localised decimal separator, but disallow the decimal comma in the admin settings.
+        qtype_formulas_test_helper::define_local_decimal_separator();
+        self::assertEquals('0', get_config('qtype_formulas', 'allowdecimalcomma'));
+        self::assertEquals('2.8', qtype_formulas::format_float($float));
+
+        // For LaTeX output, the result should not differ.
+        self::assertEquals('2.8', qtype_formulas::format_float($float, true));
+
+        // Now allowing the decimal comma to be used.
+        set_config('allowdecimalcomma', 1, 'qtype_formulas');
+        self::assertEquals('1', get_config('qtype_formulas', 'allowdecimalcomma'));
+        self::assertEquals('2,8', qtype_formulas::format_float($float));
+
+        // For LaTeX output, we should have curly braces around the comma.
+        self::assertEquals('2{,}8', qtype_formulas::format_float($float, true));
     }
 }

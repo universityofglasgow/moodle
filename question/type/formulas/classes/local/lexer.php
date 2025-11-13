@@ -108,7 +108,9 @@ class lexer {
             return $this->read_number();
         }
         // A letter indicates the start of an identifier, i. e. a variable or function name.
-        if (preg_match('/[_A-Za-z]/', $currentchar)) {
+        // We also accept U+00B5 (MICRO SIGN), U+03BC (GREEK SMALL MU), U+2126 (OHM) and
+        // U+03A9 (GREEK CAPITAL OMEGA) for units. And we allow the degree symbol ° as well.
+        if (preg_match('/[_A-Za-z°\x{00B5}\x{03BC}\x{03A9}\x{2126}]/u', $currentchar)) {
             return $this->read_identifier();
         }
         // Unless we are in the middle of a ternary operator, we treat : as a RANGE_SEPARATOR.
@@ -133,19 +135,19 @@ class lexer {
             return $this->read_operator();
         }
         // There are some single-character tokens...
-        if (preg_match('/[]\[(){},;π\\\]/', $currentchar)) {
-            $types = [
-                '[' => token::OPENING_BRACKET,
-                '(' => token::OPENING_PAREN,
-                '{' => token::OPENING_BRACE,
-                ']' => token::CLOSING_BRACKET,
-                ')' => token::CLOSING_PAREN,
-                '}' => token::CLOSING_BRACE,
-                ',' => token::ARG_SEPARATOR,
-                '\\' => token::PREFIX,
-                ';' => token::END_OF_STATEMENT,
-                'π' => token::CONSTANT,
-            ];
+        $types = [
+            '[' => token::OPENING_BRACKET,
+            '(' => token::OPENING_PAREN,
+            '{' => token::OPENING_BRACE,
+            ']' => token::CLOSING_BRACKET,
+            ')' => token::CLOSING_PAREN,
+            '}' => token::CLOSING_BRACE,
+            ',' => token::ARG_SEPARATOR,
+            '\\' => token::PREFIX,
+            ';' => token::END_OF_STATEMENT,
+            'π' => token::CONSTANT,
+        ];
+        if (in_array($currentchar, array_keys($types))) {
             return $this->read_single_char_token($types[$currentchar]);
         }
         // If we are still here, that's not good at all. We need to read the char (it is only peeked
@@ -423,8 +425,12 @@ class lexer {
 
         while ($currentchar !== input_stream::EOF) {
             $nextchar = $this->inputstream->peek();
-            // Identifiers may contain letters, digits or underscores.
-            if (!preg_match('/[A-Za-z0-9_]/', $nextchar)) {
+            // Identifiers may contain letters, digits or underscores. Also, we will accept the
+            // µ and Ω symbols, because they may appear in units. The same is true for the degree °
+            // symbol. We don't want to throw lexing errors while reading them. Note that we
+            // explicitly include U+00B5 (MICRO SIGN), U+03BC (GREEK SMALL MU), U+2126 (OHM) and
+            // U+03A9 (GREEK CAPITAL OMEGA).
+            if (!preg_match('/[A-Za-z°0-9_\x{00B5}\x{03BC}\x{03A9}\x{2126}]/u', $nextchar)) {
                 break;
             }
             $currentchar = $this->inputstream->read();
@@ -468,12 +474,21 @@ class lexer {
         if (preg_match('/[*=&|<>]/', $followedby)) {
             // In most cases, two-character operators have the same character twice.
             // The only exceptions are !=, <= and >= where the second char is always the equal sign.
-            if (($currentchar === $followedby)
-                || ($followedby === '=' && preg_match('/[!<>]/', $currentchar))) {
+            // Also, we want to allow <> as alternative syntax for inequality.
+            $sametwice = $currentchar === $followedby;
+            $secondequal = ($followedby === '=' && preg_match('/[!<>]/', $currentchar));
+            $alternativeinequality = $currentchar === '<' && $followedby === '>';
+            if ($sametwice || $secondequal || $alternativeinequality) {
                 $result .= $this->inputstream->read();
             }
         }
-        return new token(token::OPERATOR, $result, $startingposition['row'], $startingposition['column']);
+        // Translate <> into !=, but always store the original value in the metadata. There might be
+        // other translations later.
+        $original = $result;
+        if ($result === '<>') {
+            $result = '!=';
+        }
+        return new token(token::OPERATOR, $result, $startingposition['row'], $startingposition['column'], $original);
     }
 
     /**

@@ -15,7 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace qtype_formulas\local;
+
 use Exception;
+use qtype_formulas\local\lazylist;
 
 /**
  * Parser for qtype_formulas
@@ -28,8 +30,8 @@ class random_variable extends variable {
     /** @var string the identifier used to refer to this variable */
     public string $name;
 
-    /** @var array the set of possible values to choose from */
-    public array $reservoir = [];
+    /** @var lazylist|array the set of possible values to choose from */
+    public $reservoir;
 
     /** @var int the variable's data type */
     public int $type;
@@ -38,17 +40,17 @@ class random_variable extends variable {
     public $value = null;
 
     /** @var bool if the variable is a shuffled array */
-    private bool $shuffle;
+    public bool $shuffle;
 
     /**
      * Constructor.
      *
      * @param string $name identifier used to refer to this variable
-     * @param array $reservoir set of possible values to choose from
+     * @param lazylist|array $reservoir set of possible values to choose from
      * @param bool $useshuffle whether the variable is a shuffled array
      * @param int $seed the seed for the PRNG
      */
-    public function __construct(string $name, array $reservoir, bool $useshuffle, int $seed = 1) {
+    public function __construct(string $name, $reservoir, bool $useshuffle, int $seed = 1) {
         $this->name = $name;
         $this->shuffle = $useshuffle;
         $this->reservoir = $reservoir;
@@ -87,7 +89,7 @@ class random_variable extends variable {
                 // TODO: non-capturing catch.
                 return PHP_INT_MAX;
             }
-            return $result;
+            return $result >= PHP_INT_MAX ? PHP_INT_MAX : (int) $result;
         }
         return count($this->reservoir);
     }

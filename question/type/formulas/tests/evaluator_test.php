@@ -20,6 +20,7 @@ use Exception;
 use Generator;
 use Throwable;
 use qtype_formulas;
+use qtype_formulas_test_helper;
 use qtype_formulas\local\answer_parser;
 use qtype_formulas\local\random_parser;
 use qtype_formulas\local\parser;
@@ -54,6 +55,8 @@ final class evaluator_test extends \advanced_testcase {
         global $CFG;
         parent::setUpBeforeClass();
 
+        require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
+        require_once($CFG->dirroot . '/question/type/formulas/tests/helper.php');
         require_once($CFG->dirroot . '/question/type/formulas/questiontype.php');
     }
 
@@ -75,6 +78,19 @@ final class evaluator_test extends \advanced_testcase {
         // Re-instantiate with the same seed, so we should get the same values as for the first step.
         $evaluator->instantiate_random_variables($seed);
         self::assertEquals($export, $evaluator->export_randomvars_for_step_data());
+
+        // Try a random variable with a very large reservoir.
+        $command = 'a = {1:1e9:0.1};';
+        $randomparser = new random_parser($command);
+        $evaluator = new evaluator();
+        $evaluator->evaluate($randomparser->get_statements());
+
+        // Instantiate random variables with a given seed and store their values for comparison.
+        $seed = intval(microtime(true));
+        $evaluator->instantiate_random_variables($seed);
+        $token = $evaluator->export_single_variable('a');
+        self::assertGreaterThanOrEqual(1, $token->value);
+        self::assertLessThan(1e9, $token->value);
     }
 
     public function test_remove_special_vars(): void {
@@ -347,6 +363,8 @@ final class evaluator_test extends \advanced_testcase {
             'ternary in both parts without parens, 2' => [12, '1>1 ? 1 == 2 ? 3 : 4 : 7 < 8 ? 12 : 15'],
             'ternary with vars' => [1, 'a=1; b=2; a < b ? a : b'],
             'ternary with arrays' => [2, 'a=[1,2,3]; b=2; a[0] > a[b] ? a[1] : a[0] * a[1]'],
+            'alternative inequality with numbers' => [7, '2 <> 3 ? 7 : 5'],
+            'alternative inequality with strings' => ['x', '"a" <> "b" ? "x" : "y"'],
         ];
     }
 
@@ -485,6 +503,14 @@ final class evaluator_test extends \advanced_testcase {
                 ['a' => new variable('a', 1, variable::NUMERIC)],
                 'a = (5 == 5);',
             ],
+            'boolean true should be 1, with inequality' => [
+                ['a' => new variable('a', 1, variable::NUMERIC)],
+                'a = (4 != 5);',
+            ],
+            'boolean true should be 1, with alternative inequality' => [
+                ['a' => new variable('a', 1, variable::NUMERIC)],
+                'a = (4 <> 5);',
+            ],
             'boolean false should be 0' => [
                 ['a' => new variable('a', 0, variable::NUMERIC)],
                 'a = (5 == 4);',
@@ -584,9 +610,9 @@ final class evaluator_test extends \advanced_testcase {
                 ['e' => new variable('e', [], variable::LIST)],
                 'e=[];',
             ],
-            'large list (10000 entries) via fill' => [
-                ['c' => new variable('e', array_fill(0, 10000, 'rr'), variable::LIST)],
-                'c=fill(10000,"rr")',
+            'large list (1000 entries) via fill' => [
+                ['c' => new variable('e', array_fill(0, 1000, 'rr'), variable::LIST)],
+                'c=fill(1000,"rr")',
             ],
             'list filled with count from expression' => [
                 [
@@ -729,6 +755,12 @@ final class evaluator_test extends \advanced_testcase {
                     'C' => new variable('C', [4, 4, 4, 4], variable::LIST),
                 ],
                 'a=4; A = fill(2,0); B= fill ( 3,"Hello"); C=fill(a,4);',
+            ],
+            'change element of list that was initialised with fill()' => [
+                [
+                    'a' => new variable('a', [6, 5, 4], variable::LIST),
+                ],
+                'a=fill(3, 1); a[0] = 6; a[1] = 5; a[2] = 4;',
             ],
             'assign with indirect fill()' => [
                 [
@@ -1008,6 +1040,13 @@ final class evaluator_test extends \advanced_testcase {
                 ],
                 'a=1; b=2; c=3; d=4; e=(a==b ? b : c)',
             ],
+            'assignment with empty statements' => [
+                [
+                    'a' => new variable('a', 1, variable::NUMERIC),
+                    'b' => new variable('b', 2, variable::NUMERIC),
+                ],
+                ';; a=1;;;;;;; b=2 ;;;;;;',
+            ],
         ];
 
     }
@@ -1184,7 +1223,7 @@ final class evaluator_test extends \advanced_testcase {
         $evaluator = new evaluator();
         $evaluator->evaluate($statements);
 
-        $command = 'diff(["x", "1+x+y+3", "(1+sqrt(x))^2", "x*x+y*y"], ["0", "2+x+y+2", "1+x", "x+y^2"]);';
+        $command = 'diff(["x", "1+x+y+3", "(1+sqrt(x))^2", "x*x+y*y", "x"], ["0", "2+x+y+2", "1+x", "x+y^2", ""]);';
         $parser = new parser($command);
         $statements = $parser->get_statements();
         $result = $evaluator->evaluate($statements)[0]->value;
@@ -1202,10 +1241,62 @@ final class evaluator_test extends \advanced_testcase {
         // for all values of x.
         self::assertEqualsWithDelta(PHP_FLOAT_MAX, $result[2]->value, 1e-8);
 
-        // For the last expression, the difference is at least 0 (if x and y were to be chosen as 1 for
+        // For the fourth expression, the difference is at least 0 (if x and y were to be chosen as 1 for
         // all evaluation points) and at most 72 (if we have the value 9 in all cases).
         self::assertGreaterThanOrEqual(0, $result[3]->value);
         self::assertLessThanOrEqual(72, $result[3]->value);
+
+        // For the last expression, the difference should be PHP_FLOAT_MAX again, because the second
+        // input is the empty string.
+        self::assertEqualsWithDelta(PHP_FLOAT_MAX, $result[4]->value, 1e-8);
+    }
+
+    public function test_algebraic_diff_with_large_reservoir(): void {
+        // Initialize the evaluator with global algebraic vars.
+        $vars = 'x={1:2:1e-6}; y={-2:-1:1e-6};';
+        $parser = new parser($vars);
+        $statements = $parser->get_statements();
+        $evaluator = new evaluator();
+        $evaluator->evaluate($statements);
+
+        $command = 'diff(["x", "1+x+y+3", "x+y*y"], ["0", "2+x+y+2", "x+y^2"]);';
+        $parser = new parser($command);
+        $statements = $parser->get_statements();
+        $result = $evaluator->evaluate($statements)[0]->value;
+
+        // The first expression should have a difference greater than 0.
+        self::assertGreaterThan(0, $result[0]->value);
+
+        // The second and third expressions should have (virtually) zero difference.
+        self::assertEqualsWithDelta(0, $result[1]->value, 1e-10);
+        self::assertEqualsWithDelta(0, $result[2]->value, 1e-10);
+    }
+
+    public function test_substitute_variables_in_text_localization(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setting the localised decimal separator, but disallow the decimal comma in the admin settings.
+        qtype_formulas_test_helper::define_local_decimal_separator();
+        self::assertEquals('0', get_config('qtype_formulas', 'allowdecimalcomma'));
+
+        // Define, parse and evaluate some variables.
+        $vars = 'a=1.5; b=[2.3,3.5,4];';
+        $parser = new parser($vars);
+        $statements = $parser->get_statements();
+        $evaluator = new evaluator();
+        $evaluator->evaluate($statements);
+
+        // The output should contain a decimal point in all three cases despite the separator being a comma.
+        $text = '{a} -- {b[0]} -- {=b[2]/8}';
+        $output = $evaluator->substitute_variables_in_text($text);
+        self::assertEquals('1.5 -- 2.3 -- 0.5', $output);
+
+        // Now allowing the decimal comma to be used. The numbers should now be written with a comma.
+        set_config('allowdecimalcomma', 1, 'qtype_formulas');
+        self::assertEquals('1', get_config('qtype_formulas', 'allowdecimalcomma'));
+        $output = $evaluator->substitute_variables_in_text($text);
+        self::assertEquals('1,5 -- 2,3 -- 0,5', $output);
     }
 
     public function test_substitute_variables_in_text(): void {
@@ -1301,7 +1392,7 @@ final class evaluator_test extends \advanced_testcase {
             ['Invalid definition of a random variable - you must provide a list of possible values.', 'a = 1'],
             ["Syntax error: unexpected end of expression after '='.", 'a = '],
             ['Evaluation error: range from 10 to 1 with step 1 will be empty.', 'a = {10:1:1}'],
-            ['Setting individual list elements is not supported for random variables.', 'a[1] = {1,2,3}'],
+            ['Setting individual elements is not supported for random variables.', 'a[1] = {1,2,3}'],
             ['Syntax error: invalid use of separator token \',\'.', 'a = {1:10,}'],
             ["Syntax error: incomplete ternary operator or misplaced '?'.", 'a = {1:10?}'],
             ['Number expected, found algebraic variable.', 'a = {0, 1:3:0.1, 10:30, 100}*3'],
@@ -1340,6 +1431,35 @@ final class evaluator_test extends \advanced_testcase {
                 self::assertEqualsWithDelta($variable->value, $stored->value, 1e-8);
             }
         }
+    }
+
+    public function test_setting_element_in_random_variables(): void {
+        // Setup and instantiate a random variable.
+        $randomvars = 'a=shuffle([1,2,3]); b={1,2,3}';
+        $randomparser = new random_parser($randomvars);
+        $evaluator = new evaluator();
+        $evaluator->evaluate($randomparser->get_statements());
+        $evaluator->instantiate_random_variables();
+
+        // Globally change one value in a.
+        $globalvars = 'a[0] = 111;';
+        $globalparser = new parser($globalvars);
+        $evaluator->evaluate($globalparser->get_statements());
+        $a = $evaluator->export_single_variable('a')->value;;
+        self::assertEquals(111, $a[0]->value);
+
+        // Try to change a value in b. This should fail.
+        $error = '';
+        $e = null;
+        try {
+            $globalvars = 'b[0] = 111;';
+            $globalparser = new parser($globalvars);
+            $evaluator->evaluate($globalparser->get_statements());
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+        self::assertNotNull($e);
+        self::assertStringEndsWith('Setting individual elements is not supported for random variables.', $error);
     }
 
     /**
@@ -1506,6 +1626,30 @@ final class evaluator_test extends \advanced_testcase {
                 'Individual chars of a string cannot be modified.',
                 's = "foo"; s[1] = "x"',
             ],
+            'assignment to element of algebraic variable' => [
+                'Setting individual elements is not supported for algebraic variables.',
+                'a = {1,2,3,4}; a[0] = 5;',
+            ],
+            'creating array with size > 1000, direct' => [
+                'List must not contain more than 1000 elements.',
+                'a = [' . implode(',', range(1, 1001)) . ']',
+            ],
+            'creating array with size > 1000, via fill' => [
+                'List must not contain more than 1000 elements.',
+                'a = fill(10000, 1)',
+            ],
+            'creating array with size > 1000, via range' => [
+                'List must not contain more than 1000 elements.',
+                'a = [0:1001]',
+            ],
+            'creating array with size > 1000, via multiple ranges' => [
+                'List must not contain more than 1000 elements.',
+                'a = [0:500, 1000:1500, 2000:2100]',
+            ],
+            'creating array with size > 1000, via nesting' => [
+                'List must not contain more than 1000 elements.',
+                'a = [[0:500, 1000:1500], [[2000:2100], [3000:3100]]]',
+            ],
             'prefix with invalid function' => [
                 'Syntax error: invalid use of prefix character \.',
                 'a = \idontexist(5)',
@@ -1669,6 +1813,58 @@ final class evaluator_test extends \advanced_testcase {
             'string after number' => [
                 'Syntax error: did you forget to put an operator?',
                 'a = 4 "foo"',
+            ],
+            'fill with too large count' => [
+                'List must not contain more than 1000 elements.',
+                'a = fill(2000, 1)',
+            ],
+            'invalid variable, µ alone' => [
+                'Invalid variable name: µ.',
+                'µ = 2',
+            ],
+            'invalid variable, µ at start' => [
+                'Invalid variable name: µs.',
+                'µs = 2',
+            ],
+            'invalid variable, µ in name' => [
+                'Invalid variable name: abµc.',
+                'abµc = 2',
+            ],
+            'invalid variable, OHM alone' => [
+                'Invalid variable name: Ω.',
+                'Ω = 2',
+            ],
+            'invalid variable, OHM at start' => [
+                'Invalid variable name: Ωx.',
+                'Ωx = 2',
+            ],
+            'invalid variable, OHM in name' => [
+                'Invalid variable name: kΩ.',
+                'kΩ = 2',
+            ],
+            'invalid variable, degree alone' => [
+                'Invalid variable name: °.',
+                '° = 2',
+            ],
+            'invalid variable, degree at start' => [
+                'Invalid variable name: °x.',
+                '°x = 2',
+            ],
+            'invalid variable, degree in name' => [
+                'Invalid variable name: k°.',
+                'k° = 2',
+            ],
+            'invalid assignment with % at end' => [
+                "Syntax error: unexpected end of expression after '%'.",
+                'a = 2 %',
+            ],
+            'invalid assignment with <> at end' => [
+                "Syntax error: unexpected end of expression after '<>'.",
+                'a = 2 <>',
+            ],
+            'invalid assignment with != at end' => [
+                "Syntax error: unexpected end of expression after '!='.",
+                'a = 2 !=',
             ],
         ];
     }

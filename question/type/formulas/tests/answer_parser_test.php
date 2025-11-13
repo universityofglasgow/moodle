@@ -24,6 +24,7 @@ require_once($CFG->dirroot . '/question/type/formulas/questiontype.php');
 use Exception;
 use qtype_formulas;
 use qtype_formulas\local\answer_parser;
+use qtype_formulas\local\token;
 
 /**
  * Unit tests for the answer_parser class.
@@ -34,6 +35,7 @@ use qtype_formulas\local\answer_parser;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @covers \qtype_formulas\local\answer_parser
+ * @covers \qtype_formulas\local\parser
  */
 final class answer_parser_test extends \advanced_testcase {
 
@@ -87,6 +89,9 @@ final class answer_parser_test extends \advanced_testcase {
             [false, '{1,2}'],
             [false, 'stdnormpdf(0.5)'],
             [false, '#'],
+            [false, ''],
+            [false, '""'],
+            [false, '"foo"'],
         ];
     }
 
@@ -168,6 +173,9 @@ final class answer_parser_test extends \advanced_testcase {
             [false, '\ 4'],
             [false, '\sin(pi)'],
             [false, '1+sin'],
+            [false, '""'],
+            [false, '"foo"'],
+            [false, '5 "foo"'],
         ];
     }
 
@@ -209,7 +217,7 @@ final class answer_parser_test extends \advanced_testcase {
     }
 
     /**
-     * Test for answer_parser::is_acceptable_numberic().
+     * Test for answer_parser::is_acceptable_numeric().
      *
      * @param int|bool $expected the lowest valid answer type or false if invalid
      * @param string $input the simulated student answer
@@ -226,7 +234,7 @@ final class answer_parser_test extends \advanced_testcase {
     }
 
     /**
-     * Test for answer_parser::is_acceptable_numberical_formula().
+     * Test for answer_parser::is_acceptable_numerical_formula().
      *
      * @param int|bool $expected the lowest valid answer type or false if invalid
      * @param string $input the simulated student answer
@@ -251,6 +259,8 @@ final class answer_parser_test extends \advanced_testcase {
      * @dataProvider provide_algebraic_formulas
      */
     public function test_is_acceptable_algebraic_formula($expected, $input): void {
+        $input = '5 "b"';
+        $expected = false;
         $parser = self::prepare_answer_parser($input);
 
         if ($expected === false) {
@@ -298,6 +308,14 @@ final class answer_parser_test extends \advanced_testcase {
             'combination 3' => [['1', 'm kg s^-2'], '1 m kg s^-2'],
             'numerical' => [['12 + 3 * 4/8', 'm^2'], '12 + 3 * 4/8 m^2'],
             'numerical formula' => [['12 * sqrt(3)', 'kg/s'], '12 * sqrt(3) kg/s'],
+            'GREEK CAPITAL OMEGA' => [['1', 'Ω'], '1 Ω'],
+            'OHM SIGN' => [['1', 'Ω'], '1 Ω'],
+            'GREEK SMALL MU' => [['1', 'μs'], '1 μs'],
+            'MICRO SIGN' => [['1', 'µs'], '1 µs'],
+            'percent with space' => [['5', '%'], '5 %'],
+            'percent without space' => [['5', '%'], '5%'],
+            'degree with space' => [['5', '°'], '5 °'],
+            'degree without space' => [['5', '°'], '5°'],
 
             [['.3', ''], '.3'],
             [['3.1', ''], '3.1'],
@@ -412,6 +430,32 @@ final class answer_parser_test extends \advanced_testcase {
     public function test_is_acceptable_for_answertype_with_invalid_type(): void {
         $parser = new answer_parser('1');
         self::assertFalse($parser->is_acceptable_for_answertype(PHP_INT_MAX));
+    }
+
+    public function test_localized_number_format(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        set_config('allowdecimalcomma', 1, 'qtype_formulas');
+        self::assertEquals('1', get_config('qtype_formulas', 'allowdecimalcomma'));
+
+        $parser = new answer_parser('1,5');
+        self::assertCount(1, $parser->get_tokens());
+
+        $token = $parser->get_tokens()[0];
+        self::assertEquals(token::NUMBER, $token->type);
+        self::assertEqualsWithDelta(1.5, $token->value, 1e-6);
+
+        // Disabling the comma should invalidate the input.
+        set_config('allowdecimalcomma', 0, 'qtype_formulas');
+        self::assertEquals('0', get_config('qtype_formulas', 'allowdecimalcomma'));
+        $message = '';
+        try {
+            $parser = new answer_parser('1,5');
+        } catch (Exception $e) {
+            $message = $e->getMessage();
+        }
+        self::assertEquals('1:2:Unexpected token: ,', $message);
     }
 
     public function test_constructor_with_known_variables(): void {

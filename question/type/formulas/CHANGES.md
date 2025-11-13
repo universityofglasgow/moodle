@@ -1,5 +1,57 @@
 # Changelog
 
+### 6.2.1 (2025-10-06)
+
+- bugfix: use float datatype to calculate factorials
+- bugfix: allow ° symbol as a unit
+- improvement: allow <> as alternative to !=
+- internal: assure full compatibility with Moodle 5.1
+
+Note: The plugin now allows to calculate factorials larger than 20! in the same way
+as older (5.x) versions. However, due to limited precision, the result for factorials
+larger than 27! will generally not be accurate -- in the same way as in older versions.
+
+### 6.2.0 (2025-09-21)
+
+- improvement: add option to hide "Number" tooltip
+- improvement: increased robustness when importing/restoring bad data
+- bugfix: allow Ω, µ and % symbols in units
+
+### 6.1.2 (2025-08-20)
+
+- improvement: allow :MC suffix for radio-box multi-choice
+- improvement: better UX for on-the-fly validation of student answers
+- bugfix: certain Unicode characters caused a parse error
+- bugfix: fix problem with rendering of formatted combined unit field
+- internal: update CI to use PostgreSQL 15
+
+### 6.1.1 (2025-07-27)
+
+- bugfix: allow assigning values to elements of shuffled lists
+
+### 6.1.0 (2025-07-26)
+
+- improvement: allow use of local decimal separator (comma) in student answers
+- improvement: use local decimal separator when displaying numbers in feedback or question text
+- improvement: simplifiy shuffling options in multi-choice answer fields using ":MCS" or ":MCES"
+- improvement: implement basic formatting of input fields (width, color, alignment)
+- improvement: add option to skip checking correctness of model answer when importing questions
+- improvement: better error reporting if importing a question fails
+- bugfix: ignore empty statements or subsequent semicolons in variable definitions
+- bugfix: avoid undesired linebreak around dropdown fields with Moodle 5.0 and above
+- bugfix: avoid re-activation of outdated MathJax preview
+- bugfix: fix instantiation check for variables that contain HTML
+- bugfix: allow setting individual elements in lists that are initialised with fill()
+- bugfix: allow large reservoirs for random and algebraic variables
+- bugfix: fix rendering of local variables in questions with answer type algebraic formula
+- bugfix: flag quotes and strings in student answers as invalid
+- internal: fix failing unit tests for Moodle 4.5+ after MDL-85721
+- internal: improve language strings
+- internal: improve layout of admin settings page
+- internal: remove obsolete admin setting "usepopup"
+
+Details: https://github.com/FormulasQuestion/moodle-qtype_formulas/compare/v6.0.4...v6.1.0
+
 ### 6.0.4 (2025-06-16)
 
 - bugfix: avoid outdated MathJax preview being re-activated

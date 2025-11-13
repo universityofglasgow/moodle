@@ -334,6 +334,19 @@ final class externallib_test extends \externallib_advanced_testcase {
                 ['status' => 'ok', 'data' => [[
                     'randomvars' => [],
                     'globalvars' => [
+                        ['name' => 's', 'value' => 'a<br>b'],
+                    ],
+                    'parts' => [[['name' => '_0', 'value' => '1']]],
+                ]]],
+                [
+                    'n' => 1, 'randomvars' => '', 'globalvars' => 's = join("<br>", "a", "b");',
+                    'localvars' => [''], 'answers' => ['1'],
+                ],
+            ],
+            [
+                ['status' => 'ok', 'data' => [[
+                    'randomvars' => [],
+                    'globalvars' => [
                         ['name' => 'a', 'value' => '1'],
                         ['name' => 'b', 'value' => '2'],
                         ['name' => 'c', 'value' => '0'],
@@ -436,6 +449,19 @@ final class externallib_test extends \externallib_advanced_testcase {
                 [
                     'n' => 1, 'randomvars' => '', 'globalvars' => 'a={1:10}',
                     'localvars' => ['a={1,2,3}'], 'answers' => ['1'],
+                ],
+            ],
+            [
+                ['status' => 'ok', 'data' => [[
+                    'randomvars' => [],
+                    'globalvars' => [['name' => 'a', 'value' => '{a}']],
+                    'parts' => [[
+                        ['name' => '_0', 'value' => '1'],
+                    ]],
+                ]]],
+                [
+                    'n' => 1, 'randomvars' => '', 'globalvars' => 'a={1:1e9}',
+                    'localvars' => [''], 'answers' => ['1'],
                 ],
             ],
             [
@@ -572,5 +598,28 @@ final class externallib_test extends \externallib_advanced_testcase {
         } else {
             self::assertEquals($expected['data'], $returnvalue['data']);
         }
+    }
+
+    public function test_instantiate_with_large_random_reservoir(): void {
+        $n = 1;
+        $randomvars = 'a = {0:1:1e-9}';
+        $globalvars = 'b = 2*a';
+        $returnvalue = external\instantiation::instantiate(
+            $n, $randomvars, $globalvars, [''], ['1']
+        );
+        $returnvalue = \external_api::clean_returnvalue(external\instantiation::instantiate_returns(), $returnvalue);
+
+        self::assertEquals('ok', $returnvalue['status']);
+
+        $data = $returnvalue['data'];
+
+        $a = $data[0]['randomvars'][0];
+        self::assertEquals('a', $a['name']);
+        self::assertLessThan(1, $a['value']);
+        self::assertGreaterThanOrEqual(0, $a['value']);
+
+        $b = $data[0]['globalvars'][0];
+        self::assertEquals('b', $b['name']);
+        self::assertEqualsWithDelta(2 * $a['value'], $b['value'], 1e-12);
     }
 }

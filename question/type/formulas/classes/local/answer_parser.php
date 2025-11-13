@@ -26,6 +26,9 @@ use qtype_formulas;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class answer_parser extends parser {
+    /** @var array list of operators that may exceptionally appear at the end of the input */
+    protected $allowedoperatorsatend = ['%'];
+
     /**
      * Create a parser for student answers. This class does additional filtering (e. g. block
      * forbidden operators) and syntax checking according to the answer type. It also translates
@@ -38,8 +41,14 @@ class answer_parser extends parser {
      */
     public function __construct($tokenlist, array $knownvariables = [], bool $caretmeanspower = true,
             bool $formodelanswer = false) {
-        // If the input is given as a string, run it through the lexer first.
+        // If the input is given as a string, run it through the lexer first. Also, if we aren't parsing
+        // a model answer (coming from the teacher), we replace all commas by points, because there is no
+        // situation where the comma would be a valid character. Replacement is only done if the admin
+        // settings allow the use of the decimal comma.
         if (is_string($tokenlist)) {
+            if (!$formodelanswer && get_config('qtype_formulas', 'allowdecimalcomma')) {
+                $tokenlist = str_replace(',', '.', $tokenlist);
+            }
             $lexer = new lexer($tokenlist);
             $tokenlist = $lexer->get_tokens();
         }
@@ -57,6 +66,11 @@ class answer_parser extends parser {
             // Students are not allowed to use the PREFIX operator.
             if (!$formodelanswer && $token->type === token::PREFIX) {
                 $this->die(get_string('error_prefix', 'qtype_formulas'), $token);
+            }
+
+            // Answers must currently not contain the semicolon.
+            if ($token->type === token::END_OF_STATEMENT) {
+                $this->die(get_string('error_unexpectedtoken', 'qtype_formulas', ';'), $token);
             }
         }
 
@@ -161,6 +175,11 @@ class answer_parser extends parser {
             if ($token->type === token::FUNCTION || $token->type === token::VARIABLE) {
                 return false;
             }
+            // If we find a STRING literal, we can stop, because those are not
+            // allowed in the numeric answer type.
+            if ($token->type === token::STRING) {
+                return false;
+            }
             // If it is an OPERATOR, it has to be +, -, *, /, ^, ** or the unary minus _.
             $allowedoperators = ['+', '-', '*', '/', '^', '**', '_'];
             if ($token->type === token::OPERATOR && !in_array($token->value, $allowedoperators)) {
@@ -206,7 +225,6 @@ class answer_parser extends parser {
     /**
      * Check whether the given answer contains only valid tokens for the answer type ALGEBRAIC, i. e.
      * - everything allowed for numerical formulas
-     * - modulo operator %
      * - variables (TODO: maybe only allow registered variables, would avoid student mistake "ab" instead of "a b" or "a*b")
      *
      * @param bool $fornumericalformula whether we disallow the usage of variables and the PREFIX operator
@@ -234,12 +252,18 @@ class answer_parser extends parser {
             'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
             'sqrt', 'exp', 'log10', 'lb', 'ln', 'lg', 'abs', 'ceil', 'floor', 'fact',
         ];
-        $operatorwhitelist = ['+', '_', '-', '/', '*', '**', '^', '%'];
+        $operatorwhitelist = ['+', '_', '-', '/', '*', '**', '^'];
         foreach ($answertokens as $token) {
             // Cut short, if it is a NUMBER or CONSTANT token.
             if (in_array($token->type, [token::NUMBER, token::CONSTANT])) {
                 continue;
             }
+            // If we find a STRING literal and we are testing for a numerical formula, we can stop,
+            // because those are not allowed in that case.
+            if ($fornumericalformula && $token->type === token::STRING) {
+                return false;
+            }
+
             if ($token->type === token::VARIABLE) {
                 if ($fornumericalformula) {
                     return false;
@@ -284,7 +308,11 @@ class answer_parser extends parser {
      */
     public function find_start_of_units(): int {
         foreach ($this->tokenlist as $token) {
-            if ($token->type === token::VARIABLE) {
+            $isvariable = $token->type === token::VARIABLE;
+            // If the % sign is used, we consider it as a unit, because students are not allowed to
+            // use the modulo operator.
+            $ispercent = $token->type === token::OPERATOR && $token->value === '%';
+            if ($isvariable || $ispercent) {
                 return $token->column - 1;
             }
         }
@@ -344,7 +372,13 @@ class answer_parser extends parser {
             }
         }
 
-        return (count($stack) === 1);
+        // The element must not be the empty string. As empty() returns true for the number 0, we
+        // check whether the element is numeric. If it is, that's fine. Also, the stack must have
+        // exactly one element.
+        $element = reset($stack);
+        $countok = count($stack) === 1;
+        $notemptystring = !empty($element) || is_numeric($element);
+        return $countok && $notemptystring;
     }
 
 }
