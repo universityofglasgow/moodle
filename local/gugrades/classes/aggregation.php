@@ -1505,8 +1505,11 @@ class aggregation {
             self::clear_course_droplow($courseid);
         }
 
+        // Get correct level for this category.
+        $level = \local_gugrades\grades::get_category_level($gradecategoryid);
+
         // Aggregate this user.
-        $aggregated_result = self::aggregate_user($courseid, $tree, $userid, 1, $skipdroplow);
+        $aggregated_result = self::aggregate_user($courseid, $tree, $userid, $level, $skipdroplow);
         [,,,,,,$explain] = $aggregated_result;
 
         return $explain;

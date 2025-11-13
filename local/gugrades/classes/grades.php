@@ -225,6 +225,31 @@ class grades {
     }
 
     /**
+     * Check if grade category is a candidate for being a resit category
+     * MGU-1351
+     * Must have two and only two 'children'
+     * @param int $gradecategoryid
+     * @return boolean
+     */
+    public static function is_resit_category_candidate(int $gradecategoryid) {
+        global $DB;
+
+        // First get count of grade items in this category. 
+        $gradeitemscount = $DB->count_records('grade_items', ['categoryid' => $gradecategoryid]);
+
+        // If this is more than two already then we're done here.
+        if ($gradeitemscount > 2) {
+            return false;
+        }
+
+        // Now get the count of child categories. 
+        $childcategorycount = $DB->count_records('grade_categories', ['parent' => $gradecategoryid]);
+
+        // The total of both must be exactly 2
+        return ($gradeitemscount + $childcategorycount) == 2;
+    }
+
+    /**
      * Get the category/item tree beneath the selected depth==2 category.
      * @param int $courseid
      * @param int $categoryid
@@ -261,6 +286,9 @@ class grades {
 
             // Add aggregation strategy
             $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
+
+            // Add reset candidate.
+            $gradecategories[$id]->resit_candidate = self::is_resit_category_candidate($id);
 
             // Add odd/even for style to second level only.
             $level = self::get_category_level($id);
