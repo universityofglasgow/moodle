@@ -36,7 +36,8 @@ use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-class index implements \renderable, \templatable { // Class should be placed elsewhere.
+class index implements \renderable, \templatable {
+    // Class should be placed elsewhere.
 
     private $usestudenttextbox;
     private $usestudentdrawing;
@@ -81,6 +82,8 @@ class index implements \renderable, \templatable { // Class should be placed els
         $data->printlink = $this->printurl;
         $data->pixprintdoc = $OUTPUT->image_url('download', 'mod_pdfannotator');
         $data->pixprintcomments = $OUTPUT->image_url('print_comments', 'mod_pdfannotator');
+        $data->pixexportpdf = $OUTPUT->image_url('export_pdf', 'mod_pdfannotator');
+        $data->pixexportcsv = $OUTPUT->image_url('export_csv', 'mod_pdfannotator');
 
         return $data;
     }

@@ -42,7 +42,6 @@ if (class_exists('\mod_quiz\local\reports\attempts_report_options')) {
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class quiz_essaydownload_options extends quiz_essaydownload_options_parent_class_alias {
-
     /** @var bool whether to group all answers from an attempt into a single file */
     public $allinone = false;
 

@@ -80,9 +80,19 @@
                     </span>
                 {{/useprint}}
                 {{#useprintcomments}}
-                    <button id="pdfannotator_printannotations_button" class="pdfannotator_print" type="button" title="{{# str }} printwithannotations, pdfannotator {{/ str }}">
-                        <img src='{{{pixprintcomments}}}' alt='{{# str }} printwithannotations, pdfannotator {{/ str }}'>
-                    </button>
+                    <div class="printannotations-dropdown-container">
+                        <button id="printAnnotationsOptions" class="pdfannotator_print_dropdown" type="button" title="{{# str }} printwithannotations, pdfannotator {{/ str }}">
+                            <img src='{{{pixprintcomments}}}' alt='{{# str }} printwithannotations, pdfannotator {{/ str }}'>
+                        </button>
+                        <div id="printAnnotationsOptionsContent" class="printAnnotationsOptionsContent hidden">
+                            <button id="pdfannotator_printannotations_button" class="pdfannotator_print" type="button" title="{{# str }} export_comments_pdf_tooltip, pdfannotator {{/ str }}">
+                                <img src='{{{pixexportpdf}}}' alt='{{# str }} export_comments_pdf_tooltip, pdfannotator {{/ str }}'>{{# str }} export_comments_pdf, pdfannotator {{/ str }}
+                            </button>
+                            <button id="pdfannotator_printannotations_buttonCSV" class="pdfannotator_print" type="button" title="{{# str }} export_comments_csv_tooltip, pdfannotator {{/ str }}">
+                                <img src='{{{pixexportcsv}}}' alt='{{# str }} export_comments_csv_tooltip, pdfannotator {{/ str }}'>{{# str }} export_comments_csv, pdfannotator {{/ str }}
+                            </button>
+                        </div>
+                    </div> 
                 {{/useprintcomments}}
 
                 <button id="toolbar-dropdown-button" class="pdf-annotator-hidden" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,6 +124,19 @@
                     <button id="questionsOnThisPage" class="btn-link" title="{{#str}}questionsimgtitle, pdfannotator{{/str}}">
                         <i title="{{#str}}questionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-comments fa-fw"></i>
                     </button>
+                    <span class="comment-visibility">
+                        <span class="spacer" visiblewidth="1"></span>
+                        <button id="showAllComments" class="comment-visibility-button comment-all" data-active="true">
+                            {{# pix }}comments_all,pdfannotator, {{# str }} comments_text_all, pdfannotator {{/ str }} {{/ pix}}
+                        </button>
+                        <button id="showPublicComments" class="comment-visibility-button" data-active="false">
+                            {{# pix }}comments_public,pdfannotator, {{# str }} comments_text_public, pdfannotator {{/ str }} {{/ pix}}
+                        </button>
+                        <button id="showPrivateComments" class="comment-visibility-button  comment-private" data-active="false">
+                            {{# pix }}comments_private,pdfannotator, {{# str }} comments_text_private, pdfannotator {{/ str }} {{/ pix}}
+                        </button>
+                        <span class="spacer" visiblewidth="1"></span>
+                    </span>
                     <button id="searchButton" class="btn-link" title="{{# str }} search, pdfannotator {{/ str }}" alt="{{# str }} search, pdfannotator {{/ str }}">
                         <i class="icon fa fa-search fa-fw" title="{{# str }} search, pdfannotator {{/ str }}" alt="{{# str }} search, pdfannotator {{/ str }}"></i>
                     </button>
@@ -130,17 +153,17 @@
                 </div>
                 <form id="comment-list-form" class="comment-list-form" style="display:none;">
                     <div class="editor-loader-placeholder-add"></div>
-                    <div id="anonymousDiv" class="row-fluid row">
+                    <div id="anonymousDiv" class="row-fluid">
                         <input type="checkbox" name="visibility" value="anonymous" id="anonymousCheckbox" class="pdfannotator-radio" style="width:auto;"><label id="anonymousLabel" for="anonymousCheckbox">{{# str }} sendAnonymous, pdfannotator {{/ str }}</label>
                     </div>
                     {{# useprivatecomments }}
-                    <div id="privateDiv" class="row-fluid row">
+                    <div id="privateDiv" class="row-fluid">
                         <input type="checkbox" name="visibility" value="private" id="privateCheckbox" class="pdfannotator-radio" style="width:auto;">
                         <label id="privateLabel" for="privateCheckbox">{{# str }} sendPrivate, pdfannotator {{/ str }}</label> {{{privatehelpicon}}}
                     </div>
                     {{/ useprivatecomments }}
                     {{# useprotectedcomments }}
-                    <div id="protectedDiv" class="row-fluid row">
+                    <div id="protectedDiv" class="row-fluid">
                         <input type="checkbox" name="visibility" value="protected" id="protectedCheckbox" class="pdfannotator-radio" style="width:auto;">
                         <label id="protectedLabel" for="protectedCheckbox">{{# str }} sendProtected, pdfannotator {{/ str }} </label> {{{protectedhelpicon}}}
                     </div>
@@ -155,5 +178,3 @@
     </div>
 
 </div>
-
-

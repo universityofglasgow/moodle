@@ -8,7 +8,7 @@ Feature: Set default question bank column order and size
     Given I change the window size to "large"
     And I log in as "admin"
     When I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
-    And I drag "Created by" "qbank_columnsortorder > column move handle" and I drop it in "T" "qbank_columnsortorder > column move handle"
+    And I drag "Move Created by" "button" and I drop it in "Move T" "button"
     Then "Created by" "table_row" should appear before "T" "table_row"
     And I reload the page
     And "Created by" "table_row" should appear before "T" "table_row"
@@ -33,8 +33,7 @@ Feature: Set default question bank column order and size
     Given I log in as "admin"
     And I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
     And "Created by" "table_row" should exist
-    When I click on "Actions menu" "link" in the "Created by" "table_row"
-    And I choose "Remove" in the open action menu
+    When I choose the "Remove" item in the "Actions menu" action menu of the "Created by" "table_row"
     Then "Created by" "table_row" should not exist
     And I reload the page
     And "Created by" "table_row" should not exist
@@ -80,7 +79,7 @@ Feature: Set default question bank column order and size
     And I should see "checkboxcustomcolumn"
     And I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
     And "checkboxcustomcolumn" "table_row" should appear after "Comments" "table_row"
-    When I drag "checkboxcustomcolumn" "qbank_columnsortorder > column move handle" and I drop it in "Comments" "qbank_columnsortorder > column move handle"
+    When I drag "Move checkboxcustomcolumn" "button" and I drop it in "Move Comments" "button"
     And I set the field "Width of 'checkboxcustomcolumn' in pixels" to "200"
     And I follow "Preview"
     And "checkboxcustomcolumn" "qbank_columnsortorder > column header" should appear before "Comments" "qbank_columnsortorder > column header"
@@ -88,8 +87,7 @@ Feature: Set default question bank column order and size
     And I follow "Back"
     And "checkboxcustomcolumn" "table_row" should appear before "Comments" "table_row"
     And the field "Width of 'checkboxcustomcolumn' in pixels" matches value "200"
-    And I click on "Actions menu" "link" in the "checkboxcustomcolumn" "table_row"
-    And I choose "Remove" in the open action menu
+    And I choose the "Remove" item in the "Actions menu" action menu of the "checkboxcustomcolumn" "table_row"
     And "checkboxcustomcolumn" "table_row" should not exist
     And I follow "Preview"
     And "checkboxcustomcolumn" "qbank_columnsortorder > column header" should not exist
@@ -117,6 +115,7 @@ Feature: Set default question bank column order and size
     And "Question" "table_row" should appear before "Comments" "table_row"
     And the field "Width of 'Question' in pixels" matches value ""
 
+  @core_customfield
   Scenario: Deleting a custom field which is removed from the Column sort order
     Given the following "custom field categories" exist:
       | name              | component          | area     | itemid |
@@ -130,18 +129,16 @@ Feature: Set default question bank column order and size
     And I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
     And "Field 1" "table_row" should exist
     And "Field 2" "table_row" should exist
-    And I click on "Actions menu" "link" in the "Field 1" "table_row"
-    And I choose "Remove" in the open action menu
+    And I choose the "Remove" item in the "Actions menu" action menu of the "Field 1" "table_row"
 
     # Delete a question custom field.
     And I navigate to "Plugins > Question bank plugins > Question custom fields" in site administration
-    And I click on "Delete" "link" in the "Field 1" "table_row"
+    And I press "Delete custom field: Field 1"
     And I click on "Yes" "button" in the "Confirm" "dialogue"
     And I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
     Then I should see "Column sort order"
     And "Field 2" "table_row" should exist
-    And I click on "Actions menu" "link" in the "Field 2" "table_row"
-    And I choose "Remove" in the open action menu
+    And I choose the "Remove" item in the "Actions menu" action menu of the "Field 2" "table_row"
 
     # Delete the question custom category.
     And I navigate to "Plugins > Question bank plugins > Question custom fields" in site administration
@@ -150,3 +147,9 @@ Feature: Set default question bank column order and size
     And I should not see "Category for test" in the "#customfield_catlist" "css_element"
     And I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
     And I should see "Column sort order"
+
+  @accessibility
+  Scenario: The plugin administration page meets accessibility standards
+    Given I log in as "admin"
+    When I navigate to "Plugins > Question bank plugins > Column sort order" in site administration
+    Then the "region-main" "region" should meet accessibility standards with "best-practice" extra tests

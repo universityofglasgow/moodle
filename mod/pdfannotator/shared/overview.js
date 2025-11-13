@@ -36,7 +36,7 @@ function startOverview(Y, __annotatorid, __cmid, __capabilities, __action) { // 
         }
 
         shortenTextOverview();
-        renderMathJax();
+        //renderMathJax();
 
         /************************** 2. Function definitions **************************/
 
@@ -477,12 +477,14 @@ function startOverview(Y, __annotatorid, __cmid, __capabilities, __action) { // 
             });
         });
     }
-
-    function renderMathJax() {
+/***** Removing this function for Moodle 5 ****/
+    /*function renderMathJax() {
         var counter = 0;
         let mathjax = function () {
             if (typeof (MathJax) !== "undefined") {
-                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+                if (MathJax.Hub !== 'undefined') {
+                    MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+                }
             } else if (counter < 10) {
                 counter++;
                 setTimeout(mathjax, 200);
@@ -490,6 +492,6 @@ function startOverview(Y, __annotatorid, __cmid, __capabilities, __action) { // 
             }
         };
         mathjax();
-    }
+    }*/
 
 }

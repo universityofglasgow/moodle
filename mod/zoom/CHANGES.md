@@ -1,5 +1,23 @@
 ### Releases ###
 
+#### v5.4.5 ####
+
+- Bugfix: Case-insensitive comparisons for alternative host emails #677
+- Hardening: Verify zoomid when toggling recording visibility #681
+- CI: add Moodle 5.1 checks #679
+
+#### v5.4.4 ####
+
+- Hardening: Shell arguments should always be escaped #671 (thanks @OshratLuski, @nadavkav)
+
+#### v5.4.3 ####
+
+- Bugfix: Rename string to avoid flawed database upgrade step #668 (thanks @samwitzig)
+
+#### v5.4.2 ####
+
+- Bugfix: Fix SQL compatibility in upgrade step #664 (thanks @izendegi, @SimonThornett)
+
 #### v5.4.1 ####
 
 - Bugfix: Fix stringid capitalization in upgrade step #659 (thanks @Ethan-DevIT)
