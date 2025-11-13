@@ -51,13 +51,9 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
 
         $format = $this->format;
         $course = $format->get_course();
-        $context = \context_course::instance($course->id);
 
         $modinfo = $this->format->get_modinfo();
         $sections = $modinfo->get_section_info_all();
-
-        // FIXME: This is really evil and should by using the navigation API.
-        $canviewhidden = has_capability('moodle/course:viewhiddensections', $context, $USER);
 
         $data = (object)[
             'previousurl' => '',
@@ -69,7 +65,7 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
 
         $back = $this->sectionno - 1;
         while ($back >= 0 && empty($data->previousurl)) {
-            if ($canviewhidden || $format->is_section_visible($sections[$back])) {
+            if ($format->is_section_visible($sections[$back])) { // Different from core.
                 if (!$sections[$back]->visible) {
                     $data->previoushidden = true;
                 }
@@ -81,9 +77,9 @@ class sectionnavigation extends \core_courseformat\output\local\content\sectionn
         }
 
         $forward = $this->sectionno + 1;
-        $numsections = course_get_format($course)->get_last_section_number_without_deligated();
+        $numsections = $format->get_last_section_number_without_deligated();
         while ($forward <= $numsections && empty($data->nexturl)) {
-            if ($canviewhidden || $format->is_section_visible($sections[$forward])) {
+            if ($format->is_section_visible($sections[$forward])) { // Different from core.
                 if (!$sections[$forward]->visible) {
                     $data->nexthidden = true;
                 }

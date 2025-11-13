@@ -50,10 +50,8 @@ class cmsummary extends cmsummary_base {
     public function export_for_template(\renderer_base $output): stdClass {
         global $PAGE;
 
-        $notediting = !$PAGE->user_is_editing();
-        $singlesectionid = $this->format->get_sectionid();
         $data = new stdClass;
-        if (($singlesectionid) && ($notediting)) {
+        if (!$PAGE->user_is_editing()) {
             $showcompletion = false;
             $coursesettings = $this->format->get_settings();
             $sectionformatoptions = $this->format->get_format_options($this->section);
@@ -67,6 +65,7 @@ class cmsummary extends cmsummary_base {
 
             $totalactivities = array_reduce($mods, fn($carry, $item) => $carry + ($item["count"] ?? 0), 0);
             $data = (object)[
+                'hassummary' => true,
                 'showcompletion' => $showcompletion,
                 'total' => $total,
                 'complete' => $complete,

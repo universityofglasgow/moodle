@@ -1,6 +1,32 @@
 History
 =============
 
+Version 405.1.5 - 15/09/2025
+----------------------------
+1. Fix 'Broken image files used in sections can break entire course' - #246.
+
+Version 405.1.4 - 07/08/2025
+----------------------------
+1. Fix section course module summary showing 'Activities:' without a number.
+2. Take into account sub-sections when determining if a section is empty when deciding if it is shown.
+
+Version 405.1.3 - 30/07/2025
+----------------------------
+1. Fix section zero in grid causes crash.
+2. Fix display of sections on single section page.
+3. Ensure that section zero is checked correctly for visibility.
+
+Version 405.1.2 - 27/07/2025
+----------------------------
+1. Enhancement 'Add 'courseindex' site setting that controls the display of the Course Index'.
+2. Fix 'Hidden section shown as "not available" to user with "moodle/course:viewhiddensections" permission' - #240.
+
+Version 405.1.1 - 16/07/2025
+----------------------------
+1. Fix 'Images only in section zero summary don't count as content to be shown'.
+2. Fix 'Question banks cannot determine if section zero can be shown'.
+3. Enhancement 'Add module indentation capability'.
+
 Version 405.1.0 - 02/06/2025
 ----------------------------
 1. Remove 'gnumsections' from database if any exist and update Behat tests to use initial 'numsections'.

@@ -132,10 +132,12 @@ class content extends content_base {
             $data->maincoursepage = new url('/course/view.php', ['id' => $course->id]);
         } else {
             $toolbox = toolbox::get_instance();
+
+            $coursecontext = context_course::instance($course->id);
+
             $coursesectionimages = $DB->get_records('format_grid_image', ['courseid' => $course->id]);
             if (!empty($coursesectionimages)) {
                 $fs = get_file_storage();
-                $coursecontext = context_course::instance($course->id);
                 foreach ($coursesectionimages as $coursesectionimage) {
                     try {
                         $replacement = $toolbox->check_displayed_image(
@@ -267,6 +269,7 @@ class content extends content_base {
                         $sectionimages[$section->id]->notavailable = (!empty($sectionimages[$section->id]->visibility->notavailable));
                         $sectionimages[$section->id]->hasbadge = true;
                     }
+                    $sectionimages[$section->id]->sectionuservisible = $section->uservisible;
 
                     // Section break.
                     if ($sectionformatoptions['sectionbreak'] == 2) { // Yes.
@@ -412,7 +415,6 @@ class content extends content_base {
             $sectioncount++;
             if ($sectioncount > $numsections) {
                 // Only count sections that are not deligated and have content.
-                $temp = $thissection->hasactivities;
                 if (!empty($modinfo->sectionmodules[$thissection->section])) {
                     $this->hassteathwithcontent++;
                 }
@@ -425,14 +427,14 @@ class content extends content_base {
 
             $section = new stdClass();
             $section->id = $thissection->id;
-            $section->num = $thissection->section;
+            $section->num = $thissection->sectionnum;
             $section->name = $output->section_title_without_link($thissection, $course);
             if ((!$editing) &&
                 (!empty($sectioncompletion[$thissection->id])) &&
                 ((!empty($settings['showcompletion'])) &&
                 ($settings['showcompletion'] == 2))) {
                 $this->calculate_section_activity_completion(
-                    $thissection->section, $course, $modinfo, $deligatedsections, $output);
+                    $thissection->sectionnum, $course, $modinfo, $deligatedsections, $output);
                 if (!empty($this->sectioncompletionmarkup[$thissection->section])) {
                     $section->sectioncompletionmarkup = $this->sectioncompletionmarkup[$thissection->section];
                 }

@@ -36,6 +36,7 @@
     * alttext - Image alternative text.
     * generatedimageuri - Generated image URI.
     * sectioncompletionmarkup - Section completion markup if any.
+    * uservisible - Section is visible to the user.
 
     Example context (json):
     {
@@ -49,7 +50,8 @@
                 "sectionname": "The first section",
                 "imageuri": false,
                 "generatedimageuri": "Base64 encoded svg",
-                "sectioncompletionmarkup": ""
+                "sectioncompletionmarkup": "",
+                "sectionuservisible": true
             },
             {
                 "sectionbreak": true,
@@ -61,7 +63,8 @@
                 "imageuri": "https://mymoodle/pluginfile.php/358/format_grid/displayedsectionimage/42/1/ducking.jpg.webp",
                 "imagealttext": "Duckling",
                 "generatedimageuri": false,
-                "sectioncompletionmarkup": ""
+                "sectioncompletionmarkup": "",
+                "sectionuservisible": true
             }
         ],
         "imageresizemethodcrop": true,
@@ -81,8 +84,8 @@
     {{/sectionbreak}}
     <div id="section-{{number}}" class="grid-section card{{#iscurrent}} currentgridsection{{/iscurrent}}" title="{{sectionname}}">
         {{^popup}}
-        {{#notavailable}}<div class="grid-section-inner d-flex flex-column h-100">{{/notavailable}}
-        {{^notavailable}}<a class="grid-section-inner d-flex flex-column h-100" href="{{sectionurl}}">{{/notavailable}}
+        {{^sectionuservisible}}<div class="grid-section-inner d-flex flex-column h-100">{{/sectionuservisible}}
+        {{#sectionuservisible}}<a class="grid-section-inner d-flex flex-column h-100" href="{{sectionurl}}">{{/sectionuservisible}}
         {{/popup}}
         {{#popup}}
         <div class="grid-modal grid-section-inner d-flex flex-column h-100" data-toggle="modal" data-target="#gridPopup" data-section="{{number}}" tabindex="0">
@@ -135,8 +138,8 @@
                 {{/imageerror}}
             </div>
         {{^popup}}
-        {{#notavailable}}</div>{{/notavailable}}
-        {{^notavailable}}</a>{{/notavailable}}
+        {{^sectionuservisible}}</div>{{/sectionuservisible}}
+        {{#sectionuservisible}}</a>{{/sectionuservisible}}
         {{/popup}}
         {{#popup}}
         </div>

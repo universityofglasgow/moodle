@@ -64,7 +64,10 @@ class format_grid extends core_courseformat\base {
                 $currentsettings = $this->get_settings();
                 if (!empty($currentsettings['popup'])) {
                     if ($currentsettings['popup'] == 2) {
-                        $this->coursedisplay = COURSE_DISPLAY_SINGLEPAGE;
+                        global $PAGE;
+                        if ($PAGE->pagetype == "course-view") {
+                            $this->coursedisplay = COURSE_DISPLAY_SINGLEPAGE;
+                        }
                     }
                 }
             }
@@ -179,7 +182,7 @@ class format_grid extends core_courseformat\base {
      * @return bool
      */
     public function uses_course_index() {
-        return true;
+        return (get_config('format_grid', 'courseindex')) ? true : false;
     }
 
     /**
@@ -188,7 +191,7 @@ class format_grid extends core_courseformat\base {
      * @return bool
      */
     public function uses_indentation(): bool {
-        return false;
+        return (get_config('format_grid', 'indentation')) ? true : false;
     }
 
     /**
@@ -232,6 +235,22 @@ class format_grid extends core_courseformat\base {
     }
 
     /**
+     * Returns if an specific section is visible to the current user - changed parent version.
+     *
+     * Formats can overrride this method to implement any special section logic.
+     *
+     * @param section_info $section the section modinfo
+     * @return bool;
+     */
+    protected function parent_is_section_visible(section_info $section): bool {
+        // It is unlikely that a section is orphan, but it needs to be checked.
+        if ($section->is_orphan() && !has_capability('moodle/course:viewhiddensections', $this->get_context())) {
+            return false;
+        }
+        return $section->uservisible;
+    }
+
+    /**
      * Returns if an specific section is visible to the current user.
      *
      * Formats can overrride this method to implement any special section logic.
@@ -240,9 +259,9 @@ class format_grid extends core_courseformat\base {
      * @return bool;
      */
     public function is_section_visible(section_info $section): bool {
+        global $PAGE;
         if (($section->section > $this->get_last_section_number_without_deligated()) && (empty($section->component))) {
             // Stealth section that is not a deligated one.
-            global $PAGE;
             $context = context_course::instance($this->course->id);
             if ($PAGE->user_is_editing() && has_capability('moodle/course:update', $context)) {
                 $modinfo = get_fast_modinfo($this->course);
@@ -252,36 +271,80 @@ class format_grid extends core_courseformat\base {
             // Don't show.
             return false;
         }
-        $shown = parent::is_section_visible($section);
+        $shown = $this->parent_is_section_visible($section);
         if (($shown) && ($section->sectionnum == 0)) {
             // Show section zero if summary has content, otherwise check modules.
-            if (empty(strip_tags($section->summary))) {
-                // Don't show section zero if no modules or all modules unavailable to user.
-                $showmovehere = ismoving($this->course->id);
-                if (!$showmovehere) {
-                    global $PAGE;
-                    $context = context_course::instance($this->course->id);
-                    if (!($PAGE->user_is_editing() && has_capability('moodle/course:update', $context))) {
-                        $modshown = false;
-                        $modinfo = get_fast_modinfo($this->course);
+            $shown = $this->section_can_be_shown($section);
+        } else {
+            // Section 0 cannot be hidden.
+            if (!$shown) {
+                $pagetype = $PAGE->pagetype;
+                if (!empty($pagetype)) {
+                    if ($pagetype == 'course-view-grid') {
+                        // Take into account core extra conditions beyond 'uservisible'.
 
-                        if (!empty($modinfo->sections[$section->section])) {
-                            foreach ($modinfo->sections[$section->section] as $modnumber) {
-                                $mod = $modinfo->cms[$modnumber];
-                                if ($mod->is_visible_on_course_page()) {
-                                    // At least one is.
-                                    $modshown = true;
-                                    break;
-                                }
-                            }
-                        }
-                        $shown = $modshown;
+                        // Previous to Moodle 4.0 thas logic was hardcoded. To prevent errors in the contrib plugins
+                        // the default logic is the same required for topics and weeks format and still uses
+                        // a "hiddensections" format setting.
+                        $course = $this->get_course();
+                        $hidesections = $course->hiddensections ?? true;
+                        // Show the section if the user is permitted to access it, OR if it's not available
+                        // but there is some available info text which explains the reason & should display,
+                        // OR it is hidden but the course has a setting to display hidden sections as unavailable.
+                        $shown = (($section->visible && !$section->available && !empty($section->availableinfo)) ||
+                            (!$section->visible && !$hidesections));
                     }
                 }
             }
         }
 
         return $shown;
+    }
+
+    /**
+     * States if the section can be shown.  Thus if moving, editing on with update capability, or has content.
+     *
+     * @param section_info $section the section modinfo
+     * @return bool;
+     */
+    protected function section_can_be_shown(section_info $section) {
+        global $PAGE;
+
+        $canbeshown = true;
+        if (empty(strip_tags($section->summary, ['img']))) { // Allow images to be content.
+            // Don't show section if no modules or all modules unavailable to user.
+            $showmovehere = ismoving($this->course->id);
+            if (!$showmovehere) {
+                $context = context_course::instance($this->course->id);
+                if (!($PAGE->user_is_editing() && has_capability('moodle/course:update', $context))) {
+                    $modshown = false;
+                    $modinfo = get_fast_modinfo($this->course);
+
+                    if (!empty($modinfo->sections[$section->section])) {
+                        foreach ($modinfo->sections[$section->section] as $modnumber) {
+                            $mod = $modinfo->cms[$modnumber];
+                            if ($mod->modname == 'qbank') {
+                                // Ignore question banks.
+                                continue;
+                            }
+                            if ($mod->modname == 'subsection') {
+                                $subsectionsectioninfo = $modinfo->delegatedbycm[$mod->id];
+                                $modshown = $this->section_can_be_shown($subsectionsectioninfo);
+                                if ($modshown) {
+                                    break;
+                                }
+                            } else if ($mod->is_visible_on_course_page()) {
+                                // At least one is.
+                                $modshown = true;
+                                break;
+                            }
+                        }
+                    }
+                    $canbeshown = $modshown;
+                }
+            }
+        }
+        return $canbeshown;
     }
 
     /**

@@ -141,6 +141,14 @@ $string['sectionbadgeingridbox_help'] = 'Show the section badge in the grid box'
 $string['defaultsectionbadgeingridbox'] = 'Section badge in grid box';
 $string['defaultsectionbadgeingridbox_desc'] = 'Show the section badge in the grid box.';
 
+// Course index.
+$string['courseindex'] = 'Course index';
+$string['courseindex_help'] = 'Show the \'Course index\'';
+
+// Indentation.
+$string['indentation'] = 'Allow indentation on the course page';
+$string['indentation_help'] = 'Allow teachers and other users with the manage activities capability to indent items on the course page.';
+
 // Completion.
 $string['showcompletion'] = 'Show completion';
 $string['showcompletion_help'] = 'Show the completion percentage of the sections';

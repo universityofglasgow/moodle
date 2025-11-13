@@ -21,6 +21,7 @@
 
     Example context (json):
     {
+        "hassummary": true,
         "showcompletion": true,
         "mods": [
             {
@@ -36,6 +37,7 @@
         "totalactivities": "5"
     }
 }}
+{{#hassummary}}
 <div class="section-summary-activities d-flex">
     <div class="d-flex align-items-center">
         {{#pix}}i/activities, moodle{{/pix}}{{#str}} totalactivities, course, {{totalactivities}} {{/str}}
@@ -45,4 +47,5 @@
             {{{modprogress}}}
         </div>
     {{/showcompletion}}
- </div>
+</div>
+{{/hassummary}}
