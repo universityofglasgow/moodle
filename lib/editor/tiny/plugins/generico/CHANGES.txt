@@ -1,3 +1,6 @@
+Version 1.0.4 (Build 2025100500)
+- Tidy up installation settings
+
 Version 1.0.3 (Build 2025041700)
 - Added capability "use"
 - Tweaks for PHP 8.4
