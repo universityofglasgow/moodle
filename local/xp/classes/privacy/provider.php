@@ -45,10 +45,9 @@ use core_privacy\local\request\writer;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-    \core_privacy\local\metadata\provider,
     \block_xp\local\privacy\addon_provider,
-    \block_xp\local\privacy\addon_userlist_provider {
-
+    \block_xp\local\privacy\addon_userlist_provider,
+    \core_privacy\local\metadata\provider {
     use \core_privacy\local\legacy_polyfill;
 
     /**
@@ -59,13 +58,16 @@ class provider implements
      */
     public static function _get_metadata(collection $collection) { // @codingStandardsIgnoreLine
 
-        $collection->add_database_table('local_xp_log', [
-            'userid' => 'privacy:metadata:log:userid',
-            'type' => 'privacy:metadata:log:type',
-            'signature' => 'privacy:metadata:log:signature',
-            'points' => 'privacy:metadata:log:points',
-            'time' => 'privacy:metadata:log:time',
-        ], 'privacy:metadata:log');
+        $collection->add_database_table('local_xp_log',
+            [
+                'userid' => 'privacy:metadata:log:userid',
+                'type' => 'privacy:metadata:log:type',
+                'signature' => 'privacy:metadata:log:signature',
+                'points' => 'privacy:metadata:log:points',
+                'time' => 'privacy:metadata:log:time',
+            ],
+            'privacy:metadata:log'
+        );
 
         return $collection;
     }
@@ -105,7 +107,8 @@ class provider implements
             'local_xp',
             'local_xp_dataformat',
             get_user_preferences('local_xp_dataformat', '', $userid),
-            get_string('privacy:metadata:prefdataformat', 'local_xp'));
+            get_string('privacy:metadata:prefdataformat', 'local_xp')
+        );
     }
 
     /**
@@ -118,7 +121,7 @@ class provider implements
         $db = \block_xp\di::get('db');
         $user = $contextlist->get_user();
 
-        list($insql, $inparams) = $db->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $db->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         // Fetch the logs.
         $sql = "
@@ -130,7 +133,7 @@ class provider implements
         $params = ['userid' => $user->id] + $inparams;
 
         $path = array_merge($rootpath, [get_string('privacy:path:logs', 'block_xp')]);
-        $flushlogs = function($contextid, $data) use ($path) {
+        $flushlogs = function ($contextid, $data) use ($path) {
             $context = context::instance_by_id($contextid);
             writer::with_context($context)->export_data($path, (object) ['data' => $data]);
         };
@@ -193,7 +196,7 @@ class provider implements
         $user = $contextlist->get_user();
         $userid = $user->id;
 
-        list($insql, $inparams) = $db->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $db->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
         $sql = "contextid $insql AND userid = :userid";
         $params = ['userid' => $userid] + $inparams;
         $db->delete_records_select('local_xp_log', $sql, $params);
@@ -206,7 +209,7 @@ class provider implements
      */
     public static function delete_addon_data_for_users(approved_userlist $userlist) {
         $db = \block_xp\di::get('db');
-        list($insql, $inparams) = $db->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $db->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
         $sql = "contextid = :contextid AND userid $insql";
         $params = ['contextid' => $userlist->get_context()->id] + $inparams;
         $db->delete_records_select('local_xp_log', $sql, $params);

@@ -63,7 +63,7 @@ if ($CFG->branch >= 404) {
          */
         protected function get_default_table_aliases(): array {
             if (!isset($this->defaultaliases)) {
-                $this->defaultaliases = array_reduce($this->get_default_tables(), function($carry, $table) {
+                $this->defaultaliases = array_reduce($this->get_default_tables(), function ($carry, $table) {
                     $carry[$table] = database::generate_alias();
                     return $carry;
                 }, []);

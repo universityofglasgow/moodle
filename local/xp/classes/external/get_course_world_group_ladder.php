@@ -69,7 +69,8 @@ class get_course_world_group_ladder extends external_api {
     public static function execute($courseid, $page, $perpage) {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(),
-            compact('courseid', 'page', 'perpage'));
+            compact('courseid', 'page', 'perpage')
+        );
         extract($params); // @codingStandardsIgnoreLine
 
         $adminconfig = di::get('config');
@@ -111,19 +112,19 @@ class get_course_world_group_ladder extends external_api {
             'page' => $page,
             'total' => $leaderboard->get_count(),
             'ranking' => iterator_to_array(new map_iterator(
-                    $leaderboard->get_ranking($limit),
-                    function($rank) use ($userid, $myids) {
-                        return [
-                            'rank' => $rank->get_rank(),
-                            'state' => self::serialize_state(
-                                $rank->get_state(),
-                                false,
-                                false,
-                                $myids
-                            ),
-                        ];
-                    }
-                )),
+                $leaderboard->get_ranking($limit),
+                function ($rank) use ($userid, $myids) {
+                    return [
+                        'rank' => $rank->get_rank(),
+                        'state' => self::serialize_state(
+                            $rank->get_state(),
+                            false,
+                            false,
+                            $myids
+                        ),
+                    ];
+                }
+            )),
         ];
 
         return $data;

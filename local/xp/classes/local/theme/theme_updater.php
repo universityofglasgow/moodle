@@ -118,7 +118,7 @@ class theme_updater {
 
         // Delete the extra ones.
         if (!empty($seen)) {
-            list($insql, $inparams) = $this->db->get_in_or_equal($seen, SQL_PARAMS_QM, 'param', false);
+            [$insql, $inparams] = $this->db->get_in_or_equal($seen, SQL_PARAMS_QM, 'param', false);
             $this->db->delete_records_select($this->table, "code $insql", $inparams);
         } else {
             $this->db->delete_records($this->table);

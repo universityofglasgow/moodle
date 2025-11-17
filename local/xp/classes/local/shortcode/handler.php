@@ -44,6 +44,20 @@ use local_xp\local\reason\drop_collected_reason;
 class handler {
 
     /**
+     * Get the world from the context.
+     *
+     * Also check whether the current user has access to the world.
+     *
+     * @param object $env The environment.
+     * @return world|null
+     */
+    protected static function get_world_from_context(\context $context) {
+        $world = di::get('context_world_factory')->get_world_from_context($context);
+        $perms = $world->get_access_permissions();
+        return $perms->can_access() ? $world : null;
+    }
+
+    /**
      * Get the world from the env.
      *
      * Also check whether the current user has access to the world.
@@ -52,20 +66,7 @@ class handler {
      * @return world|null
      */
     protected static function get_world_from_env($env) {
-        $config = di::get('config');
-        $courseid = SITEID;
-
-        if ($config->get('context') == CONTEXT_COURSE) {
-            $context = $env->context->get_course_context(false);
-            if (!$context) {
-                return null;
-            }
-            $courseid = $context->instanceid;
-        }
-
-        $world = di::get('course_world_factory')->get_world($courseid);
-        $perms = $world->get_access_permissions();
-        return $perms->can_access() ? $world : null;
+        return static::get_world_from_context($env->context);
     }
 
     /**
@@ -178,6 +179,19 @@ class handler {
             return;
         }
 
+        $ctxid = (int) ($args['ctx'] ?? 0);
+        $secret = (string) ($args['secret'] ?? '');
+        $context = null;
+        if (!empty($ctxid)) {
+            $context = \context::instance_by_id($ctxid, IGNORE_MISSING);
+            if (!$context || strlen($secret) < 7 || strpos(static::get_xpteamladder_secret($context), $secret) !== 0) {
+                return;
+            }
+        }
+
+        // If we have a context, it had to be validated.
+        $world = $context ? static::get_world_from_context($context) : static::get_world_from_env($env);
+
         $world = static::get_world_from_env($env);
         if (!$world) {
             return;
@@ -196,7 +210,7 @@ class handler {
         // Figure out the team to use as reference, we will try to get the one with the best rank.
         $pos = 0;
         if (!empty($teamids)) {
-            $reduced = array_reduce($teamids, function($carry, $teamid) use ($leaderboard) {
+            $reduced = array_reduce($teamids, function ($carry, $teamid) use ($leaderboard) {
                 if ($carry === null) {
                     // Record the position of the first team found.
                     $pos = $leaderboard->get_position($teamid);
@@ -287,4 +301,14 @@ class handler {
         );
     }
 
+    /**
+     * Get the team ladder secret.
+     *
+     * @param \context $context
+     * @return string
+     */
+    public static function get_xpteamladder_secret(\context $context) {
+        $secret = di::get('shortcode_secret');
+        return substr(sha1("xpteamladder|{$secret}|{$context->id}"), 0, 7);
+    }
 }

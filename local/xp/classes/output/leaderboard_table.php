@@ -46,7 +46,8 @@ class leaderboard_table extends \block_xp\output\leaderboard_table {
     protected function generate_columns_definition(): array {
         $columns = parent::generate_columns_definition();
         if ($this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED
-                && !isset($columns['actions'])) {
+                && !isset($columns['actions'])
+        ) {
             $columns['actions'] = '';
         }
         return $columns;
@@ -56,7 +57,8 @@ class leaderboard_table extends \block_xp\output\leaderboard_table {
         $actions = parent::get_row_actions($row);
 
         if ($this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED
-                && $this->userid == $row->state->get_id()) {
+                && $this->userid == $row->state->get_id()
+        ) {
 
             $state = di::get(\local_xp\local\leaderboard\participation\service_factory::class)
                 ->get_for_context($this->context)

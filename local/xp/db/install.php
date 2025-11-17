@@ -33,5 +33,4 @@ function xmldb_local_xp_install() {
     // We unset the length for which logs are kept, to force the admin to set it again.
     // The local plugin needs logs to be kept for a longer time.
     unset_config('keeplogs', 'block_xp');
-
 }

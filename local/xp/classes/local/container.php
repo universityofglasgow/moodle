@@ -43,6 +43,7 @@ class container implements \block_xp\local\container {
         'badge_url_resolver' => true,
         'badge_url_resolver_course_world_factory' => true,
         'block_class' => true,
+        'bulk_world_config_setter' => true,
         'cheatguard_form_class' => true,
         'collection_logger' => true,
         'collection_strategy' => true,
@@ -187,6 +188,15 @@ class container implements \block_xp\local\container {
     }
 
     /**
+     * Bulk world config setter.
+     *
+     * @return config\bulk_world_config_setter
+     */
+    protected function get_bulk_world_config_setter() {
+        return new config\bulk_world_config_setter();
+    }
+
+    /**
      * Cheatguard form class.
      *
      * @return string
@@ -277,7 +287,10 @@ class container implements \block_xp\local\container {
     private function get_course_config_factory() {
         if (!$this->courseconfigfactory) {
             $this->courseconfigfactory = new \local_xp\local\factory\course_config_factory(
-                $this->get('config'), $this->get('db'), $this->get('config_locked'));
+                $this->get('config'),
+                $this->get('db'),
+                $this->get('config_locked')
+            );
         }
         return $this->courseconfigfactory;
     }
@@ -472,8 +485,10 @@ class container implements \block_xp\local\container {
      * @return factory\levels_info_factory
      */
     protected function get_levels_info_factory() {
-        return new factory\levels_factory($this->get('config'), $this->get('badge_url_resolver'),
-            $this->get('badge_url_resolver_course_world_factory'));
+        return new factory\levels_factory($this->get('config'),
+            $this->get('badge_url_resolver'),
+            $this->get('badge_url_resolver_course_world_factory')
+        );
     }
 
     /**

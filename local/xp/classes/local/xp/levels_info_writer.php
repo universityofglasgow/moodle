@@ -144,7 +144,8 @@ class levels_info_writer extends \block_xp\local\xp\levels_info_writer {
         // Updating the mapping of the badges.
         $badgeid = $restore->get_mapping_id('badge', $metadata['badgeawardid']);
         if (!$badgeid && $restore->is_same_site() && $this->badgemanager
-                && $this->badgemanager->is_site_badge($metadata['badgeawardid'])) {
+                && $this->badgemanager->is_site_badge($metadata['badgeawardid'])
+        ) {
 
             // If the badge is a system badge, it won't be included in the backup, in which
             // case we only restore if we're restoring in the same site.

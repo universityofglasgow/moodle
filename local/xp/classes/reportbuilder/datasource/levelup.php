@@ -89,24 +89,21 @@ class levelup extends datasource {
         $course = $courseentity->get_table_alias('course');
         $this->add_entity($courseentity
             ->add_join("JOIN {course} {$course}
-                ON {$course}.id = {$xptable}.courseid")
-        );
+                ON {$course}.id = {$xptable}.courseid"));
 
         // Context entity was added in 4.3.
         if (class_exists(context::class)) {
             $contextentity = (new context())->set_table_alias('context', $courseentity->get_table_alias('context'));
             $this->add_entity($contextentity
                 ->add_joins($courseentity->get_joins())
-                ->add_join($courseentity->get_context_join())
-            );
+                ->add_join($courseentity->get_context_join()));
         }
 
         $userentity = new user();
         $user = $userentity->get_table_alias('user');
         $this->add_entity($userentity
             ->add_join("JOIN {user} {$user}
-                ON {$user}.id = {$xptable}.userid")
-        );
+                ON {$user}.id = {$xptable}.userid"));
 
         $entitygroupmember = new group_member();
         $groupmember = $entitygroupmember->get_table_alias('groups_members');
@@ -118,8 +115,7 @@ class levelup extends datasource {
                AND {$groupmember}.groupid IN (SELECT grp.id
                                                 FROM {groups} grp
                                                 JOIN {course} crs ON crs.id = grp.courseid
-                                               WHERE crs.id = {$course}.id)")
-        );
+                                               WHERE crs.id = {$course}.id)"));
 
         $entitygroup = (new group())->set_table_alias('context', $courseentity->get_table_alias('context'));
         $group = $entitygroup->get_table_alias('groups');
@@ -127,16 +123,14 @@ class levelup extends datasource {
             ->add_joins($courseentity->get_joins())
             ->add_join($courseentity->get_context_join())
             ->add_joins($entitygroupmember->get_joins())
-            ->add_join("LEFT JOIN {groups} {$group} ON {$group}.id = {$groupmember}.groupid")
-        );
+            ->add_join("LEFT JOIN {groups} {$group} ON {$group}.id = {$groupmember}.groupid"));
 
         $entitycohortmember = new cohort_member();
         $cohortmember = $entitycohortmember->get_table_alias('cohort_members');
         $this->add_entity($entitycohortmember
             ->add_joins($entitycohortmember->get_joins())
             ->add_join("LEFT JOIN {cohort_members} {$cohortmember}
-                ON {$xptable}.userid = {$cohortmember}.userid")
-        );
+                ON {$xptable}.userid = {$cohortmember}.userid"));
 
         // Generate alias for compatibility with Moodle <4.4.
         $entitycohort = (new cohort())
@@ -146,8 +140,7 @@ class levelup extends datasource {
             ->add_joins($entitycohort->get_joins())
             ->add_joins($entitycohortmember->get_joins())
             ->add_join("LEFT JOIN {cohort} {$cohort}
-                ON {$cohort}.id = {$cohortmember}.cohortid")
-        );
+                ON {$cohort}.id = {$cohortmember}.cohortid"));
 
         $this->add_all_from_entities();
     }

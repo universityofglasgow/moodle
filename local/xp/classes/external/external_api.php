@@ -95,7 +95,7 @@ class external_api extends \block_xp\external\external_api {
                 'id' => $item->id,
                 'name' => $item->fullname,
             ];
-            return array_reduce($children, function($carry, $child) use ($query, $categories) {
+            return array_reduce($children, function ($carry, $child) use ($query, $categories) {
                 $child = static::grade_item_tree_reducer($child, $query, $categories);
                 if ($child === null) {
                     return $carry;
@@ -134,7 +134,7 @@ class external_api extends \block_xp\external\external_api {
             }
         }
 
-        $matchesquery = array_reduce($candidates, function($carry, $candidate) use ($query) {
+        $matchesquery = array_reduce($candidates, function ($carry, $candidate) use ($query) {
             return $carry || strpos($candidate, $query) !== false;
         }, false);
         if (!$matchesquery) {
@@ -193,7 +193,7 @@ class external_api extends \block_xp\external\external_api {
      * @return array With keys name and value.
      */
     public static function flatten_associative_array(array $array) {
-        return array_reduce(array_keys($array), function($carry, $key) use ($array) {
+        return array_reduce(array_keys($array), function ($carry, $key) use ($array) {
             $carry[] = [
                 'name' => $key,
                 'value' => $array[$key],
@@ -235,8 +235,11 @@ class external_api extends \block_xp\external\external_api {
      *
      * @param block_base|null $bi The block instance.
      * @return config
+     * @deprecated Since XP 19, use the world config instead.
      */
     public static function make_block_config(?block_base $bi = null) {
+        debugging('Method deprecated, use the world config instead.', DEBUG_DEVELOPER);
+
         // TODO All of this method would be better in block_xp.
         $adminconfig = di::get('config');
 
@@ -480,7 +483,7 @@ class external_api extends \block_xp\external\external_api {
             ]);
         }
 
-        return new external_single_structure($params, '', $withuser);
+        return new external_single_structure($params, '', VALUE_REQUIRED);
     }
 
 }

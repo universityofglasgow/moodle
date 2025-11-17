@@ -34,7 +34,6 @@ use local_xp\local\leaderboard\participation\state;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user_leaderboard_participation extends dynamic_form {
-
     use dynamic_world_trait;
 
     protected $routename = 'report';
@@ -127,9 +126,13 @@ class user_leaderboard_participation extends dynamic_form {
         // Managers cannot change the lock time when the admin has locked the participation status.
         $configlocked = \block_xp\di::get('config_locked');
         if (!$configlocked->has('ladderparticipation') || !$configlocked->get('ladderparticipation')) {
-            $mform->addElement('date_time_selector', 'ladderparticipationlocked',
-                get_string('userladderparticipationlocked', 'block_xp'), ['optional' => true,
-                'startyear' => (int) date('Y'), 'step' => 60]);
+            $mform->addElement('date_time_selector',
+                'ladderparticipationlocked',
+                get_string('userladderparticipationlocked', 'block_xp'),
+                ['optional' => true,
+                'startyear' => (int) date('Y'),
+                'step' => 60]
+            );
             $mform->addHelpButton('ladderparticipationlocked', 'userladderparticipationlocked', 'block_xp');
         }
     }

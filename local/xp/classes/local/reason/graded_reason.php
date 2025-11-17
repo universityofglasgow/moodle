@@ -37,7 +37,7 @@ use block_xp\local\reason\reason;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class graded_reason implements reason, reason_with_short_description, reason_with_location {
+class graded_reason implements reason, reason_with_location, reason_with_short_description {
 
     /** @var int The grade item ID. */
     protected $itemid;
@@ -103,7 +103,7 @@ class graded_reason implements reason, reason_with_short_description, reason_wit
     }
 
     public static function from_signature($signature) {
-        list($itemid, $relateduserid) = explode(':', $signature);
+        [$itemid, $relateduserid] = explode(':', $signature);
         return new static($itemid, $relateduserid);
     }
 

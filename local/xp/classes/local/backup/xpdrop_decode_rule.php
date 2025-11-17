@@ -97,11 +97,11 @@ class xpdrop_decode_rule extends \restore_decode_rule {
         }
 
         require_once($CFG->dirroot . '/filter/shortcodes/lib/helpers.php');
-        $content = filter_shortcodes_process_text($content, function($tag) {
+        $content = filter_shortcodes_process_text($content, function ($tag) {
             if ($tag !== 'xpdrop') {
                 return null;
             }
-            return (object) ['hascontent' => false, 'contentprocessor' => function($args, $content) {
+            return (object) ['hascontent' => false, 'contentprocessor' => function ($args, $content) {
                 return '$@LOCALXPSHORTCODEDROP*' . ($args['id'] ?? '0') . '@$';
             }];
         });

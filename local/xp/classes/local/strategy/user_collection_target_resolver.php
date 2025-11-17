@@ -63,4 +63,3 @@ class user_collection_target_resolver implements collection_target_resolver_from
     }
 
 }
-

@@ -174,7 +174,7 @@ class course_block extends \block_xp\local\block\course_block {
         $config = $world->get_config();
         $adminconfig = \block_xp\di::get('config');
 
-        $urlsmatch = function($u1, $u2) {
+        $urlsmatch = function ($u1, $u2) {
             return $u1->out(false) == $u2->out(false);
         };
 
@@ -197,7 +197,9 @@ class course_block extends \block_xp\local\block\course_block {
             if ($foundladder === false) {
                 $link = new action_link(
                     $urlresolver->reverse('group_ladder', ['courseid' => $courseid]),
-                    get_string('navladder', 'block_xp'), null, null,
+                    get_string('navladder', 'block_xp'),
+                    null,
+                    null,
                     new pix_icon('i/ladder', '', 'block_xp')
                 );
                 array_splice($actions, ($foundinfo !== false ? $foundinfo + 1 : 0), 0, [$link]);

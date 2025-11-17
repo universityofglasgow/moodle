@@ -90,13 +90,15 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                 $setting = (new admin_setting_configselect('block_xp/keeplogs',
                     get_string('keeplogs', 'block_xp'),
                     get_string('keeplogsdesc', 'local_xp'),
-                    $this->defaults->get('keeplogs'), [
+                    $this->defaults->get('keeplogs'),
+                    [
                         '0' => get_string('forever', 'block_xp'),
                         '14' => get_string('numweeks', 'core', 2),
                         '30' => get_string('nummonth', 'core', 1),
                         '90' => get_string('nummonths', 'core', 3),
                         '180' => get_string('nummonths', 'core', 6),
                         '365' => get_string('numyear', 'core', 1),
+                        '730' => get_string('numyears', 'core', 2),
                     ]
                 ));
             }
@@ -124,8 +126,10 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                 // Leaderboard isolation.
                 if (di::get('addon')->supports_leaderboard_isolation()) {
                     $settings[] = (new admin_setting_configselect('local_xp/ladderiso',
-                        get_string('ladderiso', 'block_xp'), get_string('ladderiso_help', 'block_xp'),
-                        $defaults['ladderiso'], [
+                        get_string('ladderiso', 'block_xp'),
+                        get_string('ladderiso_help', 'block_xp'),
+                        $defaults['ladderiso'],
+                        [
                             default_course_world_config::LEADERBOARD_ISO_DEFAULT => get_string('ladderisodefault', 'block_xp'),
                             default_course_world_config::LEADERBOARD_ISO_COHORTS => get_string('ladderisocohorts', 'block_xp'),
                         ]
@@ -137,7 +141,8 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                     $settings[] = new admin_setting_configselect('local_xp/ladderparticipation',
                         get_string('ladderparticipation', 'block_xp'),
                         get_string('ladderparticipation_help', 'block_xp'),
-                        $defaults['ladderparticipation'], [
+                        $defaults['ladderparticipation'],
+                        [
                             default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED =>
                                 get_string('ladderparticipationforced', 'block_xp'),
                             default_course_world_config::LEADERBOARD_PARTICIPATION_OPTOUT =>
@@ -156,7 +161,9 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                     $setting->defaultsetting,
                     array_merge($setting->choices, [
                         default_course_world_config::IDENTITY_FIRSTNAME_INITIAL_LASTNAME => get_string(
-                            'displayfirstnameinitiallastname', 'local_xp'),
+                            'displayfirstnameinitiallastname',
+                            'local_xp'
+                        ),
                     ])
                 );
 
@@ -169,8 +176,10 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
 
                 // Progress bar mode.
                 $settings[] = (new admin_setting_configselect('local_xp/progressbarmode',
-                    get_string('progressbarmode', 'local_xp'), get_string('progressbarmode_help', 'local_xp'),
-                    $defaults['progressbarmode'], [
+                    get_string('progressbarmode', 'local_xp'),
+                    get_string('progressbarmode_help', 'local_xp'),
+                    $defaults['progressbarmode'],
+                    [
                         default_course_world_config::PROGRESS_BAR_MODE_LEVEL => get_string('progressbarmodelevel', 'local_xp'),
                         default_course_world_config::PROGRESS_BAR_MODE_OVERALL => get_string('progressbarmodeoverall', 'local_xp'),
                     ]
@@ -187,39 +196,55 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
                 ];
                 if ($this->iomad->exists()) {
                     $sources[default_course_world_config::GROUP_LADDER_IOMAD_COMPANIES] = get_string(
-                        'groupsourceiomadcompanies', 'local_xp');
+                        'groupsourceiomadcompanies',
+                        'local_xp'
+                    );
                     $sources[default_course_world_config::GROUP_LADDER_IOMAD_DEPARTMENTS] = get_string(
-                        'groupsourceiomaddepartments', 'local_xp');
+                        'groupsourceiomaddepartments',
+                        'local_xp'
+                    );
                 }
                 $settings[] = (new admin_setting_configselect('local_xp/enablegroupladder',
-                    get_string('groupladdersource', 'local_xp'), get_string('groupladdersource_help', 'local_xp'),
-                    $defaults['enablegroupladder'], $sources));
+                    get_string('groupladdersource', 'local_xp'),
+                    get_string('groupladdersource_help', 'local_xp'),
+                    $defaults['enablegroupladder'],
+                    $sources
+                ));
 
                 // Group ladder identity mode.
                 $settings[] = new admin_setting_configselect('local_xp/groupidentitymode',
-                    get_string('groupanonymity', 'local_xp'), get_string('groupanonymity_help', 'local_xp'),
-                    $defaults['groupidentitymode'], [
+                    get_string('groupanonymity', 'local_xp'),
+                    get_string('groupanonymity_help', 'local_xp'),
+                    $defaults['groupidentitymode'],
+                    [
                         course_world_config::IDENTITY_OFF => get_string('hidegroupidentity', 'local_xp'),
                         course_world_config::IDENTITY_ON => get_string('displaygroupidentity', 'local_xp'),
-                    ]);
+                    ]
+                );
 
                 // Group ladder order.
                 $settings[] = new admin_setting_configselect('local_xp/grouporderby',
-                    get_string('grouporderby', 'local_xp'), get_string('grouporderby_help', 'local_xp'),
-                    $defaults['grouporderby'], [
+                    get_string('grouporderby', 'local_xp'),
+                    get_string('grouporderby_help', 'local_xp'),
+                    $defaults['grouporderby'],
+                    [
                         default_course_world_config::GROUP_ORDER_BY_POINTS => get_string('grouppoints', 'local_xp'),
                         default_course_world_config::GROUP_ORDER_BY_POINTS_COMPENSATED_BY_AVG =>
                             get_string('grouppointswithcompensation', 'local_xp'),
                         default_course_world_config::GROUP_ORDER_BY_PROGRESS => get_string('progress', 'block_xp'),
-                    ]);
+                    ]
+                );
 
                 // Group ladder columns.
                 $settings[] = new admin_setting_configmultiselect('local_xp/groupladdercols',
-                    get_string('groupladdercols', 'local_xp'), get_string('groupladdercols_help', 'local_xp'),
-                    explode(',', $defaults['groupladdercols']), [
+                    get_string('groupladdercols', 'local_xp'),
+                    get_string('groupladdercols_help', 'local_xp'),
+                    explode(',', $defaults['groupladdercols']),
+                    [
                         'xp' => get_string('grouppoints', 'local_xp'),
                         'progress' => get_string('progress', 'block_xp'),
-                    ]);
+                    ]
+                );
             }
 
             $settings[] = $setting;
@@ -228,13 +253,19 @@ class settings_maker extends \block_xp\local\setting\default_settings_maker {
 
                 // Max actions per time.
                 $settings[] = (new admin_setting_configtext('local_xp/maxpointspertime',
-                    get_string('maxpointspertime', 'local_xp'), get_string('maxpointspertime_help', 'local_xp'),
-                    $defaults['maxpointspertime'], PARAM_INT));
+                    get_string('maxpointspertime', 'local_xp'),
+                    get_string('maxpointspertime_help', 'local_xp'),
+                    $defaults['maxpointspertime'],
+                    PARAM_INT
+                ));
 
                 // Time for max actions.
                 $settings[] = (new admin_setting_configtext('local_xp/timeformaxpoints',
-                    get_string('timeformaxpoints', 'local_xp'), get_string('timeformaxpoints_help', 'local_xp'),
-                    $defaults['timeformaxpoints'], PARAM_INT));
+                    get_string('timeformaxpoints', 'local_xp'),
+                    get_string('timeformaxpoints_help', 'local_xp'),
+                    $defaults['timeformaxpoints'],
+                    PARAM_INT
+                ));
 
             }
 

@@ -25,9 +25,11 @@
 
 namespace local_xp\local\controller;
 
+use block_xp\local\utils\text_utils;
 use help_icon;
 use moodle_exception;
 use local_xp\local\config\default_course_world_config;
+use local_xp\local\shortcode\handler;
 
 /**
  * Group ladder controller class.
@@ -124,8 +126,9 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
     protected function page_content() {
         global $PAGE;
         $output = $this->get_renderer();
-        $canmanage = $this->world->get_access_permissions()->can_manage();
+        $PAGE->requires->js_call_amd('block_xp/modal', 'registerSimpleOpenModalActionObserver');
 
+        $canmanage = $this->world->get_access_permissions()->can_manage();
         if ($canmanage) {
             echo $output->advanced_heading(get_string('teamleaderboard', 'block_xp'), [
                 'intro' => new \lang_string('teamleaderboardintro', 'block_xp'),
@@ -154,12 +157,34 @@ class group_ladder_controller extends \block_xp\local\controller\page_controller
         } else {
             $items = [];
         }
+
+        $randomid = \html_writer::random_id();
+        $plugman = \core_plugin_manager::instance();
+        $shortcodes = $plugman->get_plugin_info('filter_shortcodes');
+        $context = $this->world->get_context();
+        $embeddata = [
+            'isavailable' => (bool) $shortcodes && ($shortcodes->is_enabled() ?? true),
+            'isenabled' => true,
+            'introformatted' => text_utils::markdown_light(get_string('shortcodexpteamladderembedintro', 'block_xp')),
+            'pluginrequiredformatted' => text_utils::markdown_light(get_string('pluginshortcodesrequiredtousefeature', 'block_xp')),
+            'snippet' => "[xpteamladder ctx={$context->id} secret=" . handler::get_xpteamladder_secret($context) . "]",
+        ];
+        echo $this->get_renderer()->json_script($embeddata, $randomid);
+
         return array_merge($items, [
             [
                 'label' => get_string('pagesettings', 'block_xp'),
                 'data-xp-action' => 'open-form',
                 'data-form-class' => 'local_xp\form\team_leaderboard',
                 'data-form-args__contextid' => $this->world->get_context()->id,
+                'href' => '#',
+            ],
+            [
+                'label' => get_string('embedleaderboard', 'block_xp'),
+                'data-xp-action' => 'open-modal',
+                'data-template' => 'local_xp/shortcode-xpteamladder-embed',
+                'data-template-data' => $randomid,
+                'data-modal-title' => get_string('embedleaderboard', 'block_xp'),
                 'href' => '#',
             ],
             [

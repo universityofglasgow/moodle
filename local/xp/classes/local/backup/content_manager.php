@@ -44,6 +44,7 @@ class content_manager extends \block_xp\local\backup\content_manager {
     public function encode_content_links($content) {
         $content = parent::encode_content_links($content);
         $content = xpdrop_decode_rule::encode_content($content);
+        $content = xpteamladder_decode_rule::encode_content($content);
         return $content;
     }
 
@@ -55,6 +56,7 @@ class content_manager extends \block_xp\local\backup\content_manager {
     public function get_decode_rules() {
         $rules = parent::get_decode_rules();
         $rules[] = new xpdrop_decode_rule();
+        $rules[] = new xpteamladder_decode_rule();
         return $rules;
     }
 

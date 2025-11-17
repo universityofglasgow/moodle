@@ -79,8 +79,13 @@ class log_table extends table_sql {
      * @param team_membership_resolver|null $teamresolver The team resolver.
      * @param int|null $userid The user ID to filter by.
      */
-    public function __construct(context $context, $groupid, $downloadformat = null,
-            ?team_membership_resolver $teamresolver = null, $userid = null) {
+    public function __construct(
+        context $context,
+        $groupid,
+        $downloadformat = null,
+        ?team_membership_resolver $teamresolver = null,
+        $userid = null
+    ) {
 
         $userid = max(0, (int) $userid);
         parent::__construct('block_xp_log_' . $userid);
@@ -144,7 +149,6 @@ class log_table extends table_sql {
             $this->sql->where .= ' AND x.userid = :userid';
             $this->sql->params = array_merge($this->sql->params, ['userid' => $this->filterbyuserid]);
         }
-
     }
 
     /**
@@ -402,7 +406,7 @@ class log_table extends table_sql {
             $this->teamscache[$row->userid] = $this->teamresolver->get_teams_of_member($row->userid);
         }
 
-        return implode(', ', array_map(function($team) {
+        return implode(', ', array_map(function ($team) {
             return $team->get_name();
         }, $this->teamscache[$row->userid]));
     }

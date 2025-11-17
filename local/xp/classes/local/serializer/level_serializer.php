@@ -70,7 +70,6 @@ class level_serializer extends \block_xp\local\serializer\level_serializer {
             ];
         }
         return $structure;
-
     }
 
 }

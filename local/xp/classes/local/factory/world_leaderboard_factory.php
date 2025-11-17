@@ -82,8 +82,13 @@ class world_leaderboard_factory extends \block_xp\local\factory\world_leaderboar
     protected function get_default_division(int $targetuserid): division {
         $ladderiso = (int) $this->config->get('ladderiso');
         if ($ladderiso === default_course_world_config::LEADERBOARD_ISO_COHORTS) {
-            $candidates = $this->db->get_records('cohort_members', ['userid' => $targetuserid],
-                'cohortid ASC', 'id, cohortid, userid', 0, 1);
+            $candidates = $this->db->get_records('cohort_members',
+                ['userid' => $targetuserid],
+                'cohortid ASC',
+                'id, cohortid, userid',
+                0,
+                1
+            );
             if (empty($candidates)) {
                 return new empty_division();
             }

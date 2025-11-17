@@ -139,10 +139,14 @@ class badge_manager extends \block_xp\local\badge\badge_manager {
         $coursecontext = $context->get_course_context(false);
         if ($coursecontext) {
             $canincourse = has_all_capabilities(['moodle/badges:viewbadges', 'moodle/badges:awardbadge'],
-                $coursecontext, $userid);
+                $coursecontext,
+                $userid
+            );
         }
         $caninsystem = has_all_capabilities(['moodle/badges:viewbadges', 'moodle/badges:awardbadge'],
-            \context_system::instance(), $userid);
+            \context_system::instance(),
+            $userid
+        );
 
         if (!$canincourse && !$caninsystem) {
             return [];
@@ -177,7 +181,7 @@ class badge_manager extends \block_xp\local\badge\badge_manager {
             'criteriatype' => BADGE_CRITERIA_TYPE_MANUAL,
         ];
 
-        return array_map(function($badge) {
+        return array_map(function ($badge) {
             $badge->id = (int) $badge->id;
             $badge->type = (int) $badge->type;
             return $badge;

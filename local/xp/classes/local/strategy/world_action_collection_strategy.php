@@ -74,12 +74,12 @@ class world_action_collection_strategy implements action_collection_strategy {
      * @param rule_filter_handler $rulefilterhandler The rule filter handler.
      */
     public function __construct(
-            world $world,
-            reason_collection_logger $logger,
-            dictator $ruledictator,
-            rule_type_resolver $ruletyperesolver,
-            rule_filter_handler $rulefilterhandler
-        ) {
+        world $world,
+        reason_collection_logger $logger,
+        dictator $ruledictator,
+        rule_type_resolver $ruletyperesolver,
+        rule_filter_handler $rulefilterhandler
+    ) {
         $this->world = $world;
         $this->logger = $logger;
 
@@ -188,8 +188,8 @@ class world_action_collection_strategy implements action_collection_strategy {
                     ->setTimezone(user_utils::get_timezone($action->get_user_id()))
                     ->setTime(0, 0, 0, 0);
             }
-            if ($this->logger->has_reason_happened_since($action->get_user_id(), $reason,
-                    \DateTime::createFromImmutable($cutoffdate))) {
+            $cutoffdt = \DateTime::createFromImmutable($cutoffdate);
+            if ($this->logger->has_reason_happened_since($action->get_user_id(), $reason, $cutoffdt)) {
                 return false;
             }
         }

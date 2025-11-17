@@ -74,16 +74,14 @@ class get_recent_activity extends external_api {
 
         // We must find the block to get how many recent activity to return.
         // This is not ideal, but it is inline with what setup returns.
-        $bifinder = di::get('course_world_block_any_instance_finder_in_context');
+        $bifinder = di::get('course_world_block_instance_checker');
 
         // Find the block instance, we use the course context because the front page is a course.
-        $bi = $bifinder->get_any_instance_in_context('xp', $world->get_context());
-        if (!$bi) {
+        if (!$bifinder->has_instance_in_context('xp', $world->get_context())) {
             return [];
         }
 
-        $blockconfig = self::make_block_config($bi);
-        $recentactivity = $blockconfig->get('recentactivity');
+        $recentactivity = $world->get_config()->get('blockrecentactivity');
         if ($recentactivity < 1) {
             return [];
         }

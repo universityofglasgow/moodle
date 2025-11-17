@@ -46,8 +46,8 @@ use local_xp\local\config\default_course_world_config;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class grouped_leaderboard implements
-        \block_xp\local\leaderboard\leaderboard,
-        \local_xp\local\team\team_membership_resolver {
+    \block_xp\local\leaderboard\leaderboard,
+    \local_xp\local\team\team_membership_resolver {
 
     /** Order by points. */
     const ORDER_BY_POINTS = default_course_world_config::GROUP_ORDER_BY_POINTS;
@@ -97,8 +97,14 @@ abstract class grouped_leaderboard implements
      * @param int|null $ultimatexp The ultimate XP.
      * @param int $orderby The sort by constant.
      */
-    public function __construct(moodle_database $db, $courseid, $columns, $teamids = [], $ultimatexp = null,
-            $orderby = self::ORDER_BY_POINTS) {
+    public function __construct(
+        moodle_database $db,
+        $courseid,
+        $columns,
+        $teamids = [],
+        $ultimatexp = null,
+        $orderby = self::ORDER_BY_POINTS
+    ) {
         $this->db = $db;
         $this->courseid = $courseid;
         $this->columns = $columns;
@@ -129,7 +135,7 @@ abstract class grouped_leaderboard implements
 
         // Set the team filtering.
         if (!empty($this->teamids)) {
-            list($insql, $inparams) = $this->db->get_in_or_equal($this->teamids, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $this->db->get_in_or_equal($this->teamids, SQL_PARAMS_NAMED);
             $this->where .= " AND t.id $insql";
             $this->params = array_merge($this->params, $inparams);
         }
@@ -143,7 +149,7 @@ abstract class grouped_leaderboard implements
         // Set the order.
         $this->order = "";
         if ($this->ultimatexp && $this->orderby == static::ORDER_BY_PROGRESS) {
-            list($progress, $progressparams) = $this->get_progress_sql();
+            [$progress, $progressparams] = $this->get_progress_sql();
             $this->order .= "$progress DESC, ";
             $this->params = array_merge($this->params, $progressparams);
         }
@@ -234,7 +240,7 @@ abstract class grouped_leaderboard implements
      * @return int|false False when not ranked.
      */
     protected function get_progress($id) {
-        list($progress, $progressparams) = $this->get_progress_sql();
+        [$progress, $progressparams] = $this->get_progress_sql();
         $sql = "SELECT $progress AS progressratio
                   FROM {$this->from}
                  WHERE {$this->where}
@@ -332,9 +338,9 @@ abstract class grouped_leaderboard implements
      * @return int Indexed from 0.
      */
     protected function get_position_with_xp_and_progress($id, $xp, $progress) {
-        list($progress1, $progress1params) = $this->get_progress_sql();
-        list($progress2, $progress2params) = $this->get_progress_sql();
-        list($progress3, $progress3params) = $this->get_progress_sql();
+        [$progress1, $progress1params] = $this->get_progress_sql();
+        [$progress2, $progress2params] = $this->get_progress_sql();
+        [$progress3, $progress3params] = $this->get_progress_sql();
         $sql = "SELECT COUNT('x')
                   FROM (
                     SELECT t.id
@@ -353,7 +359,7 @@ abstract class grouped_leaderboard implements
             'posxpeq' => $xp,
             'posid' => $id,
         ];
-        list($progress4, $progress4params) = $this->get_progress_sql();
+        [$progress4, $progress4params] = $this->get_progress_sql();
         return $this->db->count_records_sql($sql, $params);
     }
 
@@ -412,8 +418,8 @@ abstract class grouped_leaderboard implements
      * @return int Indexed from 1.
      */
     protected function get_rank_from_xp_and_progress($xp, $progress) {
-        list($progress1, $progress1params) = $this->get_progress_sql();
-        list($progress2, $progress2params) = $this->get_progress_sql();
+        [$progress1, $progress1params] = $this->get_progress_sql();
+        [$progress2, $progress2params] = $this->get_progress_sql();
         $sql = "SELECT COUNT('x')
                   FROM (
                     SELECT t.id

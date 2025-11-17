@@ -87,8 +87,13 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
         $data = parent::get_initial_form_data();
 
         $draftitemid = file_get_submitted_draft_itemid('currency');
-        file_prepare_draft_area($draftitemid, $this->get_currency_filemanager_context()->id, 'local_xp', 'defaultcurrency',
-            0, $this->get_currency_filemanager_options());
+        file_prepare_draft_area($draftitemid,
+            $this->get_currency_filemanager_context()->id,
+            'local_xp',
+            'defaultcurrency',
+            0,
+            $this->get_currency_filemanager_options()
+        );
         $data['currency'] = $draftitemid;
         $data['currencytheme'] = $this->adminconfig->get('currencytheme');
         $data['badgetheme'] = $this->adminconfig->get('badgetheme');
@@ -125,8 +130,13 @@ class admin_visuals_controller extends \block_xp\local\controller\admin_visuals_
      */
     protected function save_form_data($data) {
         parent::save_form_data($data);
-        file_save_draft_area_files($data->currency, $this->get_currency_filemanager_context()->id, 'local_xp',
-            'defaultcurrency', 0, $this->get_currency_filemanager_options());
+        file_save_draft_area_files($data->currency,
+            $this->get_currency_filemanager_context()->id,
+            'local_xp',
+            'defaultcurrency',
+            0,
+            $this->get_currency_filemanager_options()
+        );
         $this->adminconfig->set('badgetheme', $data->badgetheme);
         $this->adminconfig->set('currencytheme', $data->currencytheme);
     }

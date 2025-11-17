@@ -223,7 +223,7 @@ class local_xp_renderer extends block_xp_renderer {
             [
                 'containerSelector' => '#' . $containerid,
                 'filter' => $this->render($widget->filter),
-                'rules' => array_reduce($widget->rules, function($carry, $rule) {
+                'rules' => array_reduce($widget->rules, function ($carry, $rule) {
                     $carry[] = [
                         'name' => $rule->name,
                         'info' => !empty($rule->info) ? $rule->info : null,

@@ -55,7 +55,7 @@ class grade_calculator implements result_calculator {
     public function __construct(array $filters) {
         // We filter out the rulesets that are empty as they would always
         // match and we do not want this to happen for grades.
-        $this->filters = array_filter($filters, function($filter) {
+        $this->filters = array_filter($filters, function ($filter) {
             $rule = $filter->get_rule();
             if ($rule instanceof \block_xp_ruleset) {
                 return !static::is_ruleset_empty($rule);

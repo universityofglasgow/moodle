@@ -1,0 +1,345 @@
+<?php
+// This file is part of Level Up XP+.
+//
+// Level Up XP+ is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Level Up XP+ is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Level Up XP+.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
+
+namespace local_xp\local\leaderboard;
+
+use block_xp\di;
+use block_xp\local\iterator\map_recordset;
+use block_xp\local\leaderboard\leaderboard;
+use block_xp\local\leaderboard\ranker;
+use block_xp\local\sql\limit;
+use block_xp\local\userfilter\user_filter;
+use block_xp\local\utils\user_utils;
+use block_xp\local\xp\state;
+use block_xp\local\xp\state_rank;
+use context_helper;
+use local_xp\local\xp\levelless_user_state;
+use stdClass;
+
+/**
+ * Global leadeboard.
+ *
+ * @package    local_xp
+ * @copyright  2025 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class global_leaderboard implements leaderboard {
+
+    /** @var moodle_database The database. */
+    protected $db;
+    /** @var ranker The ranker. */
+    protected $ranker;
+    /** @var user_filter The user filter. */
+    protected $userfilter;
+
+    /** @var string SQL fields. */
+    protected $fields;
+    /** @var string SQL from. */
+    protected $from;
+    /** @var string SQL where. */
+    protected $where = '';
+    /** @var string SQL order. */
+    protected $order;
+    /** @var array SQL params. */
+    protected $params = [];
+
+    /**
+     * Constructor.
+     *
+     * @param ranker $ranker An alternative ranker.
+     */
+    public function __construct(?ranker $ranker = null) {
+        $this->db = di::get('db');
+        $this->ranker = $ranker;
+    }
+
+    /**
+     * Prepare the query.
+     */
+    protected function prepare_query() {
+        if (!empty($this->from)) {
+            return;
+        }
+
+        $params = [];
+
+        // We rename the user ID from fields() to 'useridunused' because the xp table
+        // already contains the user ID as 'userid and Oracle would complain if we select
+        // the same field twice with the same alias.
+        $this->fields = 'x.userid, x.xp, ' .
+            user_utils::picture_fields('u', 'useridunused') . ', ' .
+            context_helper::get_preload_record_columns_sql('ctx');
+
+        [$usersql, $userparams] = $this->get_user_ids_sql('u2.id');
+        $params += $userparams;
+
+        // Fetch from all courses that are visible. Filtering by active enrolments would be costly
+        // and inconsistent with the course leaderboards which include all users, irrespective of their
+        // enrolment statuses.
+        $this->from = "{user} u
+                  JOIN (SELECT x2.userid, SUM(x2.xp) AS xp
+                          FROM {block_xp} x2
+                          JOIN {user} u2 ON u2.id = x2.userid
+                          JOIN {course} c ON c.id = x2.courseid
+                         WHERE u2.deleted = 0
+                           AND u2.suspended = 0
+                           AND c.visible = 1
+                           AND ($usersql)
+                      GROUP BY x2.userid) x
+                    ON x.userid = u.id
+                  JOIN {context} ctx
+                    ON ctx.instanceid = u.id
+                   AND ctx.contextlevel = :contextlevel";
+        $params += ['contextlevel' => CONTEXT_USER];
+
+        $this->where = "1=1";
+        $this->order = "x.xp DESC, u.id ASC";
+        $this->params = $params;
+    }
+
+    /**
+     * Get the leaderboard columns.
+     *
+     * @return array Where keys are column identifiers and values are lang_string objects.
+     */
+    public function get_columns() {
+        // TODO Support customisation.
+        return [
+            'rank' => new \lang_string('rank', 'block_xp'),
+            'fullname' => new \lang_string('participant', 'block_xp'),
+            'xp' => new \lang_string('total', 'block_xp'),
+        ];
+    }
+
+    /**
+     * Get the number of rows in the leaderboard.
+     *
+     * @return int
+     */
+    public function get_count() {
+        $this->prepare_query();
+        $sql = "SELECT COUNT('x')
+                  FROM {$this->from}
+                 WHERE {$this->where}";
+        return $this->db->count_records_sql($sql, $this->params);
+    }
+
+    /**
+     * Get the points of an object.
+     *
+     * @param int $id The object ID.
+     * @return int|false False when not ranked.
+     */
+    protected function get_points($id) {
+        $this->prepare_query();
+        $sql = "SELECT x.xp
+                  FROM {$this->from}
+                 WHERE {$this->where}
+                   AND (x.userid = :userid)";
+        $params = $this->params + ['userid' => $id];
+        return $this->db->get_field_sql($sql, $params);
+    }
+
+    /**
+     * Return the position of the object.
+     *
+     * The position is used to determine how to paginate the leaderboard.
+     *
+     * @param int $id The object ID.
+     * @return int Indexed from 0, null when not ranked.
+     */
+    public function get_position($id) {
+        $xp = $this->get_points($id);
+        return $xp === false ? null : $this->get_position_with_xp($id, $xp);
+    }
+
+    /**
+     * Get position based on ID and XP.
+     *
+     * @param int $id The object ID..
+     * @param int $xp The amount of XP.
+     * @return int Indexed from 0.
+     */
+    protected function get_position_with_xp($id, $xp) {
+        $this->prepare_query();
+        $sql = "SELECT COUNT('x')
+                  FROM {$this->from}
+                 WHERE {$this->where}
+                   AND (x.xp > :posxp
+                    OR (x.xp = :posxpeq AND x.userid < :posid))";
+        $params = $this->params + [
+            'posxp' => $xp,
+            'posxpeq' => $xp,
+            'posid' => $id,
+        ];
+        return $this->db->count_records_sql($sql, $params);
+    }
+
+    /**
+     * Get the rank of an object.
+     *
+     * @param int $id The object ID.
+     * @return rank|null
+     */
+    public function get_rank($id) {
+        $state = $this->get_state($id);
+        if (!$state) {
+            return null;
+        } else if ($this->ranker) {
+            return $this->ranker->rank_state($state);
+        }
+        $rank = $this->get_rank_from_xp($state->get_xp());
+        return new state_rank($rank, $state);
+    }
+
+    /**
+     * Get the rank of an amount of XP.
+     *
+     * @param int $xp The xp.
+     * @return int Indexed from 1.
+     */
+    protected function get_rank_from_xp($xp) {
+        $this->prepare_query();
+        $sql = "SELECT COUNT('x')
+                  FROM {$this->from}
+                 WHERE {$this->where}
+                   AND (x.xp > :posxp)";
+        return $this->db->count_records_sql($sql, $this->params + ['posxp' => $xp]) + 1;
+    }
+
+    /**
+     * Get the ranking.
+     *
+     * @param limit $limit The limit.
+     * @return Traversable
+     */
+    public function get_ranking(limit $limit) {
+        $recordset = $this->get_ranking_recordset($limit);
+
+        if ($this->ranker) {
+            return $this->ranker->rank_states(
+                new map_recordset($recordset, function ($record) {
+                    return $this->make_state_from_record($record);
+                })
+            );
+        }
+
+        $rank = null;
+        $offset = null;
+        $lastxp = null;
+        $ranking = [];
+
+        foreach ($recordset as $record) {
+            $state = $this->make_state_from_record($record);
+
+            if ($rank === null || $lastxp !== $state->get_xp()) {
+                if ($rank === null) {
+                    $pos = $this->get_position_with_xp($state->get_id(), $state->get_xp());
+                    $rank = $this->get_rank_from_xp($state->get_xp());
+                    $offset = 1 + ($pos + 1 - $rank);
+                } else {
+                    $rank += $offset;
+                    $offset = 1;
+                }
+                $lastxp = $state->get_xp();
+            } else {
+                $offset++;
+            }
+
+            $ranking[] = new state_rank($rank, $state);
+        }
+
+        $recordset->close();
+        return $ranking;
+    }
+
+    /**
+     * Get ranking recordset.
+     *
+     * @param limit $limit The limit.
+     * @return \moodle_recordset
+     */
+    protected function get_ranking_recordset(limit $limit) {
+        $this->prepare_query();
+        $sql = "SELECT {$this->fields}
+                  FROM {$this->from}
+                 WHERE {$this->where}
+              ORDER BY {$this->order}";
+        if ($limit) {
+            $recordset = $this->db->get_recordset_sql($sql, $this->params, $limit->get_offset(), $limit->get_count());
+        } else {
+            $recordset = $this->db->get_recordset_sql($sql, $this->params);
+        }
+        return $recordset;
+    }
+
+    /**
+     * Get the state.
+     *
+     * @param int $id The object ID.
+     * @return state|null
+     */
+    protected function get_state($id) {
+        $this->prepare_query();
+        $sql = "SELECT {$this->fields}
+                  FROM {$this->from}
+                 WHERE {$this->where}
+                   AND (x.userid = :userid)";
+        $params = $this->params + ['userid' => $id];
+        $record = $this->db->get_record_sql($sql, $params);
+        return !$record ? null : $this->make_state_from_record($record);
+    }
+
+    /**
+     * Get the user ID filtering SQL.
+     *
+     * @param string $useridalias The user ID field alias.
+     * @return array
+     */
+    protected function get_user_ids_sql(string $useridalias) {
+        if (!$this->userfilter) {
+            return ['1=1', []];
+        }
+        return $this->userfilter->get_sql($useridalias);
+    }
+
+    /**
+     * Make a levelless_user_state from the record.
+     *
+     * @param stdClass $record The row.
+     * @param string $useridfield The user ID field.
+     * @return levelless_user_state
+     */
+    protected function make_state_from_record(stdClass $record, $useridfield = 'userid') {
+        $user = user_utils::unalias_picture_fields($record, $useridfield);
+        context_helper::preload_from_record($record);
+        $xp = !empty($record->xp) ? $record->xp : 0;
+        return new levelless_user_state($user, $xp, SITEID);
+    }
+
+    /**
+     * Set the user filter.
+     *
+     * @param user_filter $filter The filter.
+     */
+    public function set_user_filter(user_filter $filter) {
+        $this->userfilter = $filter;
+    }
+
+}

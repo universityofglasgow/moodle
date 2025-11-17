@@ -59,6 +59,18 @@ class usage_report_maker extends \block_xp\local\plugin\usage_report_maker {
         $data->xp_mobile_last_init_ago = $mobilelastinit ? max(0, time() - $mobilelastinit) : null;
         $data->xp_mobile_last_view_ago = $mobilelastview ? max(0, time() - $mobilelastview) : null;
 
+        $ladderisokey = $this->db->sql_concat("'v'", 'ladderiso');
+        $ladderiso = $this->db->get_records_sql_menu("SELECT {$ladderisokey}, COUNT(1)
+                                                        FROM {local_xp_config}
+                                                    GROUP BY ladderiso");
+        $data->xp_ladders_isolation = $ladderiso;
+
+        $ladderparticipationkey = $this->db->sql_concat("'v'", 'ladderparticipation');
+        $ladderparticipation = $this->db->get_records_sql_menu("SELECT $ladderparticipationkey, COUNT(1)
+                                                                  FROM {local_xp_config}
+                                                              GROUP BY ladderparticipation");
+        $data->xp_ladders_participation = $ladderparticipation;
+
         return $data;
     }
 

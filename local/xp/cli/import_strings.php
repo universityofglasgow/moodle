@@ -47,7 +47,7 @@ Examples:
         Import the language strings from the CSV file.
 ";
 
-list($options, $unrecognised) = cli_get_params([
+[$options, $unrecognised] = cli_get_params([
     'file' => null,
     'help' => false,
 ], [
@@ -56,7 +56,7 @@ list($options, $unrecognised) = cli_get_params([
 ]);
 
 if ($unrecognised) {
-    $unrecognised = implode(PHP_EOL.'  ', $unrecognised);
+    $unrecognised = implode(PHP_EOL . '  ', $unrecognised);
     cli_error(get_string('cliunknowoption', 'core_admin', $unrecognised));
 }
 
@@ -76,11 +76,11 @@ $importer = new csv_import_reader($importid, 'local_xp_str_import');
 $importer->load_csv_content(file_get_contents($file), 'utf-8', 'comma');
 $columns = $importer->get_columns();
 
-$otherlangs = array_map(function($header) {
+$otherlangs = array_map(function ($header) {
     // The first part of the header should be the raw language string.
     return explode(' ', $header)[0];
 }, array_slice($columns, 2, null, true));
-$otherstrings = array_reduce($otherlangs, function($carry, $lang) {
+$otherstrings = array_reduce($otherlangs, function ($carry, $lang) {
     $carry[$lang] = [];
     return $carry;
 });
@@ -98,7 +98,7 @@ while ($row = $importer->next()) {
 }
 
 foreach ($otherlangs as $lang) {
-    list($langdir, $file) = local_xp_cli_get_language_paths($lang);
+    [$langdir, $file] = local_xp_cli_get_language_paths($lang);
     if (empty($otherstrings[$lang])) {
         continue;
     }

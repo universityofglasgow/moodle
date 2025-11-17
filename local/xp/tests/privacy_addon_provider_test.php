@@ -174,7 +174,6 @@ final class privacy_addon_provider_test extends base_testcase {
         $prefkeys = array_keys((array) $prefs);
 
         $this->assertTrue(in_array('local_xp_dataformat', $prefkeys));
-
     }
 
     public function test_delete_addon_data_for_all_users_in_context(): void {

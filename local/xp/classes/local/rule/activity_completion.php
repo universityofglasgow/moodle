@@ -101,7 +101,8 @@ class activity_completion extends block_xp_rule {
         $state = $data->completionstate;
 
         if (($state == COMPLETION_COMPLETE && $this->mode & self::COMPLETED)
-                || ($state == COMPLETION_COMPLETE_PASS && $this->mode & self::COMPLETED_PASS)) {
+                || ($state == COMPLETION_COMPLETE_PASS && $this->mode & self::COMPLETED_PASS)
+        ) {
             return true;
         }
 

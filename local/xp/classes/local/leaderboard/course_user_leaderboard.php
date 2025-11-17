@@ -57,13 +57,14 @@ class course_user_leaderboard extends \block_xp\local\leaderboard\course_user_le
      * @param Closure $userstatefactory The user state factory.
      */
     public function __construct(
-            moodle_database $db,
-            levels_info $levelsinfo,
-            $courseid,
-            array $columns,
-            ?ranker $ranker = null,
-            $groupid = 0,
-            $userstatefactory = null) {
+        moodle_database $db,
+        levels_info $levelsinfo,
+        $courseid,
+        array $columns,
+        ?ranker $ranker = null,
+        $groupid = 0,
+        $userstatefactory = null
+    ) {
 
         parent::__construct($db, $levelsinfo, $courseid, $columns, $ranker, $groupid);
         $this->userstatefactory = $userstatefactory;

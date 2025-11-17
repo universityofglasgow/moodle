@@ -67,11 +67,11 @@ class group_leaderboard_table extends flexible_table {
      * @param array $options Options.
      */
     public function __construct(
-            leaderboard $leaderboard,
-            renderer_base $renderer,
-            array $objectids,
-            array $options = []
-        ) {
+        leaderboard $leaderboard,
+        renderer_base $renderer,
+        array $objectids,
+        array $options = []
+    ) {
 
         global $CFG, $USER;
         parent::__construct('block_xp_ladder');
@@ -94,7 +94,7 @@ class group_leaderboard_table extends flexible_table {
 
         // Define columns, and headers.
         $columns = array_keys($leaderboardcols);
-        $headers = array_map(function($header) {
+        $headers = array_map(function ($header) {
             return (string) $header;
         }, array_values($leaderboardcols));
         $this->define_columns($columns);
@@ -126,7 +126,7 @@ class group_leaderboard_table extends flexible_table {
             $limit = $this->fence;
         };
 
-        $methods = array_reduce(array_keys($this->columns), function($carry, $column) {
+        $methods = array_reduce(array_keys($this->columns), function ($carry, $column) {
             if (method_exists($this, 'col_' . $column)) {
                 $carry[$column] = 'col_' . $column;
             }
@@ -140,7 +140,7 @@ class group_leaderboard_table extends flexible_table {
                 'state' => $rank->get_state(),
             ];
             $classes = (in_array($rank->get_state()->get_id(), $this->objectids)) ? 'highlight-row' : '';
-            $data = array_map(function($method) use ($row) {
+            $data = array_map(function ($method) use ($row) {
                 return $this->{$method}($row);
             }, $methods);
             $this->add_data_keyed($data, $classes);

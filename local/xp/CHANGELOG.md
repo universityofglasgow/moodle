@@ -1,6 +1,35 @@
 Changelog
 =========
 
+v19.0
+-----
+
+New features
+
+- Admins can reset all courses to the default admin settings
+- The team leaderboard shortcode can display the ranking in any context
+
+Quality of life
+
+- The context switcher in completion rules remembers recently used courses
+- The context switcher in completion rules re-selects the active tab
+- The team leaderboard shortcode is available from the leaderboard page
+- Log retention can be extended to two years
+- The default log retention value is extended to 6 months
+
+Bug fixes
+
+- Performance issue with the Mobile app when using XP per course with many courses
+- Courses where points gain is disabled no longer display in the Mobile app
+- Invalid constant value when viewing the leaderboard in the Mobile app
+
+Technical changes
+
+- Compatibility with Moodle 5.1
+- Expansion of automated tests
+
+Read our [release blog post](https://www.levelup.plus/blog/xp-quest-release-oct-2025/) to learn more.
+
 v18.1
 -----
 

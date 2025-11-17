@@ -142,7 +142,6 @@ class section_completion implements ruletype {
         }
 
         $completioninfo = new \completion_info($modinfo->get_course());
-        $modinfoorunused = $CFG->branch < 400 ? $modinfo : null;
 
         $loadwholecourse = true;
         $cmswithcompletioninsection = 0;
@@ -164,7 +163,7 @@ class section_completion implements ruletype {
             $cmswithcompletioninsection++;
 
             // Check whether activity is complete.
-            $data = $completioninfo->get_data($cm, $loadwholecourse, $modinfo->get_user_id(), $modinfoorunused);
+            $data = $completioninfo->get_data($cm, $loadwholecourse, $modinfo->get_user_id());
             $loadwholecourse = false;
             $iscompleted = $data->completionstate == COMPLETION_COMPLETE || $data->completionstate == COMPLETION_COMPLETE_PASS;
             if (!$iscompleted) {

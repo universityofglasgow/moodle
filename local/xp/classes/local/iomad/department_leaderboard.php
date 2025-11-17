@@ -61,8 +61,16 @@ class department_leaderboard extends grouped_leaderboard {
      * @param levels_info $levelsinfo The levels info.
      * @param int $orderby An orderby constant.
      */
-    public function __construct(moodle_database $db, $courseid, facade $iomad, $companyid, array $departmentids, array $columns,
-            levels_info $levelsinfo, $orderby = self::ORDER_BY_POINTS) {
+    public function __construct(
+        moodle_database $db,
+        $courseid,
+        facade $iomad,
+        $companyid,
+        array $departmentids,
+        array $columns,
+        levels_info $levelsinfo,
+        $orderby = self::ORDER_BY_POINTS
+    ) {
 
         $this->iomad = $iomad;
         $this->companyid = $companyid;
@@ -123,7 +131,7 @@ class department_leaderboard extends grouped_leaderboard {
                     ON t.id = cu.departmentid
                  WHERE cu.userid = :userid";
         $params = ['userid' => $memberid];
-        return array_map(function($row) {
+        return array_map(function ($row) {
             return new static_team($row->id, $this->get_department_name($row->id));
         }, $this->db->get_records_sql($sql, $params));
     }
@@ -136,7 +144,10 @@ class department_leaderboard extends grouped_leaderboard {
      */
     protected function make_state_from_record(stdClass $record) {
         $xp = !empty($record->xp) ? $record->xp : 0;
-        return new levelless_state($xp, $record->id, $this->get_department_name($record->id),
-            $this->ultimatexp * $record->membercount);
+        return new levelless_state($xp,
+            $record->id,
+            $this->get_department_name($record->id),
+            $this->ultimatexp * $record->membercount
+        );
     }
 }

@@ -27,7 +27,6 @@ use block_xp\local\activity\user_recent_activity_repository;
 use block_xp\local\logger\collection_logger_with_group_reset;
 use block_xp\local\logger\reason_collection_logger;
 use block_xp\local\reason\reason;
-
 use local_xp\local\logger\collection_counts_indicator;
 use local_xp\local\logger\reason_collection_counts_indicator;
 use local_xp\local\logger\reason_occurance_indicator;
@@ -41,13 +40,12 @@ use local_xp\local\logger\reason_occurance_indicator;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_xp_collection_logger_mock implements
-        reason_collection_logger,
-        collection_logger_with_group_reset,
-        collection_counts_indicator,
-        reason_collection_counts_indicator,
-        reason_occurance_indicator,
-        user_recent_activity_repository {
-
+    collection_counts_indicator,
+    collection_logger_with_group_reset,
+    reason_collection_counts_indicator,
+    reason_collection_logger,
+    reason_occurance_indicator,
+    user_recent_activity_repository {
 
     /** @var int */
     public $collectionssince = 0;

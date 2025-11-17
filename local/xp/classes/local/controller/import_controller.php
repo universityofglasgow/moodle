@@ -76,7 +76,7 @@ class import_controller extends page_controller {
             $this->form = new \local_xp\form\csv_import($this->pageurl->out(false), [
                 'iid' => $iid,
                 'cir' => $cir,
-                'makeimporter' => function($cir, $action) {
+                'makeimporter' => function ($cir, $action) {
                     return $this->get_provider($cir, $action);
                 },
             ]);
@@ -87,8 +87,11 @@ class import_controller extends page_controller {
     protected function get_provider($cir, $action) {
         global $USER;
         $action = (int) $action;
-        return new \local_xp\local\provider\csv_user_state_store_points_provider($cir, new user_resolver(di::get('db')),
-            $action, $action === user_state_store_points::ACTION_INCREASE ? new manual_reason($USER->id) : null);
+        return new \local_xp\local\provider\csv_user_state_store_points_provider($cir,
+            new user_resolver(di::get('db')),
+            $action,
+            $action === user_state_store_points::ACTION_INCREASE ? new manual_reason($USER->id) : null
+        );
     }
 
     protected function get_page_html_head_title() {

@@ -68,11 +68,15 @@ class course_world_factory implements \block_xp\local\factory\course_world_facto
      * @param course_collection_logger_factory $collectionloggerfactory Collection logger factory.
      * @param levels_info_factory $levelsinfofactory The levels info factory.
      */
-    public function __construct($contextmode, moodle_database $db, course_config_factory $configfactory,
-            collection_target_resolver_from_event $usercolletiontargetresolver,
-            badge_url_resolver_course_world_factory $urlresolverfactory,
-            course_collection_logger_factory $collectionloggerfactory,
-            levels_info_factory $levelsinfofactory) {
+    public function __construct(
+        $contextmode,
+        moodle_database $db,
+        course_config_factory $configfactory,
+        collection_target_resolver_from_event $usercolletiontargetresolver,
+        badge_url_resolver_course_world_factory $urlresolverfactory,
+        course_collection_logger_factory $collectionloggerfactory,
+        levels_info_factory $levelsinfofactory
+    ) {
 
         $this->db = $db;
         $this->configfactory = $configfactory;

@@ -58,9 +58,10 @@ class course_world_navigation_factory implements course_world_navigation_factory
      * @param config $adminconfig The admin config.
      */
     public function __construct(
-            url_resolver $resolver,
-            course_world_navigation_factory_interface $parentfactory,
-            config $adminconfig) {
+        url_resolver $resolver,
+        course_world_navigation_factory_interface $parentfactory,
+        config $adminconfig
+    ) {
         $this->resolver = $resolver;
         $this->parentfactory = $parentfactory;
         $this->adminconfig = $adminconfig;

@@ -50,7 +50,7 @@ class default_admin_config extends immutable_config {
             // For instance, 'keeplogs' has a new default, but as local_xp does not define it,
             // we need to remove it from local_xp's defaults when creating the global config object.
             'enablepromoincourses' => false,
-            'keeplogs' => 90,
+            'keeplogs' => 180,
 
             // Other settings.
             'badgetheme' => '',

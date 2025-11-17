@@ -66,7 +66,7 @@ class leaderboard extends \block_xp\form\leaderboard {
                 get_string('ladderisodefault', 'block_xp'),
                 get_string('ladderisocohorts', 'block_xp'),
             ], ['disabled' => 'disabled']);
-            $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function() {
+            $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function () {
                 return di::get('renderer')->render_from_template('local_xp/xp-premium-tag', []);
             });
             $ladderisoel = $mform->createElement('group', 'ladderiso', get_string('ladderiso', 'block_xp'), $els);
@@ -80,8 +80,10 @@ class leaderboard extends \block_xp\form\leaderboard {
             $mform->removeElement('ladderparticipation');
         }
         if (di::get('addon')->supports_leaderboard_participation()) {
-            $ladderparticipationel = $mform->createElement('select', 'ladderparticipation',
-                get_string('ladderparticipation', 'block_xp'), [
+            $ladderparticipationel = $mform->createElement('select',
+                'ladderparticipation',
+                get_string('ladderparticipation', 'block_xp'),
+                [
                     default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED =>
                         get_string('ladderparticipationforced', 'block_xp'),
                     default_course_world_config::LEADERBOARD_PARTICIPATION_OPTOUT =>
@@ -97,23 +99,31 @@ class leaderboard extends \block_xp\form\leaderboard {
                 get_string('ladderparticipationoptout', 'block_xp'),
                 get_string('ladderparticipationoptin', 'block_xp'),
             ], ['disabled' => 'disabled']);
-            $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function() {
+            $els[] = $mform->createElement(staticfield::name(), 'addonrequired', '', function () {
                 return di::get('renderer')->render_from_template('local_xp/xp-premium-tag', []);
             });
-            $ladderparticipationel = $mform->createElement('group', 'ladderparticipation',
-                get_string('ladderparticipation', 'block_xp'), $els);
+            $ladderparticipationel = $mform->createElement('group',
+                'ladderparticipation',
+                get_string('ladderparticipation', 'block_xp'),
+                $els
+            );
         }
         $mform->insertElementBefore($ladderparticipationel, 'identitymode');
         $mform->addHelpButton('ladderparticipation', 'ladderparticipation', 'block_xp');
         unset($ladderparticipationel);
 
         if (di::get('addon')->supports_leaderboard_participation()) {
-            $el = $mform->createElement('advcheckbox', 'ladderparticipationreset',
-                get_string('resetladderparticiptionofeveryone', 'block_xp'));
+            $el = $mform->createElement('advcheckbox',
+                'ladderparticipationreset',
+                get_string('resetladderparticiptionofeveryone', 'block_xp')
+            );
             $mform->insertElementBefore($el, 'identitymode');
             $mform->addHelpButton('ladderparticipationreset', 'ladderparticipationreset', 'block_xp');
-            $mform->hideIf('ladderparticipationreset', 'ladderparticipation',
-                'eq', default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED);
+            $mform->hideIf('ladderparticipationreset',
+                'ladderparticipation',
+                'eq',
+                default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED
+            );
             unset($el);
         }
 

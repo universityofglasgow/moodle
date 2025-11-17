@@ -90,7 +90,7 @@ class get_course_group_info extends external_api {
             'canaccessallgroups' => $aag,
             'canseeallparticipants' => $canseeallparticipants,
             'groupmode' => $groupmode,
-            'groups' => array_values(array_map(function($group) use ($usergroups, $context) {
+            'groups' => array_values(array_map(function ($group) use ($usergroups, $context) {
                 return [
                     'id' => $group->id,
                     'name' => self::format_string($group->name, $context),
