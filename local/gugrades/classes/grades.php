@@ -234,7 +234,7 @@ class grades {
     public static function is_resit_category_candidate(int $gradecategoryid) {
         global $DB;
 
-        // First get count of grade items in this category. 
+        // First get count of grade items in this category.
         $gradeitemscount = $DB->count_records('grade_items', ['categoryid' => $gradecategoryid]);
 
         // If this is more than two already then we're done here.
@@ -242,7 +242,7 @@ class grades {
             return false;
         }
 
-        // Now get the count of child categories. 
+        // Now get the count of child categories.
         $childcategorycount = $DB->count_records('grade_categories', ['parent' => $gradecategoryid]);
 
         // The total of both must be exactly 2
@@ -287,6 +287,7 @@ class grades {
         if (self::is_gradecategory_grade_type_none($category)) {
             throw new \moodle_exception('Attempting to open GRADE_TYPE_NONE category');
         }
+        $category->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($categoryid);
         $gradeitems = $DB->get_records('grade_items', ['courseid' => $courseid]);
 
         // Remove any grade type non like items.
@@ -312,11 +313,14 @@ class grades {
                 continue;
             }
 
-            // Add gradeitemid.
-            $gradecategories[$id]->itemid = self::get_gradeitemid_from_gradecategoryid($id);
+            // Add gradeitemid and info
+            $gcitemid = self::get_gradeitemid_from_gradecategoryid($id);
+            $gradecategories[$id]->itemid = $gcitemid;
+            $gradecategories[$id]->info = (object) \local_gugrades\api::get_grade_item($gcitemid);
 
             // Add aggregation strategy.
             $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
+            $gradecategories[$id]->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($id);
 
             // Add reset candidate.
             $resitcandidate = self::is_resit_category_candidate($id);
@@ -871,7 +875,7 @@ class grades {
         $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
 
-        // Grade type "none" is technically supported as we will deal with it elsewhere. 
+        // Grade type "none" is technically supported as we will deal with it elsewhere.
         // None means that the grade is ignored completely. Text is a proxy for None in some activities (just text)
         if (($gradetype == GRADE_TYPE_NONE) || ($gradetype == GRADE_TYPE_TEXT)) {
             return true;

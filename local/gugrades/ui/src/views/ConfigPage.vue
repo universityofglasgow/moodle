@@ -20,7 +20,9 @@
 
     <div v-if="loaded" class="mt-3 border rounded p-2">
         <h3>{{ categoryname }}</h3>
-        <ConfigTree :nodes="activitytree" depth="1" :resitconfig="configuringresits" :resitfade="true"></ConfigTree>
+        <table class="table">
+            <ConfigTree :nodes="activitytree" depth="1" :resitconfig="configuringresits" :resitfade="true"></ConfigTree>
+        </table>
     </div>
 </template>
 

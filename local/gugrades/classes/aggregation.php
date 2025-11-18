@@ -114,6 +114,20 @@ class aggregation {
     }
 
     /**
+     * Is the strategy weighted (or not)
+     * @param int $gradecategoryid
+     * @return boolean
+     */
+    public static function is_gradecategory_weighted(int $gradecategoryid) {
+        global $DB;
+
+        $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
+        $strategy = $gcat->aggregation;
+
+        return ($strategy == \GRADE_AGGREGATE_WEIGHTED_MEAN) || ($strategy == \GRADE_AGGREGATE_WEIGHTED_MEAN2);
+    }
+
+    /**
      * Should weights be shown for given category
      * @param int $gradecategoryid
      * @return bool
@@ -1038,7 +1052,7 @@ class aggregation {
             $explain = get_string('explain_notavailable', 'local_gugrades');
             [$admingrade, $error, $displaygrade] = $aggregation->all_unavailable_total($level);
 
-            return [0, 0, $admingrade, $displaygrade, $completion, $error, $explain, true]; 
+            return [0, 0, $admingrade, $displaygrade, $completion, $error, $explain, true];
         }
 
         // If level 1 then calculate completion %age.

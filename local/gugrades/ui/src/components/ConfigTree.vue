@@ -1,25 +1,43 @@
 <template>
-    <ul class="list-unstyled pl-3 mt-1">
-        <li v-for="item in props.nodes.items" :key="item.id" :class="resitclass">
-            <ResitCheckbox v-if="resitconfig && !resitfade" :itemid="item.id" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+    <tr v-for="item in props.nodes.items" :key="item.id" :class="resitclass">
+        <td v-if="resitconfig && !resitfade">
+            <ResitCheckbox  :itemid="item.id" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+        </td>
+        <td :style="indentstyle">
             <ConfigTreeIcon :gradeitem="item"></ConfigTreeIcon>
             {{ item.itemname }}
-            <i>&nbsp;<small>
-                {{ item.info.scalename }}
-                <span v-if="!item.info.isscale">&nbsp;{{ item.grademax }}</span>
-            </small></i>
-        </li>
-        <li v-for="category in props.nodes.categories" :key="category.id" class="pb-2" :class="{ 'bg-light': category.category.even }">
-            <ResitCheckbox v-if="resitconfig && !resitfade" :itemid="category.itemid" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
-            <b>
-                <i v-if="props.depth == 1" class="fa fa-folder icon itemicon" :title="mstrings.gradecategory" aria-hidden="true"></i>
-                <i v-else class="fa fa-folder-o" :title="mstrings.gradecategory" aria-hidden="true"></i>
-                {{ category.category.fullname }}
-            </b>
-            <i>&nbsp;<small>{{ category.category.strategy }}</small></i>
-            <ConfigTree :nodes="category" @activityselected="sub_activity_click" :depth="props.depth + 1" :resitconfig="resitconfig" :resitfade="!category.category.resitcandidate"></ConfigTree>
-        </li>
-    </ul>
+        </td>
+        <td>&nbsp;</td> <!-- holder for strategy -->
+        <td>
+            {{ item.info.scalename }}
+            <span v-if="!item.info.isscale">&nbsp;({{ item.grademax }})</span>
+        </td>
+        <td>
+            <span v-if="showeights">{{ item.info.weight }}%</span>
+        </td>
+    </tr>
+    <template v-for="category in props.nodes.categories" :key="category.id">
+        <tr class="pb-2" :class="{ 'bg-light': category.category.even }">
+            <td v-if="resitconfig && !resitfade">
+                <ResitCheckbox v-if="resitconfig && !resitfade" :itemid="category.itemid" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+            </td>
+            <td :style="indentstyle">
+                <b>
+                    <i v-if="props.depth == 1" class="fa fa-folder icon itemicon" :title="mstrings.gradecategory" aria-hidden="true"></i>
+                    <i v-else class="fa fa-folder-o" :title="mstrings.gradecategory" aria-hidden="true"></i>
+                    {{ category.category.fullname }}
+                </b>
+            </td>
+            <td>
+                {{ category.category.strategy }}
+            </td>
+            <td></td> <!-- Holder for scale -->
+            <td>
+                <span v-if="showeights">{{ category.category.info.weight }}%</span>
+            </td>
+        </tr>
+        <ConfigTree :nodes="category" @activityselected="sub_activity_click" :depth="nextlevel" :resitconfig="resitconfig" :resitfade="!category.category.resitcandidate"></ConfigTree>
+    </template>
 </template>
 
 <script setup>
@@ -42,7 +60,16 @@
     const emit = defineEmits(['activityselected']);
     const resititemid = ref();
 
+    /**
+     * Need this to make sure we pass down a number,
+     * not a string
+     */
+    const nextlevel = computed(() => props.depth*1 + 1);
 
+    /**
+     * Are we showing weights?
+     */
+    const showeights = computed(() => props.nodes.category.weighted);
 
     /**
      * Get resit CSS class
@@ -55,12 +82,23 @@
     ));
 
     /**
-     * A resit box was clicked. 
+     * Get indent/padding class
+     */
+    const indentstyle = computed(() => {
+        const padding = props.depth * 30;
+
+        return {
+            'padding-left': padding + 'px',
+        }
+    });
+
+    /**
+     * A resit box was clicked.
      */
     function resit_clicked(itemid) {
         window.console.log(itemid);
     }
-    
+
 
     // Emit activity id when activity selected
     function activity_click(itemid, event) {
