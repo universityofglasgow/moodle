@@ -7,12 +7,20 @@
         </div>
     </div>
 
+    <div v-if="showresitoption" class="border rounded p-2 mt-2">
+        <button v-if="!configuringresits" type="button" class="btn btn-outline-primary" @click="click_configure">Configure resits</button>
+        <div v-else>
+            <div class="alert alert-primary" v-html="mstrings.resit_help"></div>
+            <button type="button" class="btn btn-outline-success" @click="click_finish">Finish</button>
+        </div>
+    </div>
+
     <div v-if="categoryid">
     </div>
 
     <div v-if="loaded" class="mt-3 border rounded p-2">
         <h3>{{ categoryname }}</h3>
-        <ConfigTree :nodes="activitytree" depth="1"></ConfigTree>
+        <ConfigTree :nodes="activitytree" depth="1" :resitconfig="configuringresits" :resitfade="true"></ConfigTree>
     </div>
 </template>
 
@@ -26,7 +34,10 @@
     const activitytree = ref();
     const categoryname = ref('');
     const loaded = ref(false);
+    const showresitoption = ref(false);
+    const configuringresits = ref(false)
     const debug = ref({});
+    const mstrings = inject('mstrings');
 
     /**
      * Capture change to top level category dropdown
@@ -37,6 +48,20 @@
         if (categoryid.value) {
             getActivities(categoryid.value);
         }
+    }
+
+    /**
+     * Configure resit button clicked
+     */
+    function click_configure() {
+        configuringresits.value = true;
+    }
+
+    /**
+     * Configuring resits finished
+     */
+    function click_finish() {
+        configuringresits.value = false;
     }
 
     /**
@@ -61,6 +86,7 @@
 
             activitytree.value = tree;
             categoryname.value = tree.category.fullname;
+            showresitoption.value = tree.anyresitcandidates;
             loaded.value = true;
         })
         .catch((error) => {

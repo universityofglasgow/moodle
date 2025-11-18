@@ -363,6 +363,7 @@ $string['resetcourse'] = 'Reset course';
 $string['resetcourseconfirm'] = 'This will delete all MyGrades data for this course and cannot be reversed.';
 $string['resetfilter'] = 'Reset filter';
 $string['resetsuccess'] = 'MyGrades has been reset for this course.';
+$string['resit_help'] = 'For any pair of grade items that represent a first sitting and a resit, check all resits and click Finish.';
 $string['resitrequired'] = 'Resit required';
 $string['revert'] = 'Revert changes';
 $string['rulesdefault'] = 'Standard rules';

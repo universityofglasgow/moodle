@@ -2524,4 +2524,15 @@ class api {
 
         return $urls;
     }
+
+    /**
+     * Save resit item
+     * MGU-1351
+     * @param int $courseid
+     * @param int $itemid
+     * @param bool $set
+     */
+    public static function save_resit_item(int $courseid, int $itemid, bool $set) {
+        return \local_gugrades\grades::save_resit_item($courseid, $itemid, $set);
+    }
 }

@@ -308,5 +308,32 @@ function xmldb_local_gugrades_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025110600, 'local', 'gugrades');
     }
 
+    if ($oldversion < 2025111700) {
+
+        // Define table local_gugrades_resit to be created.
+        $table = new xmldb_table('local_gugrades_resit');
+
+        // Adding fields to table local_gugrades_resit.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('gradecategoryid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('gradeitemid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_gugrades_resit.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table local_gugrades_resit.
+        $table->add_index('gures_cat', XMLDB_INDEX_NOTUNIQUE, ['gradecategoryid']);
+        $table->add_index('gures_item', XMLDB_INDEX_NOTUNIQUE, ['gradeitemid']);
+
+        // Conditionally launch create table for local_gugrades_resit.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Gugrades savepoint reached.
+        upgrade_plugin_savepoint(true, 2025111700, 'local', 'gugrades');
+    }
+
     return true;
 }

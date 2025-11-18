@@ -82,6 +82,7 @@ $services = [
             'local_gugrades_get_progress',
             'local_gugrades_get_explain_aggregation',
             'local_gugrades_get_image_urls',
+            'local_gugrades_save_resit_item',
         ],
         'requiredcapability' => 'local/gugrades:view',
         'restrictedusers' => 1,
@@ -419,6 +420,12 @@ $functions = [
         'classname' => 'local_gugrades\external\get_image_urls',
         'description' => 'Get image urls.',
         'type' => 'read',
+        'ajax' => true,
+    ],
+        'local_gugrades_save_resit_item' => [
+        'classname' => 'local_gugrades\external\save_resit_item',
+        'description' => 'Set/reset grade item that is resit.',
+        'type' => 'write',
         'ajax' => true,
     ],
 ];

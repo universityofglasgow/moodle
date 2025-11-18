@@ -246,7 +246,32 @@ class grades {
         $childcategorycount = $DB->count_records('grade_categories', ['parent' => $gradecategoryid]);
 
         // The total of both must be exactly 2
-        return ($gradeitemscount + $childcategorycount) == 2;
+        $iscandidate = ($gradeitemscount + $childcategorycount) == 2;
+
+        // If it's NOT a candidate, then we should delete any resit records in gugrades_resits
+        // (gradebook structure must have changed)
+        if (!$iscandidate) {
+            $DB->delete_records('local_gugrades_resit', ['gradecategoryid' => $gradecategoryid]);
+        }
+
+        return $iscandidate;
+    }
+
+    /**
+     * If grade category is a candidate for resits then does it actually have
+     * a resit defined. Note that there's can be only none or one resit items.
+     * MGU-1351
+     * @param int $gradecategoryid
+     * @return int|false
+     */
+    public static function get_resit_itemid(int $gradecategoryid) {
+        global $DB;
+
+        if ($resit = $DB->get_record('local_gugrades_resit', ['gradecategoryid' => $gradecategoryid])) {
+            return $resit->gradeitemid;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -276,6 +301,9 @@ class grades {
             'courseid' => $courseid,
         ]);
 
+        // Note if there were *any* resit category candidates.
+        $anyresitcandidates = false;
+
         // Remove any GRADE_TYPE_NONE categories.
         $even = false;
         foreach ($gradecategories as $id => $gradecategory) {
@@ -284,11 +312,19 @@ class grades {
                 continue;
             }
 
-            // Add aggregation strategy
+            // Add gradeitemid.
+            $gradecategories[$id]->itemid = self::get_gradeitemid_from_gradecategoryid($id);
+
+            // Add aggregation strategy.
             $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
 
             // Add reset candidate.
-            $gradecategories[$id]->resit_candidate = self::is_resit_category_candidate($id);
+            $resitcandidate = self::is_resit_category_candidate($id);
+            $gradecategories[$id]->resitcandidate = $resitcandidate;
+            $gradecategories[$id]->resititemid = self::get_resit_itemid($id);
+            if ($resitcandidate) {
+                $anyresitcandidates = true;
+            }
 
             // Add odd/even for style to second level only.
             $level = self::get_category_level($id);
@@ -300,6 +336,9 @@ class grades {
             }
         }
         $categorytree = self::recurse_activitytree($category, $gradeitems, $gradecategories);
+
+        // Note availability of resit candidates to root node.
+        $categorytree->anyresitcandidates = $anyresitcandidates;
 
         return $categorytree;
     }
