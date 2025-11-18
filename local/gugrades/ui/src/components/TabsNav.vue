@@ -54,7 +54,7 @@
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
 
-    const activetab = ref('configure');
+    const activetab = ref('capture');
     const settingscapability = ref(false);
     const debug = ref({});
     const mstrings = inject('mstrings');
@@ -135,7 +135,7 @@
             case 37:
                 moveLeft(elemname);
             break;
-            case 39: 
+            case 39:
                 moveRight(elemname);
             break;
       }
