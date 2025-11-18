@@ -17,6 +17,7 @@
                     <CaptureAlerts
                         :gradesupported="gradesupported"
                         :aggregationsupported="aggregationsupported"
+                        :unsupportedscales="unsupportedscales"
                         :gradehidden="gradehidden"
                         :gradelocked="gradelocked"
                         :noids="!showcsvimport"
@@ -161,7 +162,7 @@
                 </EasyDataTable>
 
                 <!-- Implementation of our own accessible footer. -->
-                <CustomPagination 
+                <CustomPagination
                     v-if="loaded"
                     v-bind="props"
                 />
@@ -206,6 +207,7 @@
     const itemname = ref('');
     const gradesupported = ref(true);
     const aggregationsupported = ref(true);
+    const unsupportedscales = ref('');
     const gradesimported = ref(false);
     const gradehidden = ref(false);
     const gradelocked = ref(false);
@@ -630,6 +632,7 @@
             itemname.value = result.itemname;
             gradesupported.value = result.gradesupported;
             aggregationsupported.value = result.aggregationsupported;
+            unsupportedscales.value = result.unsupportedscales;
             gradesimported.value = result.gradesimported;
             gradehidden.value = result.gradehidden;
             gradelocked.value = result.gradelocked;

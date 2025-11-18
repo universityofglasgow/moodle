@@ -3,7 +3,7 @@
         <small>
             <DismissableAlert v-if="!props.gradesupported" alertstyle="danger" :message="mstrings.gradenotsupported"></DismissableAlert>
 
-            <DismissableAlert v-if="!props.aggregationsupported" alertstyle="danger" :message="mstrings.aggregationnotsupported"></DismissableAlert>
+            <DismissableAlert v-if="!props.aggregationsupported" alertstyle="danger" :message="mstrings.aggregationnotsupported + ' (' + unsupportedscales + ')'"></DismissableAlert>
 
             <DismissableAlert v-if="props.gradehidden" alertstyle="warning" :message="mstrings.gradehidden"></DismissableAlert>
 
@@ -23,6 +23,7 @@
     const props = defineProps({
         gradesupported: Boolean,
         aggregationsupported: Boolean,
+        unsupportedscales: String,
         gradehidden: Boolean,
         gradelocked: Boolean,
         noids: Boolean,

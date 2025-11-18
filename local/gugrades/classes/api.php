@@ -41,9 +41,19 @@ class api {
      * @return object List of activities/subcategories in
      */
     public static function get_activities(int $courseid, int $categoryid) {
+
+        $error = '';
+
+        // Is aggegation supported (is it configured properly)
+        $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($categoryid);
+        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        if (!$aggregationsupported) {
+            $error = "Configuration error - unsupported scales found in Grade category - '$unsupportedscales'";
+            return [null, $error];
+        }
         $tree = \local_gugrades\grades::get_activitytree($courseid, $categoryid);
 
-        return $tree;
+        return [$tree, $error];
     }
 
     /**
@@ -63,16 +73,21 @@ class api {
 
         //xhprof_enable(XHPROF_FLAGS_NO_BUILTINS);
 
+        // Is aggregation supported for this gradeitem / is gradeitem supported?
+        $gradeitemsupported = \local_gugrades\grades::is_grade_supported($gradeitemid);
+        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+
         // Sanity checks for selected grade item.
-        if (!\local_gugrades\grades::is_grade_supported($gradeitemid)) {
+        if (!$gradeitemsupported || !$aggregationsupported) {
             return [
                 'users' => [],
                 'columns' => [],
                 'hidden' => false,
                 'itemtype' => '',
                 'itemname' => '',
-                'gradesupported' => false,
-                'aggregationsupported' => false,
+                'gradesupported' => $gradeitemsupported,
+                'aggregationsupported' => $aggregationsupported,
+                'unsupportedscales' => $unsupportedscales,
                 'gradesimported' => false,
                 'gradehidden' => false,
                 'gradelocked' => false,
@@ -87,8 +102,7 @@ class api {
         // Cleanup unused columns for grade item.
         //\local_gugrades\grades::cleanup_empty_columns($gradeitemid);
 
-        // Is aggregation supported for this gradeitem?
-        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+
 
         // Hidden or locked in gradebook?
         [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
@@ -124,6 +138,7 @@ class api {
             'itemname' => $activity->get_itemname(),
             'gradesupported' => true,
             'aggregationsupported' => $aggregationsupported,
+            'unsupportedscales' => $unsupportedscales,
             'gradesimported' => $gradesimported,
             'gradehidden' => $gradehidden ? true : false,
             'gradelocked' => $gradelocked ? true : false,
@@ -235,7 +250,7 @@ class api {
         bool $testrun, string $reason, string $other, string $csv) {
 
         // Can we aggregate?
-        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
 
         // Turn csv into an array - and ditch first line.
         $lines = self::unpack_csv($csv);
@@ -550,7 +565,7 @@ class api {
 
         // Can we aggregate?
         if (!$noaggregation) {
-            $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+            [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
         }
 
         // Ask activity for grade.
@@ -1176,7 +1191,7 @@ class api {
         global $DB;
 
         // Can we aggregate?
-        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
 
         // Conversion class.
         $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
@@ -1579,7 +1594,7 @@ class api {
         }
 
         // Can we aggregate?
-        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
 
         // Is it an aggregated category
         if (!$released = \local_gugrades\grades::get_aggregated_from_gradeitemid($gradeitemid, $userid)) {
@@ -1698,6 +1713,9 @@ class api {
 
         // Delete altered weight.
         $DB->delete_records('local_gugrades_altered_weight', ['courseid' => $courseid]);
+
+        // Delete resits.
+        $DB->delete_records('local_gugrades_resit', ['courseid' => $courseid]);
 
         // "Cached" gradeitems.
         $GRADEITEMS = [];
@@ -1941,7 +1959,7 @@ class api {
 
         // Is aggregation supported (at all)?
         $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($gradecategoryid);
-        $aggregationsupported = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
         if (!$aggregationsupported) {
             return [
                 'aggregationsupported' => $aggregationsupported,

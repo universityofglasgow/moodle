@@ -310,7 +310,7 @@ class grades {
     public static function is_resit_category_candidate(int $gradecategoryid) {
         global $DB;
 
-        // First get count of grade items in this category. 
+        // First get count of grade items in this category.
         $gradeitemscount = $DB->count_records('grade_items', ['categoryid' => $gradecategoryid]);
 
         // If this is more than two already then we're done here.
@@ -318,7 +318,7 @@ class grades {
             return false;
         }
 
-        // Now get the count of child categories. 
+        // Now get the count of child categories.
         $childcategorycount = $DB->count_records('grade_categories', ['parent' => $gradecategoryid]);
 
         // The total of both must be exactly 2
@@ -954,7 +954,7 @@ class grades {
         $gradeitem = self::get_gradeitem($gradeitemid);
         $gradetype = $gradeitem->gradetype;
 
-        // Grade type "none" is technically supported as we will deal with it elsewhere. 
+        // Grade type "none" is technically supported as we will deal with it elsewhere.
         // None means that the grade is ignored completely. Text is a proxy for None in some activities (just text)
         if (($gradetype == GRADE_TYPE_NONE) || ($gradetype == GRADE_TYPE_TEXT)) {
             return true;
@@ -977,6 +977,29 @@ class grades {
         }
 
         return true;
+    }
+
+    /**
+     * Get the name of the Moodle scale from the gradeitemid
+     * @param int $gradeitemid
+     * @return string
+     */
+    public static function get_scale_name(int $gradeitemid) {
+        global $DB;
+
+        $gradeitem = self::get_gradeitem($gradeitemid);
+        $gradetype = $gradeitem->gradetype;
+
+        // Check it's a scale.
+        if ($gradetype != GRADE_TYPE_SCALE) {
+            return '';
+        }
+
+        if ($scale = $DB->get_record('scale', ['id' => $gradeitem->scaleid])) {
+            return $scale->name;
+        } else {
+            return '';
+        }
     }
 
     /**
@@ -1261,13 +1284,18 @@ class grades {
         $items = self::get_gradeitems_recursive($level1category);
 
         // check all are supported
+        $unsupported = [];
         foreach ($items as $item) {
             if (!self::is_grade_supported($item->id)) {
-                return false;
+                $unsupported[] = self::get_scale_name($item->id);
             }
         }
 
-        return true;
+        if ($unsupported) {
+            return [false, implode(', ', $unsupported)];
+        }
+
+        return [true, ''];
     }
 
     /**

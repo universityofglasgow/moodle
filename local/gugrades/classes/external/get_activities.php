@@ -61,9 +61,12 @@ class get_activities extends external_api {
         self::validate_context($context);
 
         // Get data.
-        $tree = \local_gugrades\api::get_activities($courseid, $categoryid);
+        [$tree, $error] = \local_gugrades\api::get_activities($courseid, $categoryid);
 
-        return ['activities' => json_encode($tree)];
+        return [
+            'activities' => json_encode($tree),
+            'error' => $error,
+        ];
     }
 
     /**
@@ -73,6 +76,7 @@ class get_activities extends external_api {
     public static function execute_returns() {
         return new external_single_structure([
             'activities' => new external_value(PARAM_TEXT, 'List of activities/subcategories in JSON format'),
+            'error' => new external_value(PARAM_TEXT, 'Error string (if any)'),
         ]);
     }
 

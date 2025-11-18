@@ -12,7 +12,8 @@
         </div>
         <div v-else>
             <b>{{ categoryname }}</b>
-            <ActivityTree :nodes="activitytree" @activityselected="activity_selected" depth="1"></ActivityTree>
+            <ActivityTree v-if="treeerror == ''" :nodes="activitytree" @activityselected="activity_selected" depth="1"></ActivityTree>
+            <div v-if="treeerror != ''" v-html="treeerror" class="alert alert-danger"></div>
         </div>
     </div>
 </template>
@@ -34,6 +35,7 @@
     const selectedactivity = ref({});
     const loaded = ref(false);
     const collapsed = ref(false);
+    const treeerror = ref('');
     const debug = ref({});
     const mstrings = inject('mstrings');
 
@@ -52,7 +54,9 @@
             }
         }])[0]
         .then((result) => {
+            window.console.log(result);
             const tree = JSON.parse(result['activities']);
+            treeerror.value = result.error;
 
             activitytree.value = tree;
             categoryname.value = tree.category.fullname;
