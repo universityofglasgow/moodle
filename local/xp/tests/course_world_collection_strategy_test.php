@@ -82,7 +82,7 @@ final class course_world_collection_strategy_test extends base_testcase {
         $method = new \ReflectionMethod($cs, 'collect_for_user');
         $method->setAccessible(true);
 
-        $collectforuser = function() use ($method, $cs) {
+        $collectforuser = function () use ($method, $cs) {
             return $method->invokeArgs($cs, func_get_args());
         };
 

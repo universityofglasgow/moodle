@@ -52,8 +52,8 @@ use local_xp\local\team\team_membership_resolver;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class default_course_world_grouped_leaderboard_factory implements
-        course_world_grouped_leaderboard_factory,
-        course_world_team_membership_resolver_factory {
+    course_world_grouped_leaderboard_factory,
+    course_world_team_membership_resolver_factory {
 
     /** @var moodle_database The DB. */
     protected $db;
@@ -162,15 +162,21 @@ class default_course_world_grouped_leaderboard_factory implements
             $leaderboard = new company_leaderboard($this->db, $courseid, $this->iomadfacade, [], $columns, $levelsinfo, $orderby);
 
         } else if ($source == default_course_world_config::GROUP_LADDER_IOMAD_DEPARTMENTS) {
-            $leaderboard = new department_leaderboard($this->db, $courseid, $this->iomadfacade,
-                $this->iomadfacade->get_viewing_companyid(), [], $columns, $levelsinfo, $orderby);
+            $leaderboard = new department_leaderboard($this->db,
+                $courseid,
+                $this->iomadfacade,
+                $this->iomadfacade->get_viewing_companyid(),
+                [],
+                $columns,
+                $levelsinfo,
+                $orderby
+            );
 
         } else {
             $leaderboard = new empty_leaderboard($columns);
         }
 
         return $leaderboard;
-
     }
 
     /**

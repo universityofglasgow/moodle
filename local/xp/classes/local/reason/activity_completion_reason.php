@@ -40,8 +40,7 @@ use block_xp\local\reason\reason_with_rule;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activity_completion_reason implements reason, reason_with_short_description, reason_with_location, reason_with_rule {
-
+class activity_completion_reason implements reason, reason_with_location, reason_with_rule, reason_with_short_description {
     use reason_rule_trait;
 
     /** @var int The CM ID. */
@@ -107,7 +106,7 @@ class activity_completion_reason implements reason, reason_with_short_descriptio
     }
 
     public static function from_signature($signature) {
-        list($cmid, $state) = explode(':', $signature);
+        [$cmid, $state] = explode(':', $signature);
         return new static($cmid, $state);
     }
 

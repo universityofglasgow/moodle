@@ -57,7 +57,7 @@ class log_controller extends \block_xp\local\controller\log_controller {
         if ($groupid) {
             $defaultfilename .= '-' . (string) (int) $groupid;
         }
-        $defaultfilename .= '-'. userdate(time(), '%Y-%m-%d');
+        $defaultfilename .= '-' . userdate(time(), '%Y-%m-%d');
         return $this->get_param('downloadfilename') ?: $defaultfilename;
     }
 

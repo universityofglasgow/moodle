@@ -44,4 +44,3 @@ interface collection_target_resolver_from_event {
     public function get_target_from_event(\core\event\base $event);
 
 }
-

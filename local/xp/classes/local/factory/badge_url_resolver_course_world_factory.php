@@ -39,8 +39,7 @@ use local_xp\local\xp\theme_badge_url_resolver;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class badge_url_resolver_course_world_factory
-        extends \block_xp\local\factory\default_badge_url_resolver_course_world_factory {
+class badge_url_resolver_course_world_factory extends \block_xp\local\factory\default_badge_url_resolver_course_world_factory {
 
     /** @var theme_repository The repository. */
     protected $repo;

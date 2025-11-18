@@ -94,4 +94,3 @@ if (class_exists('core\dml\sql_join')) {
     }
 
 }
-

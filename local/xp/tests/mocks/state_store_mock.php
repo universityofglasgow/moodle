@@ -44,7 +44,7 @@ require_once(__DIR__ . '/collection_logger_mock.php');
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_xp_state_store_mock implements state_store, state_store_with_reason, state_store_with_delete {
+class local_xp_state_store_mock implements state_store, state_store_with_delete, state_store_with_reason {
 
     /** @var array The local state. */
     public $state;

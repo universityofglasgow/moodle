@@ -59,8 +59,12 @@ class csv_user_state_store_points_provider implements user_state_store_points_pr
      * @param int $defaultaction A user_state_store_points::ACTION_ constant.
      * @param reason $defaultreason The default reason.
      */
-    public function __construct(csv_import_reader $cir, user_resolver $userresolver,
-            $defaultaction = user_state_store_points::ACTION_INCREASE, ?reason $defaultreason = null) {
+    public function __construct(
+        csv_import_reader $cir,
+        user_resolver $userresolver,
+        $defaultaction = user_state_store_points::ACTION_INCREASE,
+        ?reason $defaultreason = null
+    ) {
         $this->cir = $cir;
         $this->userresolver = $userresolver;
         $this->defaultaction = $defaultaction;
@@ -77,7 +81,7 @@ class csv_user_state_store_points_provider implements user_state_store_points_pr
     public function getIterator() { // @codingStandardsIgnoreLine.
         return new map_iterator(
             new csv_reader_iterator($this->cir),
-            function($line, $lineno) {
+            function ($line, $lineno) {
                 return $this->process_line($line, $lineno);
             }
         );

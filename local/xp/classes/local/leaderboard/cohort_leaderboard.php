@@ -57,8 +57,14 @@ class cohort_leaderboard extends grouped_leaderboard {
      * @param levels_info $levelsinfo The levels info.
      * @param int $orderby An orderby constant.
      */
-    public function __construct(moodle_database $db, $courseid, array $cohortids, array $columns, levels_info $levelsinfo,
-            $orderby = self::ORDER_BY_POINTS) {
+    public function __construct(
+        moodle_database $db,
+        $courseid,
+        array $cohortids,
+        array $columns,
+        levels_info $levelsinfo,
+        $orderby = self::ORDER_BY_POINTS
+    ) {
         $ultimatexp = $levelsinfo->get_level($levelsinfo->get_count())->get_xp_required();
         $this->cohortids = $cohortids;
         parent::__construct($db, $courseid, $columns, $cohortids, $ultimatexp, $orderby);
@@ -119,7 +125,7 @@ class cohort_leaderboard extends grouped_leaderboard {
                     ON t.id = tm.cohortid
                  WHERE tm.userid = :userid";
         $params = ['userid' => $memberid];
-        return array_map(function($cohort) {
+        return array_map(function ($cohort) {
             return new static_team($cohort->id, external_utils::format_string($cohort->name, $cohort->contextid));
         }, $this->db->get_records_sql($sql, $params));
     }

@@ -46,14 +46,14 @@ Examples:
         Export the list of language strings.
 ";
 
-list($options, $unrecognised) = cli_get_params([
+[$options, $unrecognised] = cli_get_params([
     'help' => false,
 ], [
     'h' => 'help',
 ]);
 
 if ($unrecognised) {
-    $unrecognised = implode(PHP_EOL.'  ', $unrecognised);
+    $unrecognised = implode(PHP_EOL . '  ', $unrecognised);
     cli_error(get_string('cliunknowoption', 'core_admin', $unrecognised));
 }
 
@@ -64,7 +64,7 @@ if ($options['help']) {
 
 $enstrings = local_xp_cli_load_strings('en');
 $otherlangs = array_diff(local_xp_cli_get_languages(), ['en']);
-$otherstrings = array_reduce($otherlangs, function($carry, $lang) {
+$otherstrings = array_reduce($otherlangs, function ($carry, $lang) {
     $carry[$lang] = local_xp_cli_load_strings($lang);
     return $carry;
 }, []);
@@ -79,7 +79,7 @@ foreach ($identifiers as $identifier) {
     $data = array_merge([
         $identifier,
         $enstrings[$identifier],
-    ], array_values(array_map(function($lang) use($identifier, $otherstrings) {
+    ], array_values(array_map(function ($lang) use ($identifier, $otherstrings) {
         return !empty($otherstrings[$lang][$identifier]) ? $otherstrings[$lang][$identifier] : '';
     }, $otherlangs)));
     $writer->add_data($data);

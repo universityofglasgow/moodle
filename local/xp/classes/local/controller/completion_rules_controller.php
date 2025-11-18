@@ -101,7 +101,8 @@ class completion_rules_controller extends page_controller {
         $context = context::instance_by_id($childcontextid, IGNORE_MISSING);
         $worldcontext = $this->world->get_context();
         if (!$context || $context->contextlevel != CONTEXT_COURSE ||
-                !$worldcontext->is_parent_of($context, false)) {
+                !$worldcontext->is_parent_of($context, false)
+        ) {
             return null;
         }
 
@@ -182,7 +183,7 @@ class completion_rules_controller extends page_controller {
         }
 
         $typeresolver = di::get('rule_type_resolver');
-        $ruletypes = array_values(array_map(function($type) use ($typeresolver) {
+        $ruletypes = array_values(array_map(function ($type) use ($typeresolver) {
             return [
                 'name' => $typeresolver->get_type_name($type),
                 'label' => (string) $type->get_display_name(),
@@ -196,7 +197,7 @@ class completion_rules_controller extends page_controller {
         ])));
 
         $filterhandler = di::get('rule_filter_handler');
-        $filters = array_values(array_map(function($filter) use ($filterhandler) {
+        $filters = array_values(array_map(function ($filter) use ($filterhandler) {
             return [
                 'name' => $filterhandler->get_filter_name($filter),
                 'label' => (string) $filter->get_display_name(),
@@ -204,7 +205,7 @@ class completion_rules_controller extends page_controller {
                 'ismultipleallowed' => $filter->is_multiple_allowed(),
                 'weight' => $filterhandler->get_filter_priority($filter),
             ];
-        }, array_filter($filterhandler->get_filters(), function(rulefilter $filter) use ($currentcontext) {
+        }, array_filter($filterhandler->get_filters(), function (rulefilter $filter) use ($currentcontext) {
             return in_array((int) $currentcontext->contextlevel, $filter->get_compatible_context_levels());
         })));
 

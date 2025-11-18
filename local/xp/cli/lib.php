@@ -53,7 +53,7 @@ function local_xp_cli_get_language_paths($lang) {
  * @return bool
  */
 function local_xp_cli_has_language($lang) {
-    list($langdir, $file) = local_xp_cli_get_language_paths($lang);
+    [$langdir, $file] = local_xp_cli_get_language_paths($lang);
     return is_dir($langdir) && is_file($file);
 }
 
@@ -88,7 +88,7 @@ function local_xp_cli_get_languages() {
 function local_xp_cli_load_strings($lang) {
     global $CFG;
     $string = [];
-    list($unused, $file) = local_xp_cli_get_language_paths($lang);
+    [$unused, $file] = local_xp_cli_get_language_paths($lang);
     if (!is_file($file)) {
         return $string;
     }

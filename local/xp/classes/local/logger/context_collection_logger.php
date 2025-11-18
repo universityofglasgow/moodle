@@ -50,13 +50,13 @@ use local_xp\local\reason\maker_from_type_and_signature;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class context_collection_logger implements
-        reason_collection_logger,
-        collection_logger_with_group_reset,
-        collection_logger_with_id_reset,
-        collection_counts_indicator,
-        reason_collection_counts_indicator,
-        reason_occurance_indicator,
-        user_recent_activity_repository {
+    collection_counts_indicator,
+    collection_logger_with_group_reset,
+    collection_logger_with_id_reset,
+    reason_collection_counts_indicator,
+    reason_collection_logger,
+    reason_occurance_indicator,
+    user_recent_activity_repository {
 
     /** @var moodle_database */
     protected $db;
@@ -142,7 +142,7 @@ class context_collection_logger implements
             'userid' => $userid,
         ], 'time DESC, id DESC', '*', 0, $count);
 
-        return array_map(function($row) {
+        return array_map(function ($row) {
             $reason = $this->reasonmaker->make_from_type_and_signature($row->type, $row->signature);
             $desc = '';
             if ($reason instanceof reason_with_short_description) {
@@ -154,7 +154,6 @@ class context_collection_logger implements
                 $desc,
                 $row->points
             );
-
         }, $results);
     }
 

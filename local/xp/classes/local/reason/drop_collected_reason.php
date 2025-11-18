@@ -62,7 +62,7 @@ class drop_collected_reason implements reason, reason_with_short_description {
     }
 
     public static function from_signature($signature) {
-        list($dropid) = $signature;
+        [$dropid] = $signature;
         return new static($dropid);
     }
 

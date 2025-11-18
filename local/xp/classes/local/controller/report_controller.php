@@ -72,7 +72,7 @@ class report_controller extends \block_xp\local\controller\report_controller {
         if ($groupid !== null) {
             $defaultfilename .= '-' . (string) (int) $groupid;
         }
-        $defaultfilename .= '-'. userdate(time(), '%Y-%m-%d');
+        $defaultfilename .= '-' . userdate(time(), '%Y-%m-%d');
         return $this->get_param('downloadfilename') ?: $defaultfilename;
     }
 

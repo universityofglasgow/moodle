@@ -132,8 +132,9 @@ class grade_rules_controller extends page_controller {
         ]);
 
         $gradeswidget = new \local_xp\output\grade_filters_widget(
-            new \local_xp\output\grade_filter($defaultgradesfilter), $rules,
-            array_map(function($f) {
+            new \local_xp\output\grade_filter($defaultgradesfilter),
+            $rules,
+            array_map(function ($f) {
                 return new \local_xp\output\grade_filter($f);
             }, $this->filtermanager->get_user_filters(block_xp_filter::CATEGORY_GRADES))
         );

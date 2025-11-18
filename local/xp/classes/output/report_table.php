@@ -69,14 +69,14 @@ class report_table extends \block_xp\output\report_table {
      * @param team_membership_resolver|null $teamresolver The team resolver.
      */
     public function __construct(
-            moodle_database $db,
-            course_world $world,
-            renderer_base $renderer,
-            course_state_store $store,
-            $groupid,
-            $downloadformat = null,
-            ?team_membership_resolver $teamresolver = null
-        ) {
+        moodle_database $db,
+        course_world $world,
+        renderer_base $renderer,
+        course_state_store $store,
+        $groupid,
+        $downloadformat = null,
+        ?team_membership_resolver $teamresolver = null
+    ) {
 
         if (is_array($downloadformat)) {
             [$downloadformat, $downloadfilename] = $downloadformat;
@@ -178,7 +178,7 @@ class report_table extends \block_xp\output\report_table {
             return $cols;
         }
 
-        return array_reduce(array_keys($cols), function($carry, $col) use ($cols) {
+        return array_reduce(array_keys($cols), function ($carry, $col) use ($cols) {
             $header = $cols[$col];
             if ($col === 'lvl') {
                 $carry['team'] = get_string('team', 'local_xp');
@@ -244,7 +244,8 @@ class report_table extends \block_xp\output\report_table {
         $o = parent::col_fullname($row);
 
         if (!$this->is_downloading()
-                && $this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED) {
+                && $this->ladderparticipation !== default_course_world_config::LEADERBOARD_PARTICIPATION_FORCED
+        ) {
             $mode = $this->ladderparticipation;
             $ladderparticipation = $row->ladderparticipation !== null ? (int) $row->ladderparticipation : null;
             if ($mode === default_course_world_config::LEADERBOARD_PARTICIPATION_OPTIN && $ladderparticipation === 1) {
@@ -324,7 +325,7 @@ class report_table extends \block_xp\output\report_table {
         if (!$this->teamresolver) {
             return '';
         }
-        return implode(', ', array_map(function($team) {
+        return implode(', ', array_map(function ($team) {
             return $team->get_name();
         }, $this->teamresolver->get_teams_of_member($row->id)));
     }

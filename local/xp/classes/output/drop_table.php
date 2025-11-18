@@ -94,12 +94,16 @@ class drop_table extends table_sql {
     protected function col_name($row) {
         $name = format_string($row->name);
         $url = new moodle_url($this->baseurl, ['dropid' => $row->id]);
+        $dataid = html_writer::random_id();
         return html_writer::link($url, $name, [
-            'data-action' => 'drop-setup',
-            'data-name' => $name,
-            'data-editurl' => $url->out(false),
-            'data-shortcode' => "[xpdrop id={$row->id} secret={$row->secret}]",
-        ]);
+            'data-xp-action' => 'open-modal',
+            'data-modal-title' => $name,
+            'data-template' => 'local_xp/modal-drop-setup',
+            'data-template-data' => $dataid,
+        ]) . $this->renderer->json_script(
+            ['shortcode' => "[xpdrop id={$row->id} secret={$row->secret}]"],
+            $dataid
+        );
     }
 
     /**
@@ -141,8 +145,10 @@ class drop_table extends table_sql {
         ]);
 
         $url = new moodle_url($this->baseurl, ['deleteid' => $row->id, 'sesskey' => sesskey(), 'confirm' => 1]);
-        $actions[] = $this->renderer->action_icon($url, new pix_icon('t/delete', get_string('delete', 'core')),
-            new confirm_action(get_string('reallyedeletedrop', 'local_xp')));
+        $actions[] = $this->renderer->action_icon($url,
+            new pix_icon('t/delete', get_string('delete', 'core')),
+            new confirm_action(get_string('reallyedeletedrop', 'local_xp'))
+        );
 
         return implode(' ', $actions);
     }
@@ -153,7 +159,7 @@ class drop_table extends table_sql {
     public function finish_html() {
         global $PAGE;
         parent::finish_html();
-        $PAGE->requires->js_call_amd('local_xp/modal-drop-setup', 'delegateClick', [".block_xp", '[data-action="drop-setup"]']);
+        $PAGE->requires->js_call_amd('block_xp/modal', 'registerSimpleOpenModalActionObserver');
     }
 
     /**

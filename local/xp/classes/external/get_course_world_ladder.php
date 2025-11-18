@@ -73,7 +73,8 @@ class get_course_world_ladder extends external_api {
     public static function execute($courseid, $groupid, $page, $perpage) {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(),
-            compact('courseid', 'groupid', 'page', 'perpage'));
+            compact('courseid', 'groupid', 'page', 'perpage')
+        );
         extract($params); // @codingStandardsIgnoreLine
 
         $worldfactory = di::get('course_world_factory');
@@ -141,14 +142,14 @@ class get_course_world_ladder extends external_api {
             'page' => $page,
             'total' => $leaderboard->get_count(),
             'ranking' => iterator_to_array(new map_iterator(
-                    $leaderboard->get_ranking($limit),
-                    function($rank) {
-                        global $USER;
-                        return [
-                            'rank' => $rank->get_rank(),
-                            'state' => self::serialize_state($rank->get_state(), true, false, [$USER->id]),
-                        ];
-                    }
+                $leaderboard->get_ranking($limit),
+                function ($rank) {
+                    global $USER;
+                    return [
+                        'rank' => $rank->get_rank(),
+                        'state' => self::serialize_state($rank->get_state(), true, false, [$USER->id]),
+                    ];
+                }
             ), false),
             'identitymode' => $identitymode,
             'rankmode' => $rankmode,
@@ -171,7 +172,7 @@ class get_course_world_ladder extends external_api {
             'ranking' => new external_multiple_structure(
                 new external_single_structure([
                     'rank' => new external_value(PARAM_INT),
-                    'state' => self::state_description(VALUE_OPTIONAL),
+                    'state' => self::state_description(true),
                 ])
             ),
             'identitymode' => new external_value(PARAM_INT),

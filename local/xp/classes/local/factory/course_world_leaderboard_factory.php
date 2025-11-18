@@ -89,13 +89,18 @@ class course_world_leaderboard_factory extends default_course_world_leaderboard_
      * @param ranker|null $ranker The ranker.
      * @return \block_xp\local\leaderboard\leaderboard
      */
-    protected function get_leaderboard_instance_with_config(course_world $world, $groupid, array $columns,
-            config $config, ?ranker $ranker = null) {
+    protected function get_leaderboard_instance_with_config(
+        course_world $world,
+        $groupid,
+        array $columns,
+        config $config,
+        ?ranker $ranker = null
+    ) {
 
         $userstatefactory = null;
         $levelsinfo = $world->get_levels_info();
         if ($config->get('progressbarmode') == default_course_world_config::PROGRESS_BAR_MODE_OVERALL) {
-            $userstatefactory = function($user, $points) use ($levelsinfo) {
+            $userstatefactory = function ($user, $points) use ($levelsinfo) {
                 return new user_global_state($user, $points, $levelsinfo);
             };
         }

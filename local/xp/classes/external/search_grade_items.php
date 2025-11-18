@@ -77,9 +77,9 @@ class search_grade_items extends external_api {
         // then reduce in a flattened array.
         require_once($CFG->libdir . '/gradelib.php');
         $tree = \grade_category::fetch_course_tree($courseid, true);
-        $data = array_reduce(array_filter(array_map(function($treeitem) use ($query) {
+        $data = array_reduce(array_filter(array_map(function ($treeitem) use ($query) {
             return static::grade_item_tree_reducer($treeitem, $query);
-        }, $tree['children'])), function($carry, $items) {
+        }, $tree['children'])), function ($carry, $items) {
             return array_merge($carry, !is_array($items) ? [$items] : $items);
         }, []);
 
@@ -142,7 +142,7 @@ class search_grade_items extends external_api {
                 'id' => $item->id,
                 'name' => $item->fullname,
             ];
-            return array_reduce($children, function($carry, $child) use ($query, $categories) {
+            return array_reduce($children, function ($carry, $child) use ($query, $categories) {
                 $child = static::grade_item_tree_reducer($child, $query, $categories);
                 if ($child === null) {
                     return $carry;
@@ -181,7 +181,7 @@ class search_grade_items extends external_api {
             }
         }
 
-        $matchesquery = array_reduce($candidates, function($carry, $candidate) use ($query) {
+        $matchesquery = array_reduce($candidates, function ($carry, $candidate) use ($query) {
             return $carry || strpos($candidate, $query) !== false;
         }, false);
         if (!$matchesquery) {

@@ -76,7 +76,6 @@ class get_setup extends external_api {
         di::get('addon')->require_activated();
 
         // Find the block instance, we use the course context because the front page is a course.
-        $bi = $bifinder->get_any_instance_in_context('xp', $world->get_context());
         $perms = $world->get_access_permissions();
         $publicdata = [
             'contextmode' => $adminconfig->get('context'),
@@ -92,12 +91,11 @@ class get_setup extends external_api {
         if (!$perms->can_access() || isguestuser() || !$USER->id) {
             // Early bail if the user cannot see anything.
             return $publicdata;
-        } else if (!$bi) {
+        } else if (!$bifinder->has_instance_in_context('xp', $world->get_context())) {
             // We could not find the block, so let's skip it.
             return $publicdata;
         }
 
-        $blockconfig = self::make_block_config($bi);
         $config = $world->get_config();
         $currency = $currencyfactory->get_currency($courseid);
 
@@ -107,15 +105,15 @@ class get_setup extends external_api {
         $introname = 'block_intro_' . $courseid;
         $description = '';
         if ($perms->can_manage() || !$indicator->user_has_flag($USER->id, $introname)) {
-            $description = self::format_string($blockconfig->get('description'), $world->get_context());
+            $description = self::format_string($config->get('blockdescription'), $world->get_context());
         }
 
         // Phew, we're done. Note that this is NOT a recursive merge.
         return [
             'block' => [
-                'title' => self::format_string($blockconfig->get('title'), $world->get_context()),
+                'title' => self::format_string($config->get('blocktitle'), $world->get_context()),
                 'description' => $description,
-                'recentactivity' => $blockconfig->get('recentactivity'),
+                'recentactivity' => $config->get('blockrecentactivity'),
                 // TODO Implement better visibility check. E.g. we should look at the block_position instead, if any.
                 'visible' => true,
             ],

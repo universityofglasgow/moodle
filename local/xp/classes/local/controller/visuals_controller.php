@@ -100,11 +100,21 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
         $config = $this->world->get_config();
 
         if ($config->get('currencystate') == default_course_world_config::CURRENCY_USE_DEFAULT) {
-            file_prepare_draft_area($draftitemid, context_system::instance()->id, 'local_xp', 'defaultcurrency', 0,
-                $this->get_currency_filemanager_options());
+            file_prepare_draft_area($draftitemid,
+                context_system::instance()->id,
+                'local_xp',
+                'defaultcurrency',
+                0,
+                $this->get_currency_filemanager_options()
+            );
         } else {
-            file_prepare_draft_area($draftitemid, $this->get_currency_filemanager_context()->id, 'local_xp', 'currency', 0,
-                $this->get_currency_filemanager_options());
+            file_prepare_draft_area($draftitemid,
+                $this->get_currency_filemanager_context()->id,
+                'local_xp',
+                'currency',
+                0,
+                $this->get_currency_filemanager_options()
+            );
         }
 
         $data['currency'] = $draftitemid;
@@ -143,8 +153,13 @@ class visuals_controller extends \block_xp\local\controller\visuals_controller {
         $config = $this->world->get_config();
 
         // Save the area.
-        file_save_draft_area_files($data->currency, $this->get_currency_filemanager_context()->id, 'local_xp', 'currency', 0,
-            $this->get_currency_filemanager_options());
+        file_save_draft_area_files($data->currency,
+            $this->get_currency_filemanager_context()->id,
+            'local_xp',
+            'currency',
+            0,
+            $this->get_currency_filemanager_options()
+        );
 
         $config->set_many([
             'currencystate' => default_course_world_config::CURRENCY_IS_CUSTOMIED,

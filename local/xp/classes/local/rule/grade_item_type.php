@@ -86,12 +86,12 @@ class grade_item_type extends block_xp_rule_base {
         $o = parent::get_form($basename);
 
         $plugmanager = core_plugin_manager::instance();
-        $modules = array_filter($plugmanager->get_plugins_of_type('mod'), function($mod) {
+        $modules = array_filter($plugmanager->get_plugins_of_type('mod'), function ($mod) {
             return plugin_supports('mod', $mod->name, FEATURE_GRADE_HAS_GRADE, false);
         });
 
         $list = ['_course_total' => get_string('coursetotal', 'core_grades')];
-        $list = array_merge($list, array_reduce($modules, function($carry, $mod) {
+        $list = array_merge($list, array_reduce($modules, function ($carry, $mod) {
             $carry[$mod->name] = $mod->displayname;
             return $carry;
         }, []));
@@ -101,8 +101,12 @@ class grade_item_type extends block_xp_rule_base {
             $list[] = [$this->value => get_string('unknowngradeitemtype', 'local_xp', $this->value)];
         }
 
-        $itemtypes = html_writer::select($list, $basename . '[value]', $this->value, '',
-            ['id' => '', 'class' => 'xp-inline-block', 'style' => 'max-width: 150px;']);
+        $itemtypes = html_writer::select($list,
+            $basename . '[value]',
+            $this->value,
+            '',
+            ['id' => '', 'class' => 'xp-inline-block', 'style' => 'max-width: 150px;']
+        );
         $o .= get_string('gradeitemtypeis', 'local_xp', $itemtypes);
         $o .= $output->help_icon('rulegradeitemtype', 'local_xp');
         return $o;

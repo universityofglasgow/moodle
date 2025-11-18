@@ -29,7 +29,7 @@ use block_xp\local\utils\user_utils;
 use block_xp\local\xp\anonymised_state;
 use block_xp\local\xp\state;
 use block_xp\local\xp\state_anonymiser;
-use block_xp\local\xp\user_state;
+use block_xp\local\xp\state_with_user;
 use core_text;
 
 /**
@@ -71,7 +71,7 @@ class firstname_initial_lastname_anonymiser implements state_anonymiser {
 
         $name = get_string('someoneelse', 'block_xp');
 
-        if ($state instanceof user_state) {
+        if ($state instanceof state_with_user) {
             $user = (object) (array) $state->get_user();
             $user->lastname = core_text::strtoupper(core_text::substr($user->lastname, 0, 1)) . '.';
             $user->firstnamephonetic = '';

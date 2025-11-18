@@ -76,7 +76,8 @@ final class user_filter_test extends base_testcase {
             // Test with column aliases.
             [$insql, $inparams] = $userfilter->get_sql('u.id');
             $userids = $db->get_fieldset_sql("SELECT u.id FROM {user} u WHERE $insql AND u.id IN ($u1->id, $u2->id, $u3->id)",
-            $inparams);
+                $inparams
+            );
             sort($userids);
             $this->assertEquals([$u1->id, $u2->id, $u3->id], $userids, "Testing with context " . get_class($context));
         }
@@ -182,7 +183,7 @@ final class user_filter_test extends base_testcase {
 
         $mode = default_course_world_config::LEADERBOARD_PARTICIPATION_OPTIN;
         $userfilter = new leaderboard_participants($contextid, $mode);
-        $expected = array_map(function($u) use ($users) {
+        $expected = array_map(function ($u) use ($users) {
             return $users[$u]->id;
         }, $expected);
         sort($expected);
@@ -195,7 +196,8 @@ final class user_filter_test extends base_testcase {
         // Test with column aliases.
         [$insql, $inparams] = $userfilter->get_sql('u.id');
         $userids = $db->get_fieldset_sql("SELECT u.id FROM {user} u WHERE $insql AND u.id IN ($u1->id, $u2->id, $u3->id)",
-        $inparams);
+            $inparams
+        );
         sort($userids);
         $this->assertEquals($expected, $userids);
     }
@@ -300,7 +302,7 @@ final class user_filter_test extends base_testcase {
 
         $mode = default_course_world_config::LEADERBOARD_PARTICIPATION_OPTOUT;
         $userfilter = new leaderboard_participants($contextid, $mode);
-        $expected = array_map(function($u) use ($users) {
+        $expected = array_map(function ($u) use ($users) {
             return $users[$u]->id;
         }, $expected);
         sort($expected);
@@ -313,7 +315,8 @@ final class user_filter_test extends base_testcase {
         // Test with column aliases.
         [$insql, $inparams] = $userfilter->get_sql('u.id');
         $userids = $db->get_fieldset_sql("SELECT u.id FROM {user} u WHERE $insql AND u.id IN ($u1->id, $u2->id, $u3->id)",
-        $inparams);
+            $inparams
+        );
         sort($userids);
         $this->assertEquals($expected, $userids);
     }

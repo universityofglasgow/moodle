@@ -1,38 +1,21 @@
-Level Up XP+ (local_xp)
-=========================
+# Level Up XP+ (local_xp)
 
-_Level Up XP+_ is an add-on for _[Level Up XP](https://github.com/FMCorz/moodle-block_xp)_.
+Level Up XP+ is an add-on for [Level Up XP](https://github.com/FMCorz/moodle-block_xp).
 
-Requirements
-------------
+## Installation
 
-- Level Up XP 3.x
-- Moodle 3.1 or greater
+Please refer to the documentation at [docs.levelup.plus/xp/docs/install-plus](https://docs.levelup.plus/xp/docs/install-plus?ref=readme).
 
-Installation
-------------
+## Documentation
 
-### Zip upload
+The documentation is available at [docs.levelup.plus/xp/](https://docs.levelup.plus/xp/).
 
-If you have configured Moodle to allow plugin installation from the user interface, and you received a zip of the plugin, follow the following steps. If not, refer to the manual process.
+## Release notes
 
-1. Visit the _Install plugins_ admin page (Site administration > Plugins > Install plugins)
-2. Drag & drop the plugin in the _Zip package_ area
-3. Click _Install plugin from the ZIP file_ and follow the process
+The release notes are published at [docs.levelup.plus/xp/release-notes](https://docs.levelup.plus/xp/release-notes).
 
-That's it!
+## Copyright & License
 
-### Manual process
+Copyright Branch Up Pty Ltd, Frédéric Massart.
 
-1. Place the content of this plugin in the folder `local/xp`.
-2. Visit your admin's _Notifications_ page (Site administration > Notifications)
-3. Follow the upgrade process
-
-That's it!
-
-License
--------
-
-Licensed under the [GNU GPL License](http://www.gnu.org/copyleft/gpl.html).
-
-Other licenses may apply to visual materials.
+Licensing terms can be found at [www.levelup.plus/terms/](https://www.levelup.plus/terms/)

@@ -58,9 +58,15 @@ class course_user_state_store extends \block_xp\local\xp\course_user_state_store
      * @param level_up_state_store_observer $observer The observer.
      * @param points_increased_state_store_observer $pointsobserver The observer.
      */
-    public function __construct(moodle_database $db, levels_info $levelsinfo, $courseid, reason_collection_logger $logger,
-            $userstatefactory = null, ?level_up_state_store_observer $observer = null,
-            ?points_increased_state_store_observer $pointsobserver = null) {
+    public function __construct(
+        moodle_database $db,
+        levels_info $levelsinfo,
+        $courseid,
+        reason_collection_logger $logger,
+        $userstatefactory = null,
+        ?level_up_state_store_observer $observer = null,
+        ?points_increased_state_store_observer $pointsobserver = null
+    ) {
 
         parent::__construct($db, $levelsinfo, $courseid, $logger, $observer, $pointsobserver);
         $this->userstatefactory = $userstatefactory;

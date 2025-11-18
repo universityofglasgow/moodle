@@ -71,14 +71,14 @@ class mobile {
         }
 
         $worldfactory = di::get('course_world_factory');
-        $bifinder = di::get('course_world_block_any_instance_finder_in_context');
-        $courseids = di::get('db')->get_fieldset_select('block_xp_config', 'courseid', '');
+        $bifinder = di::get('course_world_block_instance_checker');
+        $courseids = di::get('db')->get_fieldset('block_xp_config', 'courseid', ['enabled' => 1]);
         return [
             'restrict' => [
-                'courses' => array_filter($courseids, function($courseid) use ($bifinder, $worldfactory) {
+                'courses' => array_filter($courseids, function ($courseid) use ($bifinder, $worldfactory) {
                     $world = $worldfactory->get_world($courseid);
                     return $world->get_access_permissions()->can_access()
-                        && $bifinder->get_any_instance_in_context('xp', $world->get_context());
+                        && $bifinder->has_instance_in_context('xp', $world->get_context());
                 }),
             ],
         ];
@@ -137,7 +137,7 @@ class mobile {
     protected static function get_css_data() {
         $renderer = di::get('renderer');
         return [
-            'badges' => array_reduce(range(1, 10), function($carry, $i) use ($renderer) {
+            'badges' => array_reduce(range(1, 10), function ($carry, $i) use ($renderer) {
                 $carry["level$i"] = $renderer->pix_url($i, 'block_xp')->out(false);
                 return $carry;
             }, []),
@@ -171,10 +171,10 @@ class mobile {
                 $data,
                 $groupinfo,
                 [
-                    'mygroups' => array_values(array_filter($groupinfo['groups'], function($group) {
+                    'mygroups' => array_values(array_filter($groupinfo['groups'], function ($group) {
                         return $group['ismember'];
                     })),
-                    'othergroups' => array_values(array_filter($groupinfo['groups'], function($group) {
+                    'othergroups' => array_values(array_filter($groupinfo['groups'], function ($group) {
                         return !$group['ismember'];
                     })),
                 ]
@@ -197,7 +197,7 @@ class mobile {
             }
 
             // Set the group name.
-            $data['groupname'] = $data['currentgroupid'] ? array_reduce($data['groups'], function($carry, $group) use ($data) {
+            $data['groupname'] = $data['currentgroupid'] ? array_reduce($data['groups'], function ($carry, $group) use ($data) {
                 if ($data['currentgroupid'] == $group['id']) {
                     $carry = $group['name'];
                 }
@@ -259,7 +259,7 @@ class mobile {
         $ladder['nextpage'] = $ladder['page'] + 1;
         $ladder['hasbefore'] = $ladder['page'] > 1;
         $ladder['hasmore'] = $ladder['page'] * $perpage < $ladder['total'];
-        $ladder['ranking'] = array_map(function($entry) use ($renderer) {
+        $ladder['ranking'] = array_map(function ($entry) use ($renderer) {
             $state = $entry['state'];
             return array_merge($entry, [
                 'rankpositive' => $entry['rank'] > 0,
@@ -314,16 +314,16 @@ class mobile {
         $instructionsformatted = null;
         if ($hasinstructions) {
             $ctx = $world->get_context();
-            list($instructionsformatted, $unused) = external_utils::format_text($instructions, $instructionsformat, $ctx);
+            [$instructionsformatted, $unused] = external_utils::format_text($instructions, $instructionsformat, $ctx);
         }
 
         // Levels info.
         $levelsinfo = get_levels_info::execute($courseid);
-        $alwaysshowname = array_reduce($levelsinfo['levels'], function($carry, $level) {
+        $alwaysshowname = array_reduce($levelsinfo['levels'], function ($carry, $level) {
             return $carry || !empty($level['name']);
         }, false);
         if ($alwaysshowname) {
-            $levelsinfo['levels'] = array_map(function($level) {
+            $levelsinfo['levels'] = array_map(function ($level) {
                 if (empty($level['name'])) {
                     $level['name'] = get_string('levelx', 'block_xp', $level['level']);
                 }
@@ -411,7 +411,7 @@ class mobile {
         $ladder['showrank'] = $ladder['rankmode'] == course_world_config::RANK_ON;
         $ladder['showrelrank'] = $ladder['rankmode'] == course_world_config::RANK_REL;
         $ladder['showtotal'] = in_array('xp', $ladder['columns']);
-        $ladder['ranking'] = array_map(function($entry) {
+        $ladder['ranking'] = array_map(function ($entry) {
             return array_merge($entry, [
                 'rankpositive' => $entry['rank'] > 0,
             ]);
@@ -484,7 +484,7 @@ class mobile {
         $state = get_user_state::execute($courseid, $userid);
         $activity = get_recent_activity::execute($courseid);
         $infodata = static::enhance_page_data($world, [
-            'activity' => array_map(function($activity) use ($renderer) {
+            'activity' => array_map(function ($activity) use ($renderer) {
                 return array_merge($activity, [
                     'timeago' => $renderer->tiny_time_ago(new DateTime("@{$activity['date']}")),
                 ]);

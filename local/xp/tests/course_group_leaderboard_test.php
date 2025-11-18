@@ -301,8 +301,12 @@ final class course_group_leaderboard_test extends base_testcase {
         $s1->set($u9->id, 22);
         $s1->set($u10->id, 22); // Total 66, real pos 2nd, compensated pos 4th.
 
-        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info(),
-            course_group_leaderboard::ORDER_BY_POINTS_COMPENSATED_BY_AVG);
+        $l = new course_group_leaderboard(di::get('db'),
+            $c1->id,
+            ['xp' => 'XP'],
+            $w1->get_levels_info(),
+            course_group_leaderboard::ORDER_BY_POINTS_COMPENSATED_BY_AVG
+        );
         $ranking = $l->get_ranking(new limit(100));
 
         $this->assertCount(4, $ranking);
@@ -338,8 +342,12 @@ final class course_group_leaderboard_test extends base_testcase {
         $this->assertSame(4, $l->get_count());
 
         // Check natural ordering.
-        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info(),
-            course_group_leaderboard::ORDER_BY_POINTS);
+        $l = new course_group_leaderboard(di::get('db'),
+            $c1->id,
+            ['xp' => 'XP'],
+            $w1->get_levels_info(),
+            course_group_leaderboard::ORDER_BY_POINTS
+        );
         $ranking = $l->get_ranking(new limit(100));
         $this->assertSame(1, $l->get_rank($g3->id)->get_rank());
         $this->assertSame(2, $l->get_rank($g4->id)->get_rank());
@@ -350,8 +358,12 @@ final class course_group_leaderboard_test extends base_testcase {
         $s1->set($u11->id, 11);
         $s1->set($u12->id, 11);
 
-        $l = new course_group_leaderboard(di::get('db'), $c1->id, ['xp' => 'XP'], $w1->get_levels_info(),
-            course_group_leaderboard::ORDER_BY_POINTS_COMPENSATED_BY_AVG);
+        $l = new course_group_leaderboard(di::get('db'),
+            $c1->id,
+            ['xp' => 'XP'],
+            $w1->get_levels_info(),
+            course_group_leaderboard::ORDER_BY_POINTS_COMPENSATED_BY_AVG
+        );
         $ranking = $l->get_ranking(new limit(100));
 
         $this->assertCount(4, $ranking);

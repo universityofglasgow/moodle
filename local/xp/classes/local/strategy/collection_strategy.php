@@ -65,8 +65,12 @@ class collection_strategy implements event_collection_strategy {
      * @param collection_target_resolver_from_event $targetresolver The target resolver.
      * @param maker|null $actionmaker The action maker.
      */
-    public function __construct(course_world_factory $worldfactory, $contextmode,
-            collection_target_resolver_from_event $targetresolver, ?maker $actionmaker = null) {
+    public function __construct(
+        course_world_factory $worldfactory,
+        $contextmode,
+        collection_target_resolver_from_event $targetresolver,
+        ?maker $actionmaker = null
+    ) {
 
         $allowedcontexts = [CONTEXT_COURSE, CONTEXT_MODULE];
         if (!empty($contextmode) && $contextmode == CONTEXT_SYSTEM) {
@@ -254,7 +258,6 @@ class collection_strategy implements event_collection_strategy {
         }
 
         $completioninfo = new completion_info($modinfo->get_course());
-        $modinfoorunused = $CFG->branch < 400 ? $modinfo : null;
 
         $loadwholecourse = true;
         $cmswithcompletioninsection = 0;
@@ -276,7 +279,7 @@ class collection_strategy implements event_collection_strategy {
             $cmswithcompletioninsection++;
 
             // Check whether activity is complete.
-            $data = $completioninfo->get_data($cm, $loadwholecourse, $modinfo->get_user_id(), $modinfoorunused);
+            $data = $completioninfo->get_data($cm, $loadwholecourse, $modinfo->get_user_id());
             $loadwholecourse = false;
             $iscompleted = $data->completionstate == COMPLETION_COMPLETE || $data->completionstate == COMPLETION_COMPLETE_PASS;
             if (!$iscompleted) {

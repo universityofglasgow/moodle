@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP+.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP+ is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP+ is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP+.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Drops controller.
@@ -136,16 +138,20 @@ class drops_controller extends page_controller {
         if ($setupid > 0) {
             $drop = $this->get_drop_record($setupid);
             if (!empty($drop->id)) {
-                $editurl = new url($this->pageurl, ['dropid' => $drop->id]);
                 $name = format_string($drop->name, true, ['context' => $this->world->get_context()]);
+                $setupdataid = html_writer::random_id();
                 $setupdivid = html_writer::random_id();
+                echo $output->json_script(
+                    ['shortcode' => "[xpdrop id={$drop->id} secret={$drop->secret}]"],
+                    $setupdataid
+                );
                 echo html_writer::div('', 'xp-hidden', [
                     'id' => $setupdivid,
-                    'data-name' => $name,
-                    'data-editurl' => $editurl->out(false),
-                    'data-shortcode' => "[xpdrop id={$drop->id} secret={$drop->secret}]",
+                    'data-modal-title' => $name,
+                    'data-template' => 'local_xp/modal-drop-setup',
+                    'data-template-data' => $setupdataid,
                 ]);
-                $PAGE->requires->js_call_amd('local_xp/modal-drop-setup', 'showFromSelector', ['#' . $setupdivid]);
+                $PAGE->requires->js_call_amd('block_xp/modal', 'openSimpleModalFromSelector', ['#' . $setupdivid]);
             }
         }
 

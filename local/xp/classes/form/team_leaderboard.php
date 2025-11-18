@@ -32,7 +32,6 @@ use local_xp\local\config\default_course_world_config;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class team_leaderboard extends dynamic_form {
-
     use dynamic_world_trait;
 
     protected $routename = 'group_ladder';
@@ -69,9 +68,13 @@ class team_leaderboard extends dynamic_form {
         ];
         if ($iomad->exists()) {
             $sources[default_course_world_config::GROUP_LADDER_IOMAD_COMPANIES] = get_string(
-                'groupsourceiomadcompanies', 'local_xp');
+                'groupsourceiomadcompanies',
+                'local_xp'
+            );
             $sources[default_course_world_config::GROUP_LADDER_IOMAD_DEPARTMENTS] = get_string(
-                'groupsourceiomaddepartments', 'local_xp');
+                'groupsourceiomaddepartments',
+                'local_xp'
+            );
         }
         $el = $mform->createElement('select', 'enablegroupladder', get_string('groupladdersource', 'local_xp'), $sources);
         $mform->addElement($el);
@@ -105,8 +108,12 @@ class team_leaderboard extends dynamic_form {
             'xp' => get_string('grouppoints', 'local_xp'),
             'progress' => get_string('progress', 'block_xp'),
         ];
-        $el = $mform->createElement('select', 'groupladdercols', get_string('groupladdercols', 'local_xp'), $options,
-            ['style' => 'height: 4em;']);
+        $el = $mform->createElement('select',
+            'groupladdercols',
+            get_string('groupladdercols', 'local_xp'),
+            $options,
+            ['style' => 'height: 4em;']
+        );
         $el->setMultiple(true);
         $mform->addElement($el);
         $mform->addHelpButton('groupladdercols', 'groupladdercols', 'local_xp');

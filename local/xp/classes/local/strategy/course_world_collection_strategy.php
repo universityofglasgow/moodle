@@ -81,17 +81,17 @@ class course_world_collection_strategy implements action_collection_strategy, ev
     protected $reasonmaker;
 
     public function __construct(
-            context $context,
-            config $config,
-            state_store_with_reason $store,
-            calculator $calculator,
-            reason_collection_logger $logger,
-            reason_occurance_indicator $reasonoccuranceindicator,
-            collection_counts_indicator $collectioncountsindicator,
-            course_level_up_notification_service $levelupnotifificationservice,
-            collection_target_resolver_from_event $targetresolver,
-            reason_collection_counts_indicator $reasoncollectioncountsindicator
-        ) {
+        context $context,
+        config $config,
+        state_store_with_reason $store,
+        calculator $calculator,
+        reason_collection_logger $logger,
+        reason_occurance_indicator $reasonoccuranceindicator,
+        collection_counts_indicator $collectioncountsindicator,
+        course_level_up_notification_service $levelupnotifificationservice,
+        collection_target_resolver_from_event $targetresolver,
+        reason_collection_counts_indicator $reasoncollectioncountsindicator
+    ) {
         $this->context = $context;
         $this->config = $config;
         $this->store = $store;
@@ -198,7 +198,8 @@ class course_world_collection_strategy implements action_collection_strategy, ev
 
         // There are some events we only want to see once! So they are not bound to the cheat guard.
         if ($reason instanceof \local_xp\local\reason\activity_completion_reason
-                || $reason instanceof \local_xp\local\reason\section_completion_reason) {
+                || $reason instanceof \local_xp\local\reason\section_completion_reason
+        ) {
 
             if ($this->reasonoccuranceindicator->has_reason_happened_since($userid, $reason, new DateTime('@0'))) {
                 return false;
@@ -269,7 +270,10 @@ class course_world_collection_strategy implements action_collection_strategy, ev
     protected function cap_points($userid, $points, reason $reason) {
         if ($reason instanceof \local_xp\local\reason\graded_reason) {
             $alreadyearned = $this->reasoncollectioncountsindicator->get_points_collected_with_reason_since(
-                $userid, $reason, new DateTime('@0'));
+                $userid,
+                $reason,
+                new DateTime('@0')
+            );
             return max(0, $points - $alreadyearned);
         }
         return $points;

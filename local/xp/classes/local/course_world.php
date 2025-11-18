@@ -64,10 +64,14 @@ class course_world extends \block_xp\local\course_world {
      * @param badge_url_resolver_course_world_factory $urlresolverfactory The badge URL resolver factory.
      * @param levels_info_factory $levelsinfofactory The levels info factory.
      */
-    public function __construct(config $config, moodle_database $db, $courseid,
-            collection_target_resolver_from_event $usercolletiontargetresolver,
-            badge_url_resolver_course_world_factory $urlresolverfactory,
-            levels_info_factory $levelsinfofactory) {
+    public function __construct(
+        config $config,
+        moodle_database $db,
+        $courseid,
+        collection_target_resolver_from_event $usercolletiontargetresolver,
+        badge_url_resolver_course_world_factory $urlresolverfactory,
+        levels_info_factory $levelsinfofactory
+    ) {
 
         parent::__construct($config, $db, $courseid, $urlresolverfactory, $levelsinfofactory);
         $this->usercolletiontargetresolver = $usercolletiontargetresolver;
@@ -122,7 +126,7 @@ class course_world extends \block_xp\local\course_world {
             $levelsinfo = $this->get_levels_info();
 
             if ($this->config->get('progressbarmode') == default_course_world_config::PROGRESS_BAR_MODE_OVERALL) {
-                $userstatefactory = function($user, $points) use ($levelsinfo) {
+                $userstatefactory = function ($user, $points) use ($levelsinfo) {
                     return new user_global_state($user, $points, $levelsinfo);
                 };
             }

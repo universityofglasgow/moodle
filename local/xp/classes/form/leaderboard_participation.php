@@ -34,7 +34,6 @@ use local_xp\local\leaderboard\participation\service;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class leaderboard_participation extends dynamic_form {
-
     use dynamic_world_trait;
 
     protected $routename = 'ladder';
@@ -69,8 +68,10 @@ class leaderboard_participation extends dynamic_form {
                     if ($lockeduntil < new DateTimeImmutable('+1 day')) {
                         $dateformat = 'strftimerecent';
                     }
-                    $message = get_string('leaveleadeboardlockeduntilnote', 'block_xp',
-                        userdate($lockeduntil->getTimestamp(), get_string($dateformat, 'core_langconfig')));
+                    $message = get_string('leaveleadeboardlockeduntilnote',
+                        'block_xp',
+                        userdate($lockeduntil->getTimestamp(), get_string($dateformat, 'core_langconfig'))
+                    );
                 }
             }
 
@@ -87,8 +88,10 @@ class leaderboard_participation extends dynamic_form {
                     if ($lockeduntil < new DateTimeImmutable('+1 day')) {
                         $dateformat = 'strftimerecent';
                     }
-                    $message = get_string('canjoinfromdatex', 'block_xp',
-                        userdate($lockeduntil->getTimestamp(), get_string($dateformat, 'core_langconfig')));
+                    $message = get_string('canjoinfromdatex',
+                        'block_xp',
+                        userdate($lockeduntil->getTimestamp(), get_string($dateformat, 'core_langconfig'))
+                    );
                 }
             }
         }

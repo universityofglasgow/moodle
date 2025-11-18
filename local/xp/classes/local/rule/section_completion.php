@@ -116,7 +116,7 @@ class section_completion extends block_xp_rule {
             try {
                 $modinfo = get_fast_modinfo($this->courseid);
                 $sectionsinfo = $modinfo ? $modinfo->get_section_info_all() : [];
-                $sections = array_map(function($sectioninfo) {
+                $sections = array_map(function ($sectioninfo) {
                     return $this->get_section_name($sectioninfo->section);
                 }, $sectionsinfo);
             } catch (\moodle_exception $e) {
@@ -125,7 +125,7 @@ class section_completion extends block_xp_rule {
         }
 
         if ($sections === null) {
-            $sections = array_map(function($i) {
+            $sections = array_map(function ($i) {
                 if (!$i) {
                     return get_string('colon', 'block_xp', [
                         'a' => '#' . $i,
@@ -143,8 +143,12 @@ class section_completion extends block_xp_rule {
             $sections[$this->sectionnum] = get_string('unknownsectiona', 'block_xp', $this->sectionnum);
         }
 
-        $select = html_writer::select($sections, $basename . '[sectionnum]', $this->sectionnum, '',
-            ['id' => '', 'class' => '']);
+        $select = html_writer::select($sections,
+            $basename . '[sectionnum]',
+            $this->sectionnum,
+            '',
+            ['id' => '', 'class' => '']
+        );
         $helpicon = $this->get_renderer()->help_icon('rulesectioncompletion', 'local_xp');
 
         $o .= html_writer::start_div('xp-flex xp-gap-1 xp-min-full');

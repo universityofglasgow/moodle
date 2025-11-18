@@ -33,7 +33,6 @@ use block_xp\local\config\immutable_config;
 use block_xp\local\config\filtered_config;
 use block_xp\local\config\static_config;
 use block_xp\local\config\table_row_config;
-
 use local_xp\local\config\default_course_world_config;
 use local_xp\local\config\default_admin_config;
 

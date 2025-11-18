@@ -55,14 +55,15 @@ class course_user_leaderboard extends \local_xp\local\leaderboard\course_user_le
      * @param int $companyid The company ID.
      */
     public function __construct(
-            moodle_database $db,
-            levels_info $levelsinfo,
-            $courseid,
-            array $columns,
-            ?ranker $ranker = null,
-            $groupid = 0,
-            $userstatefactory = null,
-            $companyid = 0) {
+        moodle_database $db,
+        levels_info $levelsinfo,
+        $courseid,
+        array $columns,
+        ?ranker $ranker = null,
+        $groupid = 0,
+        $userstatefactory = null,
+        $companyid = 0
+    ) {
 
         parent::__construct($db, $levelsinfo, $courseid, $columns, $ranker, $groupid, $userstatefactory);
 

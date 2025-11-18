@@ -34,7 +34,6 @@ use lang_string;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class xp extends base {
-
     use pre_404_compat_trait;
 
     protected function get_default_tables(): array {
@@ -63,7 +62,7 @@ class xp extends base {
             ->add_field("{$tablealias}.courseid")
             ->set_type(column::TYPE_INTEGER)
             ->set_is_sortable(true)
-            ->add_callback(static function($value, $row) use ($coursecurrencyfactory) {
+            ->add_callback(static function ($value, $row) use ($coursecurrencyfactory) {
                 $currency = $coursecurrencyfactory->get_currency($row->courseid ?? SITEID);
                 return di::get('renderer')->xp($value, $currency);
             });
@@ -76,7 +75,7 @@ class xp extends base {
             ->set_type(column::TYPE_INTEGER)
             ->set_is_sortable(true, ['xp'])
             ->set_disabled_aggregation_all()
-            ->add_callback(static function($value, $row) use ($worldfactory) {
+            ->add_callback(static function ($value, $row) use ($worldfactory) {
                 if (!$row->courseid) {
                     return null;
                 }
@@ -93,7 +92,7 @@ class xp extends base {
             ->set_type(column::TYPE_INTEGER)
             ->set_is_sortable(true, ['xp'])
             ->set_disabled_aggregation_all()
-            ->add_callback(static function($value, $row) use ($worldfactory) {
+            ->add_callback(static function ($value, $row) use ($worldfactory) {
                 if (!$row->courseid) {
                     return null;
                 }
@@ -120,7 +119,6 @@ class xp extends base {
         $this->add_condition($filter);
 
         return $this;
-
     }
 
 }

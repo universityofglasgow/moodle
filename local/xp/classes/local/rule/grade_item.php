@@ -213,7 +213,8 @@ class grade_item extends block_xp_rule_base {
         // This currently has no effect as when we use one block per course, the page always has the system context.
         if (!$issiteid) {
             $args[] = array_intersect_key((array) $COURSE,
-                array_flip(['id', 'fullname', 'displayname', 'shortname', 'categoryid']));
+                array_flip(['id', 'fullname', 'displayname', 'shortname', 'categoryid'])
+            );
         } else {
             $args[] = null;
         }

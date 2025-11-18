@@ -74,11 +74,26 @@ class config extends \block_xp\form\config {
         $mform->insertElementBefore($el, 'hdrcheating');
         unset($el);
 
-        $el = $mform->createElement('html', \html_writer::div($renderer->notification_without_close(
-            strip_tags(markdown_to_html(get_string('teamladdersettingsmovednotice', 'local_xp', [
-                'url' => ($urlresolver->reverse('group_ladder', ['courseid' => $world->get_courseid()]))->out(false),
-            ])), '<a>'), 'info'),
-            'xp-my-4'));
+        $el = $mform->createElement('html',
+            \html_writer::div(
+                $renderer->notification_without_close(
+                    strip_tags(
+                        markdown_to_html(
+                            get_string('teamladdersettingsmovednotice',
+                                'local_xp',
+                                [
+                                    'url' => ($urlresolver->reverse('group_ladder', ['courseid' => $world->get_courseid()])
+                                        )->out(false),
+                                ]
+                            )
+                        ),
+                        '<a>'
+                    ),
+                    'info'
+                ),
+                'xp-my-4'
+            )
+        );
         $mform->insertElementBefore($el, 'hdrcheating');
         unset($el);
     }

@@ -59,8 +59,13 @@ class course_group_leaderboard extends grouped_leaderboard {
      * @param levels_info $levelsinfo The levels info.
      * @param int $orderby An orderby constant.
      */
-    public function __construct(moodle_database $db, $courseid, $columns, levels_info $levelsinfo,
-            $orderby = self::ORDER_BY_POINTS) {
+    public function __construct(
+        moodle_database $db,
+        $courseid,
+        $columns,
+        levels_info $levelsinfo,
+        $orderby = self::ORDER_BY_POINTS
+    ) {
 
         $ultimatexp = $levelsinfo->get_level($levelsinfo->get_count())->get_xp_required();
         $this->groupingid = (int) $db->get_field('course', 'defaultgroupingid', ['id' => $courseid]);
@@ -158,7 +163,7 @@ class course_group_leaderboard extends grouped_leaderboard {
         $insql = ' != 0';
         $inparams = [];
         if (!empty($groupids)) {
-            list($insql, $inparams) = $this->db->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $this->db->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
         }
 
         $sql = "SELECT t.*
@@ -171,7 +176,7 @@ class course_group_leaderboard extends grouped_leaderboard {
               ORDER BY t.name";
         $params = array_merge(['courseid' => $this->courseid, 'userid' => $memberid], $inparams);
 
-        return array_map(function($group) {
+        return array_map(function ($group) {
             $context = context_course::instance($group->courseid);
             return new static_team($group->id, external_utils::format_string($group->name, $context->id));
         }, $this->db->get_records_sql($sql, $params));

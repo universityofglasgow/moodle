@@ -37,8 +37,7 @@ use context_course;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class section_completion_reason implements reason, reason_with_short_description, reason_with_location, reason_with_rule {
-
+class section_completion_reason implements reason, reason_with_location, reason_with_rule, reason_with_short_description {
     use reason_rule_trait;
 
     /** @var int The course ID. */
@@ -120,7 +119,7 @@ class section_completion_reason implements reason, reason_with_short_description
     }
 
     public static function from_signature($signature) {
-        list($courseid, $sectionnum) = explode(':', $signature);
+        [$courseid, $sectionnum] = explode(':', $signature);
         return new static($courseid, $sectionnum);
     }
 
