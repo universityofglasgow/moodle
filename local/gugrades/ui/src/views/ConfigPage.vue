@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <div v-if="showresitoption" class="border rounded p-2 mt-2">
+    <div v-if="showresitoption && caneditgrades" class="border rounded p-2 mt-2">
         <button v-if="!configuringresits" type="button" class="btn btn-outline-primary" @click="click_configure">Configure resits</button>
         <div v-else>
             <div class="alert alert-primary" v-html="mstrings.resit_help"></div>
@@ -37,9 +37,34 @@
     const categoryname = ref('');
     const loaded = ref(false);
     const showresitoption = ref(false);
-    const configuringresits = ref(false)
+    const configuringresits = ref(false);
+    const caneditgrades = ref(false);
     const debug = ref({});
     const mstrings = inject('mstrings');
+
+    /**
+     * onMounted, get write grades capability
+     */
+    onMounted(() => {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_has_capability',
+            args: {
+                courseid: courseid,
+                capability: 'local/gugrades:editgrades'
+            }
+        }])[0]
+        .then((result) => {
+            caneditgrades.value = result.hascapability;
+        })
+        .catch((error) => {
+            window.console.log(error);
+            debug.value = error;
+        });
+    });
 
     /**
      * Capture change to top level category dropdown

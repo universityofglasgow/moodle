@@ -1,7 +1,7 @@
 <template>
     <tr v-for="item in props.nodes.items" :key="item.id" :class="resitclass">
-        <td v-if="resitconfig && !resitfade">
-            <ResitCheckbox  :itemid="item.id" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+        <td v-if="resitconfig" class="px-2 resit_select">
+            <ResitCheckbox  v-if="!resitfade" :itemid="item.id" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
         </td>
         <td :style="indentstyle">
             <ConfigTreeIcon :gradeitem="item"></ConfigTreeIcon>
@@ -10,7 +10,7 @@
         <td>&nbsp;</td> <!-- holder for strategy -->
         <td>
             {{ item.info.scalename }}
-            <span v-if="!item.info.isscale">&nbsp;({{ item.grademax }})</span>
+            <span v-if="!item.info.isscale">&nbsp;({{ parseFloat(item.grademax) }})</span>
         </td>
         <td>
             <span v-if="showeights">{{ item.info.weight }}%</span>
@@ -18,8 +18,8 @@
     </tr>
     <template v-for="category in props.nodes.categories" :key="category.id">
         <tr class="pb-2" :class="{ 'bg-light': category.category.even }">
-            <td v-if="resitconfig && !resitfade">
-                <ResitCheckbox v-if="resitconfig && !resitfade" :itemid="category.itemid" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+            <td v-if="resitconfig" class="px-2 resit_select">
+                <ResitCheckbox v-if="!resitfade" :itemid="category.itemid" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
             </td>
             <td :style="indentstyle">
                 <b>
@@ -120,5 +120,10 @@
 
     .resit_nofade {
         opacity: 1.0;
+    }
+
+    td.resit_select {
+        width: 1%;
+        white-space: nowrap;
     }
 </style>

@@ -3,6 +3,7 @@
         <i v-if="checked" class="fa fa-check-square-o" aria-hidden="true"></i>
         <i v-else class="fa fa-square-o" aria-hidden="true"></i>
     </a>
+    <span class="badge badge-pill badge-primary ml-2">Resit?</span>
 </template>
 
 <script setup>

@@ -124,7 +124,7 @@ class aggregation {
         $gcat = $DB->get_record('grade_categories', ['id' => $gradecategoryid], '*', MUST_EXIST);
         $strategy = $gcat->aggregation;
 
-        return ($strategy == \GRADE_AGGREGATE_WEIGHTED_MEAN) || ($strategy == \GRADE_AGGREGATE_WEIGHTED_MEAN2);
+        return $strategy == \GRADE_AGGREGATE_WEIGHTED_MEAN;
     }
 
     /**
