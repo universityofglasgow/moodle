@@ -1,5 +1,5 @@
 <template>
-    <a href="#" @click="$emit('checked', itemid)" class="plainlink">
+    <a href="#/" @click="$emit('checked', itemid)" class="plainlink">
         <i v-if="checked" class="fa fa-check-square-o" aria-hidden="true"></i>
         <i v-else class="fa fa-square-o" aria-hidden="true"></i>
     </a>

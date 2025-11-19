@@ -97,6 +97,11 @@
      */
     function resit_clicked(itemid) {
         window.console.log(itemid);
+        if (resititemid.value == itemid) {
+            resititemid.value = null;
+        } else {
+            resititemid.value = itemid;
+        }
     }
 
 
