@@ -331,23 +331,23 @@ async function fetchAssessmentsOverview() {
                     data: [{
                         name: status_text_upcoming,
                         y: upcoming,
-                        color: 'rgba(255,255,0, 1)',
+                        color: 'rgba(255, 222, 89, 1)',
                     }, {
                         name: status_text_tobesubmitted,
                         y: tobe_submitted,
-                        color: 'rgba(255,153,0, 1)',
+                        color: 'rgba(255, 145, 77, 1)',
                     }, {
                         name: status_text_overdue,
                         y: overdue,
-                        color: 'rgba(255,0,0, 1)',
+                        color: 'rgba(255, 49, 49, 1)',
                     }, {
                         name: status_text_submitted,
                         y: submitted,
-                        color: 'rgba(0,153,0, 1)',
+                        color: 'rgba(0, 191, 99, 1)',
                     }, {
                         name: status_text_graded,
                         y: graded,
-                        color: 'rgba(129,187,255, 1)',
+                        color: 'rgba(56, 182, 255, 1)',
                     }]
                 }]
             });

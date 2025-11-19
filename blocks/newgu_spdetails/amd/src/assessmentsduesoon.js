@@ -348,28 +348,28 @@ async function fetchAssessmentsDueSoon() {
                         name: chart_24hrs,
                         y: duein24hours
                     }],
-                    color: 'rgba(149,18,114,1)',
+                    color: 'rgba(255, 49, 49, 1)',
                     name: chart_24hrs,
                 }, {
                     data: [{
                         name: chart_7days,
                         y: duein7days
                     }],
-                    color: 'rgba(190,77,0,1)',
+                    color: 'rgba(255, 222, 89, 1)',
                     name: chart_7days
                 }, {
                     data: [{
                         name: chart_14days,
                         y: duein14days
                     }],
-                    color: 'rgba(255,185,72,1)',
+                    color: 'rgba(255, 145, 77, 1)',
                     name: chart_14days
                 }, {
                     data: [{
                         name: chart_1mth,
                         y: duein1month
                     }],
-                    color: 'rgba(0,153,0,1)',
+                    color: 'rgba(0, 191, 99, 1)',
                     name: chart_1mth
                 }]
             });
