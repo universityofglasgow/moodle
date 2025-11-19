@@ -292,7 +292,15 @@ class uofguser extends \gradereport_user\report\user {
      */
     public function fill_table(): bool {
         // Is this a MyGrades report? Only check it once and pass it on to the recursive function.
-        $mygradesactive = \local_gugrades\api::is_mygrades_enabled_for_course($this->courseid);
+        $coursemygradesenabled = \local_gugrades\api::is_mygrades_customfield_enabled($this->courseid);
+        if (!$coursemygradesenabled) {
+            // If MyGrades is not enabled for this course, we do not need to check further.
+            $mygradesactive = false;
+        } else {
+            // Check if MyGrades is actively used in this course.
+            $mygradesactive = \local_gugrades\api::is_mygrades_enabled_for_course($this->courseid);
+        }
+
         $this->fill_table_recursive($this->gtree->top_element, $mygradesactive);
         return true;
     }
@@ -315,10 +323,10 @@ class uofguser extends \gradereport_user\report\user {
         $fullnamenolink = grade_helper::get_element_header($element, false, false, false, false, true);
         if ($depth == 1 && $type == 'category' && has_capability('gradereport/uofguser:mygradesstatus', $this->context)) {
             // If this is a top-level category element, we need to add MyGrades acive status.
-            $fullname .= ' <span class="badge bg-warning">';
+            $fullname .= ' <span class="badge';
             $fullname .= $mygradesactive ?
-                            get_string('mygradesactive', 'gradereport_uofguser') :
-                            get_string('mygradesinactive', 'gradereport_uofguser');
+                            ' bg-warning">' . get_string('mygradesactive', 'gradereport_uofguser') :
+                            ' bg-secondary">' . get_string('mygradesinactive', 'gradereport_uofguser');
             $fullname .= '</span>';
         }
         $data = [];
@@ -509,6 +517,12 @@ class uofguser extends \gradereport_user\report\user {
                 // If the grade item is hidden, but the grade released and visible in MyGrades we show the full name without a link.
                 if ($mygradesreleasedflag && $gradegrade->grade_item->is_hidden()) {
                     $itemtitle = \html_writer::div($fullnamenolink, 'rowtitle');
+                    $itemicon = \html_writer::div($OUTPUT->pix_icon(
+                        'i/show',
+                        get_string('hidden_icon_alt_text', 'block_newgu_spdetails'),
+                        null,
+                        ['class' => 'inline me-1']
+                    ));
                 } else {
                     $itemtitle = \html_writer::div($fullname, 'rowtitle');
                 }
