@@ -36,7 +36,7 @@
                 <span v-if="showeights">{{ category.category.info.weight }}%</span>
             </td>
         </tr>
-        <ConfigTree :nodes="category" @activityselected="sub_activity_click" :depth="nextlevel" :resitconfig="resitconfig" :resitfade="!category.category.resitcandidate"></ConfigTree>
+        <ConfigTree :nodes="category" @activityselected="sub_activity_click" :depth="nextlevel" :resitconfig="resitconfig" :resitfade="!category.category.resitcandidate" @saveerror="handle_saveerror"></ConfigTree>
     </template>
 </template>
 
@@ -57,8 +57,15 @@
     });
 
     const mstrings = inject('mstrings');
-    const emit = defineEmits(['activityselected']);
+    const emit = defineEmits(['activityselected', 'saverror']);
     const resititemid = ref();
+
+    /**
+     * Pass up save error
+     */
+    function handle_saveerror(error) {
+        emit('saveerror', error);
+    }
 
     /**
      * Need this to make sure we pass down a number,
@@ -93,14 +100,38 @@
     });
 
     /**
+     * Save selected/deselected resit item
+     */
+    function save_resit_item(itemid, set) {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_save_resit_item',
+            args: {
+                courseid: courseid,
+                itemid: itemid,
+                set: set,
+            }
+        }])[0]
+        .catch((error) => {
+            window.console.log(error);
+            emit('saverror', error);
+        });        
+    }
+
+    /**
      * A resit box was clicked.
      */
     function resit_clicked(itemid) {
         window.console.log(itemid);
         if (resititemid.value == itemid) {
             resititemid.value = null;
+            save_resit_item(itemid, false);
         } else {
             resititemid.value = itemid;
+            save_resit_item(itemid, true);
         }
     }
 

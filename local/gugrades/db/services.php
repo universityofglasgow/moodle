@@ -422,7 +422,7 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
-        'local_gugrades_save_resit_item' => [
+    'local_gugrades_save_resit_item' => [
         'classname' => 'local_gugrades\external\save_resit_item',
         'description' => 'Set/reset grade item that is resit.',
         'type' => 'write',

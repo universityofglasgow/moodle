@@ -31,9 +31,9 @@ use core_external\external_single_structure;
 use core_external\external_value;
 
 /**
- * Write the data from the 'add grade' button
+ * Write the data from resits on config tab.
  */
-class save_altered_weights extends external_api {
+class save_resit_item extends external_api {
 
     /**
      * Define function parameters
@@ -42,7 +42,6 @@ class save_altered_weights extends external_api {
     public static function execute_parameters() {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'categoryid' => new external_value(PARAM_INT, 'Grade category ID'),
             'itemid' => new external_value(PARAM_INT, 'Grade item ID'),
             'set' => new external_value(PARAM_BOOL, 'True = set this item, False = clear it'),
         ]);
@@ -51,11 +50,10 @@ class save_altered_weights extends external_api {
     /**
      * Execute function
      * @param int $courseid
-     * @param int $categoryid
      * @param int $itemid
      * @param bool $set
      */
-    public static function execute($courseid, $categoryid, $itemid, $set) {
+    public static function execute($courseid, $itemid, $set) {
         global $DB;
 
         \local_gugrades\development::increase_debugging();
@@ -63,7 +61,6 @@ class save_altered_weights extends external_api {
         // Security.
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
-            'categoryid' => $categoryid,
             'itemid' => $itemid,
             'set' => $set,
         ]);
@@ -72,7 +69,7 @@ class save_altered_weights extends external_api {
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
-        \local_gugrades\api::save_resit_item($courseid, $categoryid, $itemid, $set);
+        \local_gugrades\api::save_resit_item($courseid, $itemid, $set);
 
         return [];
     }

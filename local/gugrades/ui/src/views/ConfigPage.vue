@@ -21,7 +21,7 @@
     <div v-if="loaded" class="mt-3 border rounded p-2">
         <h3>{{ categoryname }}</h3>
         <table class="table">
-            <ConfigTree :nodes="activitytree" depth="1" :resitconfig="configuringresits" :resitfade="true"></ConfigTree>
+            <ConfigTree :nodes="activitytree" depth="1" :resitconfig="configuringresits" :resitfade="true" @saveerror="handle_saveerror"></ConfigTree>
         </table>
     </div>
 </template>
@@ -65,6 +65,13 @@
             debug.value = error;
         });
     });
+
+    /**
+     * Deal with save error down in tree structure
+     */
+    function handle_saveerror(error) {
+        debug.value = error;
+    }
 
     /**
      * Capture change to top level category dropdown
