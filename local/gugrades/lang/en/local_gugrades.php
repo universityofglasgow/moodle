@@ -365,6 +365,7 @@ $string['resetfilter'] = 'Reset filter';
 $string['resetsuccess'] = 'MyGrades has been reset for this course.';
 $string['resit_help'] = 'For any pair of grade items that represent a first sitting and a resit, check all resits and click Finish.';
 $string['resitrequired'] = 'Resit required';
+$string['resitselected'] = 'Resit selected';
 $string['revert'] = 'Revert changes';
 $string['rulesdefault'] = 'Standard rules';
 $string['save'] = 'Save changes';

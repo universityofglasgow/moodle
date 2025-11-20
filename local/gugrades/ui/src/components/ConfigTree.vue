@@ -7,6 +7,9 @@
             <ConfigTreeIcon :gradeitem="item"></ConfigTreeIcon>
             {{ item.itemname }}
         </td>
+        <td class="resit_select px-2" >
+            <span v-if="item.id == resititemid" class="badge badge-pill badge-info">{{ mstrings.resitselected }}</span>
+        </td>
         <td>&nbsp;</td> <!-- holder for strategy -->
         <td>
             {{ item.info.scalename }}
@@ -27,6 +30,9 @@
                     <i v-else class="fa fa-folder-o" :title="mstrings.gradecategory" aria-hidden="true"></i>
                     {{ category.category.fullname }}
                 </b>
+            </td>
+            <td class="resit_select px-2" >
+                <span v-if="category.category.itemid == resititemid" class="badge badge-pill badge-info">{{ mstrings.resitselected }}</span>
             </td>
             <td>
                 {{ category.category.strategy }}
