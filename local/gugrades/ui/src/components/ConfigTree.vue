@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-    import {ref, defineProps, defineEmits, inject, computed} from 'vue';
+    import {ref, defineProps, defineEmits, inject, computed, onMounted} from 'vue';
     import ConfigTreeIcon from './ConfigTreeIcon.vue';
     import ResitCheckbox from './ResitCheckbox.vue';
 
@@ -59,6 +59,13 @@
     const mstrings = inject('mstrings');
     const emit = defineEmits(['activityselected', 'saverror']);
     const resititemid = ref();
+
+    /**
+     * get prop change
+     */
+    onMounted(() => {
+        resititemid.value = props.nodes.category.resititemid;
+    });
 
     /**
      * Pass up save error

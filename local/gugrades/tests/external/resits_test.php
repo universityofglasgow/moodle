@@ -77,12 +77,12 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
     }
 
     /**
-     * Checking getting tree structure for summative
+     * Checking getting tree structure for summative and simple case of setting grade item as resit.
      *
      * @covers \local_gugrades\external\get_aggregation_page::execute
      * @return void
      */
-    public function test_basic_aggregation_page(): void {
+    public function test_resit_with_simple_grade_items(): void {
         global $DB;
 
         // Make sure that we're a teacher.
@@ -94,11 +94,100 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
             get_activities::execute_returns(),
             $treejson
         );
-
-
         $tree = json_decode($treejson['activities']);
-        var_dump($tree);
+
+        // There should be resit candidates. 
+        $this->assertTrue($tree->anyresitcandidates);
+
+        // Start by examining 'Summer exam', which has two simple grade items.
+        $summerexam = $tree->categories[0];
+        $summerexamcat = $summerexam->category;
+
+        // Should be a resit candidate but no resits.
+        $this->assertTrue($summerexamcat->resitcandidate);
+        $this->assertFalse($summerexamcat->resititemid);
+
+        // Set the resit item.
+        $resit = $summerexam->items[1];
+        $this->assertEquals('Summer resit', $resit->itemname);
+        $resitid = $resit->id;
+
+        $result = save_resit_item::execute($this->course->id, $resitid, true);
+        $result = external_api::clean_returnvalue(
+            save_resit_item::execute_returns(),
+            $result
+        );
+
+        // Get the updated data
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = external_api::clean_returnvalue(
+            get_activities::execute_returns(),
+            $treejson
+        );
+        $tree = json_decode($treejson['activities']);
+
+        // Start by re-examining 'Summer exam', which has two simple grade items.
+        $summerexam = $tree->categories[0];
+        $summerexamcat = $summerexam->category;
+
+        // Should be a resit candidate WITH resit set.
+        $this->assertTrue($summerexamcat->resitcandidate);
+        $this->assertEquals($resitid, $summerexamcat->resititemid);
     }
 
-    
+    /**
+     * Checking getting tree structure for summative and simple case of a mix of
+     * simple grade items and sub-category.
+     *
+     * @covers \local_gugrades\external\get_aggregation_page::execute
+     * @return void
+     */
+    public function test_resit_with_complex_grade_items(): void {
+        global $DB;
+
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+
+        // Test get_activities web service. 
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = external_api::clean_returnvalue(
+            get_activities::execute_returns(),
+            $treejson
+        );
+        $tree = json_decode($treejson['activities']);
+
+        // Look at 'Scale exam'
+        $scaleexam = $tree->categories[1];
+        $scaleexamcat = $scaleexam->category;
+        $this->assertEquals('Scale exam', $scaleexamcat->fullname);
+        $this->assertTrue($scaleexamcat->resitcandidate);
+        $this->assertFalse($scaleexamcat->resititemid);
+
+        // Category that could be a resit.
+        $scaleresit = $scaleexam->categories[0];
+        $this->assertEquals('Scale resit', $scaleresit->category->fullname);
+        $resitid = $scaleresit->category->itemid;
+
+        // Set this as the resit item.
+        $result = save_resit_item::execute($this->course->id, $resitid, true);
+        $result = external_api::clean_returnvalue(
+            save_resit_item::execute_returns(),
+            $result
+        );
+
+        // Get the updated data
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = external_api::clean_returnvalue(
+            get_activities::execute_returns(),
+            $treejson
+        );
+        $tree = json_decode($treejson['activities']);
+
+        // Re-check scale exam.
+        $scaleexam = $tree->categories[1];
+        $scaleexamcat = $scaleexam->category;
+        $this->assertEquals('Scale exam', $scaleexamcat->fullname);
+        $this->assertTrue($scaleexamcat->resitcandidate);
+        $this->assertEquals($resitid, $scaleexamcat->resititemid);
+    }    
 }
