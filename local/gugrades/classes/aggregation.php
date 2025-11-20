@@ -218,6 +218,7 @@ class aggregation {
                 'userids' => [],
                 'weight' => round($gradecategory->weight * 100, 3, PHP_ROUND_HALF_DOWN),
                 'released' => \local_gugrades\grades::is_grades_released($courseid, $gradecategory->itemid),
+                'isresitgradeitem' => \local_gugrades\grades::is_resit_gradeitem($gradecategory->itemid),
             ];
         }
         foreach ($gradeitems as $gradeitem) {
@@ -243,6 +244,7 @@ class aggregation {
                 'userids' => $userids,
                 'weight' => round($gradeitem->weight * 100, 3, PHP_ROUND_HALF_DOWN),
                 'released' => \local_gugrades\grades::is_grades_released($courseid, $gradeitem->gradeitemid),
+                'isresitgradeitem' => \local_gugrades\grades::is_resit_gradeitem($gradeitem->gradeitemid),
             ];
         }
 

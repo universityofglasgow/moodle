@@ -165,6 +165,7 @@ class get_aggregation_page extends external_api {
                     'strategy' => new external_value(PARAM_TEXT, 'If a category, then aggregation strategy formatted for display'),
                     'showweights' => new external_value(PARAM_BOOL, 'Should weights be shown in sub-cat?'),
                     'released' => new external_value(PARAM_BOOL, 'Has this grade item been released?'),
+                    'isresitgradeitem' => new external_value(PARAM_BOOL, 'Is this item flagged as a resit?'),
                 ])
             ),
             'breadcrumb' => new external_multiple_structure(

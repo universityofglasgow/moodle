@@ -264,6 +264,30 @@ class grades {
     }
 
     /**
+     * Has a grade category been configured as having a resit?
+     * That is, does it have an entry in local_gugrades_resit?
+     * @param int $gradecategoryid
+     * @return boolean
+     */
+    public static function is_resit_category(int $gradecategoryid) {
+        global $DB;
+
+        return $DB->record_exists('local_gugrades_resit', ['gradecategoryid' => $gradecategoryid]);
+    }
+
+    /**
+     * Is this grade item flagged as a resit?
+     * That is, does it have an entry in local_gugrades_resit (for gradeitemid)?
+     * @param int $gradeitemid
+     * @return boolean
+     */
+    public static function is_resit_gradeitem(int $gradeitemid) {
+        global $DB;
+
+        return $DB->record_exists('local_gugrades_resit', ['gradeitemid' => $gradeitemid]);
+    }
+
+    /**
      * Get the gradeitemid given the gradecategoryid
      * @param int $gradecategoryid
      * @return int
