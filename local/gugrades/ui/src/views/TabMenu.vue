@@ -48,7 +48,7 @@
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import GreyLogo from '@/components/GreyLogo.vue';
 
-    const currenttab = ref('configure');
+    const currenttab = ref('capture');
     const level1category = ref(0);
     const showactivityselect = ref(false);
     const itemid = ref(0);
