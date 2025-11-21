@@ -275,7 +275,7 @@ class renderer extends section_renderer {
                 if (empty($this->tcsettings)) {
                     $this->tcsettings = $this->courseformat->get_settings();
                 }
-                $url = new url('/course/view.php', ['id' => $course->id, 'section' => $section->section]);
+
                 // Get the specific words from the language files.
                 $topictext = null;
                 if (($this->tcsettings['layoutstructure'] == 1) || ($this->tcsettings['layoutstructure'] == 4)) {
@@ -301,25 +301,28 @@ class renderer extends section_renderer {
                                 break;
                         }
                     } else {
-                        $title = get_string('viewonly', 'format_topcoll', ['sectionname' => $topictext . ' ' . $section->section]);
                         switch ($this->tcsettings['layoutelement']) { // Toggle section x.
                             case 1:
                             case 3:
                             case 5:
                             case 8:
-                                $o .= html_writer::link(
-                                    $url,
-                                    $topictext . html_writer::empty_tag('br') .
-                                    $section->section,
-                                    ['title' => $title, 'class' => 'cps_centre']
-                                );
-                                break;
-                            default:
-                                $o .= html_writer::link(
-                                    $url,
-                                    $this->one_section_icon($title),
-                                    ['title' => $title, 'class' => 'cps_centre']
-                                );
+                                if ($section->uservisible) {
+                                    $title = get_string('viewonly', 'format_topcoll', ['sectionname' => $topictext . ' ' . $section->section]);
+                                    $url = new url('/course/view.php', ['id' => $course->id, 'section' => $section->section]);
+                                    $o .= html_writer::link(
+                                        $url,
+                                        $topictext . html_writer::empty_tag('br') .
+                                        $section->section,
+                                        ['title' => $title, 'class' => 'cps_centre']
+                                    );
+                                } else {
+                                    $o .= html_writer::tag(
+                                        'span',
+                                        $topictext . html_writer::empty_tag('br') .
+                                        $section->section,
+                                        ['class' => 'cps_centre']
+                                    );
+                                }
                                 break;
                         }
                     }
@@ -484,7 +487,7 @@ class renderer extends section_renderer {
 
         $sectioncontext = [
             'rtl' => $this->rtl,
-            'sectionid' => $section->id,
+            'id' => $section->id,
             'sectionno' => $section->section,
             'sectionreturn' => $sectionreturn,
             'editing' => $this->userisediting,
@@ -496,6 +499,9 @@ class renderer extends section_renderer {
                 $sectioncontext['sectionstyle'] = 'hidden';
             } else if ($section->section == $this->currentsection) {
                 $sectioncontext['sectionstyle'] = 'current';
+            }
+            if ($this->userisediting && !$section->is_delegated()) {
+                $sectioncontext['sectionbulk'] = true;
             }
         }
 
@@ -571,9 +577,11 @@ class renderer extends section_renderer {
             );
         }
 
-        $sectioncontext['cscml'] = $this->course_section_cmlist($section);
-        if ($this->courseformat->show_editor()) {
-            $sectioncontext['cscml'] .= $this->course_section_add_cm_control($course, $section->section, $sectionreturn);
+        if ($section->uservisible) {
+            $sectioncontext['cscml'] = $this->course_section_cmlist($section);
+            if ($this->courseformat->show_editor()) {
+                $sectioncontext['cscml'] .= $this->course_section_add_cm_control($course, $section->section, $sectionreturn);
+            }
         }
 
         return $this->render_from_template('format_topcoll/section', $sectioncontext);
@@ -768,7 +776,7 @@ class renderer extends section_renderer {
                 'unknowncoursesection',
                 'error',
                 course_get_url($course),
-                format_string($course->fullname. ' - id='.$course->id)
+                format_string($course->fullname . ' - id=' . $course->id)
             );
         }
 
@@ -803,7 +811,7 @@ class renderer extends section_renderer {
         $singlesectioncontext['sectiontitle'] = $this->section_heading($thissection, $sectionname, $classes);
         $singlesectioncontext['bulkedittools'] = $this->bulkedittools();
 
-        return $this->single_section_styles().$this->render_from_template('format_topcoll/singlesection', $singlesectioncontext);
+        return $this->single_section_styles() . $this->render_from_template('format_topcoll/singlesection', $singlesectioncontext);
     }
 
     /**
@@ -893,8 +901,10 @@ class renderer extends section_renderer {
                     // Shown hidden section - to state that it is hidden.
                     $extrasectioninfo[$displayedsection->id]->ishidden = true;
                 } else {
-                    if ((!empty($shownsectionsinfo['currentsectionno'])) &&
-                        ($shownsectionsinfo['currentsectionno'] == $displayedsection->section)) {
+                    if (
+                        (!empty($shownsectionsinfo['currentsectionno'])) &&
+                        ($shownsectionsinfo['currentsectionno'] == $displayedsection->section)
+                    ) {
                         $this->currentsection = $shownsectionsinfo['currentsectionno'];
                         $extrasectioninfo[$displayedsection->id]->toggle = true; // Open current section regardless of toggle state.
                         $this->togglelib->set_toggle_state($displayedsection->section, true);
@@ -942,8 +952,13 @@ class renderer extends section_renderer {
                             }
                         }
                     }
-                    $sectionoutput .= $this->topcoll_section($displayedsection, $course, false,
-                            null, $extrasectioninfo[$displayedsection->id]->toggle);
+                    $sectionoutput .= $this->topcoll_section(
+                        $displayedsection,
+                        $course,
+                        false,
+                        null,
+                        $extrasectioninfo[$displayedsection->id]->toggle
+                    );
                     $toggledsections[] = $displayedsection->section;
                 }
 
@@ -1033,15 +1048,15 @@ class renderer extends section_renderer {
         $onetopic = ($this->tcsettings['onesection'] == 2) ? 'true' : 'false';
         $onetopictoggle = (empty($shownonetoggle)) ? 'false' : $shownonetoggle;
         $defaulttogglepersistence = ($this->defaulttogglepersistence == 1) ? 'true' : 'false';
-        $content .= '<span id="tcdata" class="d-none"'.
-            ' data-onetopic="'.$onetopic.'"'.
-            ' data-onetopictoggle="'.$onetopictoggle.'"'.
-            ' data-defaulttogglepersistence="'.$defaulttogglepersistence.'"'.
+        $content .= '<span id="tcdata" class="d-none"' .
+            ' data-onetopic="' . $onetopic . '"' .
+            ' data-onetopictoggle="' . $onetopictoggle . '"' .
+            ' data-defaulttogglepersistence="' . $defaulttogglepersistence . '"' .
             '></span>';
 
         /* Make sure the database has the correct state of the toggles if changed by the code.
            This ensures that a no-change page reload is correct. */
-        set_user_preference(togglelib::TOPCOLL_TOGGLE.'_' . $course->id, $toggles);
+        set_user_preference(togglelib::TOPCOLL_TOGGLE . '_' . $course->id, $toggles);
 
         return $content;
     }
@@ -1222,7 +1237,8 @@ class renderer extends section_renderer {
                 }
                 if (empty($topcollsidewidthval)) {
                     // Dynamically changing widths with language.
-                    if ((($this->mobiletheme == false) &&
+                    if (
+                        (($this->mobiletheme == false) &&
                         ($this->tablettheme == false)) &&
                         ($topcollsidewidthlang == 0)
                     ) {
@@ -1251,8 +1267,8 @@ class renderer extends section_renderer {
 
         if ($this->defaulttogglepersistence == 1) {
             global $USER;
-            $USER->topcoll_user_pref[togglelib::TOPCOLL_TOGGLE.'_' . $this->course->id] = PARAM_RAW;
-            $userpreference = get_user_preferences(togglelib::TOPCOLL_TOGGLE.'_' . $this->course->id);
+            $USER->topcoll_user_pref[togglelib::TOPCOLL_TOGGLE . '_' . $this->course->id] = PARAM_RAW;
+            $userpreference = get_user_preferences(togglelib::TOPCOLL_TOGGLE . '_' . $this->course->id);
         } else {
             $userpreference = null;
         }

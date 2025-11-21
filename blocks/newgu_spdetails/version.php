@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->component = 'block_newgu_spdetails';
-$plugin->version = 2025100900;
+$plugin->version = 2025111900;
 $plugin->requires = 2022041900; // Moodle 4.0.
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release  = '0.3 Beta';
