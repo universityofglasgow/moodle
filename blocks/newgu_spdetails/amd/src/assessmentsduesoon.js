@@ -355,14 +355,14 @@ async function fetchAssessmentsDueSoon() {
                         name: chart_7days,
                         y: duein7days
                     }],
-                    color: 'rgba(255, 222, 89, 1)',
+                    color: 'rgba(255, 145, 77, 1)',
                     name: chart_7days
                 }, {
                     data: [{
                         name: chart_14days,
                         y: duein14days
                     }],
-                    color: 'rgba(255, 145, 77, 1)',
+                    color: 'rgba(255, 222, 89, 1)',
                     name: chart_14days
                 }, {
                     data: [{
