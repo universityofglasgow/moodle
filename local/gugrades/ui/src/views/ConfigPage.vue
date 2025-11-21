@@ -116,7 +116,7 @@
         .then((result) => {
             const tree = JSON.parse(result['activities']);
 
-            window.console.log(tree);
+            //window.console.log(tree);
 
             activitytree.value = tree;
             categoryname.value = tree.category.fullname;

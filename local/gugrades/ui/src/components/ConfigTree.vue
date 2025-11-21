@@ -1,7 +1,7 @@
 <template>
     <tr v-for="item in props.nodes.items" :key="item.id" :class="resitclass">
         <td v-if="resitconfig" class="px-2 resit_select">
-            <ResitCheckbox  v-if="!resitfade" :itemid="item.id" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+            <ResitCheckbox  v-if="!resitfade" :itemid="item.id" :checkeditemid="resititemid" @checked="resit_clicked" :depth="depth"></ResitCheckbox>
         </td>
         <td :style="indentstyle">
             <ConfigTreeIcon :gradeitem="item"></ConfigTreeIcon>
@@ -22,7 +22,7 @@
     <template v-for="category in props.nodes.categories" :key="category.id">
         <tr class="pb-2" :class="{ 'bg-light': category.category.even }">
             <td v-if="resitconfig" class="px-2 resit_select">
-                <ResitCheckbox v-if="!resitfade" :itemid="category.itemid" :checkeditemid="resititemid" @checked="resit_clicked"></ResitCheckbox>
+                <ResitCheckbox v-if="!resitfade" :itemid="category.category.itemid" :checkeditemid="resititemid" @checked="resit_clicked" :depth="depth"></ResitCheckbox>
             </td>
             <td :style="indentstyle">
                 <b>
