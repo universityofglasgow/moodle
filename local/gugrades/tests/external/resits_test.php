@@ -67,7 +67,7 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         parent::setUp();
 
         // Install test schema.
-        $this->gradeitemids = $this->load_schema('schema8_resits');
+        $this->gradeitemids = $this->load_schema('schema12_resits');
 
         // Get the grade category 'summative'.
         $this->gradecatsummative = $DB->get_record('grade_categories', ['fullname' => 'Summative'], '*', MUST_EXIST);
@@ -190,4 +190,14 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         $this->assertTrue($scaleexamcat->resitcandidate);
         $this->assertEquals($resitid, $scaleexamcat->resititemid);
     }    
+
+    /**
+     * Check aggregation works as expected with combinations of resit selected
+     * grades and admin grades.
+     */
+    public function test_resit_aggregation(): void {
+        
+        // Make sure that we're a teacher.
+        $this->setUser($this->teacher);
+    }
 }
