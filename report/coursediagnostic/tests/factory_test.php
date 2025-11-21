@@ -19,6 +19,7 @@ namespace report_coursediagnostic;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
+require_once($CFG->dirroot.'/report/coursediagnostic/classes/interfaces.php');
 require_once($CFG->dirroot.'/report/coursediagnostic/classes/diagnostic_factory.php');
 
 /**
@@ -45,8 +46,8 @@ class factory_test extends \basic_testcase {
         $classname = "course_{$name}_test";
         $namespace = '\\report_coursediagnostic';
         $fully_qualified_class_name = "$namespace\\$classname";
-        $object = new $fully_qualified_class_name;
-        $this->assertInstanceOf($object, $factory->create_diagnostic_test_from_config($name,$course));
+        $object = new $fully_qualified_class_name($name,$course);
+        $this->assertInstanceOf($object::class, $factory->create_diagnostic_test_from_config($name,$course));
 
         return;
     }

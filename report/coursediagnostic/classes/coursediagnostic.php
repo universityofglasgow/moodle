@@ -27,6 +27,8 @@
 
 namespace report_coursediagnostic;
 
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die;
 class coursediagnostic {
 
@@ -71,16 +73,21 @@ class coursediagnostic {
      */
     public static function cfg_settings_check(): bool {
 
-        global $SESSION;
+        global $SESSION, $DB;
 
         // To avoid a call to the db for the values each time this event is
         // triggered, make use of the session.
         if (!isset($SESSION->report_coursediagnosticconfig)) {
-            $diagnosticconfig = get_config('report_coursediagnostic');
+            // However, we need to hit the database here as the return from get_config() isn't ordered.
+            $diagnosticconfigrecords = $DB->get_records_menu('config_plugins', ['plugin' => 'report_coursediagnostic'], 'id ASC', 'name, value');
             $SESSION->report_coursediagnostic = false;
             $SESSION->report_coursediagnosticconfig = null;
-            if (property_exists($diagnosticconfig, 'enablediagnostic') && $diagnosticconfig->enablediagnostic) {
+            if (array_key_exists('enablediagnostic', $diagnosticconfigrecords) && $diagnosticconfigrecords['enablediagnostic'] == 1) {
                 $SESSION->report_coursediagnostic = true;
+                $diagnosticconfig = new stdClass();
+                foreach ($diagnosticconfigrecords as $key => $value) {
+                    $diagnosticconfig->$key = $value;
+                }
 
                 // Some things we don't need however...
                 unset($diagnosticconfig->version);

@@ -152,6 +152,50 @@ class observer {
     }
 
     /**
+     * Handle the "grade category" created event - using the grade item created event.
+     *
+     * @param \\core\event\grade_item_created $event
+     * @return bool
+     */
+    public static function grade_item_created(\core\event\grade_item_created $event): bool {
+
+        // This event class is a parent ^to^ grade_item_updated and both get triggered.
+        // Listen out only for this specfic event. 
+        if ($event->eventname == '\core\event\grade_item_created') {
+            if ($event->get_data()['other']['itemtype'] == 'category') {
+                // Invalidate the cache for the given course id - if it exists...
+                if ((!empty($event->courseid)) && $event->courseid != 1) {
+                    return self::delete_key_from_cache($event->courseid);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle the "grade category" updated event - using the grade item updated event.
+     *
+     * @param \core\event\grade_item_updated $event
+     * @return bool
+     */
+    public static function grade_item_updated(\core\event\grade_item_updated $event): bool {
+
+        // This event class is a child ^of^ grade_item_created and both get triggered.
+        // Listen out only for this specfic event. 
+        if ($event->eventname == '\core\event\grade_item_updated') {
+            if ($event->get_data()['other']['itemtype'] == 'category') {
+                // Invalidate the cache for the given course id - if it exists...
+                if ((!empty($event->courseid)) && $event->courseid != 1) {
+                    return self::delete_key_from_cache($event->courseid);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * When the first student is added to a course, handle the session vars.
      * The config session variable needs to be removed in order to be re-gen'd.
      *

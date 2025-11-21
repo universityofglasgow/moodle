@@ -42,7 +42,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('enablediagnostic', 'report_coursediagnostic');
     $desc = new lang_string('enablediagnostic_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/enablediagnostic',
         $name,
         $desc,
@@ -70,7 +70,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('startdate', 'report_coursediagnostic');
     $desc = new lang_string('startdate_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/startdate',
         $name,
         $desc,
@@ -80,7 +80,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('enddate', 'report_coursediagnostic');
     $desc = new lang_string('enddate_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/enddate',
         $name,
         $desc,
@@ -90,7 +90,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('visibility', 'report_coursediagnostic');
     $desc = new lang_string('visibility_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/visibility',
         $name,
         $desc,
@@ -100,7 +100,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('studentenrolment', 'report_coursediagnostic');
     $desc = new lang_string('studentenrolment_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/studentenrolment',
         $name,
         $desc,
@@ -110,7 +110,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('inactivestaffenrolment', 'report_coursediagnostic');
     $desc = new lang_string('inactivestaffenrolment_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/inactivestaffenrolment',
         $name,
         $desc,
@@ -120,7 +120,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('inactivestudentenrolment', 'report_coursediagnostic');
     $desc = new lang_string('inactivestudentenrolment_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/inactivestudentenrolment',
         $name,
         $desc,
@@ -130,7 +130,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('groupmode', 'report_coursediagnostic');
     $desc = new lang_string('groupmode_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/groupmode',
         $name,
         $desc,
@@ -140,7 +140,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('activitycompletion', 'report_coursediagnostic');
     $desc = new lang_string('activitycompletion_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/activitycompletion',
         $name,
         $desc,
@@ -177,7 +177,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('coursefiles', 'report_coursediagnostic');
     $desc = new lang_string('coursefiles_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/coursefiles',
         $name,
         $desc,
@@ -187,7 +187,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('coursevideo', 'report_coursediagnostic');
     $desc = new lang_string('coursevideo_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/coursevideo',
         $name,
         $desc,
@@ -197,7 +197,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('courseaudio', 'report_coursediagnostic');
     $desc = new lang_string('courseaudio_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/courseaudio',
         $name,
         $desc,
@@ -215,7 +215,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('assignmentduedate', 'report_coursediagnostic');
     $desc = new lang_string('assignmentduedate_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/assignmentduedate',
         $name,
         $desc,
@@ -233,7 +233,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('duplicateactivityrestrictions', 'report_coursediagnostic');
     $desc = new lang_string('duplicateactivityrestrictions_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/duplicateactivityrestrictions',
         $name,
         $desc,
@@ -251,7 +251,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('enrolmentpluginsenabled', 'report_coursediagnostic');
     $desc = new lang_string('enrolmentplugins_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/enrolmentpluginsenabled',
         $name,
         $desc,
@@ -261,7 +261,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('selfenrolmentkey', 'report_coursediagnostic');
     $desc = new lang_string('selfenrolmentkey_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/selfenrolmentkey',
         $name,
         $desc,
@@ -280,7 +280,7 @@ if ($hassiteconfig) {
 
     $name = new lang_string('autoenrolment_studentdatadeletion', 'report_coursediagnostic');
     $desc = new lang_string('autoenrolment_studentdatadeletion_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/autoenrolment_studentdatadeletion',
         $name,
         $desc,
@@ -290,8 +290,46 @@ if ($hassiteconfig) {
 
     $name = new lang_string('mycampusenrolment', 'report_coursediagnostic');
     $desc = new lang_string('mycampusenrolment_desc', 'report_coursediagnostic');
-    $default = 1;
+    $default = 0;
     $setting = new admin_setting_configcheckbox('report_coursediagnostic/mycampusenrolment',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
+    // MGU-978 - MyGrades specific tests
+    $name = new lang_string('mygrades', 'report_coursediagnostic');
+    $desc = '';
+    $setting = new admin_setting_heading('mygradeshdr',
+        $name,
+        $desc);
+    $settings->add($setting);
+
+    $name = new lang_string('mygrades_summativecoursecategory', 'report_coursediagnostic');
+    $desc = new lang_string('mygrades_summativecoursecategory_desc', 'report_coursediagnostic');
+    $default = 0;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/mygrades_summativecoursecategory',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
+    $name = new lang_string('mygrades_categoryweighting', 'report_coursediagnostic');
+    $desc = new lang_string('mygrades_categoryweighting_desc', 'report_coursediagnostic');
+    $default = 0;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/mygrades_categoryweighting',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
+    $name = new lang_string('mygrades_formativecoursecategory', 'report_coursediagnostic');
+    $desc = new lang_string('mygrades_formativecoursecategory_desc', 'report_coursediagnostic');
+    $default = 0;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/mygrades_formativecoursecategory',
         $name,
         $desc,
         $default);

@@ -1,5 +1,6 @@
 # moodle-course_diagnostic
 MOOD-113 - course diagnostic report
+MGU-978 - Additional tests to satisfy MyGrades requirements.
 ___
 
 # Purpose

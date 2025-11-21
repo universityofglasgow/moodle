@@ -41,7 +41,7 @@ class diagnosticitem_test extends \basic_testcase {
         $factory = \report_coursediagnostic\diagnostic_factory::instance();
         $factoryObj = $factory->create_diagnostic_test_from_config($name,$course);
 
-        $this->assertObjectHasAttribute('testresult', $factoryObj);
+        $this->assertObjectHasProperty('testresult', $factoryObj);
         $this->assertIsArray($factoryObj->testresult);
     }
 
