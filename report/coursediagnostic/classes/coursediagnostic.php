@@ -68,10 +68,11 @@ class coursediagnostic {
     protected static bool $purgeflag = false;
 
     /**
+     * @param int $courseid 
      * @return bool
      * @throws \dml_exception
      */
-    public static function cfg_settings_check(): bool {
+    public static function cfg_settings_check(int $courseid = null): bool {
 
         global $SESSION, $DB;
 
@@ -99,8 +100,23 @@ class coursediagnostic {
 
                 // Here we assign all the settings from the config object...
                 $SESSION->report_coursediagnosticconfig = $diagnosticconfig;
+
             } else {
                 return false;
+            }
+        } else {
+            // The cache may have been cleared - however our staff member's session may not reflect the correct tests.
+            if ($courseid) {
+                \report_coursediagnostic\coursediagnostic::init_cache();
+                $cachedata = \report_coursediagnostic\coursediagnostic::cache_data_exists($courseid);
+
+                if (!$cachedata[self::CACHE_KEY . $courseid]) {
+                    unset($SESSION->report_coursediagnosticconfig);
+                    // Call this method again in order to repopulate the session variable with the correct tests.
+                    self::cfg_settings_check();
+                } else {
+                    return true;
+                }
             }
         }
 

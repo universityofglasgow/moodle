@@ -306,6 +306,16 @@ if ($hassiteconfig) {
         $desc);
     $settings->add($setting);
 
+    $name = new lang_string('mygrades_enablestudentmygrades', 'report_coursediagnostic');
+    $desc = new lang_string('mygrades_enablestudentmygrades_desc', 'report_coursediagnostic');
+    $default = 0;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/mygrades_enablestudentmygrades',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
     $name = new lang_string('mygrades_summativecoursecategory', 'report_coursediagnostic');
     $desc = new lang_string('mygrades_summativecoursecategory_desc', 'report_coursediagnostic');
     $default = 0;

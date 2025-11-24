@@ -63,7 +63,7 @@ class observer {
         if (has_capability('report/coursediagnostic:view', $context)) {
             // ...courseid:1 appears to be the generic default course in Moodle - I don't think we need this.
             if ((!empty($event->courseid)) && $event->courseid != 1) {
-                $settingscheck = \report_coursediagnostic\coursediagnostic::cfg_settings_check();
+                $settingscheck = \report_coursediagnostic\coursediagnostic::cfg_settings_check($event->courseid);
 
                 if ($settingscheck) {
 

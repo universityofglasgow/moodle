@@ -69,7 +69,7 @@ echo $output->header();
 echo $output->heading($pagetitle);
 
 // Get the config settings...
-$cfgsettings = \report_coursediagnostic\coursediagnostic::cfg_settings_check();
+$cfgsettings = \report_coursediagnostic\coursediagnostic::cfg_settings_check($courseid);
 
 // If the diagnostics have been enabled...
 if ($cfgsettings) {
@@ -250,6 +250,9 @@ if ($cfgsettings) {
             $diagnosticcontent = html_writer::div(
                 get_string('no_cache_data', 'report_coursediagnostic', $link), 'alert alert-warning'
             );
+
+            // The cache was emptied via the settings page, however this users session variable is still in play, it needs unset.
+            unset($SESSION->report_coursediagnosticconfig);
         }
     }
 } else {
