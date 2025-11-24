@@ -199,5 +199,116 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         
         // Make sure that we're a teacher.
         $this->setUser($this->teacher);
+
+        // Set 'Summer resit' inside 'Summer exam' as resit.
+        $summerfirstsittingid = $this->get_gradeitemid('Summer first sitting');
+        $summerresitid = $this->get_gradeitemid('Summer resit');
+        $result = save_resit_item::execute($this->course->id, $summerresitid, true);
+        $result = external_api::clean_returnvalue(
+            save_resit_item::execute_returns(),
+            $result
+        );
+
+        // Write some random grades
+        $nothing = write_additional_grade::execute(
+            courseid:          $this->course->id,
+            gradeitemid:       $summerfirstsittingid,
+            userid:            $this->student->id,
+            reason:            'SECOND',
+            other:             '',
+            admingrade:        '',
+            scale:             0,
+            grade:             52,
+            notes:             'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+        $nothing = write_additional_grade::execute(
+            courseid:          $this->course->id,
+            gradeitemid:       $summerresitid,
+            userid:            $this->student->id,
+            reason:            'SECOND',
+            other:             '',
+            admingrade:        '',
+            scale:             0,
+            grade:             75,
+            notes:             'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get aggregation page for above 'Summer exam'.
+        $summerexamcatid = $this->get_grade_category('Summer exam');
+        $page = get_aggregation_page::execute($this->course->id, $summerexamcatid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Aggregated result should simply be hightest grade.
+        $fred = $page['users'][0];
+        $this->assertEquals(75, $fred['displaygrade']);
+
+        // Change first sitting grade to EC.
+        $nothing = write_additional_grade::execute(
+            courseid:          $this->course->id,
+            gradeitemid:       $summerfirstsittingid,
+            userid:            $this->student->id,
+            reason:            'SECOND',
+            other:             '',
+            admingrade:        'GOODCAUSE_FO',
+            scale:             0,
+            grade:             0,
+            notes:             'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get updated aggregation page.
+        $summerexamcatid = $this->get_grade_category('Summer exam');
+        $page = get_aggregation_page::execute($this->course->id, $summerexamcatid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Should still be 75 despite the EC. The resit "wins".
+        $fred = $page['users'][0];
+        $this->assertEquals(75, $fred['displaygrade']);
+
+        // Change resit grade to NS.
+        $nothing = write_additional_grade::execute(
+            courseid:          $this->course->id,
+            gradeitemid:       $summerresitid,
+            userid:            $this->student->id,
+            reason:            'SECOND',
+            other:             '',
+            admingrade:        'NOSUBMISSION',
+            scale:             0,
+            grade:             0,
+            notes:             'Test notes'
+        );
+        $nothing = external_api::clean_returnvalue(
+            write_additional_grade::execute_returns(),
+            $nothing
+        );
+
+        // Get updated aggregation page.
+        $summerexamcatid = $this->get_grade_category('Summer exam');
+        $page = get_aggregation_page::execute($this->course->id, $summerexamcatid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Should now be NS.
+        $fred = $page['users'][0];
+        $this->assertEquals('NS', $fred['displaygrade']);
     }
 }

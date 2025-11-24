@@ -338,15 +338,20 @@ class grades {
      * a resit defined. Note that there's can be only none or one resit items.
      * MGU-1351
      * @param int $gradecategoryid
+     * @param bool $mustexist
      * @return int|false
      */
-    public static function get_resit_itemid(int $gradecategoryid) {
+    public static function get_resit_itemid(int $gradecategoryid, bool $mustexist = false) {
         global $DB;
 
         if ($resit = $DB->get_record('local_gugrades_resit', ['gradecategoryid' => $gradecategoryid])) {
             return $resit->gradeitemid;
         } else {
-            return false;
+            if ($mustexist) {
+                throw new \moodle_exception('Resit item not found where one was expected. CategoryID = ' . $gradecategoryid);
+            } else {
+                return false;
+            }
         }
     }
 

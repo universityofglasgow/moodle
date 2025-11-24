@@ -390,6 +390,51 @@ class base {
     }
 
     /**
+     * Handle resit grade. 
+     * - If there is only one item, then that's the grade (or admingrade)
+     * - If there are any admingrade then the resit grade is the grade (or admingrade)
+     * - If there are two valid grades then aggregation completes 'normally'
+     * Return the item that will be aggregated result or null if not.
+     * Return the appropriate explain.
+     * @param array $items
+     * @param int $resititemid
+     * @param [object|null, string]
+     */
+    public function resit(array $items, $resititemid) {
+
+        // Make very sure array is index 0.
+        $items = array_values($items);
+
+        $explain = '';
+
+        // If only one item...
+        if (count($items) == 1) {
+            $explain = get_string('explain_resitoneitem', 'local_gugrades');
+            return [$item[0], $explain];
+        }
+
+        // Which item (index) is the resit item
+        $resitindex = false;
+        foreach ($items as $index => $item) {
+            if ($item->itemid == $resititemid) {
+                $resitindex = $index;
+            }
+        }
+        if ($resitindex === false) {
+            throw new \moodle_exception('Resit itemid was not in list of aggregation items. ResititemID = ' . $resititemid);
+        }
+
+        // If there are any admin grades, then the resit item is the result
+        if ($items[0]->admingrade || $items[1]->admingrade) {
+            $explain = get_string('explain_resitadmingrade', 'local_gugrades');
+            return [$items[$resitindex], $explain];
+        }
+
+        // In which case, we must have two grades and can allow normal aggregation to procede.
+        return [null, ''];
+    }
+
+    /**
      * Calculate completion %age for items
      * Need to be "sympathetic" with rounding on this as
      * stuff will be blocked if completion != 100%

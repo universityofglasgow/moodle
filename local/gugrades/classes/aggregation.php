@@ -1035,6 +1035,9 @@ class aggregation {
         // Initialise 'explain' string.
         $explain = '';
 
+        // Logic will be different if this category is for resits.
+        $isresitcategory = \local_gugrades\grades::is_resit_category($category->categoryid);
+
         // Get appropriate aggregation 'rule' set.
         $aggregation = self::aggregation_factory($courseid, $category->atype);
 
@@ -1073,7 +1076,8 @@ class aggregation {
 
         // Admingrade check for anything that happens before drop lowest and
         // checks for all items graded etc.
-        if ($admingrade = $aggregation->admin_grade_precheck($level, $items)) {
+        // Skip this if we're dealing with a resit category.
+        if (!$isresitcategory && ($admingrade = $aggregation->admin_grade_precheck($level, $items))) {
             [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
             $explain = $aggregation->get_explain();
 
@@ -1092,54 +1096,71 @@ class aggregation {
             }
         }
 
-        // Pre-process. Can optionally return aggregated grade
-        [$admingrade, $items] = $aggregation->pre_process_items($items);
-        if ($admingrade) {
-            [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
-            $explain = $aggregation->get_explain();
+        // If this is a resit category then we may be able to resolve aggregation before doing anything else. 
+        if ($isresitcategory) {
 
-            return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
-        }
+            // Find the resit item id (must exist).
+            $resititemid = \local_gugrades\grades::get_resit_itemid($category->categoryid, true);
 
-        // "drop lowest" items.
-        // NOTE: droplow is NOT supported for level 1
-        if (($droplow > 0) && ($level > 1)) {
-            [$items, $droppeditems] = $aggregation->droplow($items, $droplow);
-            self::flag_dropped_items($droppeditems, $userid);
-        }
-
-        // If we've got here and there are no grades to aggregate (possibly due to drop lowest)
-        // then it's an error.
-        // UNLESS any MV0s already dumped.
-        if (count($items) == 0) {
-            if ($aggregation->get_mv0found()) {
-                [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name('GOODCAUSE_NR');
-
-                return [0, 0, 'GOODCAUSE_NR', $displaygrade, $completion, '', $explain, false];
-            } else {
-                $explain = get_string('explain_noitems', 'local_gugrades');
-
-                return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
+            [$aggitem, $explain] = $aggregation->resit($items, $resititemid);
+            if ($aggitem) {
+                return [$aggitem->grade, $aggitem->grade, $aggitem->admingrade, $aggitem->displaygrade, 0, '', $explain, false];
             }
         }
 
-        // If >=level2 then check for admin grades (see MGU-726).
-        if ($level >= 2) {
-            if ($admingrade = $aggregation->admin_grades_level2($items)) {
+        // If a resit category and we got this far, then none of the remaining checks are needed.
+        // (We *know* that there cannot be any admin grades)
+        if (!$isresitcategory) {
+
+            // Pre-process. Can optionally return aggregated grade
+            [$admingrade, $items] = $aggregation->pre_process_items($items);
+            if ($admingrade) {
                 [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
                 $explain = $aggregation->get_explain();
 
                 return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
             }
-        }
 
-        // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
-        if ($level == 1) {
-            if ($admingrade = $aggregation->admin_grades_level1($items, $completion)) {
-                [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
-                $explain = $aggregation->get_explain();
+            // "drop lowest" items.
+            // NOTE: droplow is NOT supported for level 1
+            if (($droplow > 0) && ($level > 1)) {
+                [$items, $droppeditems] = $aggregation->droplow($items, $droplow);
+                self::flag_dropped_items($droppeditems, $userid);
+            }
 
-                return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
+            // If we've got here and there are no grades to aggregate (possibly due to drop lowest)
+            // then it's an error.
+            // UNLESS any MV0s already dumped.
+            if (count($items) == 0) {
+                if ($aggregation->get_mv0found()) {
+                    [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name('GOODCAUSE_NR');
+
+                    return [0, 0, 'GOODCAUSE_NR', $displaygrade, $completion, '', $explain, false];
+                } else {
+                    $explain = get_string('explain_noitems', 'local_gugrades');
+
+                    return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
+                }
+            }
+
+            // If >=level2 then check for admin grades (see MGU-726).
+            if ($level >= 2) {
+                if ($admingrade = $aggregation->admin_grades_level2($items)) {
+                    [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
+                    $explain = $aggregation->get_explain();
+
+                    return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
+                }
+            }
+
+            // If level = 1 then check admin grades for 'top' level. TODO - Ticket number?
+            if ($level == 1) {
+                if ($admingrade = $aggregation->admin_grades_level1($items, $completion)) {
+                    [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
+                    $explain = $aggregation->get_explain();
+
+                    return [0, 0, $admingrade, $displaygrade, $completion, '', $explain, false];
+                }
             }
         }
 
@@ -1469,8 +1490,6 @@ class aggregation {
      * @param bool $force
      */
     public static function aggregate_user_helper(int $courseid, int $gradecategoryid, int $userid, bool $force = false) {
-
-
 
         // As $gradecategoryid could be second level + then we first need to find the 1st level
         // categoryid (as we're aggregating everything).

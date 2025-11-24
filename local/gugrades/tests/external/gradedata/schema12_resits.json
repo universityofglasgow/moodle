@@ -9,6 +9,7 @@
                 "name": "Summer exam",
                 "category": true,
                 "weight": 1.0,
+                "aggregation": "max",
                 "children": [
                     {
                         "name": "Summer first sitting",
