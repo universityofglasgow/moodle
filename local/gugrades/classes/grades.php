@@ -393,6 +393,8 @@ class grades {
 
             // Add aggregation strategy.
             $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
+            $gradecategories[$id]->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($id);
+            $gradecategories[$id]->info = (object) \local_gugrades\api::get_grade_item($gradecategories[$id]->itemid);
 
             // Add reset candidate.
             $resitcandidate = self::is_resit_category_candidate($id);
