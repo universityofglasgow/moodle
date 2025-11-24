@@ -41,6 +41,7 @@ class restore_local_gugrades_plugin extends restore_local_plugin {
 
         $paths[] = new restore_path_element('gugrades_config', $coursepath . '/gugrades_config');
         $paths[] = new restore_path_element('gugrades_map', $coursepath . '/gugrades_maps/gugrades_map');
+        $paths[] = new restore_path_element('gugrades_resitcat', $coursepath . '/gugrades_resitcats/gugrades_resitcat');
         $paths[] = new restore_path_element('gugrades_map_value', $coursepath . '/gugrades_map_values/gugrades_map_value/gm_values/gm_value');
         $paths[] = new restore_path_element('gugrades_map_item', $coursepath . '/gugrades_map_items/gugrades_map_item');
         $paths[] = new restore_path_element('gugrades_column', $coursepath . '/gugrades_columns/gugrades_column');
@@ -79,6 +80,21 @@ class restore_local_gugrades_plugin extends restore_local_plugin {
 
         $newid = $DB->insert_record('local_gugrades_map', $data);
         $this->set_mapping('gugrades_map', $oldid, $newid);
+    }
+
+    /**
+     * Process resit category
+     */
+    public function process_gugrades_resitcat($data) {
+        global $DB;
+
+        $data = (object) $data;
+        $oldid = $data->id;
+        $data->courseid = $this->task->get_courseid();
+        $data->categoryid = 0 - $data->categoryid;
+        $data->gradeitemid = 0 - $data->gradeitemid;
+
+        $DB->insert_record('local_gugrades_resit', $data);
     }
 
     /**
@@ -176,6 +192,7 @@ class restore_local_gugrades_plugin extends restore_local_plugin {
         $data = (object) $data;
         $data->courseid = $this->task->get_courseid();
         $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->gradeitemid = 0 - $data->gradeitemid;
 
         $DB->insert_record('local_gugrades_hidden', $data);
     }
@@ -205,6 +222,14 @@ class restore_local_gugrades_plugin extends restore_local_plugin {
             $item->gradeitemid = $this->get_mappingid('grade_item', $item->gradeitemid);
             $item->gradecategoryid = $this->get_mappingid('grade_category', $item->gradecategoryid);
             $DB->update_record('local_gugrades_map_item', $item);
+        }
+
+        // Resit catageories.
+        $resitcats = $DB->get_recordset('local_gugrades_resit', ['courseid' => $this->task->get_courseid()]);
+        foreach ($resitcats as $resitcat) {
+            $resitcat->gradeitemid = $this->get_mappingid('grade_item', $resitcat->gradeitemid);
+            $resitcat->gradecategoryid = $this->get_mappingid('grade_category', 0 - $resitcat->gradecategoryid);
+            $DB->update_record('local_gugrades_resit', $resitcat);
         }
 
         // Missing grade items in columns.
@@ -239,7 +264,7 @@ class restore_local_gugrades_plugin extends restore_local_plugin {
         // Hidden items
         $hiddens = $DB->get_recordset('local_gugrades_hidden', ['courseid' => $this->task->get_courseid()]);
         foreach ($hiddens as $hidden) {
-            $hidden->gradeitemid = $this->get_mappingid('grade_item', $hidden->gradeitemid);
+            $hidden->gradeitemid = $this->get_mappingid('grade_item', 0 - $hidden->gradeitemid);
             $DB->update_record('local_gugrades_hidden', $hidden);
         }
     }
