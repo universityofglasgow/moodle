@@ -127,7 +127,13 @@ class activity {
         // We don't need the status column for past courses.
         $coursedata['hidestatuscol'] = (($activetab == 'past') ? true : false);
 
-        $activities = api::get_activities($course->id, $subcategoryid);
+        $getactivities = api::get_activities($course->id, $subcategoryid);
+        if ($getactivities[1] !== '') {
+            // Not quite sure what to do here yet - aggregation isn't being supported.
+            $getactivities = $getactivities[0];
+        } else {
+            $activities = $getactivities[0];
+        }
         $activitiesdata = self::process_get_activities($activities, $course->id, $subcategoryid, $userid, $activetab,
             $assessmenttype);
         $coursedata['courseitems'] = ((array_key_exists('courseitems', $activitiesdata)) ? $activitiesdata['courseitems'] : '');
