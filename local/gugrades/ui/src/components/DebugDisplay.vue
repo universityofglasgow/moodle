@@ -11,7 +11,10 @@
         </ul>
         <div class="alert alert-primary">
             <b>Please copy all of this data and send to IT Services / Help Desk for attention</b><br />
-            You can then reload this page to continue.
+            You can then continue.
+        </div>
+        <div class="mt-2 text-center">
+            <a class="btn btn-primary" href="javascript:window.location.reload(true)">Close and continue</a>
         </div>
     </VueModal>
 </template>
