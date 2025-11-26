@@ -21,7 +21,7 @@
  * impacting Moodle's performance. We're not restricting by file type, so
  * this will pick up all video, audio, graphic, PDF, backups, MS files etc.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

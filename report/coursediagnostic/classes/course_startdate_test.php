@@ -19,7 +19,7 @@
  *
  * This tests whether the course start date has been set to a future date.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2022 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

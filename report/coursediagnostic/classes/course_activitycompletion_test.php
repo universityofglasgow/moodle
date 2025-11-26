@@ -20,7 +20,7 @@
  * If Activity Completion is off in the course, have any activity completion
  * settings been set in any activities linked to the course.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

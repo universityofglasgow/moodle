@@ -22,7 +22,7 @@
  * This has the impact of data loss in that students & grades etc get deleted..
  * ...permanently.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

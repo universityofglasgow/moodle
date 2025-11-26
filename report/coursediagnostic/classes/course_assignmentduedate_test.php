@@ -19,7 +19,7 @@
  *
  * This tests whether the assignment due date has been enabled or not.
  *
- * @package    report_coursediagnositc
+ * @package    eport_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

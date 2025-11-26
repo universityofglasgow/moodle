@@ -21,7 +21,7 @@
  * or it has since expired, before passing the data to the suite of
  * tests, and then finally adding a link to the report on the page.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2022 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
