@@ -55,7 +55,6 @@
             }
         }])[0]
         .then((result) => {
-            window.console.log(result);
             const tree = JSON.parse(result['activities']);
             treeerror.value = result.error;
 

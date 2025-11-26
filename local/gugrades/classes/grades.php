@@ -414,7 +414,7 @@ class grades {
         $categorytree = self::recurse_activitytree($category);
 
         // Note availability of resit candidates to root node.
-        $categorytree->anyresitcandidates = $anyresitcandidates;
+        //$categorytree->anyresitcandidates = $anyresitcandidates;
 
         return $categorytree;
     }
@@ -491,6 +491,7 @@ class grades {
         $record->category = $category;
         $record->items = array_values($items);
         $record->categories = array_values($categories);
+        $record->anyresitcandidates = $anyresitcandidates;
 
         return $record;
     }
