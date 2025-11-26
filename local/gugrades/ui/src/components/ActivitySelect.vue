@@ -12,8 +12,8 @@
         </div>
         <div v-else>
             <b>{{ categoryname }}</b>
-            <ActivityTree v-if="treeerror == ''" :nodes="activitytree" @activityselected="activity_selected" depth="1"></ActivityTree>
-            <div v-if="treeerror != ''" v-html="treeerror" class="alert alert-danger"></div>
+            <ActivityTree v-if="!treeerror" :nodes="activitytree" @activityselected="activity_selected" depth="1"></ActivityTree>
+            <ConfigError v-if="treeerror" :errormessage="treeerror"></ConfigError>
         </div>
     </div>
 </template>
@@ -22,6 +22,7 @@
     import {ref, onMounted, defineProps, defineEmits, watch, inject} from 'vue';
     import ActivityTree from '@/components/ActivityTree.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import ConfigError from '@/components/ConfigError.vue';
 
     const props = defineProps({
         categoryid: Number,
@@ -58,8 +59,13 @@
             const tree = JSON.parse(result['activities']);
             treeerror.value = result.error;
 
-            activitytree.value = tree;
-            categoryname.value = tree.category.fullname;
+            if (!treeerror.value) {
+                activitytree.value = tree;
+                categoryname.value = tree.category.fullname;
+            } else {
+                activitytree.value = [];
+                categoryname.value = '';
+            }
             loaded.value = true;
         })
         .catch((error) => {
@@ -96,6 +102,9 @@
         collapsed.value = false;
     }
 
+    /**
+     * onMounted
+     */
     onMounted(() => {
         getActivity();
 
@@ -106,8 +115,10 @@
         }
     });
 
-    // If the categoryid prop changes then we read new values
-    // and (re-)open the dialogue
+    /**
+     * If the categoryid prop changes then we read new values
+     * and (re-)open the dialogue
+     */
     watch(() => props.categoryid, () => {
         collapsed.value = false;
         getActivity();

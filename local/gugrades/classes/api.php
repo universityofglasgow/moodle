@@ -46,10 +46,9 @@ class api {
 
         // Is aggegation supported (is it configured properly)
         $gradeitemid = \local_gugrades\grades::get_gradeitemid_from_gradecategoryid($categoryid);
-        [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
+        [$aggregationsupported, $error] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
         if (!$aggregationsupported) {
-            $error = "Configuration error - unsupported scales found in Grade category - '$unsupportedscales'";
-            return [null, $error];
+            return ['[]', $error];
         }
         $tree = \local_gugrades\grades::get_activitytree($courseid, $categoryid);
 

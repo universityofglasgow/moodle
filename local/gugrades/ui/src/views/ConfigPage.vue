@@ -7,6 +7,8 @@
         </div>
     </div>
 
+    <ConfigError v-if="treeerror" :errormessage="treeerror"></ConfigError>
+
     <div v-if="showresitoption && caneditgrades" class="border rounded p-2 mt-2">
         <button v-if="!configuringresits" type="button" class="btn btn-outline-primary" @click="click_configure">Configure resits</button>
         <div v-else>
@@ -15,10 +17,7 @@
         </div>
     </div>
 
-    <div v-if="categoryid">
-    </div>
-
-    <div v-if="loaded" class="mt-3 border rounded p-2">
+    <div v-if="loaded && !treeerror" class="mt-3 border rounded p-2">
         <h3>{{ categoryname }}</h3>
         <table class="table">
             <ConfigTree :nodes="activitytree" depth="1" :resitconfig="configuringresits" :resitfade="true" @saveerror="handle_saveerror"></ConfigTree>
@@ -31,6 +30,7 @@
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import LevelOneSelect from '@/components/LevelOneSelect.vue';
     import ConfigTree from '@/components/ConfigTree.vue';
+    import ConfigError from '@/components/ConfigError.vue';
 
     const categoryid = ref(0);
     const activitytree = ref();
@@ -40,6 +40,7 @@
     const configuringresits = ref(false);
     const caneditgrades = ref(false);
     const debug = ref({});
+    const treeerror = ref('');
     const mstrings = inject('mstrings');
 
     /**
@@ -115,11 +116,12 @@
         }])[0]
         .then((result) => {
             const tree = JSON.parse(result['activities']);
+            treeerror.value = result.error;
 
-            //window.console.log(tree);
-
-            activitytree.value = tree;
-            categoryname.value = tree.category.fullname;
+            if (!treeerror.value) {
+                activitytree.value = tree;
+                categoryname.value = tree.category.fullname;
+            }
             showresitoption.value = tree.anyresitcandidates;
             loaded.value = true;
         })

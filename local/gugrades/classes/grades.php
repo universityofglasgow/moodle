@@ -368,15 +368,6 @@ class grades {
         if (self::is_gradecategory_grade_type_none($category)) {
             throw new \moodle_exception('Attempting to open GRADE_TYPE_NONE category');
         }
-        $gradeitems = $DB->get_records('grade_items', ['courseid' => $courseid]);
-
-        // Remove any grade type non like items.
-        foreach ($gradeitems as $id => $gradeitem) {
-            if (self::is_gradeitem_grade_type_none($gradeitem)) {
-                unset($gradeitems[$id]);
-                continue;
-            }
-        }
 
         $gradecategories = $DB->get_records('grade_categories', [
             'courseid' => $courseid,
@@ -387,6 +378,7 @@ class grades {
 
         // Remove any GRADE_TYPE_NONE categories.
         $even = false;
+        /*
         foreach ($gradecategories as $id => $gradecategory) {
             if (self::is_gradecategory_grade_type_none($gradecategory)) {
                 unset($gradecategories[$id]);
@@ -418,7 +410,8 @@ class grades {
                 $gradecategories[$id]->even = false;
             }
         }
-        $categorytree = self::recurse_activitytree($category, $gradeitems, $gradecategories);
+            */
+        $categorytree = self::recurse_activitytree($category);
 
         // Note availability of resit candidates to root node.
         $categorytree->anyresitcandidates = $anyresitcandidates;
@@ -439,27 +432,57 @@ class grades {
      * @param array $gradecategories
      * @return object
      */
-    private static function recurse_activitytree($category, $gradeitems, $gradecategories) {
-        global $OUTPUT;
+    private static function recurse_activitytree($category) {
+        global $OUTPUT, $DB;
 
         $tree = [];
 
         // First find any grade items attached to the current category.
         $items = [];
+        $gradeitems = $DB->get_records('grade_items', ['categoryid' => $category->id]);
         foreach ($gradeitems as $item) {
-            if ($item->categoryid == $category->id) {
-                $item->info = (object) \local_gugrades\api::get_grade_item($item->id);
-                $item->icon = $OUTPUT->image_url('monologo', $item->itemmodule)->out();
-                $items[$item->id] = $item;
+            if (self::is_gradeitem_grade_type_none($item)) {
+                continue;
             }
+            $item->info = (object) \local_gugrades\api::get_grade_item($item->id);
+            $item->icon = $OUTPUT->image_url('monologo', $item->itemmodule)->out();
+            $items[$item->id] = $item;
         }
 
         // Next find any sub-categories of this category.
+        $gradecategories = $DB->get_records('grade_categories', ['parent' => $category->id]);
         $categories = [];
-        foreach ($gradecategories as $gradecategory) {
-            if ($gradecategory->parent == $category->id) {
-                $categories[$gradecategory->id] = self::recurse_activitytree($gradecategory, $gradeitems, $gradecategories);
+        foreach ($gradecategories as $id => $gradecategory) {
+            if (self::is_gradecategory_grade_type_none($gradecategory)) {
+                continue;
             }
+
+            // Add gradeitemid.
+            $gradecategories[$id]->itemid = self::get_gradeitemid_from_gradecategoryid($id);
+
+            // Add aggregation strategy.
+            $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
+            $gradecategories[$id]->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($id);
+            $gradecategories[$id]->info = (object) \local_gugrades\api::get_grade_item($gradecategories[$id]->itemid);
+
+            // Add reset candidate.
+            $resitcandidate = self::is_resit_category_candidate($id);
+            $gradecategories[$id]->resitcandidate = $resitcandidate;
+            $gradecategories[$id]->resititemid = self::get_resit_itemid($id);
+            if ($resitcandidate) {
+                $anyresitcandidates = true;
+            }
+
+            // Add odd/even for style to second level only.
+            $level = self::get_category_level($id);
+            if ($level == 2) {
+                $gradecategories[$id]->even = $even;
+                $even = !$even;
+            } else {
+                $gradecategories[$id]->even = false;
+            }
+
+            $categories[$gradecategory->id] = self::recurse_activitytree($gradecategory);
         }
 
         // Add this all up
@@ -1287,12 +1310,12 @@ class grades {
         $unsupported = [];
         foreach ($items as $item) {
             if (!self::is_grade_supported($item->id)) {
-                $unsupported[] = self::get_scale_name($item->id);
+                $unsupported[] = "<p>'{$item->itemname}' set to unsupported scale '" . self::get_scale_name($item->id) . "'</p>";
             }
         }
 
         if ($unsupported) {
-            return [false, implode(', ', $unsupported)];
+            return [false, implode(' ', $unsupported)];
         }
 
         return [true, ''];
