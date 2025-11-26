@@ -413,9 +413,6 @@ class grades {
             */
         $categorytree = self::recurse_activitytree($category);
 
-        // Note availability of resit candidates to root node.
-        //$categorytree->anyresitcandidates = $anyresitcandidates;
-
         return $categorytree;
     }
 
@@ -452,6 +449,7 @@ class grades {
         // Next find any sub-categories of this category.
         $gradecategories = $DB->get_records('grade_categories', ['parent' => $category->id]);
         $categories = [];
+        $anyresitcandidates = false;
         foreach ($gradecategories as $id => $gradecategory) {
             if (self::is_gradecategory_grade_type_none($gradecategory)) {
                 continue;
@@ -475,6 +473,7 @@ class grades {
 
             // Add odd/even for style to second level only.
             $level = self::get_category_level($id);
+            $even = false;
             if ($level == 2) {
                 $gradecategories[$id]->even = $even;
                 $even = !$even;
