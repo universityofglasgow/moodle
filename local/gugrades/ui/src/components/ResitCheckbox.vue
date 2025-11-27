@@ -3,7 +3,7 @@
         <i v-if="checked" class="fa fa-check-square-o" aria-hidden="true"></i>
         <i v-else class="fa fa-square-o" aria-hidden="true"></i>
     </a>
-    <span class="badge badge-pill ml-2"  :class="badgeclass">Resit?</span>
+    <span class="badge badge-pill ml-2"  :class="badgeclass">{{ mstrings.reassessment }}?</span>
 </template>
 
 <script setup>
@@ -23,6 +23,7 @@
         'warning',
         'success'
     ];
+    const mstrings = inject('mstrings');
 
     /**
      * Is the box checked?
