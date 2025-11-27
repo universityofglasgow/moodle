@@ -1,6 +1,10 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
+    <div v-if="recalculating">
+        <PleaseWait progresstype="aggregate"></PleaseWait>
+    </div>
+
     <div class="border rounded p-2 mt-2">
         <div class="col-12 col-lg-6">
             <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
@@ -31,7 +35,8 @@
     import LevelOneSelect from '@/components/LevelOneSelect.vue';
     import ConfigTree from '@/components/ConfigTree.vue';
     import ConfigError from '@/components/ConfigError.vue';
-
+    import PleaseWait from '@/components/PleaseWait.vue';
+    
     const categoryid = ref(0);
     const activitytree = ref();
     const categoryname = ref('');
@@ -41,6 +46,7 @@
     const caneditgrades = ref(false);
     const debug = ref({});
     const treeerror = ref('');
+    const recalculating = ref(false);
     const mstrings = inject('mstrings');
 
     /**
@@ -93,9 +99,29 @@
     }
 
     /**
-     * Configuring resits finished
+     * Configuring resits finished. Mostly we run recalculate. 
      */
     function click_finish() {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        recalculating.value = true;
+
+        fetchMany([{
+            methodname: 'local_gugrades_recalculate',
+            args: {
+                courseid: courseid,
+                gradecategoryid: categoryid.value,
+            }
+        }])[0]
+        .then(() => {
+            recalculating.value = false;
+        })
+        .catch((error) => {
+            window.console.error(error);
+            debug.value = error;
+        });
         configuringresits.value = false;
     }
 
