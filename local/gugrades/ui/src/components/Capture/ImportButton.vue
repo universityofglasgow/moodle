@@ -12,13 +12,26 @@
         </div>
 
         <div v-else>
-            <div v-if="is_importgrades" class="alert alert-warning">
-                {{ mstrings.gradesimported }}
-                <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
-            </div>
-            <div v-else class="alert alert-info">
-                {{ mstrings.importinfo }}
-                <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
+
+            <!-- already imported warning-->
+            <div class="alert alert-warning">
+                <div class="row">
+                    <div v-if="is_importgrades" class="col-md-10 col">
+                        {{ mstrings.gradesimported }}
+                        <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
+                    </div>
+                    <div v-else class="col-md-10 col">
+                        {{ mstrings.importinfo }}
+                        <p v-if="groupimport" class="mt-1"><b>{{ mstrings.importinfogroup }}</b></p>
+                    </div>
+                    <div class="col-md-2 col">
+                        <button
+                            class="btn btn-warning"
+                            @click="showimportmodal = false"
+                            >{{ mstrings.cancel }}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div v-if="is_importgrades" class="alert alert-info">
@@ -114,6 +127,7 @@
     const importadditional = ref(true);
     const importfillns = ref('');
     const allgradesvalid = ref(false);
+    const gradetypes = ref([]);
     const level = ref(0);
     const loading = ref(false);
     const debug = ref({});
@@ -148,6 +162,31 @@
         } else {
             importsingle();
         }
+    }
+
+    /**
+     * Get the add grade form stuff
+     */
+    function get_gradetypes() {
+        const GU = window.GU;
+        const courseid = GU.courseid;
+        const fetchMany = GU.fetchMany;
+
+        fetchMany([{
+            methodname: 'local_gugrades_get_gradetypes',
+            args: {
+                courseid: courseid,
+                gradeitemid: props.itemid,
+            }
+        }])[0]
+        .then((result) => {
+            gradetypes.value = result.gradetypes;
+        })
+        .catch((error) => {
+            window.console.error(error);
+            showimportmodal.value = false;
+            debug.value = error;
+        });
     }
 
     /**
@@ -238,6 +277,8 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
+        get_gradetypes();
+
         fetchMany([{
             methodname: 'local_gugrades_is_grades_imported',
             args: {
@@ -259,4 +300,5 @@
             debug.value = error;
         });
     }
+
 </script>
