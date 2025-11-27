@@ -42,7 +42,7 @@
      * Get indent/padding class
      */
     const indentstyle = computed(() => {
-        const padding = (props.depth - 2) * 30;
+        const padding = (props.depth - 1) * 20;
 
         return {
             'padding-left': padding + 'px',
