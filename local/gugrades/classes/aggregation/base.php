@@ -396,6 +396,7 @@ class base {
     }
 
     /**
+     * MGU-1351:
      * Handle resit grade. 
      * - If there is only one item, then that's the grade (or admingrade)
      * - If there are any admingrade then the resit grade is the grade (or admingrade)

@@ -45,6 +45,12 @@
             if (result.length == 0) {
                 notsetup.value = true;
             }
+
+            // if there's only one then might as well select it. 
+            if (result.length == 1) {
+                selected.value = result[0].id;
+                emit('levelchange', selected.value);
+            }
         })
         .catch((error) => {
             window.console.error(error);
