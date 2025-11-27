@@ -20,7 +20,7 @@
  * Does the top level category named "Summative" have the correct weighting set.
  * Aggregation type Weighted Mean of Grades is the only one we're interested in.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2025 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

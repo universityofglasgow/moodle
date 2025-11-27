@@ -20,7 +20,7 @@
  * Provides the functionality for running course diagnostics. This was
  * previously handled by procedural code embedded w/in the course page.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2022 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -19,7 +19,7 @@
  *
  * This tests whether all enrolment plugins for this course are disabled.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

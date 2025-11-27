@@ -21,7 +21,7 @@
  * been set or not. Returns true if either self enrolment isn't being used,
  * or, if it is being used and a key has been set. Returns false otherwise.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

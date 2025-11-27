@@ -19,7 +19,7 @@
  *
  * Has a category named "Summative" been created, and is it at the top level.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2025 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -20,7 +20,7 @@
  * This tests whether Group Mode is set to something other than "No groups"
  * and if so, whether any groups have been defined, and are populated.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2023 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

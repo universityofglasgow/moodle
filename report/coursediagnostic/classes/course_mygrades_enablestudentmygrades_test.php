@@ -20,7 +20,7 @@
  * Has the checkbox "Enable Student MyGrades" been checked - which controls
  * if this course appears on Student MyGrades or not.
  *
- * @package    report_coursediagnositc
+ * @package    report_coursediagnostic
  * @copyright  2025 Greg Pedder <greg.pedder@glasgow.ac.uk>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
