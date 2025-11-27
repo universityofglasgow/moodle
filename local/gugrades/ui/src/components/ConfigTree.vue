@@ -175,4 +175,8 @@
         width: 1%;
         white-space: nowrap;
     }
+
+    td {
+        word-wrap:break-word;
+    }
 </style>
