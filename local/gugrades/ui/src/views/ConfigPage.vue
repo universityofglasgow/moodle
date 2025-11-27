@@ -14,7 +14,7 @@
     <ConfigError v-if="treeerror" :errormessage="treeerror"></ConfigError>
 
     <div v-if="showresitoption && caneditgrades" class="border rounded p-2 mt-2">
-        <button v-if="!configuringresits" type="button" class="btn btn-outline-primary" @click="click_configure">Configure resits</button>
+        <button v-if="!configuringresits" type="button" class="btn btn-outline-primary" @click="click_configure">Configure reassessments</button>
         <div v-else>
             <div class="alert alert-primary" v-html="mstrings.resit_help"></div>
             <button type="button" class="btn btn-outline-success" @click="click_finish">Finish</button>
