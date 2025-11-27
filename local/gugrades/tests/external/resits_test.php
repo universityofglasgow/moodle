@@ -209,7 +209,8 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
             $result
         );
 
-        // Write some random grades
+        // Write some random grade into 1st sitting. 
+        // As resit is a missing grade then this should be the aggregated result
         $nothing = write_additional_grade::execute(
             courseid:          $this->course->id,
             gradeitemid:       $summerfirstsittingid,
@@ -225,6 +226,20 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
             write_additional_grade::execute_returns(),
             $nothing
         );
+
+        // Get aggregation page for above 'Summer exam'.
+        $summerexamcatid = $this->get_grade_category('Summer exam');
+        $page = get_aggregation_page::execute($this->course->id, $summerexamcatid, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
+
+        // Aggregated result should be the grade that exists 
+        $fred = $page['users'][0];
+        $this->assertEquals(52, $fred['displaygrade']);
+
+        // Add a resit grade.
         $nothing = write_additional_grade::execute(
             courseid:          $this->course->id,
             gradeitemid:       $summerresitid,

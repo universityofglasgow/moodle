@@ -137,6 +137,12 @@ class base {
                 continue;
             }
 
+            // MGU-1351
+            // A missing grade that is tagged as a resit is a proxy for not available
+            if (\local_gugrades\grades::is_resit_gradeitem($item->itemid) && $item->grademissing) {
+                continue;
+            }
+
             // Check user can 'see' this gradeitem.
             $available = in_array($userid, $userids);
             if ($available) {
@@ -410,7 +416,7 @@ class base {
         // If only one item...
         if (count($items) == 1) {
             $explain = get_string('explain_resitoneitem', 'local_gugrades');
-            return [$item[0], $explain];
+            return [$items[0], $explain];
         }
 
         // Which item (index) is the resit item
