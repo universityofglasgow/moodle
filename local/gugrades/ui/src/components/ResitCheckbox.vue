@@ -18,10 +18,10 @@
     const bscolors = [
         'primary',
         'secondary',
-        'success',
+        'info',
         'danger',
         'warning',
-        'info'
+        'success'
     ];
 
     /**
