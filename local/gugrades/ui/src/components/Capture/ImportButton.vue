@@ -149,11 +149,12 @@
     const recursiveavailable = ref(false);
     const recursivematch = ref(false);
     const recursiveselect = ref('single');
-    const reason = ref('');
+    const reason = ref('SECOND');
     const importadditional = ref('admin');
     const importfillns = ref('none');
     const allgradesvalid = ref(false);
     const gradetypes = ref([]);
+    const other = ref('');
     const level = ref(0);
     const loading = ref(false);
     const debug = ref({});
@@ -301,6 +302,8 @@
         importadditional.value = 'admin';
         recursiveselect.value = 'single';
         importfillns.value = 'none';
+        reason.value='SECOND';
+        other.value='';
         loading.value = false;
 
         const GU = window.GU;
