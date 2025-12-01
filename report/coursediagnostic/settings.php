@@ -346,6 +346,16 @@ if ($hassiteconfig) {
     $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
     $settings->add($setting);
 
+    $name = new lang_string('mygrades_orphanedgradeitems', 'report_coursediagnostic');
+    $desc = new lang_string('mygrades_orphanedgradeitems_desc', 'report_coursediagnostic');
+    $default = 0;
+    $setting = new admin_setting_configcheckbox('report_coursediagnostic/mygrades_orphanedgradeitems',
+        $name,
+        $desc,
+        $default);
+    $setting->set_updatedcallback('report_coursediagnostic\coursediagnostic::flag_cache_for_deletion');
+    $settings->add($setting);
+
     if (\report_coursediagnostic\coursediagnostic::get_cache_deletion_flag()) {
         \report_coursediagnostic\coursediagnostic::purge_diagnostic_settings_cache();
     }

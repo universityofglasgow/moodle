@@ -152,18 +152,32 @@ class observer {
     }
 
     /**
-     * Handle the "grade category" created event - using the grade item created event.
+     * Moodle treats categories and activities as grade items.
+     * There's no clear way to distinguish what's changed.
+     *
+     * This is simply the event that gets triggered, so, to err
+     * on the side of caution, clear the cache for this course.
+     *
+     * Things such as Workshop will trigger two events, one for
+     * the submission and one for the assessment.
+     *
+     * Not all activities will trigger this event.
      *
      * @param \\core\event\grade_item_created $event
      * @return bool
      */
     public static function grade_item_created(\core\event\grade_item_created $event): bool {
 
-        // This event class is a parent ^to^ grade_item_updated and both get triggered.
-        // Listen out only for this specfic event. 
+        // This event class is a parent ^to^ grade_item_updated and both can get triggered.
+        // Listen out only for this specfic event.
         if ($event->eventname == '\core\event\grade_item_created') {
             if ($event->get_data()['other']['itemtype'] == 'category') {
-                // Invalidate the cache for the given course id - if it exists...
+                if ((!empty($event->courseid)) && $event->courseid != 1) {
+                    return self::delete_key_from_cache($event->courseid);
+                }
+            }
+
+            if ($event->get_data()['other']['itemtype'] == 'mod') {
                 if ((!empty($event->courseid)) && $event->courseid != 1) {
                     return self::delete_key_from_cache($event->courseid);
                 }
@@ -174,18 +188,32 @@ class observer {
     }
 
     /**
-     * Handle the "grade category" updated event - using the grade item updated event.
+     * Moodle treats categories and activities as grade items.
+     * There's no clear way to distinguish what's changed.
+     *
+     * This is simply the event that gets triggered, so, to err
+     * on the side of caution, clear the cache for this course.
+     *
+     * Things such as Workshop will trigger two events, one for
+     * the submission and one for the assessment.
+     *
+     * Not all activities will trigger this event.
      *
      * @param \core\event\grade_item_updated $event
      * @return bool
      */
     public static function grade_item_updated(\core\event\grade_item_updated $event): bool {
 
-        // This event class is a child ^of^ grade_item_created and both get triggered.
+        // This event class is a child ^of^ grade_item_created and both can get triggered.
         // Listen out only for this specfic event. 
         if ($event->eventname == '\core\event\grade_item_updated') {
             if ($event->get_data()['other']['itemtype'] == 'category') {
-                // Invalidate the cache for the given course id - if it exists...
+                if ((!empty($event->courseid)) && $event->courseid != 1) {
+                    return self::delete_key_from_cache($event->courseid);
+                }
+            }
+
+            if ($event->get_data()['other']['itemtype'] == 'mod') {
                 if ((!empty($event->courseid)) && $event->courseid != 1) {
                     return self::delete_key_from_cache($event->courseid);
                 }

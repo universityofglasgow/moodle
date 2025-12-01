@@ -55,7 +55,7 @@ $pageurl = new moodle_url('/mod/customcert/view.php', ['id' => $cm->id]);
 // Check if the user can view the certificate based on time spent in course.
 if ($customcert->requiredtime && !$canmanage) {
     if (\mod_customcert\certificate::get_course_time($course->id) < ($customcert->requiredtime * 60)) {
-        $a = new stdClass;
+        $a = new stdClass();
         $a->requiredtime = $customcert->requiredtime;
         $url = new moodle_url('/course/view.php', ['id' => $course->id]);
         notice(get_string('requiredtimenotmet', 'customcert', $a), $url);
@@ -67,7 +67,8 @@ if ($customcert->requiredtime && !$canmanage) {
 if ($deleteissue && $canmanage && confirm_sesskey()) {
     if (!$confirm) {
         $nourl = new moodle_url('/mod/customcert/view.php', ['id' => $id]);
-        $yesurl = new moodle_url('/mod/customcert/view.php',
+        $yesurl = new moodle_url(
+            '/mod/customcert/view.php',
             [
                 'id' => $id,
                 'deleteissue' => $deleteissue,
@@ -157,12 +158,19 @@ if (!$downloadown && !$downloadissue) {
 
     // Create the button to download the customcert.
     $downloadbutton = '';
+    $renderbuttoncourse = '';
+    $displayreturnbutton = get_config('customcert', 'returncourse');
     if ($canreceive) {
         $linkname = get_string('getcustomcert', 'customcert');
         $link = new moodle_url('/mod/customcert/view.php', ['id' => $cm->id, 'downloadown' => true]);
         $downloadbutton = new single_button($link, $linkname, 'get', single_button::BUTTON_PRIMARY);
         $downloadbutton->class .= ' m-b-1';  // Seems a bit hackish, ahem.
         $downloadbutton = $OUTPUT->render($downloadbutton);
+        if ($displayreturnbutton) {
+            $url = new moodle_url('/course/view.php', ['id' => $course->id]);
+            $buttonreturntocourse = new single_button($url, get_string('returncourselabel', 'customcert'), 'get');
+            $renderbuttoncourse = $OUTPUT->render($buttonreturntocourse);
+        }
     }
 
     $numissues = \mod_customcert\certificate::get_number_of_issues($customcert->id, $cm, $groupmode);
@@ -170,7 +178,8 @@ if (!$downloadown && !$downloadissue) {
     $downloadallbutton = '';
     if ($canviewreport && $numissues > 0) {
         $linkname = get_string('downloadallissuedcertificates', 'customcert');
-        $link = new moodle_url('/mod/customcert/view.php',
+        $link = new moodle_url(
+            '/mod/customcert/view.php',
             [
                 'id' => $cm->id,
                 'downloadall' => true,
@@ -187,6 +196,9 @@ if (!$downloadown && !$downloadissue) {
     echo $issuehtml;
     echo $downloadbutton;
     echo $downloadallbutton;
+    if ($displayreturnbutton) {
+        echo $renderbuttoncourse;
+    }
     if (isset($reporttable)) {
         echo $OUTPUT->heading(get_string('listofissues', 'customcert', $numissues), 3);
         groups_print_activity_menu($cm, $pageurl);

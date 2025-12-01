@@ -30,7 +30,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_customcert_activity_structure_step extends backup_activity_structure_step {
-
     /**
      * Define the structure of the backup file.
      *
@@ -40,8 +39,10 @@ class backup_customcert_activity_structure_step extends backup_activity_structur
 
         // The instance.
         $customcert = new backup_nested_element('customcert', ['id'], [
-            'templateid', 'name', 'intro', 'introformat', 'requiredtime', 'verifyany', 'emailstudents',
-            'emailteachers', 'emailothers', 'protection', 'timecreated', 'timemodified']);
+            'templateid', 'name', 'intro', 'introformat', 'requiredtime', 'verifyany',
+            'deliveryoption', 'usecustomfilename', 'customfilenamepattern', 'emailstudents',
+            'emailteachers', 'emailothers', 'protection', 'language', 'timecreated',
+            'timemodified']);
 
         // The template.
         $template = new backup_nested_element('template', ['id'], [
