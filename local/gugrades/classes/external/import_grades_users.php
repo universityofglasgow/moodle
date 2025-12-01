@@ -43,8 +43,10 @@ class import_grades_users extends external_api {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item id number'),
-            'additional' => new external_value(PARAM_BOOL, 'Only import where no grades currently exist for that user'),
+            'additional' => new external_value(PARAM_ALPHA, 'Import additional grades type. Options are admin, missing, update'),
             'fillns' => new external_value(PARAM_ALPHANUM, 'Users with no submission given NS admin grade. Can be none, fillns or fillns0'),
+            'reason' => new external_value(PARAM_TEXT, 'Reason for grade - SECOND, AGREED etc.'),
+            'other' => new external_value(PARAM_TEXT, 'Detail if reason == OTHER'),
             'userlist' => new external_multiple_structure(
                 new external_value(PARAM_INT)
             ),
@@ -55,12 +57,14 @@ class import_grades_users extends external_api {
      * Execute function
      * @param int $courseid
      * @param int $gradeitemid
-     * @param bool $additional
+     * @param string $additional
      * @param string $fillns
+     * @param string $reason
+     * @param string $other
      * @param array $userlist
      * @return array
      */
-    public static function execute(int $courseid, int $gradeitemid, bool $additional, string $fillns, array $userlist) {
+    public static function execute(int $courseid, int $gradeitemid, string $additional, string $fillns, string $reason, string $other, array $userlist) {
 
         \local_gugrades\development::increase_debugging();
 
@@ -70,6 +74,8 @@ class import_grades_users extends external_api {
             'gradeitemid' => $gradeitemid,
             'additional' => $additional,
             'fillns' => $fillns,
+            'reason' => $reason,
+            'other' => $other,
             'userlist' => $userlist,
         ]);
         $context = \context_course::instance($courseid);
@@ -98,9 +104,9 @@ class import_grades_users extends external_api {
         foreach ($userids as $userid) {
 
             // If additional selected then skip users who already have data.
-            if ($additional && \local_gugrades\grades::user_has_grades($gradeitemid, $userid)) {
-                continue;
-            }
+            //if ($additional && \local_gugrades\grades::user_has_grades($gradeitemid, $userid)) {
+            //    continue;
+            //}
             if (\local_gugrades\api::import_grade(
                 $courseid,
                 $gradeitemid,
@@ -108,7 +114,9 @@ class import_grades_users extends external_api {
                 $activity,
                 intval($userid),
                 $additional,
-                $fillns
+                $fillns,
+                $reason,
+                $other
                 )) {
                 $importcount++;
             }

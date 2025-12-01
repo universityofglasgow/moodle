@@ -85,11 +85,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -129,11 +125,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -176,11 +168,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -223,11 +211,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -270,11 +254,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -330,11 +310,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -372,11 +348,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -417,11 +389,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.
@@ -462,11 +430,7 @@ final class MGU_1002_test extends \local_gugrades\external\gugrades_aggregation_
         $this->load_data('data12a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Set aggregation strategy.

@@ -48,7 +48,15 @@ final class import_grades_recursive_test extends \local_gugrades\external\gugrad
         global $DB;
 
         // Check gradeitemsecond1 (no grades assigned so shouldn't return anything).
-        $counts = import_grades_recursive::execute($this->course->id, $this->gradeitemsecond1, 0, false, false);
+        $counts = import_grades_recursive::execute(
+            courseid: $this->course->id,
+            gradeitemid: $this->gradeitemsecond1, 
+            groupid: 0, 
+            additional: 'update', 
+            fillns: 'none',
+            reason: 'FIRST',
+            other: ''
+        );
         $counts = external_api::clean_returnvalue(
             import_grades_recursive::execute_returns(),
             $counts
@@ -76,7 +84,15 @@ final class import_grades_recursive_test extends \local_gugrades\external\gugrad
         $gradeitem->update_final_grade($this->student->id, 48.5);
 
         // This time we should get those two grades.
-        $counts = import_grades_recursive::execute($this->course->id, $this->gradeitemsecond1, 0, false, false);
+        $counts = import_grades_recursive::execute(
+            courseid: $this->course->id,
+            gradeitemid: $this->gradeitemsecond1, 
+            groupid: 0, 
+            additional: 'update', 
+            fillns: 'none',
+            reason: 'FIRST',
+            other: ''
+        );
         $counts = external_api::clean_returnvalue(
             import_grades_recursive::execute_returns(),
             $counts

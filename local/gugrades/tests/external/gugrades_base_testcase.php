@@ -25,6 +25,11 @@
 namespace local_gugrades\external;
 
 use externallib_advanced_testcase;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -330,5 +335,30 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
         $cm = get_coursemodule_from_instance($gradeitem->itemmodule, $gradeitem->iteminstance, $courseid, false, MUST_EXIST);
 
         $DB->set_field('course_modules', $restriction, ['id' => $cm->id]);
+    }
+
+    /**
+     * Import set of grades
+     * @param int $courseid
+     * @param int $gradeitemid
+     * @param array $userlist
+     * @param string $fillns
+     * @param string $reason = 'FIRST'
+     * @param string $importadditional = 'update'
+     */
+    protected function import_grades(int $courseid, int $gradeitemid, array $userlist, string $fillns = '', string $reason = 'FIRST', string $importadditional = 'update') {
+        $status = import_grades_users::execute(
+            courseid:       $courseid, 
+            gradeitemid:    $gradeitemid, 
+            additional:     $importadditional, 
+            fillns:         $fillns,
+            reason:         $reason,
+            other:          '',
+            userlist:       $userlist
+        );
+        $status = external_api::clean_returnvalue(
+            import_grades_users::execute_returns(),
+            $status
+        );
     }
 }

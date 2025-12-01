@@ -55,11 +55,7 @@ final class capture_release_grades_test extends \local_gugrades\external\gugrade
             $this->student->id,
             $this->student2->id,
         ];
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign2, $userlist);
 
         // Get the capture page.
         $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign2, '', '', 0, false);

@@ -100,11 +100,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         //file_put_contents('/profiles/'.time().'.application.xhprof', serialize(xhprof_disable()));
@@ -189,11 +185,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
         $grades = $DB->get_records('local_gugrades_grade', ['userid' => $this->student->id]);
         
@@ -281,11 +273,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get category id for grade category 'Summer exam'.
@@ -325,11 +313,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get category id for grade category 'Schedule B exam'.
@@ -372,11 +356,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get category id for grade category 'Schedule B exam'.
@@ -418,11 +398,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get category id for grade category 'Schedule B exam'.
@@ -465,11 +441,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get categoryid for 'Scale exam' which should be Schedule A
@@ -551,11 +523,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get categoryid for 'Summer exam' which should be Points
@@ -663,11 +631,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get categoryid for 'Summer exam' which should be Points
@@ -750,11 +714,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get categoryid and item idfor 'Scale exam' which should be Schedule A
@@ -973,11 +933,7 @@ final class get_aggregation_page_test extends \local_gugrades\external\gugrades_
 
         // Import ALL gradeitems.
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get the gradeitemid for summative/

@@ -55,11 +55,7 @@ final class write_additional_grade_test extends \local_gugrades\external\gugrade
         ];
 
         // Assign2 (which is using scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign2, $userlist);
 
         // Add additional grade.
         $nothing = write_additional_grade::execute(
@@ -173,11 +169,7 @@ final class write_additional_grade_test extends \local_gugrades\external\gugrade
         ];
 
         // Assign2 (which is using scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign2, $userlist);
 
         // Add additional grade.
         $nothing = write_additional_grade::execute(

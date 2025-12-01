@@ -25,6 +25,11 @@
 namespace local_gugrades\external;
 
 use externallib_advanced_testcase;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -209,4 +214,5 @@ class gugrades_advanced_testcase extends gugrades_base_testcase {
         $this->gradeitemsecond1 = $seconditem1->id;
         $this->gradeitemsecond2 = $seconditem2->id;
     }
+
 }

@@ -44,8 +44,10 @@ class import_grades_recursive extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'gradeitemid' => new external_value(PARAM_INT, 'Grade item id number - import peers and children'),
             'groupid' => new external_value(PARAM_INT, 'Group to import for'),
-            'additional' => new external_value(PARAM_BOOL, 'Only import where no grades currently exist for that user'),
+            'additional' => new external_value(PARAM_ALPHA, 'Import additional grades type. Options are admin, missing, update'),
             'fillns' => new external_value(PARAM_ALPHANUM, 'Users with no submission given NS admin grade. Can be none, fillns or fillns0'),
+            'reason' => new external_value(PARAM_TEXT, 'Reason for grade - SECOND, AGREED etc.'),
+            'other' => new external_value(PARAM_TEXT, 'Detail if reason == OTHER'),
         ]);
     }
 
@@ -54,11 +56,11 @@ class import_grades_recursive extends external_api {
      * @param int $courseid
      * @param int $gradeitemid
      * @param int $groupid
-     * @param bool $additional
+     * @param string $additional
      * @param string $fillns
      * @return array
      */
-    public static function execute(int $courseid, int $gradeitemid, int $groupid, bool $additional, string $fillns) {
+    public static function execute(int $courseid, int $gradeitemid, int $groupid, string $additional, string $fillns, string $reason, string $other) {
 
         \local_gugrades\development::increase_debugging();
 
@@ -69,6 +71,8 @@ class import_grades_recursive extends external_api {
             'groupid' => $groupid,
             'additional' => $additional,
             'fillns' => $fillns,
+            'reason' => $reason,
+            'other' => $other,
         ]);
         $context = \context_course::instance($courseid);
         self::validate_context($context);
@@ -79,7 +83,7 @@ class import_grades_recursive extends external_api {
         }
 
         [$itemcount, $gradecount] = \local_gugrades\api::import_grades_recursive($courseid,
-            $gradeitemid, $groupid, $additional, $fillns);
+            $gradeitemid, $groupid, $additional, $fillns, $reason, $other);
 
         // Log.
         $event = \local_gugrades\event\import_grades_recursive::create([

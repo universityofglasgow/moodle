@@ -60,11 +60,11 @@
             // Bodge to get jQuery needed for Bootstrap JS.
             const $ = window.jQuery;
 
-            if (enabled) {
-                $('#mygradeslogo').css('filter', 'grayscale(0)');
-            } else {
-                $('#mygradeslogo').css('filter', 'grayscale(1)');
-            }
+            //if (enabled) {
+            //    $('#mygradeslogo').css('filter', 'grayscale(0)');
+            //} else {
+            //    $('#mygradeslogo').css('filter', 'grayscale(1)');
+            //}
         })
         .catch((error) => {
             window.console.error(error);

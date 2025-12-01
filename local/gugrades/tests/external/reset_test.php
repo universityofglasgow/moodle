@@ -58,14 +58,34 @@ final class reset_test extends \local_gugrades\external\gugrades_advanced_testca
         $mapping1 = \local_gugrades\grades::mapping_factory($this->course->id, $this->gradeitemidassign1);
         $activity = \local_gugrades\users::activity_factory($this->gradeitemidassign1, $this->course->id, 0);
         \local_gugrades\api::import_grade(
-            $this->course->id, $this->gradeitemidassign1, $mapping1, $activity, $studentid, false, false);
+            courseid:       $this->course->id,
+            gradeitemid:    $this->gradeitemidassign1,
+            mapping:        $mapping1,
+            activity:       $activity,
+            userid:         $studentid,
+            additional:     'update',
+            fillns:         'none', 
+            reason:         'FIRST',
+            other:          '',
+            noaggregation:  false
+        );
         \local_gugrades\api::release_grades($this->course->id, $this->gradeitemidassign1, 0, false);
 
         // Release grades for this grade item - assignment2.
         $mapping2 = \local_gugrades\grades::mapping_factory($this->course->id, $this->gradeitemidassign2);
         $activity = \local_gugrades\users::activity_factory($this->gradeitemidassign2, $this->course->id, 0);
         \local_gugrades\api::import_grade(
-            $this->course->id, $this->gradeitemidassign2, $mapping2, $activity, $studentid, false, false);
+            courseid:       $this->course->id,
+            gradeitemid:    $this->gradeitemidassign2,
+            mapping:        $mapping2,
+            activity:       $activity,
+            userid:         $studentid,
+            additional:     'update',
+            fillns:         'none', 
+            reason:         'FIRST',
+            other:          '',
+            noaggregation:  false
+        );
         \local_gugrades\api::release_grades($this->course->id, $this->gradeitemidassign2, 0, false);
 
         // Check that we have data in the grades and columns table for this course.

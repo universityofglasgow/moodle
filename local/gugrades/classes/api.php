@@ -539,8 +539,10 @@ class api {
      * @param \local_gugrades\mapping\base $mapping
      * @param \local_gugrades\activities\base $activity
      * @param int $userid
-     * @param bool $additional
+     * @param string $additional
      * @param string $fillns
+     * @param string $reason
+     * @param string $other
      * @param bool $noaggregation
      * @return bool - was a grade imported
      */
@@ -550,17 +552,34 @@ class api {
         \local_gugrades\mapping\base $mapping,
         \local_gugrades\activities\base $activity,
         int $userid,
-        bool $additional,
+        string $additional,
         string $fillns,
+        string $reason,
+        string $other,
         bool $noaggregation = false,
         ) {
 
         $fillns = self::check_fillns($fillns);
 
-        // If additional selected then skip users who already have data.
-        if ($additional && \local_gugrades\grades::user_has_grades($gradeitemid, $userid)) {
-            return false;
+        // If reason is empty then assume FIRST
+        if (!$reason) {
+            $reason = 'FIRST';
         }
+
+        // Check $additional is valid.
+        if (!in_array($additional, ['', 'admin', 'missing', 'update'])) {
+            throw new moodle_exception("Parameter $additional must be one of 'admin', 'missing', 'update'");
+        }
+
+        // Check for additional.
+        // admin - replace either missing or admin grade
+        // missing - replace only missing grades (not admin)
+        // update - just carry on abd replace anything
+        if ($additional != 'update') {
+            if (\local_gugrades\grades::block_overwrite($gradeitemid, $userid, $additional == 'missing')) {
+                return false;
+            }
+        } 
 
         // Can we aggregate?
         if (!$noaggregation) {
@@ -593,8 +612,8 @@ class api {
                 convertedgrade: $convertedgrade,
                 displaygrade:   $displaygrade,
                 weightedgrade:  0,
-                gradetype:      'FIRST',
-                other:          '',
+                gradetype:      $reason,
+                other:          $other,
                 iscurrent:      true,
                 iserror:        false,
                 auditcomment:   get_string('import', 'local_gugrades'),
@@ -623,8 +642,8 @@ class api {
                 convertedgrade: 0,
                 displaygrade:   $displaygrade,
                 weightedgrade:  0,
-                gradetype:      'FIRST',
-                other:          '',
+                gradetype:      $reason,
+                other:          $other,
                 iscurrent:      true,
                 iserror:        false,
                 auditcomment:   get_string('import', 'local_gugrades'),
@@ -794,11 +813,13 @@ class api {
      * @param int $courseid
      * @param int $gradeitemid
      * @param int $groupid
-     * @param bool $additional
+     * @param string $additional
      * @param string $fillns
+     * @param string $reason
+     * @param string $other
      * @return array [itemcount, gradecount]
      */
-    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, bool $additional, string $fillns) {
+    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, string $additional, string $fillns, string $reason, string $other) {
         global $DB;
 
         // This could legitimately take forever
@@ -837,7 +858,18 @@ class api {
             foreach ($users as $user) {
 
                 // Import but do not aggregate
-                if (self::import_grade($courseid, $item->id, $mapping, $activity, $user->id, $additional, $fillns, true)) {
+                if (self::import_grade(
+                    courseid: $courseid,
+                    gradeitemid: $item->id,
+                    mapping: $mapping,
+                    activity: $activity,
+                    userid: $user->id,
+                    additional: $additional,
+                    fillns: $fillns, 
+                    reason: $reason,
+                    other: $other,
+                    noaggregation: true
+                    )) {
                     $gradecount++;
                 }
                 $iusers++;

@@ -75,11 +75,7 @@ final class points_22_test extends \local_gugrades\external\gugrades_advanced_te
         ];
 
         // Assign22.
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign22, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign22, $userlist);
 
         // Check the capture page shows the correct grades.
         $page = get_capture_page::execute($this->course->id, $this->gradeitemidassign22, '', '', 0, false);

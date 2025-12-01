@@ -87,11 +87,7 @@ final class aggregation_strategies_test extends \local_gugrades\external\gugrade
         $this->load_data('data4a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get "Summer exam" category.
@@ -133,11 +129,7 @@ final class aggregation_strategies_test extends \local_gugrades\external\gugrade
         $this->load_data('data4a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get "Summer exam" category.
@@ -178,11 +170,7 @@ final class aggregation_strategies_test extends \local_gugrades\external\gugrade
         $this->load_data('data4a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get "Summer exam" category.
@@ -223,11 +211,7 @@ final class aggregation_strategies_test extends \local_gugrades\external\gugrade
         $this->load_data('data4a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get "Summer exam" category.
@@ -268,11 +252,7 @@ final class aggregation_strategies_test extends \local_gugrades\external\gugrade
         $this->load_data('data4a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get "Summer exam" category.
@@ -313,11 +293,7 @@ final class aggregation_strategies_test extends \local_gugrades\external\gugrade
         $this->load_data('data4a', $this->student->id);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Get "Summer exam" category.

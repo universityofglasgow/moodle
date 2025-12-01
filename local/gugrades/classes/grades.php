@@ -752,6 +752,11 @@ class grades {
             }
         }
 
+        // Gradetype has to be something.
+        if (!$gradetype) {
+            throw new \moodle_exception('Gradetype/reason cannot be empty');
+        }
+
         // Does this already exist?
         // The plan is not to touch catoverride that already exists.
         // Don't touch CATEGORY grades as these are made not current elsewhere.
@@ -1120,14 +1125,32 @@ class grades {
 
     /**
      * Check if gradeitem / user combo has any imported/added grades
+     * Prevent grades being overwritten with new value
      * @param int $gradeitemid
      * @param int $userid
+     * @param bool $realgrade require only normal grade (not admin) to allow
      * @return bool
      */
-    public static function user_has_grades(int $gradeitemid, int $userid) {
+    public static function block_overwrite(int $gradeitemid, int $userid, bool $realgrade = false) {
         global $DB;
 
-        return $DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid]);
+        // If there are no grades at all then nothing to block
+        if (!$DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+            return false;
+        }
+
+        // If realgrade check is not required, then we can safely allow overwrite. 
+        if (!$realgrade) {
+            return false;
+        }
+
+        // Get the provisional grade to see if it's an admin grade.
+        $provisional = self::get_provisional_from_id($gradeitemid, $userid);
+
+        // We block if IT IS an admin grade - that is must be a real grade.
+        $isadmin = $provisional->admingrade != '';
+
+        return $isadmin;
     }
 
     /**

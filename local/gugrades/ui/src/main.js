@@ -7,8 +7,9 @@ import 'vue3-easy-data-table/dist/style.css';
 import { plugin, defaultConfig } from '@formkit/vue';
 import { Modal } from '@kouts/vue-modal';
 import '../src/assets/VueModal.css';
+import '../src/assets/MyGrades.css';
 
-import customConfig from './js/formkit.config.js'
+import customConfig from '../formkit.config.js'
 
 // This stuff makes sure that the window.GU variable
 // exists.

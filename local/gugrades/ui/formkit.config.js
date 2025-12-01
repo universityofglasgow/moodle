@@ -11,7 +11,7 @@ const config = {
       global: { // classes
         outer: '$reset my-1',
         input: 'form-control',
-        label: '$reset mb-0',
+        label: '$reset mb-0 mt-2 font-weight-bold',
         legend: '$reset mb-0 fs-1',
         help: 'form-text',
         messages: 'list-unstyled mt-1',
@@ -32,13 +32,15 @@ const config = {
         input: '$reset form-check-input',
       },
       radio: {
+        legend: '$reset mb-0 font-weight-bold',
+        label: '$reset ml-1',
         outer: '$reset form-check form-check-inline',
         input: '$reset form-check-input',
-        options: '$reset list-unstyled list-inline',
-        option: '$reset list-inline-item pr-3'
+        options: '$reset list-unstyled mb-0',
+        option: '$reset pr-3'
       },
     })
-  }
+  } 
 }
 
 export default config

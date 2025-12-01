@@ -204,11 +204,7 @@ final class dashboard_get_courses_test extends \local_gugrades\external\gugrades
             $this->student->id,
             $this->student2->id,
         ];
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign2, $userlist);
         $status = release_grades::execute($this->course->id, $this->gradeitemidassign2, 0, false);
         $status = external_api::clean_returnvalue(
             release_grades::execute_returns(),

@@ -113,11 +113,7 @@ final class MGU_1116_test extends \local_gugrades\external\gugrades_aggregation_
         $this->set_strategy($gradecatsummer->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($courseid, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($courseid, $gradeitemid, $userlist);
         }
 
         // Get aggregation page for above.

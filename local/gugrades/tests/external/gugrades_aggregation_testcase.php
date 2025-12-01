@@ -379,4 +379,6 @@ class gugrades_aggregation_testcase extends gugrades_base_testcase {
         $student2 = $this->student2;
         $teacher = $this->teacher;
     }
+
+
 }

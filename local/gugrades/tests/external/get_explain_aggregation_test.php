@@ -84,11 +84,7 @@ final class get_explain_aggregation_test extends \local_gugrades\external\gugrad
         $this->set_strategy($gradecatsummer->id, \GRADE_AGGREGATE_WEIGHTED_MEAN);
 
         foreach ($this->gradeitemids as $gradeitemid) {
-            $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-            $status = external_api::clean_returnvalue(
-                import_grades_users::execute_returns(),
-                $status
-            );
+            $this->import_grades($this->course->id, $gradeitemid, $userlist);
         }
 
         // Explain current page.

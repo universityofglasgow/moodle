@@ -52,11 +52,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         ];
 
         // Assign2 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign2, false, 'none', $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign2, $userlist);
 
         $grades = array_values($DB->get_records('local_gugrades_grade', [
             'gradeitemid' => $this->gradeitemidassign2,
@@ -68,11 +64,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         $this->assertEquals(10, $grades[1]->convertedgrade);
 
         // Assign1 (which is useing points).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, 'none', $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign1, $userlist);
 
         $grades = array_values($DB->get_records('local_gugrades_grade', [
             'gradeitemid' => $this->gradeitemidassign1,
@@ -98,11 +90,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         ];
 
         // Assign4 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign4, false, 'fillns', $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign4, $userlist, 'fillns');
 
         $grades = array_values($DB->get_records('local_gugrades_grade', [
             'gradeitemid' => $this->gradeitemidassign4,
@@ -129,11 +117,7 @@ final class import_grades_users_test extends \local_gugrades\external\gugrades_a
         ];
 
         // Assign4 (which is useing scale).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassignb1, false, 'fillns', $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassignb1, $userlist, 'fillns');
 
         $grades = array_values($DB->get_records('local_gugrades_grade', [
             'gradeitemid' => $this->gradeitemidassignb1,

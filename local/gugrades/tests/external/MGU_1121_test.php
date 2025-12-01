@@ -96,7 +96,7 @@ final class MGU_1121_test extends \local_gugrades\external\gugrades_advanced_tes
      * @param int $gradeitemid
      * @param int $studentid
      */
-    private function import_grades(int $gradeitemid, int $studentid) {
+    private function import_student_grades(int $gradeitemid, int $studentid) {
 
         // Import grades.
         $userlist = [
@@ -104,11 +104,7 @@ final class MGU_1121_test extends \local_gugrades\external\gugrades_advanced_tes
         ];
 
         // Call import WS.
-        $status = import_grades_users::execute($this->course->id, $gradeitemid, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $gradeitemid, $userlist);
     }
 
     /**
@@ -170,10 +166,10 @@ final class MGU_1121_test extends \local_gugrades\external\gugrades_advanced_tes
         $this->add_assignment_grade($assign4->id, $student->id, 20);
 
         // Import
-        $this->import_grades($gradeitemidassign1, $student->id);
-        $this->import_grades($gradeitemidassign2, $student->id);
-        $this->import_grades($gradeitemidassign3, $student->id);
-        $this->import_grades($gradeitemidassign4, $student->id);
+        $this->import_student_grades($gradeitemidassign1, $student->id);
+        $this->import_student_grades($gradeitemidassign2, $student->id);
+        $this->import_student_grades($gradeitemidassign3, $student->id);
+        $this->import_student_grades($gradeitemidassign4, $student->id);
 
         // Get data for this user.
         $user = get_aggregation_user::execute($course->id, $summative->id, $student->id);

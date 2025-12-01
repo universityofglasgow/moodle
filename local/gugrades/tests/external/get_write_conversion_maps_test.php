@@ -940,11 +940,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         ];
 
         // Assign1 (which is useing points).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign1, $userlist);
 
         // Apply the test conversion map to Assign1.
         $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapida);
@@ -1176,11 +1172,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         ];
 
         // Assign1 (which is useing points).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign1, $userlist);
 
         // Apply the test conversion map to Assign1.
         $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign1, 0, $mapida);
@@ -1302,11 +1294,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         ];
 
         // Assign3 (which is useing points from 0 to 23).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign3, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign3, $userlist);
 
         // Apply the test conversion map to Assign3.
         $nothing = select_conversion::execute($this->course->id, $this->gradeitemidassign3, 0, $mapida);
@@ -1368,11 +1356,7 @@ final class get_write_conversion_maps_test extends \local_gugrades\external\gugr
         ];
 
         // Assign1 (which is useing points).
-        $status = import_grades_users::execute($this->course->id, $this->gradeitemidassign1, false, false, $userlist);
-        $status = external_api::clean_returnvalue(
-            import_grades_users::execute_returns(),
-            $status
-        );
+        $this->import_grades($this->course->id, $this->gradeitemidassign1, $userlist);
 
         // Add additional grade.
         // IS not currently used

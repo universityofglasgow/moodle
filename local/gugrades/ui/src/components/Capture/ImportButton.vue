@@ -34,51 +34,76 @@
                 </div>
             </div>
 
-            <div v-if="is_importgrades" class="alert alert-info">
-                <FormKit
-                    type="checkbox"
-                    :label="mstrings.importadditional"
-                    :help="mstrings.importadditionalhelp"
-                    name="importadditional"
-                    v-model="importadditional"
-                    >
-                    <template #help>
-                        <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.importadditionalhelp }}</p>
-                    </template>
-                </FormKit>
-            </div>
+            <FormKit type="form" class="bg-light" :actions="false">
 
-            <div v-if="recursiveavailable" class="alert alert-secondary">
-                <div v-if="!allgradesvalid" class="alert alert-danger">
-                    {{ mstrings.invalidgradetype }}
+                <!-- Recursive options -->
+                <div v-if="recursiveavailable">
+                    <div v-if="!allgradesvalid" class="alert alert-danger">
+                        {{ mstrings.invalidgradetype }}
+                    </div>
+                    <div v-else>
+                        <FormKit
+                            type="radio"
+                            :label="mstrings.recursiveimport"
+                            :options="{
+                                single: mstrings.recursive_single,
+                                recursive: mstrings.recursive_recursive
+                            }",
+                            name="recursiveimport"
+                            v-model="recursiveselect"
+                            >
+                        </FormKit>
+                    </div>
+                    <hr></hr>
                 </div>
-                <div v-else>
-                    <FormKit
-                        type="checkbox"
-                        :label="mstrings.recursiveimport"
-                        :help="mstrings.recursiveimporthelp"
-                        name="recursiveimport"
-                        v-model="recursiveselect"
-                        >
-                        <template #help>
-                            <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{ mstrings.recursiveimporthelp }}</p>
-                        </template>
-                    </FormKit>
-                </div>
-            </div>
 
-            <div class="alert alert-success">
+                <!-- NS fill options -->
                 <FormKit
-                    type="select"
-                    :label="mstrings.importfillns + ':'"
-                    :options="options"
+                    type="radio"
+                    :label="mstrings.importfillns"
+                    :options="nsoptions"
                     name="importfillns"
                     v-model="importfillns"
                     >
                 </FormKit>
-            </div>
+                <hr></hr>
 
-            <div v-if="recursiveavailable && recursiveselect && !recursivematch" class="alert alert-warning">
+                <!-- If there are existing grades then show all the options for importing extra grades -->
+                <div v-if="is_importgrades">
+                    <FormKit
+                        type="radio"
+                        :label="mstrings.importadditional"
+                        name="importadditional"
+                        :options="{
+                            admin: mstrings.importadditional_admin,
+                            missing: mstrings.importadditional_missing,
+                            update: mstrings.importadditional_update
+                        }"
+                        v-model="importadditional"
+                        >
+                    </FormKit>
+                    <hr></hr>
+                    <FormKit
+                        type="select"
+                        :label="mstrings.reasonforadditionalimport"
+                        name="reason"
+                        v-model="reason"
+                        :options="gradetypes"
+                        :placeholder="mstrings.selectareason"
+                        validation="required"
+                    />
+                    <FormKit
+                        v-if = 'reason == "OTHER"'
+                        :label="mstrings.pleasespecify"
+                        type="text"
+                        :placeholder="mstrings.pleasespecify"
+                        name="other"
+                        v-model="other"
+                    />
+                </div>
+            </FormKit>
+
+            <div v-if="recursiveavailable && (recursiveselect=='recursive') && !recursivematch" class="alert alert-warning">
                 {{ mstrings.importnomatch }}
             </div>
 
@@ -123,9 +148,10 @@
     const is_importgrades = ref(false);
     const recursiveavailable = ref(false);
     const recursivematch = ref(false);
-    const recursiveselect = ref(false);
-    const importadditional = ref(true);
-    const importfillns = ref('');
+    const recursiveselect = ref('single');
+    const reason = ref('');
+    const importadditional = ref('admin');
+    const importfillns = ref('none');
     const allgradesvalid = ref(false);
     const gradetypes = ref([]);
     const level = ref(0);
@@ -136,7 +162,7 @@
     /**
      * Options for NS/NS0 dropdown
      */
-    const options = computed(() => {
+    const nsoptions = computed(() => {
         const options = {
             none: mstrings.donotfill,
             fillns: mstrings.fillns,
@@ -157,7 +183,7 @@
 
         loading.value = true;
 
-        if (recursiveselect.value) {
+        if (recursiveselect.value == 'recursive') {
             importrecursive();
         } else {
             importsingle();
@@ -205,6 +231,8 @@
                 additional: importadditional.value,
                 fillns: importfillns.value,
                 userlist: props.userids,
+                reason: is_importgrades.value ? reason.value : 'FIRST',
+                other: is_importgrades.value ? other.value : '',
             }
         }])[0]
         .then((result) => {
@@ -241,6 +269,8 @@
                 groupid: props.groupid,
                 additional: importadditional.value,
                 fillns: importfillns.value,
+                reason: is_importgrades.value ? reason.value : 'FIRST',
+                other: is_importgrades.value ? other.value : '',
             }
         }])[0]
         .then((result) => {
@@ -268,9 +298,9 @@
      */
     function import_button_click() {
         showimportmodal.value = true;
-        importadditional.value = true;
-        recursiveselect.value = false;
-        importfillns.value = false;
+        importadditional.value = 'admin';
+        recursiveselect.value = 'single';
+        importfillns.value = 'none';
         loading.value = false;
 
         const GU = window.GU;
