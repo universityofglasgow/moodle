@@ -26,7 +26,7 @@ use mod_customcert\certificate;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 /**
  * Instance add/edit form.
@@ -36,7 +36,6 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_customcert_mod_form extends moodleform_mod {
-
     /**
      * Form definition.
      */
@@ -65,6 +64,17 @@ class mod_customcert_mod_form extends moodleform_mod {
         ];
         $mform->addElement('select', 'deliveryoption', get_string('deliveryoptions', 'customcert'), $deliveryoptions);
         $mform->setDefault('deliveryoption', certificate::DELIVERY_OPTION_INLINE);
+
+        // Checkbox to enable custom file name pattern.
+        $mform->addElement('advcheckbox', 'usecustomfilename', get_string('usecustomfilename', 'customcert'));
+        $mform->addHelpButton('usecustomfilename', 'usecustomfilename', 'customcert');
+        $mform->setDefault('usecustomfilename', 0);
+
+        // Text field for custom file name pattern.
+        $mform->addElement('text', 'customfilenamepattern', get_string('customfilenamepattern', 'customcert'), ['size' => '50']);
+        $mform->setType('customfilenamepattern', PARAM_TEXT);
+        $mform->addHelpButton('customfilenamepattern', 'customfilenamepattern', 'customcert');
+        $mform->disabledIf('customfilenamepattern', 'usecustomfilename', 'notchecked');
 
         if (has_capability('mod/customcert:manageemailstudents', $this->get_context())) {
             $mform->addElement('selectyesno', 'emailstudents', get_string('emailstudents', 'customcert'));
@@ -102,8 +112,12 @@ class mod_customcert_mod_form extends moodleform_mod {
         }
 
         if (has_capability('mod/customcert:manageprotection', $this->get_context())) {
-            $mform->addElement('checkbox', 'protection_print', get_string('setprotection', 'customcert'),
-                get_string('print', 'customcert'));
+            $mform->addElement(
+                'checkbox',
+                'protection_print',
+                get_string('setprotection', 'customcert'),
+                get_string('print', 'customcert')
+            );
             $mform->addElement('checkbox', 'protection_modify', '', get_string('modify', 'customcert'));
             $mform->addElement('checkbox', 'protection_copy', '', get_string('copy', 'customcert'));
             $mform->addHelpButton('protection_print', 'setprotection', 'customcert');
@@ -115,9 +129,8 @@ class mod_customcert_mod_form extends moodleform_mod {
         // Create an element for language selector.
         if (has_capability('mod/customcert:managelanguages', $this->get_context())) {
             $languages = get_string_manager()->get_list_of_translations();
-            $languages = ['' => get_string('userlanguage', 'customcert')] + $languages;
-            $mform->addElement('select', 'language', get_string('languageoptions', 'customcert'), $languages);
-            $mform->addHelpButton('language', 'userlanguage', 'customcert');
+            $languages = ['' => get_string('forceno')] + $languages;
+            $mform->addElement('select', 'language', get_string('forcelanguage'), $languages);
         }
 
         $this->standard_coursemodule_elements();
@@ -246,5 +259,4 @@ class mod_customcert_mod_form extends moodleform_mod {
 
         return $data;
     }
-
 }

@@ -34,7 +34,6 @@ function xmldb_customcert_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2016120503) {
-
         $table = new xmldb_table('customcert_templates');
         $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'id');
         $dbman->change_field_precision($table, $field);
@@ -107,8 +106,16 @@ function xmldb_customcert_upgrade($oldversion) {
     if ($oldversion < 2017050502) {
         // Add column for new 'verifycertificateanyone' setting.
         $table = new xmldb_table('customcert');
-        $field = new xmldb_field('verifyany', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0',
-            'requiredtime');
+        $field = new xmldb_field(
+            'verifyany',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'requiredtime'
+        );
 
         // Conditionally launch add field.
         if (!$dbman->field_exists($table, $field)) {
@@ -225,8 +232,16 @@ function xmldb_customcert_upgrade($oldversion) {
     if ($oldversion < 2023042405) {
         // Changing precision of field verifyany on table customcert to (1).
         $table = new xmldb_table('customcert');
-        $field = new xmldb_field('verifyany', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0',
-            'requiredtime');
+        $field = new xmldb_field(
+            'verifyany',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'requiredtime'
+        );
 
         // Launch change of precision for field verifyany.
         $dbman->change_field_precision($table, $field);
@@ -236,7 +251,6 @@ function xmldb_customcert_upgrade($oldversion) {
     }
 
     if ($oldversion < 2024042202) {
-
         // Define table customcert_email_task_prgrs to be created.
         $table = new xmldb_table('customcert_email_task_prgrs');
 
@@ -314,6 +328,25 @@ function xmldb_customcert_upgrade($oldversion) {
 
         // Update the plugin version in the database.
         upgrade_plugin_savepoint(true, 2024042210, 'mod', 'customcert');
+    }
+
+    if ($oldversion < 2024042213) {
+        $table = new xmldb_table('customcert');
+
+        // Add 'usecustomfilename' field.
+        $field = new xmldb_field('usecustomfilename', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'deliveryoption');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add 'customfilenamepattern' field.
+        $field = new xmldb_field('customfilenamepattern', XMLDB_TYPE_TEXT, null, null, null, null, null, 'usecustomfilename');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Savepoint reached.
+        upgrade_mod_savepoint(true, 2024042213, 'customcert');
     }
 
     return true;
