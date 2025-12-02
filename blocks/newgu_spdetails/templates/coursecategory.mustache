@@ -93,11 +93,25 @@
 
     <div class="d-flex flex-row mb-2 justify-content-end">
         <div class="p-0">
-            <a href='{{data.pdf_link}}' target='_blank' aria-label='PDF icon' aria-description='Download as a PDF document'><i style='color:red;' class='fa fa-file-pdf-o fa-2x' aria-hidden='true'><div style="display:none">Download as a PDF document</div></i></a>
+            <a href='{{data.pdf_link}}' data-name="download-notification" target='_blank' aria-label='PDF icon' aria-description='Download as a PDF document'><i style='color:red;' class='fa fa-file-pdf-o fa-2x' aria-hidden='true'><div style="display:none">Download as a PDF document</div></i></a>
         </div>
         <div class="p-0">
-            <a href='{{data.excel_link}}' target='_blank' aria-label='Excel icon' aria-description='Download as an Excel document'><i style='padding-left:20px; color:green;' class='fa fa-file-excel-o fa-2x' aria-hidden='true'><div style="display:none">Download as an Excel document</div></i></a>
+            <a href='{{data.excel_link}}' data-name="download-notification" target='_blank' aria-label='Excel icon' aria-description='Download as an Excel document'><i style='padding-left:20px; color:green;' class='fa fa-file-excel-o fa-2x' aria-hidden='true'><div style="display:none">Download as an Excel document</div></i></a>
         </div>
+
+        {{#js}}
+        require(['core/toast'], Toast => {
+            document.querySelectorAll("[data-name='download-notification']").forEach((trigger) => {
+                trigger.addEventListener('click', e => {
+                    Toast.add('The data contained in this download is only a snap shot. Please continue to check back regularly for any updates.', {
+                        autohide: false,
+                        closeButton: true,
+                    });
+                });
+            });
+        });
+        {{/js}}
+
     </div>
     {{/data.coursedata.length}}
 </div>

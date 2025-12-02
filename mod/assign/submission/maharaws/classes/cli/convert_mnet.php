@@ -25,22 +25,40 @@
 define('CLI_SCRIPT', true);
 
 // Assume this file is located in moodle/mod/assign/submission/maharaws/classes/cli/ .
-require(__DIR__.'/../../../../../../config.php');
-require_once($CFG->libdir.'/clilib.php');
-require_once($CFG->dirroot.'/mod/assign/locallib.php');
-require_once($CFG->dirroot.'/mod/assign/submissionplugin.php');
-require_once($CFG->dirroot.'/mod/assign/submission/maharaws/locallib.php');
+require(__DIR__ . '/../../../../../../config.php');
+require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->dirroot . '/mod/assign/submissionplugin.php');
+require_once($CFG->dirroot . '/mod/assign/submission/maharaws/locallib.php');
 
 $assign = new assign(null, null, null);
 $wsplugin = $assign->get_submission_plugin_by_type('maharaws');
 $data = [];
-$records = $DB->get_records('assignsubmission_mahara');
+$records = [];
+
+$totalmnetrecords = $DB->count_records("assignsubmission_mahara");
+mtrace("Retrieving data for {$totalmnetrecords} from get_views_by_id Mahara webservice");
+
 if (!empty(get_config('assignsubmission_maharaws', 'force_global_credentials'))) {
     // If force globals, proceed with whole table.
-    $data = $wsplugin->run_get_views_by_id($data, $records);
+    $batchsize = 40;
+    $limitfrom = 0;
+    $batchnum = 1;
+    $batchtotal = ceil($totalmnetrecords / $batchsize);
+    while ($batchrecords = $DB->get_records('assignsubmission_mahara', null, '', '*', $limitfrom, $batchsize)) {
+        if (empty($batchrecords)) {
+            break;
+        }
+        mtrace("Processing batch {$batchnum}/{$batchtotal} - Limit from: {$limitfrom}");
+        $records = array_merge($records, $batchrecords);
+        $data = $wsplugin->run_get_views_by_id($data, $batchrecords);
+        $limitfrom += $batchsize;
+        $batchnum++;
+    }
 } else {
     set_config('force_global_credentials', '1', 'assignsubmission_maharaws');
     // If globals available, save in a variable.
+    $records = $DB->get_records('assignsubmission_mahara');
     $globals = [];
     foreach (['url', 'key', 'secret'] as $config) {
         if (isset($globals)) {
@@ -57,7 +75,7 @@ if (!empty(get_config('assignsubmission_maharaws', 'force_global_credentials')))
         $assignments[$record->assignment][] = (object)[
             'id'           => $record->id,
             'viewid'       => $record->viewid,
-            'iscollection' => $record->iscollection
+            'iscollection' => $record->iscollection,
         ];
     }
     foreach ($assignments as $assid => $assignment) {
@@ -66,7 +84,7 @@ if (!empty(get_config('assignsubmission_maharaws', 'force_global_credentials')))
         $dbparams = [
             'assignment' => $assid,
             'plugin' => 'maharaws',
-            'subtype' => 'assignsubmission'
+            'subtype' => 'assignsubmission',
         ];
         if ($result = $DB->get_records('assign_plugin_config', $dbparams)) {
             $resultarray = [];
@@ -75,7 +93,7 @@ if (!empty(get_config('assignsubmission_maharaws', 'force_global_credentials')))
             }
             if (empty($resultarray['enabled'])) {
                 mtrace("assignsubmission_maharaws disabled for assignment {$assid}: skipping");
-                $records = array_filter($records, function($a) use($assid) {
+                $records = array_filter($records, function ($a) use ($assid) {
                     return $a->assignment != $assid;
                 });
                 continue;
@@ -104,7 +122,7 @@ if (!empty(get_config('assignsubmission_maharaws', 'force_global_credentials')))
             $data = $wsplugin->run_get_views_by_id($data, $assignment);
         } else {
             mtrace("no maharaws endpoint configured for assignment {$assid}: skipping");
-            $records = array_filter($records, function($a) use($assid) {
+            $records = array_filter($records, function ($a) use ($assid) {
                 return $a->assignment != $assid;
             });
             continue;
@@ -112,7 +130,13 @@ if (!empty(get_config('assignsubmission_maharaws', 'force_global_credentials')))
     }
     set_config('force_global_credentials', '0', 'assignsubmission_maharaws');
 }
+mtrace("Finished retrieving data from get_views_by_id Mahara webservice");
+mtrace("Inserting data from previous Mahara submission plugin...");
 foreach ($records as $record) {
+    if (!isset($data[$record->id])) {
+        mtrace("Skipping record {$record->id}: view not found in Mahara");
+        continue;
+    }
     $dataitem = $data[$record->id];
     $todb = new \stdClass();
     $todb->assignment   = $record->assignment;
@@ -122,14 +146,16 @@ foreach ($records as $record) {
     $todb->viewtitle    = $record->viewtitle;
     $todb->iscollection = $record->iscollection;
     $status = $record->viewstatus;
-    if ($status == assign_submission_mahara::STATUS_RELEASED ||
-        $status == assign_submission_mahara::STATUS_SELECTED ||
-        $status == assign_submission_mahara::STATUS_SUBMITTED) {
+    if (
+        $status == assign_submission_maharaws::STATUS_RELEASED ||
+        $status == assign_submission_maharaws::STATUS_SELECTED ||
+        $status == assign_submission_maharaws::STATUS_SUBMITTED
+    ) {
         $todb->viewstatus = $status;
     }
     if (!$todb->iscollection) {
-        if ($todb->viewstatus == assign_submission_mahara::STATUS_SELECTED) {
-            $urlstring = '/user/' . $dataitem['owner'] .'/'. $dataitem['urlid'];
+        if ($todb->viewstatus == assign_submission_maharaws::STATUS_SELECTED) {
+            $urlstring = '/user/' . $dataitem['owner'] . '/' . $dataitem['urlid'];
             $todb->viewurl = $dataitem['endpointurl'] . $urlstring;
         } else {
             $todb->viewurl = '/view/view.php?id=' . $todb->viewid;
@@ -138,7 +164,7 @@ foreach ($records as $record) {
         switch ($dataitem['complexity']) {
             case 0:
                 // Simple collection.
-                if ($todb->viewstatus == assign_submission_mahara::STATUS_SELECTED) {
+                if ($todb->viewstatus == assign_submission_maharaws::STATUS_SELECTED) {
                     $urlstring = '/view/view.php?id=' . $dataitem['viewid'];
                     $todb->viewurl = $dataitem['endpointurl'] . $urlstring;
                 } else {
@@ -147,7 +173,7 @@ foreach ($records as $record) {
                 break;
             case 1:
                 // Progresscompletion.
-                if ($todb->viewstatus == assign_submission_mahara::STATUS_SELECTED) {
+                if ($todb->viewstatus == assign_submission_maharaws::STATUS_SELECTED) {
                     $urlstring = '/collection/progresscompletion.php?id=' . $todb->viewid;
                     $todb->viewurl = $dataitem['endpointurl'] . $urlstring;
                 } else {
@@ -156,7 +182,7 @@ foreach ($records as $record) {
                 break;
             case 2:
                 // Smartevidence.
-                if ($todb->viewstatus == assign_submission_mahara::STATUS_SELECTED) {
+                if ($todb->viewstatus == assign_submission_maharaws::STATUS_SELECTED) {
                     $urlstring = '/module/framework/matrix.php?id=' . $todb->viewid;
                     $todb->viewurl = $dataitem['endpointurl'] . $urlstring;
                 } else {

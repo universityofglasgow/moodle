@@ -73,7 +73,7 @@ class course_mygrades_enablestudentmygrades_test implements \report_coursediagno
         if ($ischecked == false) {
             $courseurl = new \moodle_url('/course/edit.php', ['id' => $this->course->id]);
             $courseurllink = \html_writer::link($courseurl,
-                get_string('mygrades_gradebook_link_text', 'report_coursediagnostic'));
+                get_string('settings_link_text', 'report_coursediagnostic'));
             $options = [
                 'coursesettingslink' => $courseurllink
             ];
