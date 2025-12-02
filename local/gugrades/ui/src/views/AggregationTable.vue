@@ -95,7 +95,7 @@
                         <div v-if="header.resititem" class="badge badge-pill badge-info">{{ mstrings.resitselected }}</div>
                     </div>
                     <div class="py-1" v-if="header.strategy">
-                        <i>{{ header.strategy }}</i> <i v-if="excludeempty" class="ml-1 fa fa-check-square" aria-hidden="true" title="Exclude empty grades checked"></i>
+                        <i>{{ header.strategy }}</i> 
                     </div>
                     <div v-if="header.categoryid">
                         <a href="#" @click="expand_clicked(header.categoryid)">
