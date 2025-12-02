@@ -36,8 +36,9 @@
             value="schedulea"
             :options="scaletypeoptions"
         ></FormKit>
-        <p class="mb-1 mt-3">{{ mstrings.entrytype }}</p>
+        <div class="mt-3"></div>
         <FormKit
+            :label="mstrings.entrytype"
             v-model="entrytype"
             type="radio"
             :options="entrytypeoptions"
