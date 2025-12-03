@@ -5,7 +5,7 @@
             <li>
                 CourseID: <pre>{{ moodlecourseid }}</pre>
             </li>
-            <li v-for="(item, index) in props.debug">
+            <li v-for="(item, index) in errors">
                 {{ index }}: <pre>{{ item }}</pre>
             </li>
         </ul>
@@ -32,6 +32,19 @@
         const courseid = GU.courseid;
 
         return courseid;
+    });
+
+    /**
+     * Debug should be an array but it's sometimes a string
+     */
+    const errors = computed(() => {
+        if (typeof props.debug === "string") {
+            return {
+                message: props.debug,
+            } 
+        } else {
+            return props.debug;
+        }
     });
 
     const showdebugmodal = computed(() => {
