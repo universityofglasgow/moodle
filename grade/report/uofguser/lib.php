@@ -277,19 +277,32 @@ function gradereport_uofguser_status_icons($OUTPUT) {
 }
 
 /**
- * Find the first instance of a scale of type 'schedule' in the plugin config.
- * This is used to identify scales if there is a converted grade item.
- *
- * @param string $schedule The schedule type to look for, defaults to 'schedulea'.
- * @return int|null The scale number if found, or null if not found.
+ * Generate the scale mapping array for schedule types.
+ * @return array The scale mapping array.
  */
-function gradereport_uofguser_schedulescale_map($schedule = 'schedulea') {
+function gradereport_uofguser_moodlescale_generate_map() {
     $configs = get_config('local_gugrades');
-    foreach ($configs as $name => $value) {
-        if (strpos($name, 'scaletype_') === 0 && $value === $schedule) {
+
+    $filtered = array_filter((array)$configs, function ($key) {
+        return preg_match('/^scaletype_\d+$/', $key);
+    }, ARRAY_FILTER_USE_KEY);
+
+    $filtered = array_filter($filtered, function ($value) {
+        return $value !== "";
+    });
+
+    $map = [];
+    foreach ($filtered as $name => $value) {
+        if (strpos($name, 'scaletype_') === 0) {
             $number = substr($name, strlen('scaletype_'));
-            break;
+            $sitescale = grade_scale::fetch_all(['id' => $number]);
+            $scaleobject = reset($sitescale);
+            $items = array_map('trim', explode(',', $scaleobject->scale));
+            $map[$number] = [
+                'items' => $items,
+                'schedule' => $value,
+            ];
         }
     }
-    return (int) $number ?? null;
+    return $map;
 }
