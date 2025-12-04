@@ -138,7 +138,6 @@
      * A resit box was clicked.
      */
     function resit_clicked(itemid) {
-        window.console.log(itemid);
         if (resititemid.value == itemid) {
             resititemid.value = null;
             save_resit_item(itemid, false);

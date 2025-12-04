@@ -150,7 +150,6 @@
             }
             showresitoption.value = tree.anyresitcandidates;
             loaded.value = true;
-            window.console.log(tree);
         })
         .catch((error) => {
             window.console.error(error);
