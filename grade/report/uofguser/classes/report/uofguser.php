@@ -67,6 +67,19 @@ class uofguser extends \gradereport_user\report\user {
     public $canviewsource;
 
     /**
+     * collection of MyGrades scales
+     * @var array
+     */
+    public $mygradesscales = [];
+
+    /**
+     * collection of Moodle grade scales
+     * @var array
+     */
+    public $moodlescales = [];
+
+
+    /**
      * Constructor. Sets local copies of user preferences and initialises grade_tree.
      * @param int $courseid
      * @param null|object $gpr grade plugin return tracking object
@@ -174,6 +187,14 @@ class uofguser extends \gradereport_user\report\user {
             'aggregationposition',
             $CFG->grade_aggregationposition
         );
+
+        // Prepare MyGrades scales collection.
+        $scalesa[] = array_values(\local_gugrades\mapping\schedulea::get_map());
+        $scalesb[] = array_values(\local_gugrades\mapping\scheduleb::get_map());
+        $this->mygradesscales = array_merge(array_values($scalesa[0]), array_values($scalesb[0]));
+
+        // Prepare MyGrades related Moodle grade scales collection.
+        $this->moodlescales = gradereport_uofguser_moodlescale_generate_map();
 
         // Grab the grade_tree for this course.
         $this->gtree = new grade_tree($this->courseid, false, $this->switch, null, !$CFG->enableoutcomes);
@@ -478,18 +499,21 @@ class uofguser extends \gradereport_user\report\user {
                 }
             }
 
-            if ($mygradesconverted && $mygradesreleasedflag) {
+            if (($mygradesconverted || $type == "categoryitem") && $mygradesreleasedflag) {
                 // If the grade item is converted to a scale in MyGrades, we have to change the gradetype.
+                // Also convert all the aggregated (category) and released grades back to scale.
                 // We have to make sure that the released grade is a scale, so hopefully the converted one.
-                $scalesa[] = array_values(\local_gugrades\mapping\schedulea::get_map());
-                $scalesb[] = array_values(\local_gugrades\mapping\scheduleb::get_map());
-                $scales = array_merge(array_values($scalesa[0]), array_values($scalesb[0]));
-                if (in_array($mygradesreleasedgrade->displaygrade, $scales)) {
+                if (in_array($mygradesreleasedgrade->displaygrade, $this->mygradesscales)) {
                     $gradegrade->grade_item->gradetype = GRADE_TYPE_SCALE;
-                    $result = \local_gugrades\grades::mapping_factory($this->courseid, $gradegrade->grade_item->id);
-                    $scheduleab = get_class($result);
-                    $schedule = substr($scheduleab, strrpos($scheduleab, '\\') + 1);
-                    $gradegrade->grade_item->scaleid = gradereport_uofguser_schedulescale_map($schedule);
+                    $display = $mygradesreleasedgrade->displaygrade;
+                    $number = null;
+                    foreach ($this->moodlescales as $num => $entry) {
+                        if (!empty($entry['items']) && in_array($display, $entry['items'], true)) {
+                            $number = $num;
+                            break;
+                        }
+                    }
+                    $gradegrade->grade_item->scaleid = $number;
                 }
             }
 
@@ -691,6 +715,7 @@ class uofguser extends \gradereport_user\report\user {
                             if (!$mygradesreleasedgrade) {
                                 // If the grade is not released in MyGrades, we do not show it.
                                 $gradeval = null;
+                                $gradepassicon = '';
                                 // Is it a non-released aggregated category normal grade?
                                 $mygradesaggregatedgrade = \local_gugrades\grades::get_aggregated_from_gradeitemid(
                                     $gradegrade->grade_item->id,
