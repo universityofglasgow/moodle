@@ -2033,6 +2033,11 @@ class api {
         [$columns, $atype, $warnings] = \local_gugrades\aggregation::get_columns($courseid, $gradecategoryid);
         $timecolumns = microtime(true);
 
+        // Check if warning needed for not highest grade reassessment.
+        if (\local_gugrades\grades::is_not_highest_for_resit($gradecategoryid)) {
+            $warnings[] = ['message' => get_string('categorynothighest', 'local_gugrades')];
+        }
+
         // Don't have duplicate warnings.
         $warnings = array_intersect_key($warnings, array_unique(array_map('serialize', $warnings)));
 

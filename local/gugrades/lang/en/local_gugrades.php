@@ -75,6 +75,7 @@ $string['cannotaggregate'] = 'Cannot aggregate';
 $string['captureaggregation'] = '\'MyGrades\' Grade capture and aggregation';
 $string['category'] = 'Grade category';
 $string['categoryerror'] = 'WARNING: There may be a discrepancy between the calculated category type/grades and that configured in the Gradebook.';
+$string['categorynothighest'] = 'Aggregation strategy is NOT set to Highest grade when there is a reassessment. Consider if that is correct.';
 $string['categoryoverridden'] = 'Category is overridden';
 $string['categoryremoveoverride'] = 'Category grade is overridden. Click \'Remove\' button to revert.';
 $string['checkall'] = 'Check all';

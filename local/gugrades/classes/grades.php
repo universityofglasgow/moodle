@@ -288,6 +288,25 @@ class grades {
     }
 
     /**
+     * Is a grade category a resit category but NOT highest grade?
+     * @param int $gradecategoryid
+     * @return bool
+     */
+    public static function is_not_highest_for_resit(int $gradecategoryid) {
+        global $DB;
+
+        if (!self::is_resit_category($gradecategoryid)) {
+            return false;
+        }
+
+        if ($DB->record_exists('grade_categories', ['id' => $gradecategoryid, 'aggregation' => \GRADE_AGGREGATE_MAX])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get the gradeitemid given the gradecategoryid
      * @param int $gradecategoryid
      * @return int
