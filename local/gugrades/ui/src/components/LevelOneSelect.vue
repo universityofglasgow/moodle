@@ -19,6 +19,7 @@
 <script setup>
     import {ref, onMounted, defineEmits, inject} from '@vue/runtime-core';
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import { setlevel1, getlevel1 } from '@/js/level1.js';
 
     const level1categories = ref([]);
     const selected = ref(0);
@@ -46,6 +47,12 @@
                 notsetup.value = true;
             }
 
+            // If it's already been selected on another tab...
+            selected.value = getlevel1(result);
+            if (selected.value) {
+                emit('levelchange', selected.value);
+            }
+
             // if there's only one then might as well select it. 
             if (result.length == 1) {
                 selected.value = result[0].id;
@@ -61,7 +68,7 @@
     // Handle change of selection in dropdown.
     function levelOneChange(event) {
         const categoryid = event.target.value;
-        //localStorage.setItem('level1category', categoryid);
+        setlevel1(categoryid);
         emit('levelchange', categoryid);
     }
 
