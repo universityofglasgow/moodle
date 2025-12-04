@@ -45,7 +45,6 @@ require_once($CFG->dirroot . '/question/type/kprime/edit_kprime_form.php');
  * @group       qtype_kprime
  */
 final class questiontype_test extends \advanced_testcase {
-
     /** @var object qtype */
     protected $qtype;
 
@@ -268,16 +267,22 @@ final class questiontype_test extends \advanced_testcase {
         $actualquestiondata = end($actualquestionsdata);
 
         foreach ($questiondata as $property => $value) {
-            if (!in_array($property, ['id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp', 'idnumber',
-                'hidden', ], )) {
+            if (
+                !in_array(
+                    $property,
+                    ['id', 'version', 'timemodified', 'timecreated', 'options', 'hints', 'stamp', 'idnumber', 'hidden'],
+                )
+            ) {
                 $this->assertEquals($value, $actualquestiondata->$property);
             }
         }
+
         foreach ($questiondata->options as $optionname => $value) {
             if ($optionname != 'rows' && $optionname != 'columns' && $optionname != 'weights') {
                 $this->assertEquals($value, $actualquestiondata->options->$optionname);
             }
         }
+
         foreach ($questiondata->hints as $hint) {
             $actualhint = array_shift($actualquestiondata->hints);
             foreach ($hint as $property => $value) {
@@ -286,6 +291,7 @@ final class questiontype_test extends \advanced_testcase {
                 }
             }
         }
+
         foreach ($questiondata->options->rows as $row) {
             $actualrow = array_shift($actualquestiondata->options->rows);
             foreach ($row as $rowproperty => $rowvalue) {
@@ -294,6 +300,7 @@ final class questiontype_test extends \advanced_testcase {
                 }
             }
         }
+
         foreach ($questiondata->options->columns as $column) {
             $actualcolumn = array_shift($actualquestiondata->options->columns);
             foreach ($column as $columnproperty => $columnvalue) {
@@ -302,6 +309,7 @@ final class questiontype_test extends \advanced_testcase {
                 }
             }
         }
+
         foreach ($questiondata->options->weights as $rowkey => $row) {
             foreach ($row as $columnkey => $column) {
                 $actualweight = array_shift($actualquestiondata->options->weights[$rowkey]);

@@ -31,7 +31,6 @@
  * Restore plugin class that provides the necessary information needed to restore one qtype_kprime plugin.
  */
 class restore_qtype_kprime_plugin extends restore_qtype_plugin {
-
     /**
      * Returns the paths to be handled by the plugin at question level.
      */
@@ -124,6 +123,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
                 }
             }
         }
+
         if (!isset($newitemid)) {
             $info = new stdClass();
             $info->filequestionid = $oldquestionid;
@@ -159,6 +159,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
                 }
             }
         }
+
         if (!$newitemid) {
             $info = new stdClass();
             $info->filequestionid = $oldquestionid;
@@ -189,12 +190,15 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
         } else {
             $originalrecords = $DB->get_records('qtype_kprime_weights', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
-                if ($data->rownumber == $record->rownumber
-                    && $data->columnnumber == $record->columnnumber) {
+                if (
+                    $data->rownumber == $record->rownumber
+                    && $data->columnnumber == $record->columnnumber
+                ) {
                     $newitemid = $record->id;
                 }
             }
         }
+
         if (!$newitemid) {
             $info = new stdClass();
             $info->filequestionid = $oldquestionid;
@@ -217,6 +221,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
         if (property_exists((object) $response, '_order')) {
             $response['_order'] = $this->recode_option_order($response['_order']);
         }
+
         return $response;
     }
 
@@ -232,6 +237,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
                 $neworder[] = $newid;
             }
         }
+
         return implode(',', $neworder);
     }
 
@@ -259,14 +265,14 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
     public static function convert_backup_to_questiondata(array $backupdata): stdClass {
         // First, convert standard data via the parent function.
         $questiondata = parent::convert_backup_to_questiondata($backupdata);
-        /**
-        * Convert the row data. An array of all rows (as objects) is stored in $questiondata->options.
-        * Furthermore, there will be properties $questiondata->option_N, each containing an object with
-        * properties text (= row's optiontext field) and format (= row's optiontextformat field), with
-        * N being the row number. And finally, there is the property $questiondata->feedback_N containing
-        * each an object with the properties text (= row's optionfeedback field) and format (= row's
-        * optionfeedbackformat field), with N being the row number again.
-        */
+
+        // Convert the row data. An array of all rows (as objects) is stored in $questiondata->options.
+        // Furthermore, there will be properties $questiondata->option_N, each containing an object with
+        // properties text (= row's optiontext field) and format (= row's optiontextformat field), with
+        // N being the row number. And finally, there is the property $questiondata->feedback_N containing
+        // each an object with the properties text (= row's optionfeedback field) and format (= row's
+        // optionfeedbackformat field), with N being the row number again.
+
         foreach ($backupdata['plugin_qtype_kprime_question']['rows']['row'] as $row) {
             $questiondata->options->rows[] = (object) $row;
             $optionfield = 'option_' . $row['number'];
@@ -280,35 +286,37 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
                 'format' => $row['optionfeedbackformat'],
             ];
         }
-        /**
-        * Next step is the column data. An array of all columns (as objects) is stored in $questiondata->columns.
-        * Furthermore, for every column N, a property $questiondata->responsetext_N must be created that holds the
-        * content of the column's responstext field.
-        */
+
+        // Next step is the column data. An array of all columns (as objects) is stored in $questiondata->columns.
+        // Furthermore, for every column N, a property $questiondata->responsetext_N must be created that holds the
+        // content of the column's responstext field.
+
         foreach ($backupdata['plugin_qtype_kprime_question']['columns']['column'] as $column) {
             $questiondata->options->columns[] = (object) $column;
             $field = 'responsetext_' . $column['number'];
             $questiondata->$field = $column['responsetext'];
         }
-        /**
-        * Finally, we have to store all weights in the $questiondata->weights property. That is a
-        * wo-dimensional array, built like in qtype_mtf::weight_records_to_array(). Also, for every
-        * row, we store the number of the column that has a weight > 1. This is done via the
-        * weightbutton_N property, with N being the row number.
-        */
+
+        // Finally, we have to store all weights in the $questiondata->weights property. That is a
+        // two-dimensional array, built like in qtype_mtf::weight_records_to_array(). Also, for every
+        // row, we store the number of the column that has a weight > 1. This is done via the
+        // weightbutton_N property, with N being the row number.
+
         $weights = [];
         foreach ($backupdata['plugin_qtype_kprime_question']['weights']['weight'] as $weight) {
             $weight = (object) $weight;
             if (!array_key_exists($weight->rownumber, $weights)) {
                 $weights[$weight->rownumber] = [];
             }
-            // weightbutton_1, weightbutton_2, ...
+
+            // Process weightbutton_1, weightbutton_2, ...
             $weights[$weight->rownumber][$weight->columnnumber] = $weight;
             if ($weight->weight > 0.0) {
                 $fieldname = 'weightbutton_' . $weight->rownumber;
                 $questiondata->$fieldname = $weight->columnnumber;
             }
         }
+
         $questiondata->options->weights = $weights;
 
         return $questiondata;
@@ -347,6 +355,7 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
                 if (isset($weight->id)) {
                     unset($weight->id);
                 }
+
                 if (isset($weight->questionid)) {
                     unset($weight->questionid);
                 }
@@ -355,5 +364,4 @@ class restore_qtype_kprime_plugin extends restore_qtype_plugin {
 
         return restore_qtype_plugin::remove_excluded_question_data($questiondata, $excludefields);
     }
-
 }

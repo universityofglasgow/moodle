@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+// phpcs:disable PSR1.Classes.ClassDeclaration.MultipleClasses
+
 /**
  * Question type class for qtype_kprime.
  *
@@ -44,7 +46,6 @@ require_once($CFG->dirroot . '/question/type/kprime/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class question_hint_kprime extends question_hint_with_parts {
-
     /** @var int statewhichincorrect */
     public $statewhichincorrect;
 
@@ -69,8 +70,14 @@ class question_hint_kprime extends question_hint_with_parts {
      * @return question_hint_kprime
      */
     public static function load_from_record($row) {
-        return new question_hint_kprime($row->id, $row->hint, $row->hintformat,
-                $row->shownumcorrect, $row->clearwrong, $row->options);
+        return new question_hint_kprime(
+            $row->id,
+            $row->hint,
+            $row->hintformat,
+            $row->shownumcorrect,
+            $row->clearwrong,
+            $row->options
+        );
     }
 
     /**
@@ -91,7 +98,6 @@ class question_hint_kprime extends question_hint_with_parts {
  * The qtype_kprime.
  */
 class qtype_kprime extends question_type {
-
     /**
      * Sets the default options for the question.
      * (non-PHPdoc)
@@ -104,18 +110,23 @@ class qtype_kprime extends question_type {
         if (!isset($question->options)) {
             $question->options = new stdClass();
         }
+
         if (!isset($question->options->numberofrows)) {
             $question->options->numberofrows = QTYPE_KPRIME_NUMBER_OF_OPTIONS;
         }
+
         if (!isset($question->options->numberofcolumns)) {
             $question->options->numberofcolumns = QTYPE_KPRIME_NUMBER_OF_RESPONSES;
         }
+
         if (!isset($question->options->shuffleanswers)) {
             $question->options->shuffleanswers = $kprimeconfig->shuffleanswers;
         }
+
         if (!isset($question->options->scoringmethod)) {
             $question->options->scoringmethod = $kprimeconfig->scoringmethod;
         }
+
         if (!isset($question->options->rows)) {
             $rows = [];
             for ($i = 1; $i <= $question->options->numberofrows; ++$i) {
@@ -127,6 +138,7 @@ class qtype_kprime extends question_type {
                 $row->optionfeedbackformat = FORMAT_HTML;
                 $rows[] = $row;
             }
+
             $question->options->rows = $rows;
         }
 
@@ -140,10 +152,12 @@ class qtype_kprime extends question_type {
                 } else {
                     $responsetextcol = '';
                 }
+
                 $column->responsetext = $responsetextcol;
                 $column->responsetextformat = FORMAT_MOODLE;
                 $columns[] = $column;
             }
+
             $question->options->columns = $columns;
         }
     }
@@ -160,35 +174,57 @@ class qtype_kprime extends question_type {
         parent::get_question_options($question);
 
         // Retrieve the question options.
-        if ($qoptions = $DB->get_record('qtype_kprime_options',
-                ['questionid' => $question->id])) {
+        if (
+            $qoptions = $DB->get_record(
+                'qtype_kprime_options',
+                ['questionid' => $question->id]
+            )
+        ) {
             $question->options = $qoptions;
         } else {
             return false;
         }
 
         // Retrieve the question rows (kprime options).
-        if ($orows = $DB->get_records('qtype_kprime_rows',
+        if (
+            $orows = $DB->get_records(
+                'qtype_kprime_rows',
                 ['questionid' => $question->id],
-                'number ASC', '*', 0, $question->options->numberofrows)) {
+                'number ASC',
+                '*',
+                0,
+                $question->options->numberofrows
+            )
+        ) {
             $question->options->rows = $orows;
         } else {
             return false;
         }
 
         // Retrieve the question columns.
-        if ($ocols = $DB->get_records('qtype_kprime_columns',
+        if (
+            $ocols = $DB->get_records(
+                'qtype_kprime_columns',
                 ['questionid' => $question->id],
-                'number ASC', '*', 0, $question->options->numberofcolumns)) {
+                'number ASC',
+                '*',
+                0,
+                $question->options->numberofcolumns
+            )
+        ) {
             $question->options->columns = $ocols;
         } else {
             return false;
         }
 
         // Retrieve the question weights.
-        if (!$weightrecords = $DB->get_records('qtype_kprime_weights',
+        if (
+            !$weightrecords = $DB->get_records(
+                'qtype_kprime_weights',
                 ['questionid' => $question->id],
-                'rownumber ASC, columnnumber ASC')) {
+                'rownumber ASC, columnnumber ASC'
+            )
+        ) {
             return false;
         }
 
@@ -208,6 +244,7 @@ class qtype_kprime extends question_type {
                 $question->{'weightbutton_' . $weight->rownumber} = $weight->columnnumber;
             }
         }
+
         // Put the weight records into an array indexed by rownumber and columnnumber.
         $question->options->weights = $this->weight_records_to_array($weightrecords);
 
@@ -268,12 +305,22 @@ class qtype_kprime extends question_type {
             // Also save images in optiontext and feedback.
             $optiondata = $question->{'option_' . $i};
             $row->optiontext = $this->import_or_save_files(
-                    $optiondata, $context, 'qtype_kprime', 'optiontext', $row->id);
+                $optiondata,
+                $context,
+                'qtype_kprime',
+                'optiontext',
+                $row->id
+            );
 
             $row->optiontextformat = $question->{'option_' . $i}['format'];
             $optionfeedback = $question->{'feedback_' . $i};
             $row->optionfeedback = $this->import_or_save_files(
-                    $optionfeedback, $context, 'qtype_kprime', 'feedbacktext', $row->id);
+                $optionfeedback,
+                $context,
+                'qtype_kprime',
+                'feedbacktext',
+                $row->id
+            );
 
             $row->optionfeedbackformat = $question->{'feedback_' . $i}['format'];
 
@@ -284,7 +331,6 @@ class qtype_kprime extends question_type {
 
         // Insert all new columns.
         for ($i = 1; $i <= $options->numberofcolumns; ++$i) {
-
             $column = array_shift($oldcolumns);
 
             if (!$column) {
@@ -305,16 +351,17 @@ class qtype_kprime extends question_type {
         }
 
         // Set all the new weights.
-        $oldweightrecords = $DB->get_records('qtype_kprime_weights',
-                ['questionid' => $question->id],
-                'rownumber ASC, columnnumber ASC');
+        $oldweightrecords = $DB->get_records(
+            'qtype_kprime_weights',
+            ['questionid' => $question->id],
+            'rownumber ASC, columnnumber ASC'
+        );
 
         // Put the old weights into an array.
         $oldweights = $this->weight_records_to_array($oldweightrecords);
 
         for ($i = 1; $i <= $options->numberofrows; ++$i) {
             for ($j = 1; $j <= $options->numberofcolumns; ++$j) {
-
                 if (!empty($oldweights[$i][$j])) {
                     $weight = $oldweights[$i][$j];
                 } else {
@@ -365,11 +412,13 @@ class qtype_kprime extends question_type {
             } else {
                 $numclears = 0;
             }
+
             if (!empty($formdata->hintshownumcorrect)) {
                 $numshows = max(array_keys($formdata->hintshownumcorrect)) + 1;
             } else {
                 $numshows = 0;
             }
+
             $numhints = max($numhints, $numclears, $numshows);
         }
 
@@ -384,10 +433,12 @@ class qtype_kprime extends question_type {
                 $statewhichincorrect = !empty($formdata->hintoptions[$i]);
             }
 
-            if (empty($formdata->hint[$i]['text'])
-            && empty($clearwrong)
-            && empty($shownumcorrect)
-            && empty($statewhichincorrect)) {
+            if (
+                empty($formdata->hint[$i]['text'])
+                && empty($clearwrong)
+                && empty($shownumcorrect)
+                && empty($statewhichincorrect)
+            ) {
                 continue;
             }
 
@@ -408,6 +459,7 @@ class qtype_kprime extends question_type {
                 $hint->shownumcorrect = $shownumcorrect;
                 $hint->options = $statewhichincorrect;
             }
+
             $DB->update_record('question_hints', $hint);
         }
 
@@ -476,6 +528,7 @@ class qtype_kprime extends question_type {
             if (!property_exists((object) $weights, $weight->rownumber)) {
                 $weights[$weight->rownumber] = [];
             }
+
             $weights[$weight->rownumber][$weight->columnnumber] = $weight;
         }
 
@@ -513,7 +566,6 @@ class qtype_kprime extends question_type {
         $parts = [];
 
         foreach ($question->rows as $rowid => $row) {
-
             $choices = [];
             foreach ($question->columns as $columnid => $column) {
                 // Calculate the partial credit.
@@ -523,8 +575,10 @@ class qtype_kprime extends question_type {
                     $partialcredit = -0.999; // Due to non-linear math.
                 }
 
-                if ($question->scoringmethod == 'subpoints' &&
-                         $weights[$row->number][$column->number]->weight > 0) {
+                if (
+                    $question->scoringmethod == 'subpoints' &&
+                    $weights[$row->number][$column->number]->weight > 0
+                ) {
                     $partialcredit = 1 / count($question->rows);
                 }
 
@@ -535,10 +589,13 @@ class qtype_kprime extends question_type {
                 }
 
                 $choices[$columnid] = new question_possible_response(
-                        question_utils::to_plain_text($row->optiontext, $row->optiontextformat) .
+                    question_utils::to_plain_text($row->optiontext, $row->optiontextformat) .
                                  ': ' . question_utils::to_plain_text(
-                                        $column->responsetext . $correctreponse,
-                                        $column->responsetextformat), $partialcredit);
+                                     $column->responsetext . $correctreponse,
+                                     $column->responsetextformat
+                                 ),
+                    $partialcredit
+                );
             }
 
             $choices[null] = question_possible_response::no_response();
@@ -702,10 +759,16 @@ class qtype_kprime extends question_type {
         $question->shuffleanswers = $format->trans_single($format->getpath($data, ['#', 'shuffleanswers', 0, '#'], 1));
 
         $question->numberofrows = $format->getpath(
-                $data, ['#', 'numberofrows', 0, '#'], QTYPE_KPRIME_NUMBER_OF_OPTIONS);
+            $data,
+            ['#', 'numberofrows', 0, '#'],
+            QTYPE_KPRIME_NUMBER_OF_OPTIONS
+        );
 
         $question->numberofcolumns = $format->getpath(
-                $data, ['#', 'numberofcolumns', 0, '#'], QTYPE_KPRIME_NUMBER_OF_RESPONSES);
+            $data,
+            ['#', 'numberofcolumns', 0, '#'],
+            QTYPE_KPRIME_NUMBER_OF_RESPONSES
+        );
 
         $rows = $data['#']['row'];
         $i = 1;
@@ -716,10 +779,15 @@ class qtype_kprime extends question_type {
             $question->{'option_' . $number} = [];
 
             $question->{'option_' . $number}['text'] = $format->getpath(
-                    $row, ['#', 'optiontext', 0, '#', 'text', 0, '#'], '', true);
+                $row,
+                ['#', 'optiontext', 0, '#', 'text', 0, '#'],
+                '',
+                true
+            );
 
             $question->{'option_' . $number}['format'] = $format->trans_format(
-                    $format->getpath($row, ['#', 'optiontext', 0, '@', 'format'], FORMAT_HTML));
+                $format->getpath($row, ['#', 'optiontext', 0, '@', 'format'], FORMAT_HTML)
+            );
 
             $question->{'option_' . $number}['files'] = [];
 
@@ -737,10 +805,15 @@ class qtype_kprime extends question_type {
             $question->{'feedback_' . $number} = [];
 
             $question->{'feedback_' . $number}['text'] = $format->getpath(
-                    $row, ['#', 'feedbacktext', 0, '#', 'text', 0, '#'], '', true);
+                $row,
+                ['#', 'feedbacktext', 0, '#', 'text', 0, '#'],
+                '',
+                true
+            );
 
             $question->{'feedback_' . $number}['format'] = $format->trans_format(
-                    $format->getpath($row, ['#', 'feedbacktext', 0, '@', 'format'], FORMAT_HTML));
+                $format->getpath($row, ['#', 'feedbacktext', 0, '@', 'format'], FORMAT_HTML)
+            );
 
             // Restore files in option feedback.
             $question->{'feedback_' . $number}['files'] = [];
@@ -762,7 +835,11 @@ class qtype_kprime extends question_type {
         foreach ($columns as $column) {
             $number = $format->getpath($column, ['@', 'number'], $j++);
             $question->{'responsetext_' . $number} = $format->getpath(
-                    $column, ['#', 'responsetext', 0, '#', 'text', 0, '#'], '', true);
+                $column,
+                ['#', 'responsetext', 0, '#', 'text', 0, '#'],
+                '',
+                true
+            );
         }
 
         // Finally, import the weights.

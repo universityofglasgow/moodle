@@ -34,7 +34,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_kprime_question extends question_graded_automatically_with_countback {
-
     /** @var array rows */
     public $rows;
     /** @var array columns */
@@ -69,6 +68,7 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         if ($this->shuffleanswers) {
             shuffle($this->order);
         }
+
         $step->set_qt_var('_order', implode(',', $this->order));
     }
 
@@ -87,6 +87,7 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
             if (isset($this->rows[$this->order[$i]])) {
                 continue;
             }
+
             $a = new stdClass();
             $a->id = 0;
             $a->questionid = $this->id;
@@ -113,9 +114,11 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         if ($basemessage) {
             return $basemessage;
         }
+
         if (count($this->rows) != count($otherversion->rows)) {
             return get_string('numberchoicehaschanged', 'qtype_kprime');
         }
+
         return null;
     }
 
@@ -128,8 +131,7 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
      * @return array
      * @throws coding_exception
      */
-    public function update_attempt_state_data_for_new_version(
-                    question_attempt_step $oldstep, question_definition $otherversion) {
+    public function update_attempt_state_data_for_new_version(question_attempt_step $oldstep, question_definition $otherversion) {
 
         $startdata = parent::update_attempt_state_data_for_new_version($oldstep, $otherversion);
 
@@ -284,6 +286,7 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         if ($this->is_complete_response($response)) {
             return '';
         }
+
         return get_string('oneanswerperrow', 'qtype_kprime');
     }
 
@@ -300,6 +303,7 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
                 $numselected += 1;
             }
         }
+
         return $numselected;
     }
 
@@ -319,12 +323,15 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
                 foreach ($this->columns as $column) {
                     if ($column->number == $response[$field]) {
                         $result[] = $this->html_to_text($row->optiontext, $row->optiontextformat) .
-                                 ': ' . $this->html_to_text($column->responsetext,
-                                        $column->responsetextformat);
+                                 ': ' . $this->html_to_text(
+                                     $column->responsetext,
+                                     $column->responsetextformat
+                                 );
                     }
                 }
             }
         }
+
         return implode('; ', $result);
     }
 
@@ -338,7 +345,6 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         // See which column numbers have been selected.
         $selectedcolumns = [];
         foreach ($this->order as $key => $rowid) {
-
             $field = $this->field($key);
             $row = $this->rows[$rowid];
 
@@ -352,7 +358,6 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         // Now calculate the classification.
         $parts = [];
         foreach ($this->rows as $rowid => $row) {
-
             $field = $this->field($key);
             if (empty($selectedcolumns[$rowid])) {
                 $parts[$rowid] = question_classified_response::no_response();
@@ -367,15 +372,16 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
                     break;
                 }
             }
-            // Calculate the partial credit.
-            if ($this->scoringmethod == 'subpoints') {
-                $partialcredit = 0.0;
-            } else {
-                $partialcredit = -999; // Due to non-linear math.
-            }
 
-            if ($this->scoringmethod == 'subpoints' && $this->weights[$row->number][$column->number]->weight > 0) {
-                $partialcredit = 1 / count($this->rows);
+            // Calculate the partial credit.
+            $partialcredit = 0;
+
+            /*
+             * For Analysis of responses needs and due to non-linear math the fraction is set to 1
+             * for kprime and kprime1/0 scoring method. This way we are able to determine correct responses
+             */
+            if ($this->weights[$row->number][$column->number]->weight > 0) {
+                $partialcredit = $this->scoringmethod == 'subpoints' ? (1 / count($this->rows)) : 1;
             }
 
             $parts[$rowid] = new question_classified_response($column->id, $column->responsetext, $partialcredit);
@@ -399,10 +405,12 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         if (count($prevresponse) != count($newresponse)) {
             return false;
         }
+
         foreach ($prevresponse as $field => $previousvalue) {
             if (!isset($newresponse[$field])) {
                 return false;
             }
+
             $newvalue = $newresponse[$field];
             if ($newvalue != $previousvalue) {
                 return false;
@@ -565,6 +573,7 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
         if (is_null($hint)) {
             return $hint;
         }
+
         return $hint;
     }
 
@@ -583,15 +592,17 @@ class qtype_kprime_question extends question_graded_automatically_with_countback
             return true;
         } else if ($component == 'qtype_kprime' && $filearea == 'feedbacktext') {
             return true;
-        } else if ($component == 'question'
-                    && in_array($filearea, ['correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback'])) {
-
+        } else if (
+            $component == 'question' && in_array(
+                $filearea,
+                ['correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback']
+            )
+        ) {
             if ($this->editedquestion == 1) {
                 return true;
             } else {
                 return $this->check_combined_feedback_file_access($qa, $options, $filearea);
             }
-
         } else if ($component == 'question' && $filearea == 'hint') {
             return $this->check_hint_file_access($qa, $options, $args);
         } else {

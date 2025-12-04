@@ -39,7 +39,6 @@ require_once($CFG->dirroot . '/question/type/kprime/grading/qtype_kprime_grading
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_kprime_grading_kprimeonezero extends qtype_kprime_grading {
-
     /** @var string TYPE */
     const TYPE = 'kprimeonezero';
 
@@ -74,6 +73,7 @@ class qtype_kprime_grading_kprimeonezero extends qtype_kprime_grading {
                 ++$correctrows;
             }
         }
+
         // Kprime1/0: if all responses are correct => all points, else 0 points.
         // i.e. points = if (correct_responses == num_options) then max_points else 0.
         if ($correctrows == $question->numberofrows) {

@@ -44,7 +44,6 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @group       qtype_kprime
  */
 final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
-
     /**
      * (non-PHPdoc)
      * @param int $index
@@ -161,7 +160,8 @@ final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
             $this->get_contains_kprime_radio_expectation(3, 1, true, false),
             $this->get_contains_kprime_radio_expectation(3, 2, true, true),
             $this->get_does_not_contain_correctness_expectation(),
-            $this->get_does_not_contain_feedback_expectation());
+            $this->get_does_not_contain_feedback_expectation()
+        );
         $this->quba->finish_all_questions();
         $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(1);

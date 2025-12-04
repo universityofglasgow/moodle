@@ -41,17 +41,27 @@ if ($ADMIN->fulltree) {
         'subpoints' => get_string('scoringsubpoints', 'qtype_kprime'),
     ];
 
-    $settings->add(new admin_setting_configselect('qtype_kprime/scoringmethod',
+    $settings->add(new admin_setting_configselect(
+        'qtype_kprime/scoringmethod',
         get_string('scoringmethod', 'qtype_kprime'),
-        get_string('scoringmethod_help', 'qtype_kprime'), 'kprime', $options));
+        get_string('scoringmethod_help', 'qtype_kprime'),
+        'kprime',
+        $options
+    ));
 
     // Show Scoring Method in quizes.
-    $settings->add(new admin_setting_configcheckbox('qtype_kprime/showscoringmethod',
+    $settings->add(new admin_setting_configcheckbox(
+        'qtype_kprime/showscoringmethod',
         get_string('showscoringmethod', 'qtype_kprime'),
-        get_string('showscoringmethod_help', 'qtype_kprime'), 0));
+        get_string('showscoringmethod_help', 'qtype_kprime'),
+        0
+    ));
 
     // Shuffle options.
-    $settings->add(new admin_setting_configcheckbox('qtype_kprime/shuffleanswers',
+    $settings->add(new admin_setting_configcheckbox(
+        'qtype_kprime/shuffleanswers',
         get_string('shuffleanswers', 'qtype_kprime'),
-        get_string('shuffleanswers_help', 'qtype_kprime'), 1));
+        get_string('shuffleanswers_help', 'qtype_kprime'),
+        1
+    ));
 }

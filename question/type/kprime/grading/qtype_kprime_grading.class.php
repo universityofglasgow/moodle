@@ -35,7 +35,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class qtype_kprime_grading {
-
     /**
      * Returns the scoringmethod name.
      * @return string
@@ -71,6 +70,7 @@ abstract class qtype_kprime_grading {
         if (!$question->is_answered($answers, $key)) {
             return 0;
         }
+
         $field = $question->field($key);
         $answercolumn = $answers[$field];
         if ($question->is_correct($row, $answercolumn)) {

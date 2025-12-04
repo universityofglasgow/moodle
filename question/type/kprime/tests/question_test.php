@@ -42,7 +42,6 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @group       qtype_kprime
  */
 final class question_test extends \advanced_testcase {
-
     /**
      * Makes a qtype_sc question.
      * @return qtype_kprime
@@ -148,8 +147,10 @@ final class question_test extends \advanced_testcase {
     public function test_get_expected_data(): void {
         $question = $this->make_a_kprime_question();
         $question->order = array_keys($question->rows);
-        $this->assertEquals(['option0' => PARAM_INT, 'option1' => PARAM_INT, 'option2' => PARAM_INT, 'option3' => PARAM_INT],
-            $question->get_expected_data());
+        $this->assertEquals(
+            ['option0' => PARAM_INT, 'option1' => PARAM_INT, 'option2' => PARAM_INT, 'option3' => PARAM_INT],
+            $question->get_expected_data()
+        );
     }
 
     /**
@@ -223,12 +224,14 @@ final class question_test extends \advanced_testcase {
         $question = $this->make_a_kprime_question();
         $question->shuffleanswers = 1;
         $question->start_attempt(new \question_attempt_step(), 1);
-        $this->assertEquals( $question->order, $question->get_order(\test_question_maker::get_a_qa($question)));
+        $this->assertEquals($question->order, $question->get_order(\test_question_maker::get_a_qa($question)));
         unset($question);
         $question = $this->make_a_kprime_question();
         $question->start_attempt(new \question_attempt_step(), 1);
-        $this->assertEquals( [0 => 1, 1 => 2, 2 => 3, 3 => 4],
-            $question->get_order(\test_question_maker::get_a_qa($question)));
+        $this->assertEquals(
+            [0 => 1, 1 => 2, 2 => 3, 3 => 4],
+            $question->get_order(\test_question_maker::get_a_qa($question))
+        );
     }
 
     /**
@@ -258,31 +261,40 @@ final class question_test extends \advanced_testcase {
         $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertTrue($question->is_same_response(
             [],
-            []));
+            []
+        ));
         $this->assertFalse($question->is_same_response(
             [],
-            ['option0' => '1']));
+            ['option0' => '1']
+        ));
         $this->assertTrue($question->is_same_response(
             ['option0' => '1'],
-            ['option0' => '1']));
+            ['option0' => '1']
+        ));
         $this->assertFalse($question->is_same_response(
             ['option0' => '1'],
-            ['option0' => '2']));
+            ['option0' => '2']
+        ));
         $this->assertFalse($question->is_same_response(
             ['option0' => '1'],
-            ['option1' => '1']));
+            ['option1' => '1']
+        ));
         $this->assertFalse($question->is_same_response(
             ['option0' => '1'],
-            ['option1' => '2']));
+            ['option1' => '2']
+        ));
         $this->assertTrue($question->is_same_response(
             ['option0' => '1', 'option1' => '1'],
-            ['option0' => '1', 'option1' => '1']));
+            ['option0' => '1', 'option1' => '1']
+        ));
         $this->assertFalse($question->is_same_response(
             ['option0' => '1', 'option1' => '1'],
-            ['option0' => '1', 'option1' => '2']));
+            ['option0' => '1', 'option1' => '2']
+        ));
         $this->assertFalse($question->is_same_response(
             ['option0' => '1', 'option1' => '1'],
-            ['option0' => '1', 'option2' => '2']));
+            ['option0' => '1', 'option2' => '2']
+        ));
     }
 
     /**
@@ -293,8 +305,10 @@ final class question_test extends \advanced_testcase {
     public function test_grading(): void {
         $question = $this->make_a_kprime_question();
         $question->start_attempt(new \question_attempt_step(), 1);
-        $this->assertEquals(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'],
-        $question->get_correct_response());
+        $this->assertEquals(
+            ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'],
+            $question->get_correct_response()
+        );
     }
 
     /**
@@ -305,8 +319,10 @@ final class question_test extends \advanced_testcase {
     public function test_summarise_response(): void {
         $question = $this->make_a_kprime_question();
         $question->start_attempt(new \question_attempt_step(), 1);
-        $summary = $question->summarise_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'],
-        \test_question_maker::get_a_qa($question));
+        $summary = $question->summarise_response(
+            ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'],
+            \test_question_maker::get_a_qa($question)
+        );
         $this->assertEquals('option text 1: True; option text 2: True; option text 3: False; option text 4: False', $summary);
     }
 
@@ -319,16 +335,20 @@ final class question_test extends \advanced_testcase {
         $question = $this->make_a_kprime_question();
         $question->start_attempt(new \question_attempt_step(), 1);
 
-        $this->assertEquals(['1' => new \question_classified_response(1, 'True', 0.25),
+        $this->assertEquals(
+            ['1' => new \question_classified_response(1, 'True', 0.25),
             '2' => new \question_classified_response(1, 'True', 0.25),
             '3' => new \question_classified_response(2, 'False', 0.25),
             '4' => new \question_classified_response(2, 'False', 0.25), ],
-            $question->classify_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2']));
-        $this->assertEquals(['1' => \question_classified_response::no_response(),
+            $question->classify_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])
+        );
+        $this->assertEquals(
+            ['1' => \question_classified_response::no_response(),
             '2' => \question_classified_response::no_response(),
             '3' => \question_classified_response::no_response(),
             '4' => \question_classified_response::no_response(), ],
-            $question->classify_response([]));
+            $question->classify_response([])
+        );
     }
 
     /**
@@ -340,10 +360,14 @@ final class question_test extends \advanced_testcase {
         $question = $this->make_a_kprime_question();
         $this->assertEquals('Frog', $question->make_html_inline('<p>Frog</p>'));
         $this->assertEquals('Frog<br />Toad', $question->make_html_inline("<p>Frog</p>\n<p>Toad</p>"));
-        $this->assertEquals('<img src="http://example.com/pic.png" alt="Graph" />',
-        $question->make_html_inline('<p><img src="http://example.com/pic.png" alt="Graph" /></p>'));
-        $this->assertEquals("Frog<br />XXX <img src='http://example.com/pic.png' alt='Graph' />",
-        $question->make_html_inline(" <p> Frog </p> \n\r<p> XXX <img src='http://example.com/pic.png' alt='Graph' /> </p> "));
+        $this->assertEquals(
+            '<img src="http://example.com/pic.png" alt="Graph" />',
+            $question->make_html_inline('<p><img src="http://example.com/pic.png" alt="Graph" /></p>')
+        );
+        $this->assertEquals(
+            "Frog<br />XXX <img src='http://example.com/pic.png' alt='Graph' />",
+            $question->make_html_inline(" <p> Frog </p> \n\r<p> XXX <img src='http://example.com/pic.png' alt='Graph' /> </p> ")
+        );
         $this->assertEquals('Frog', $question->make_html_inline('<p>Frog</p><p></p>'));
         $this->assertEquals('Frog<br />†', $question->make_html_inline('<p>Frog</p><p>†</p>'));
     }
@@ -368,31 +392,43 @@ final class question_test extends \advanced_testcase {
     public function test_compute_final_grade_subpoints(): void {
         $question = $this->make_a_kprime_question();
         $question->start_attempt(new \question_attempt_step(), 1);
-        $this->assertEquals('1.0', $question->compute_final_grade([
+        $this->assertEquals('1.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.5', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.5', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '2', 'option1' => '2', 'option2' => '1', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.6666667', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.6666667', $question->compute_final_grade(
+            [
             0 => [],
             1 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.3333334', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.3333334', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => [],
             3 => [],
             4 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
+            1
+        ));
     }
 
     /**
@@ -404,55 +440,81 @@ final class question_test extends \advanced_testcase {
         $question = $this->make_a_kprime_question();
         $question->scoringmethod = 'kprime';
         $question->start_attempt(new \question_attempt_step(), 1);
-        $this->assertEquals('1.0', $question->compute_final_grade([
+        $this->assertEquals('1.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.5', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.5', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.5', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.5', $question->compute_final_grade(
+            [
             0 => ['option0' => '2', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '1', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '2', 'option2' => '1', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '2', 'option1' => '2', 'option2' => '1', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.5', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.5', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '1'], ],
-            1));
-        $this->assertEquals('0.6666667', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.6666667', $question->compute_final_grade(
+            [
             0 => [],
             1 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.3333334', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.3333334', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => [],
             3 => [],
             4 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.1666667', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.1666667', $question->compute_final_grade(
+            [
             0 => [],
             1 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'], ],
-            1));
+            1
+        ));
     }
 
     /**
@@ -464,31 +526,43 @@ final class question_test extends \advanced_testcase {
         $question = $this->make_a_kprime_question();
         $question->scoringmethod = 'kprimeonezero';
         $question->start_attempt(new \question_attempt_step(), 1);
-        $this->assertEquals('1.0', $question->compute_final_grade([
+        $this->assertEquals('1.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => ['option0' => '1', 'option1' => '1', 'option2' => '2'], ],
-            1));
-        $this->assertEquals('0.6666667', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.6666667', $question->compute_final_grade(
+            [
             0 => [],
             1 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.3333334', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.3333334', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
-        $this->assertEquals('0.0', $question->compute_final_grade([
+            1
+        ));
+        $this->assertEquals('0.0', $question->compute_final_grade(
+            [
             0 => [],
             1 => [],
             2 => [],
             3 => [],
             4 => ['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'], ],
-            1));
+            1
+        ));
     }
 
     /**
@@ -500,13 +574,21 @@ final class question_test extends \advanced_testcase {
         $question = $this->make_a_kprime_question();
         $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(
-            "1.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])[0]);
+            "1.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])[0]
+        );
         $this->assertEquals(
-            "0.75", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '1', 'option3' => '2'])[0]);
+            "0.75",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '1', 'option3' => '2'])[0]
+        );
         $this->assertEquals(
-            "0.75", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2'])[0]);
+            "0.75",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2'])[0]
+        );
         $this->assertEquals(
-            "0.0", $question->grade_response(['option0' => '2', 'option1' => '2', 'option2' => '1', 'option3' => '1'])[0]);
+            "0.0",
+            $question->grade_response(['option0' => '2', 'option1' => '2', 'option2' => '1', 'option3' => '1'])[0]
+        );
     }
 
     /**
@@ -519,15 +601,25 @@ final class question_test extends \advanced_testcase {
         $question->scoringmethod = 'kprime';
         $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(
-            "1.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])[0]);
+            "1.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])[0]
+        );
         $this->assertEquals(
-            "0.5", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'])[0]);
+            "0.5",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'])[0]
+        );
         $this->assertEquals(
-            "0.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '1', 'option3' => '1'])[0]);
+            "0.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '1', 'option3' => '1'])[0]
+        );
         $this->assertEquals(
-            "0.5", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2'])[0]);
+            "0.5",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2'])[0]
+        );
         $this->assertEquals(
-            "0.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '1'])[0]);
+            "0.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '1'])[0]
+        );
     }
 
     /**
@@ -540,10 +632,16 @@ final class question_test extends \advanced_testcase {
         $question->scoringmethod = 'kprimeonezero';
         $question->start_attempt(new \question_attempt_step(), 1);
         $this->assertEquals(
-            "1.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])[0]);
+            "1.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '2'])[0]
+        );
         $this->assertEquals(
-            "0.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'])[0]);
+            "0.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2', 'option3' => '1'])[0]
+        );
         $this->assertEquals(
-            "0.0", $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2'])[0]);
+            "0.0",
+            $question->grade_response(['option0' => '1', 'option1' => '1', 'option2' => '2'])[0]
+        );
     }
 }

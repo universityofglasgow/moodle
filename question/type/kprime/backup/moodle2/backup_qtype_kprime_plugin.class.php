@@ -30,7 +30,6 @@
  * Provides the backup for qtype_kprime questions.
  */
 class backup_qtype_kprime_plugin extends backup_qtype_plugin {
-
     /**
      * Returns the qtype information to attach to the question element.
      */
@@ -46,11 +45,17 @@ class backup_qtype_kprime_plugin extends backup_qtype_plugin {
         $plugin->add_child($pluginwrapper);
 
         // Now create the qtype own structures.
-        $kprime = new backup_nested_element('kprime', ['id'],
-                ['scoringmethod', 'shuffleanswers', 'numberofrows', 'numberofcolumns']);
+        $kprime = new backup_nested_element(
+            'kprime',
+            ['id'],
+            ['scoringmethod', 'shuffleanswers', 'numberofrows', 'numberofcolumns']
+        );
         $rows = new backup_nested_element('rows');
-        $row = new backup_nested_element('row', ['id'],
-                ['number', 'optiontext', 'optiontextformat', 'optionfeedback', 'optionfeedbackformat']);
+        $row = new backup_nested_element(
+            'row',
+            ['id'],
+            ['number', 'optiontext', 'optiontextformat', 'optionfeedback', 'optionfeedbackformat']
+        );
         $columns = new backup_nested_element('columns');
         $column = new backup_nested_element('column', ['id'], ['number', 'responsetext', 'responsetextformat']);
         $weights = new backup_nested_element('weights');

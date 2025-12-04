@@ -59,14 +59,51 @@ Feature: Step 7
     Then I should see "Mark 0.00 out of 1.00"
 
   @javascript @_switch_window @qtype_kprime_scenario_14_1
-  Scenario: Testcase 14 - Part 1 for Moodle ≥ 4.3
+  Scenario: Testcase 14 - Part 1 for Moodle ≥ 4.3 and Moodle ≤ 4.5
     Given the site is running Moodle version 4.3 or higher
+    And the site is running Moodle version 4.5 or lower
 
   # Change scoring Method to KPrime1/0 and test evaluation.
   # If everything correct -> Max. Points
   # If one or more incorrect -> 0 Points
 
     When I choose "Edit question" action for "Kprime Question 3" in the question bank
+    And I click on "Scoring method" "link"
+    And I click on "id_scoringmethod_kprimeonezero" "radio"
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    Then I should see "Questiontext for Question 1"
+    And I should see "Scoring method: Kprime1/0"
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 1.00 out of 1.00"
+    And I press "Start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.00 out of 1.00"
+
+
+  @javascript @_switch_window @qtype_kprime_scenario_14_1
+  Scenario: Testcase 14 - Part 1 for Moodle ≥ 5.0
+    Given the site is running Moodle version 5.0 or higher
+
+  # Change scoring Method to KPrime1/0 and test evaluation.
+  # If everything correct -> Max. Points
+  # If one or more incorrect -> 0 Points
+
+    When I navigate to "Question banks" in current page administration
+    And I follow "System shared question bank"
+    And I choose "Edit question" action for "Kprime Question 3" in the question bank
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_kprimeonezero" "radio"
     And I press "id_updatebutton"
@@ -140,8 +177,9 @@ Feature: Step 7
     Then I should see "Mark 0.00 out of 1.00"
 
   @javascript @_switch_window
-  Scenario: Testcase 14 - Part 2 for Moodle ≥ 4.3
+  Scenario: Testcase 14 - Part 2 for Moodle ≥ 4.3 and Moodle ≤ 4.5
     Given the site is running Moodle version 4.3 or higher
+    And the site is running Moodle version 4.5 or lower
 
   # Change scoring Method to Subpoints and test evaluation.
   # For each correct answer you should get subpoints.
@@ -149,6 +187,56 @@ Feature: Step 7
   # but dont't fill out all options
 
     When I choose "Edit question" action for "Kprime Question 3" in the question bank
+    And I click on "Scoring method" "link"
+    And I click on "id_scoringmethod_subpoints" "radio"
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    Then I should see "Questiontext for Question 1"
+    And I should see "Scoring method: Subpoints"
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 1.00 out of 1.00"
+    When I press "Start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.75 out of 1.00"
+    When I press "Start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.50 out of 1.00"
+    When I press "Start again"
+    And I click on "tr:contains('option text 1') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.00 out of 1.00"
+
+  @javascript @_switch_window
+  Scenario: Testcase 14 - Part 2 for Moodle ≥ 5.0
+    Given the site is running Moodle version 5.0 or higher
+
+  # Change scoring Method to Subpoints and test evaluation.
+  # For each correct answer you should get subpoints.
+  # You should also get subpoints if you answer some correctly
+  # but dont't fill out all options
+
+    When I navigate to "Question banks" in current page administration
+    And I follow "System shared question bank"
+    And I choose "Edit question" action for "Kprime Question 3" in the question bank
     And I click on "Scoring method" "link"
     And I click on "id_scoringmethod_subpoints" "radio"
     And I press "id_updatebutton"
@@ -226,8 +314,9 @@ Feature: Step 7
     Then I should see "Mark 0.00 out of 1.00"
 
   @javascript @_switch_window
-  Scenario: Testcase 14 - Part 3 for Moodle ≥ 4.3
+  Scenario: Testcase 14 - Part 3 for Moodle ≥ 4.3 and Moodle ≤ 4.5
     Given the site is running Moodle version 4.3 or higher
+    And the site is running Moodle version 4.5 or lower
 
   # Change scoring Method to KPrime and test evaluation.
 
@@ -263,14 +352,75 @@ Feature: Step 7
     And I press "Check"
     Then I should see "Mark 0.00 out of 1.00"
 
+
   @javascript @_switch_window
-  Scenario: Testcase 14 - Part 4
+  Scenario: Testcase 14 - Part 3 for Moodle ≥ 5.0
+    Given the site is running Moodle version 5.0 or higher
+
+  # Change scoring Method to KPrime and test evaluation.
+
+    When I navigate to "Question banks" in current page administration
+    And I follow "System shared question bank"
+    And I choose "Edit question" action for "Kprime Question 3" in the question bank
+    And I click on "Scoring method" "link"
+    And I click on "id_scoringmethod_kprime" "radio"
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    Then I should see "Questiontext for Question 1"
+    And I should see "Scoring method: Kprime"
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 1.00 out of 1.00"
+    And I press "Start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=2]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.50 out of 1.00"
+    And I press "Start again"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 3') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 4') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.00 out of 1.00"
+
+  @javascript @_switch_window
+  Scenario: Testcase 14 - Part 4 for Moodle ≤ 4.5
+    Given the site is running Moodle version 4.5 or lower
 
   # Edit true and false fields.
   # They should be editable and the values
   # get actualised in the answer options
 
     When I choose "Edit question" action for "Kprime Question 3" in the question bank
+    And I set the field "id_responsetext_1" to "Red Answer"
+    And I set the field "id_responsetext_2" to "Blue Answer"
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    Then I should see "Red Answer"
+    And I should see "Blue Answer"
+
+  @javascript @_switch_window
+  Scenario: Testcase 14 - Part 4 for Moodle ≥ 5.0
+    Given the site is running Moodle version 5.0 or higher
+
+  # Edit true and false fields.
+  # They should be editable and the values
+  # get actualised in the answer options
+
+    When I navigate to "Question banks" in current page administration
+    And I follow "System shared question bank"
+    And I choose "Edit question" action for "Kprime Question 3" in the question bank
     And I set the field "id_responsetext_1" to "Red Answer"
     And I set the field "id_responsetext_2" to "Blue Answer"
     And I press "id_updatebutton"
