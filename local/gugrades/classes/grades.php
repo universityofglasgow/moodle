@@ -388,48 +388,8 @@ class grades {
             throw new \moodle_exception('Attempting to open GRADE_TYPE_NONE category');
         }
 
-        $gradecategories = $DB->get_records('grade_categories', [
-            'courseid' => $courseid,
-        ]);
+        $category->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($categoryid);
 
-        // Note if there were *any* resit category candidates.
-        $anyresitcandidates = false;
-
-        // Remove any GRADE_TYPE_NONE categories.
-        $even = false;
-        /*
-        foreach ($gradecategories as $id => $gradecategory) {
-            if (self::is_gradecategory_grade_type_none($gradecategory)) {
-                unset($gradecategories[$id]);
-                continue;
-            }
-
-            // Add gradeitemid.
-            $gradecategories[$id]->itemid = self::get_gradeitemid_from_gradecategoryid($id);
-
-            // Add aggregation strategy.
-            $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
-            $gradecategories[$id]->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($id);
-            $gradecategories[$id]->info = (object) \local_gugrades\api::get_grade_item($gradecategories[$id]->itemid);
-
-            // Add reset candidate.
-            $resitcandidate = self::is_resit_category_candidate($id);
-            $gradecategories[$id]->resitcandidate = $resitcandidate;
-            $gradecategories[$id]->resititemid = self::get_resit_itemid($id);
-            if ($resitcandidate) {
-                $anyresitcandidates = true;
-            }
-
-            // Add odd/even for style to second level only.
-            $level = self::get_category_level($id);
-            if ($level == 2) {
-                $gradecategories[$id]->even = $even;
-                $even = !$even;
-            } else {
-                $gradecategories[$id]->even = false;
-            }
-        }
-            */
         $categorytree = self::recurse_activitytree($category);
 
         return $categorytree;

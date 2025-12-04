@@ -16,7 +16,7 @@
             <span v-if="!item.info.isscale">&nbsp;({{ parseFloat(item.grademax) }})</span>
         </td>
         <td>
-            <span v-if="showeights">{{ item.info.weight }}%</span>
+            <span v-if="showeights" :style="indentstyle">{{ item.info.weight }}%</span>
         </td>
     </tr>
     <template v-for="category in props.nodes.categories" :key="category.id">
