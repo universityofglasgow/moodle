@@ -28,7 +28,6 @@
  * Provides the backup for mtf questions.
  */
 class backup_qtype_mtf_plugin extends backup_qtype_plugin {
-
     /**
      * Returns the qtype information to attach to the question element.
      */
@@ -41,15 +40,21 @@ class backup_qtype_mtf_plugin extends backup_qtype_plugin {
         $plugin->add_child($pluginwrapper);
 
         // Now create the qtype own structures.
-        $mtf = new backup_nested_element('mtf', array('id'),
-                array('scoringmethod', 'shuffleanswers', 'numberofrows', 'numberofcolumns', 'answernumbering', 'deduction'));
+        $mtf = new backup_nested_element(
+            'mtf',
+            ['id'],
+            ['scoringmethod', 'shuffleanswers', 'numberofrows', 'numberofcolumns', 'answernumbering', 'deduction']
+        );
         $rows = new backup_nested_element('rows');
-        $row = new backup_nested_element('row', array('id'),
-                array('number', 'optiontext', 'optiontextformat', 'optionfeedback', 'optionfeedbackformat'));
+        $row = new backup_nested_element(
+            'row',
+            ['id'],
+            ['number', 'optiontext', 'optiontextformat', 'optionfeedback', 'optionfeedbackformat']
+        );
         $columns = new backup_nested_element('columns');
-        $column = new backup_nested_element('column', array('id'), array('number', 'responsetext', 'responsetextformat'));
+        $column = new backup_nested_element('column', ['id'], ['number', 'responsetext', 'responsetextformat']);
         $weights = new backup_nested_element('weights');
-        $weight = new backup_nested_element('weight', array('id'), array('rownumber', 'columnnumber', 'weight'));
+        $weight = new backup_nested_element('weight', ['id'], ['rownumber', 'columnnumber', 'weight']);
 
         // Now the qtype tree.
         $pluginwrapper->add_child($mtf);
@@ -61,10 +66,10 @@ class backup_qtype_mtf_plugin extends backup_qtype_plugin {
         $weights->add_child($weight);
 
         // Set sources to populate the data.
-        $mtf->set_source_table('qtype_mtf_options', array('questionid' => backup::VAR_PARENTID));
-        $row->set_source_table('qtype_mtf_rows', array('questionid' => backup::VAR_PARENTID), 'number ASC');
-        $column->set_source_table('qtype_mtf_columns', array('questionid' => backup::VAR_PARENTID), 'number ASC');
-        $weight->set_source_table('qtype_mtf_weights', array('questionid' => backup::VAR_PARENTID));
+        $mtf->set_source_table('qtype_mtf_options', ['questionid' => backup::VAR_PARENTID]);
+        $row->set_source_table('qtype_mtf_rows', ['questionid' => backup::VAR_PARENTID], 'number ASC');
+        $column->set_source_table('qtype_mtf_columns', ['questionid' => backup::VAR_PARENTID], 'number ASC');
+        $weight->set_source_table('qtype_mtf_weights', ['questionid' => backup::VAR_PARENTID]);
 
         return $plugin;
     }
@@ -75,6 +80,6 @@ class backup_qtype_mtf_plugin extends backup_qtype_plugin {
      * files to be processed both in backup and restore.
      */
     public static function get_qtype_fileareas() {
-        return array('optiontext' => 'qtype_mtf_rows', 'feedbacktext' => 'qtype_mtf_rows');
+        return ['optiontext' => 'qtype_mtf_rows', 'feedbacktext' => 'qtype_mtf_rows'];
     }
 }

@@ -34,7 +34,6 @@ require_once($CFG->dirroot . '/question/type/mtf/grading/qtype_mtf_grading_subpo
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_mtf_grading_subpointdeduction extends qtype_mtf_grading_subpoints {
-
     /** @var string TYPE */
     const TYPE = 'subpointdeduction';
 

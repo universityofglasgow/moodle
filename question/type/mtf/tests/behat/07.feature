@@ -22,7 +22,9 @@ Feature: Step 7
     And I navigate to "Question bank" in current page administration
 
   @javascript
-  Scenario: Testcase 10, 11 A
+  Scenario: Testcase 10, 11 A for Moodle ≤ 4.5
+
+    Given the site is running Moodle version 4.5 or lower
   # Change scoring Method to MTF1/0 and test evaluation.
 
     When I choose "Edit question" action for "MTF-Question-001" in the question bank
@@ -45,7 +47,35 @@ Feature: Step 7
     Then I should see "Mark 0.00 out of 1.00"
 
   @javascript
-  Scenario: Testcase 10, 11 B
+  Scenario: Testcase 10, 11 A for Moodle ≥ 5.0
+
+    Given the site is running Moodle version 5.0 or higher
+  # Change scoring Method to MTF1/0 and test evaluation.
+
+    When I follow "System shared question bank"
+    And I choose "Edit question" action for "MTF-Question-001" in the question bank
+    And I click on "Scoring method" "link"
+    And I click on "id_scoringmethod_mtfonezero" "radio"
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
+    And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
+    And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 1.00 out of 1.00"
+    And I press "Start again"
+    And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
+    And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.00 out of 1.00"
+
+  @javascript
+  Scenario: Testcase 10, 11 B for Moodle ≤ 4.5
+
+    Given the site is running Moodle version 4.5 or lower
   # Change scoring Method to Subpoints and test evaluation.
 
     When I choose "Edit question" action for "MTF-Question-001" in the question bank
@@ -57,6 +87,32 @@ Feature: Step 7
     And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
+    And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
+    And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 1.00 out of 1.00"
+    And I press "Start again"
+    And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
+    And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
+    And I press "Check"
+    Then I should see "Mark 0.50 out of 1.00"
+
+  @javascript
+  Scenario: Testcase 10, 11 B for Moodle ≥ 5.0
+
+    Given the site is running Moodle version 5.0 or higher
+  # Change scoring Method to Subpoints and test evaluation.
+
+    When I follow "System shared question bank"
+    And I choose "Edit question" action for "MTF-Question-001" in the question bank
+    And I click on "Scoring method" "link"
+    And I click on "id_scoringmethod_subpoints" "radio"
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=2]" "css_element"
     And I press "Check"

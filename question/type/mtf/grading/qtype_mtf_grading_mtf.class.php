@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/question/type/mtf/grading/qtype_mtf_grading.class
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_mtf_grading_mtf extends qtype_mtf_grading {
-
     /** @var string TYPE */
     const TYPE = 'mtf';
 

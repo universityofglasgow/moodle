@@ -28,8 +28,10 @@
 
 require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
 
+/**
+ * Behat qtype_mtf related steps definitions.
+ */
 class behat_qtype_mtf extends behat_base {
-
     /**
      * Return the list of partial named selectors.
      *
@@ -40,7 +42,7 @@ class behat_qtype_mtf extends behat_base {
             new behat_component_named_selector(
                 'icon',
                 ["//span[@role='img'][contains(@class, %locator%)]"]
-            )
+            ),
         ];
     }
 }

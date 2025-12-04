@@ -28,12 +28,11 @@
  * Restore plugin class that provides the necessary information needed to restore one mtf qtype plugin.
  */
 class restore_qtype_mtf_plugin extends restore_qtype_plugin {
-
     /**
      * Returns the paths to be handled by the plugin at question level.
      */
     protected function define_question_plugin_structure() {
-        $result = array();
+        $result = [];
 
         // We used get_recommended_name() so this works.
         $elename = 'mtf';
@@ -111,7 +110,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
             $data->questionid = $newquestionid;
             $newitemid = $DB->insert_record('qtype_mtf_columns', $data);
         } else {
-            $originalrecords = $DB->get_records('qtype_mtf_columns', array('questionid' => $newquestionid));
+            $originalrecords = $DB->get_records('qtype_mtf_columns', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
                 if ($data->number == $record->number) {
                     $newitemid = $record->id;
@@ -146,7 +145,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
             $data->questionid = $newquestionid;
             $newitemid = $DB->insert_record('qtype_mtf_rows', $data);
         } else {
-            $originalrecords = $DB->get_records('qtype_mtf_rows', array('questionid' => $newquestionid));
+            $originalrecords = $DB->get_records('qtype_mtf_rows', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
                 if ($data->number == $record->number) {
                     $newitemid = $record->id;
@@ -181,10 +180,12 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
             $data->questionid = $newquestionid;
             $newitemid = $DB->insert_record('qtype_mtf_weights', $data);
         } else {
-            $originalrecords = $DB->get_records('qtype_mtf_weights', array('questionid' => $newquestionid));
+            $originalrecords = $DB->get_records('qtype_mtf_weights', ['questionid' => $newquestionid]);
             foreach ($originalrecords as $record) {
-                if ($data->rownumber == $record->rownumber
-                    && $data->columnnumber == $record->columnnumber) {
+                if (
+                    $data->rownumber == $record->rownumber
+                    && $data->columnnumber == $record->columnnumber
+                ) {
                     $newitemid = $record->id;
                 }
             }
@@ -220,7 +221,7 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
      * @return string the recoded order.
      */
     protected function recode_option_order($order) {
-        $neworder = array();
+        $neworder = [];
         foreach (explode(',', $order) as $id) {
             if ($newid = $this->get_mappingid('qtype_mtf_rows', $id)) {
                 $neworder[] = $newid;
@@ -233,8 +234,8 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
      * Return the contents of this qtype to be processed by the links decoder.
      */
     public static function define_decode_contents() {
-        $contents = array();
-        $fields = array('optiontext', 'optionfeedback');
+        $contents = [];
+        $fields = ['optiontext', 'optionfeedback'];
         $contents[] = new restore_decode_content('qtype_mtf_rows', $fields, 'qtype_mtf_rows');
 
         return $contents;
@@ -252,13 +253,12 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
     public static function convert_backup_to_questiondata(array $backupdata): stdClass {
         // First, convert standard data via the parent function.
         $questiondata = parent::convert_backup_to_questiondata($backupdata);
-        /**
-        * Convert the row data. An array of all rows (as objects) is stored in $questiondata->options.
-        * Furthermore, there is the property $questiondata->option which contains an array of objects
-        * with the properties text (= row's optiontext field) and format (= row's optiontextformat field).
-        * And finally, there is the property $questiondata->feedback containing an array of objects with
-        * the properties text (= row's optionfeedback field) and format (= row's optionfeedbackformat field).
-        */
+
+        // Convert the row data. An array of all rows (as objects) is stored in $questiondata->options.
+        // Furthermore, there is the property $questiondata->option which contains an array of objects
+        // with the properties text (= row's optiontext field) and format (= row's optiontextformat field).
+        // And finally, there is the property $questiondata->feedback containing an array of objects with
+        // the properties text (= row's optionfeedback field) and format (= row's optionfeedbackformat field).
         $questiondata->option = [];
         $questiondata->feedback = [];
         foreach ($backupdata['plugin_qtype_mtf_question']['rows']['row'] as $row) {
@@ -272,21 +272,19 @@ class restore_qtype_mtf_plugin extends restore_qtype_plugin {
                 'format' => $row['optionfeedbackformat'],
             ];
         }
-        /**
-        * Next step is the column data. An array of all columns (as objects) is stored in $questiondata->columns.
-        * Furthermore, for every column N, a property $questiondata->responsetext_N must be created that holds the
-        * content of the column's responstext field.
-        */
+
+        // Next step is the column data. An array of all columns (as objects) is stored in $questiondata->columns.
+        // Furthermore, for every column N, a property $questiondata->responsetext_N must be created that holds the
+        // content of the column's responstext field.
         foreach ($backupdata['plugin_qtype_mtf_question']['columns']['column'] as $column) {
             $questiondata->options->columns[] = (object) $column;
             $field = 'responsetext_' . $column['number'];
             $questiondata->$field = $column['responsetext'];
         }
-        /**
-        * Finally, we have to store all weights in the $questiondata->weights property. That is a
-        * two-dimensional array, built like in qtype_mtf::weight_records_to_array(). Also, for every
-        * row, we store the number of the column that has a weight > 1.
-        */
+
+        // Finally, we have to store all weights in the $questiondata->weights property. That is a
+        // two-dimensional array, built like in qtype_mtf::weight_records_to_array(). Also, for every
+        // row, we store the number of the column that has a weight > 1.
         $weights = [];
         $questiondata->weightbutton = [];
         foreach ($backupdata['plugin_qtype_mtf_question']['weights']['weight'] as $weight) {

@@ -34,7 +34,6 @@ namespace qtype_mtf\output;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
-
     /**
      * Returns a test view.
      * @param object $args
@@ -52,11 +51,13 @@ class mobile {
         // this is just a section of that page, with all the access checking already done for us.
         // The full file path is required even though file_get_contents should work with relative paths.
         return [
-            'templates' => [[
+            'templates' => [
+                [
                 'id' => 'main',
-                'html' => file_get_contents($CFG->dirroot . "/question/type/mtf/mobile/mtf_$versionname.html")
-            ]],
-            'javascript' => file_get_contents($CFG->dirroot . '/question/type/mtf/mobile/mtf.js')
+                'html' => file_get_contents($CFG->dirroot . "/question/type/mtf/mobile/mtf_$versionname.html"),
+                ],
+            ],
+            'javascript' => file_get_contents($CFG->dirroot . '/question/type/mtf/mobile/mtf.js'),
         ];
     }
 }

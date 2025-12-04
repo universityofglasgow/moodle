@@ -31,7 +31,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_mtf_question extends question_graded_automatically_with_countback {
-
     /** @var array rows */
     public $rows;
     /** @var array columns */
@@ -52,6 +51,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
     public $order = null;
     /** @var bool editedquestion */
     public $editedquestion;
+    /** @var stdClass options */
+    public $options;
     /** @var string answernumbering */
     public $answernumbering;
 
@@ -68,6 +69,14 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         }
         $step->set_qt_var('_order', implode(',', $this->order));
     }
+
+    /**
+     * Validates whether regrading is possible with another version of the question.
+     *
+     * @param question_definition $otherversion
+     * @return string|null
+     * @throws coding_exception
+     */
     public function validate_can_regrade_with_other_version(question_definition $otherversion): ?string {
         $basemessage = parent::validate_can_regrade_with_other_version($otherversion);
         if ($basemessage) {
@@ -79,8 +88,15 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         return null;
     }
 
-    public function update_attempt_state_data_for_new_version(
-                    question_attempt_step $oldstep, question_definition $otherversion) {
+    /**
+     * Updates the attempt state data when a question has a new version.
+     *
+     * @param question_attempt_step $oldstep
+     * @param question_definition $otherversion
+     * @return array
+     * @throws coding_exception
+     */
+    public function update_attempt_state_data_for_new_version(question_attempt_step $oldstep, question_definition $otherversion) {
 
         $startdata = parent::update_attempt_state_data_for_new_version($oldstep, $otherversion);
 
@@ -271,7 +287,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      * @return string
      */
     public function summarise_response(array $response) {
-        $result = array();
+        $result = [];
 
         foreach ($this->order as $key => $rowid) {
             $field = $this->field($key);
@@ -281,8 +297,10 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
                 foreach ($this->columns as $column) {
                     if ($column->number == $response[$field]) {
                         $result[] = $this->html_to_text($row->optiontext, $row->optiontextformat) .
-                                 ': ' . $this->html_to_text($column->responsetext,
-                                        $column->responsetextformat);
+                                 ': ' . $this->html_to_text(
+                                     $column->responsetext,
+                                     $column->responsetextformat
+                                 );
                     }
                 }
             }
@@ -298,7 +316,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      */
     public function classify_response(array $response) {
         // See which column numbers have been selected.
-        $selectedcolumns = array();
+        $selectedcolumns = [];
         $weights = $this->weights;
         foreach ($this->order as $key => $rowid) {
             $field = $this->field($key);
@@ -311,7 +329,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
             }
         }
 
-        $parts = array();
+        $parts = [];
         // Now calculate the classification for MTF.
         foreach ($this->rows as $rowid => $row) {
             $field = $this->field($key);
@@ -337,12 +355,17 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
             } else {
                 $partialcredit = -0.999; // Due to non-linear math.
             }
-            if ($this->scoringmethod == 'subpoints' &&
-                     $this->weights[$row->number][$column->number]->weight > 0) {
+            if (
+                $this->scoringmethod == 'subpoints' &&
+                     $this->weights[$row->number][$column->number]->weight > 0
+            ) {
                 $partialcredit = 1 / count($this->rows);
             }
-            $parts[$rowid] = new question_classified_response($column->id, $column->responsetext,
-                    $partialcredit);
+            $parts[$rowid] = new question_classified_response(
+                $column->id,
+                $column->responsetext,
+                $partialcredit
+            );
         }
 
         return $parts;
@@ -384,7 +407,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      * @return array
      */
     public function get_correct_response($rowidindex = false) {
-        $result = array();
+        $result = [];
         foreach ($this->order as $key => $rowid) {
             $row = $this->rows[$rowid];
             $field = $this->field($key);
@@ -429,8 +452,8 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
         $grade = $this->grading()->grade_question($this, $response);
         $state = question_state::graded_state_for_fraction($grade);
 
-        return array($grade, $state
-        );
+        return [$grade, $state,
+        ];
     }
 
     /**
@@ -443,7 +466,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      *         meaning take all the raw submitted data belonging to this question.
      */
     public function get_expected_data() {
-        $result = array();
+        $result = [];
         foreach ($this->order as $key => $notused) {
             $field = $this->field($key);
             $result[$field] = PARAM_INT;
@@ -458,7 +481,7 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
      * @return array
      */
     public function cells() {
-        $result = array();
+        $result = [];
         foreach ($this->order as $key => $rowid) {
             $row = $this->rows[$rowid];
             $field = $this->field($key);
@@ -550,8 +573,10 @@ class qtype_mtf_question extends question_graded_automatically_with_countback {
             return true;
         } else if ($component == 'qtype_mtf' && $filearea == 'feedbacktext') {
             return true;
-        } else if ($component == 'question'
-            && in_array($filearea, array('correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback'))) {
+        } else if (
+            $component == 'question'
+            && in_array($filearea, ['correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback'])
+        ) {
             if ($this->editedquestion == 1) {
                 return true;
             } else {

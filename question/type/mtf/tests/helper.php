@@ -35,13 +35,12 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_mtf_test_helper extends question_test_helper {
-
     /**
      * Get predefined questions
      * @return array
      */
     public function get_test_questions() {
-        return array('question_one', 'question_two', 'question_three', 'question_four');
+        return ['question_one', 'question_two', 'question_three', 'question_four'];
     }
 
     /**
@@ -81,78 +80,78 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->options->shuffleanswers = 0;
         $qdata->options->numberofrows = 2;
         $qdata->options->numberofcolumns = 2;
-        $qdata->options->rows = array(
-            5 => (object) array(
+        $qdata->options->rows = [
+            5 => (object) [
                 "id" => 5,
                 "questionid" => 5,
                 "number" => 1,
                 "optiontext" => "option text 1",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 1",
-                "optionfeedbackformat" => 1
-            ),
-            6 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            6 => (object) [
                 "id" => 6,
                 "questionid" => 5,
                 "number" => 2,
                 "optiontext" => "option text 2",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 2",
-                "optionfeedbackformat" => 1
-            )
-        );
-        $qdata->options->columns = array(
-            3 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+        ];
+        $qdata->options->columns = [
+            3 => (object) [
                 "id" => 3,
                 "questionid" => 5,
                 "number" => 1,
                 "responsetext" => "True",
-                "responsetextformat" => 0
-            ),
-            4 => (object) array(
+                "responsetextformat" => 0,
+            ],
+            4 => (object) [
                 "id" => 4,
                 "questionid" => 5,
                 "number" => 2,
                 "responsetext" => "False",
-                "responsetextformat" => 0
-            )
-        );
-        $qdata->options->weights = array(
-            1 => array(
-                1 => (object) array (
+                "responsetextformat" => 0,
+            ],
+        ];
+        $qdata->options->weights = [
+            1 => [
+                1 => (object)  [
                     "id" => 15,
                     "questionid" => 5,
                     "rownumber" => 1,
                     "columnnumber" => 1,
-                    "weight" => 1.000
-                ),
-                2 => (object) array (
+                    "weight" => 1.000,
+                ],
+                2 => (object)  [
                     "id" => 16,
                     "questionid" => 5,
                     "rownumber" => 1,
                     "columnnumber" => 2,
-                    "weight" => 0.000
-                )
-            ),
-            2 => array(
-                1 => (object) array (
+                    "weight" => 0.000,
+                ],
+            ],
+            2 => [
+                1 => (object)  [
                     "id" => 17,
                     "questionid" => 5,
                     "rownumber" => 2,
                     "columnnumber" => 1,
-                    "weight" => 0.000
-                ),
-                2 => (object) array (
+                    "weight" => 0.000,
+                ],
+                2 => (object)  [
                     "id" => 17,
                     "questionid" => 5,
                     "rownumber" => 2,
                     "columnnumber" => 2,
-                    "weight" => 1.000
-                )
-            )
-        );
-        $qdata->hints = array(
-            0 => (object) array(
+                    "weight" => 1.000,
+                ],
+            ],
+        ];
+        $qdata->hints = [
+            0 => (object) [
                 "questionid" => 5,
                 "id" => 3,
                 "hint" => "This is the 1st hint",
@@ -160,17 +159,17 @@ class qtype_mtf_test_helper extends question_test_helper {
                 "options" => 0,
                 "shownumcorrect" => 0,
                 "clearwrong" => 0,
-            ),
-            1 => (object) array(
+            ],
+            1 => (object) [
                 "questionid" => 5,
                 "id" => 4,
                 "hint" => "This is the 2nd hint",
                 "hintformat" => 1,
                 "options" => 0,
                 "shownumcorrect" => 0,
-                "clearwrong" => 0
-            )
-        );
+                "clearwrong" => 0,
+            ],
+        ];
         return $qdata;
     }
 
@@ -188,14 +187,14 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-001';
         $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
-        $qdata->questiontext = array(
+        $qdata->questiontext = [
             "text" => 'Questiontext for Question 1',
-            'format' => FORMAT_HTML
-        );
-        $qdata->generalfeedback = array(
+            'format' => FORMAT_HTML,
+        ];
+        $qdata->generalfeedback = [
             "text" => 'This feedback is general',
-            'format' => FORMAT_HTML
-        );
+            'format' => FORMAT_HTML,
+        ];
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
@@ -206,52 +205,52 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
         $qdata->deduction = 0.0;
-        $qdata->option = array(
-            0 => array(
+        $qdata->option = [
+            0 => [
                 "text" => "option text 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "option text 2",
                 "format" => 1,
-                "itemid" => 2
-            )
-        );
-        $qdata->feedback = array(
-            0 => array(
+                "itemid" => 2,
+            ],
+        ];
+        $qdata->feedback = [
+            0 => [
                 "text" => "feedback to option 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "feedback to option 2",
                 "format" => 1,
-                "itemid" => 2
-            )
-        );
-        $qdata->weightbutton = array(
+                "itemid" => 2,
+            ],
+        ];
+        $qdata->weightbutton = [
             0 => 1,
-            1 => 2
-        );
+            1 => 2,
+        ];
         $qdata->responsetext_1 = "True";
         $qdata->responsetext_2 = "False";
-        $qdata->hint = array(
-            0 => array(
+        $qdata->hint = [
+            0 => [
                 'text' => 'This is the 1st hint',
                 'format' => FORMAT_HTML,
                 'hintshownumcorrect' => 1,
                 'hintclearwrong' => 0,
                 'options' => 0,
-            ),
-            1  => array(
+            ],
+            1  => [
                 'text' => 'This is the 2nd hint',
                 'format' => FORMAT_HTML,
                 'hintshownumcorrect' => 1,
                 'hintclearwrong' => 1,
-                'options' => 1
-            )
-        );
+                'options' => 1,
+            ],
+        ];
         return $qdata;
     }
 
@@ -292,228 +291,228 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->options->shuffleanswers = 1;
         $qdata->options->numberofrows = 8;
         $qdata->options->numberofcolumns = 2;
-        $qdata->options->rows = array(
-            5 => (object) array(
+        $qdata->options->rows = [
+            5 => (object) [
                 "id" => 5,
                 "questionid" => 5,
                 "number" => 1,
                 "optiontext" => "option text 1",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 1",
-                "optionfeedbackformat" => 1
-            ),
-            6 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            6 => (object) [
                 "id" => 6,
                 "questionid" => 5,
                 "number" => 2,
                 "optiontext" => "option text 2",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 2",
-                "optionfeedbackformat" => 1
-            ),
-            7 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            7 => (object) [
                 "id" => 7,
                 "questionid" => 5,
                 "number" => 3,
                 "optiontext" => "option text 3",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 3",
-                "optionfeedbackformat" => 1
-            ),
-            8 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            8 => (object) [
                 "id" => 8,
                 "questionid" => 5,
                 "number" => 4,
                 "optiontext" => "option text 4",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 4",
-                "optionfeedbackformat" => 1
-            ),
-            9 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            9 => (object) [
                 "id" => 9,
                 "questionid" => 5,
                 "number" => 5,
                 "optiontext" => "option text 5",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 5",
-                "optionfeedbackformat" => 1
-            ),
-            10 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            10 => (object) [
                 "id" => 10,
                 "questionid" => 5,
                 "number" => 6,
                 "optiontext" => "option text 6",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 6",
-                "optionfeedbackformat" => 1
-            ),
-            11 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            11 => (object) [
                 "id" => 11,
                 "questionid" => 5,
                 "number" => 7,
                 "optiontext" => "option text 7",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 7",
-                "optionfeedbackformat" => 1
-            ),
-            12 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            12 => (object) [
                 "id" => 12,
                 "questionid" => 5,
                 "number" => 8,
                 "optiontext" => "option text 8",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 8",
-                "optionfeedbackformat" => 1
-            )
-        );
-        $qdata->options->columns = array(
-            3 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+        ];
+        $qdata->options->columns = [
+            3 => (object) [
                 "id" => 3,
                 "questionid" => 5,
                 "number" => 1,
                 "responsetext" => "True",
-                "responsetextformat" => 0
-            ),
-            4 => (object) array(
+                "responsetextformat" => 0,
+            ],
+            4 => (object) [
                 "id" => 4,
                 "questionid" => 5,
                 "number" => 2,
                 "responsetext" => "False",
-                "responsetextformat" => 0
-            )
-        );
-        $qdata->options->weights = array(
-            1 => array(
-                1 => (object) array (
+                "responsetextformat" => 0,
+            ],
+        ];
+        $qdata->options->weights = [
+            1 => [
+                1 => (object)  [
                     "id" => 15,
                     "questionid" => 5,
                     "rownumber" => 1,
                     "columnnumber" => 1,
-                    "weight" => 1.000
-                ),
-                2 => (object) array (
+                    "weight" => 1.000,
+                ],
+                2 => (object)  [
                     "id" => 16,
                     "questionid" => 5,
                     "rownumber" => 1,
                     "columnnumber" => 2,
-                    "weight" => 0.000
-                )
-            ),
-            2 => array(
-                1 => (object) array (
+                    "weight" => 0.000,
+                ],
+            ],
+            2 => [
+                1 => (object)  [
                     "id" => 17,
                     "questionid" => 5,
                     "rownumber" => 2,
                     "columnnumber" => 1,
-                    "weight" => 1.000
-                ),
-                2 => (object) array (
+                    "weight" => 1.000,
+                ],
+                2 => (object)  [
                     "id" => 17,
                     "questionid" => 5,
                     "rownumber" => 2,
                     "columnnumber" => 2,
-                    "weight" => 0.000
-                )
-            ),
-            3 => array(
-                1 => (object) array (
+                    "weight" => 0.000,
+                ],
+            ],
+            3 => [
+                1 => (object)  [
                     "id" => 18,
                     "questionid" => 5,
                     "rownumber" => 3,
                     "columnnumber" => 1,
-                    "weight" => 1.000
-                ),
-                2 => (object) array (
+                    "weight" => 1.000,
+                ],
+                2 => (object)  [
                     "id" => 19,
                     "questionid" => 5,
                     "rownumber" => 3,
                     "columnnumber" => 2,
-                    "weight" => 0.000
-                )
-            ),
-            4 => array(
-                1 => (object) array (
+                    "weight" => 0.000,
+                ],
+            ],
+            4 => [
+                1 => (object)  [
                     "id" => 20,
                     "questionid" => 5,
                     "rownumber" => 4,
                     "columnnumber" => 1,
-                    "weight" => 1.000
-                ),
-                2 => (object) array (
+                    "weight" => 1.000,
+                ],
+                2 => (object)  [
                     "id" => 21,
                     "questionid" => 5,
                     "rownumber" => 4,
                     "columnnumber" => 2,
-                    "weight" => 0.000
-                )
-            ),
-            5 => array(
-                1 => (object) array (
+                    "weight" => 0.000,
+                ],
+            ],
+            5 => [
+                1 => (object)  [
                     "id" => 22,
                     "questionid" => 5,
                     "rownumber" => 5,
                     "columnnumber" => 1,
-                    "weight" => 0.000
-                ),
-                2 => (object) array (
+                    "weight" => 0.000,
+                ],
+                2 => (object)  [
                     "id" => 23,
                     "questionid" => 5,
                     "rownumber" => 5,
                     "columnnumber" => 2,
-                    "weight" => 1.000
-                )
-            ),
-            6 => array(
-                1 => (object) array (
+                    "weight" => 1.000,
+                ],
+            ],
+            6 => [
+                1 => (object)  [
                     "id" => 24,
                     "questionid" => 5,
                     "rownumber" => 6,
                     "columnnumber" => 1,
-                    "weight" => 0.000
-                ),
-                2 => (object) array (
+                    "weight" => 0.000,
+                ],
+                2 => (object)  [
                     "id" => 25,
                     "questionid" => 5,
                     "rownumber" => 6,
                     "columnnumber" => 2,
-                    "weight" => 1.000
-                )
-            ),
-            7 => array(
-                1 => (object) array (
+                    "weight" => 1.000,
+                ],
+            ],
+            7 => [
+                1 => (object)  [
                     "id" => 26,
                     "questionid" => 5,
                     "rownumber" => 7,
                     "columnnumber" => 1,
-                    "weight" => 0.000
-                ),
-                2 => (object) array (
+                    "weight" => 0.000,
+                ],
+                2 => (object)  [
                     "id" => 27,
                     "questionid" => 5,
                     "rownumber" => 7,
                     "columnnumber" => 2,
-                    "weight" => 1.000
-                )
-            ),
-            8 => array(
-                1 => (object) array (
+                    "weight" => 1.000,
+                ],
+            ],
+            8 => [
+                1 => (object)  [
                     "id" => 28,
                     "questionid" => 5,
                     "rownumber" => 8,
                     "columnnumber" => 1,
-                    "weight" => 0.000
-                ),
-                2 => (object) array (
+                    "weight" => 0.000,
+                ],
+                2 => (object)  [
                     "id" => 29,
                     "questionid" => 5,
                     "rownumber" => 8,
                     "columnnumber" => 2,
-                    "weight" => 1.000
-                )
-            )
-        );
-        $qdata->hints = array(
-            0 => (object) array(
+                    "weight" => 1.000,
+                ],
+            ],
+        ];
+        $qdata->hints = [
+            0 => (object) [
                 "questionid" => 5,
                 "id" => 3,
                 "hint" => "This is the 1st hint",
@@ -521,17 +520,17 @@ class qtype_mtf_test_helper extends question_test_helper {
                 "options" => 0,
                 "shownumcorrect" => 0,
                 "clearwrong" => 0,
-            ),
-            1 => (object) array(
+            ],
+            1 => (object) [
                 "questionid" => 5,
                 "id" => 4,
                 "hint" => "This is the 2nd hint",
                 "hintformat" => 1,
                 "options" => 0,
                 "shownumcorrect" => 0,
-                "clearwrong" => 0
-            )
-        );
+                "clearwrong" => 0,
+            ],
+        ];
         return $qdata;
     }
 
@@ -555,14 +554,14 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-002';
-        $qdata->questiontext = array(
+        $qdata->questiontext = [
             "text" => 'Questiontext for Question 2',
-            'format' => FORMAT_HTML
-        );
-        $qdata->generalfeedback = array(
+            'format' => FORMAT_HTML,
+        ];
+        $qdata->generalfeedback = [
             "text" => 'This feedback is general',
-            'format' => FORMAT_HTML
-        );
+            'format' => FORMAT_HTML,
+        ];
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
@@ -573,91 +572,91 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
         $qdata->deduction = 0.0;
-        $qdata->option = array(
-            0 => array(
+        $qdata->option = [
+            0 => [
                 "text" => "option text 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "option text 2",
                 "format" => 1,
-                "itemid" => 2
-            ),
-            2 => array(
+                "itemid" => 2,
+            ],
+            2 => [
                 "text" => "option text 3",
                 "format" => 1,
-                "itemid" => 3
-            ),
-            3 => array(
+                "itemid" => 3,
+            ],
+            3 => [
                 "text" => "option text 4",
                 "format" => 1,
-                "itemid" => 4
-            ),
-            4 => array(
+                "itemid" => 4,
+            ],
+            4 => [
                 "text" => "option text 5",
                 "format" => 1,
-                "itemid" => 5
-            ),
-            5 => array(
+                "itemid" => 5,
+            ],
+            5 => [
                 "text" => "option text 6",
                 "format" => 1,
-                "itemid" => 6
-            ),
-            6 => array(
+                "itemid" => 6,
+            ],
+            6 => [
                 "text" => "option text 7",
                 "format" => 1,
-                "itemid" => 7
-            ),
-            7 => array(
+                "itemid" => 7,
+            ],
+            7 => [
                 "text" => "option text 8",
                 "format" => 1,
-                "itemid" => 8
-            )
-        );
-        $qdata->feedback = array(
-            0 => array(
+                "itemid" => 8,
+            ],
+        ];
+        $qdata->feedback = [
+            0 => [
                 "text" => "feedback to option 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "feedback to option 2",
                 "format" => 1,
-                "itemid" => 2
-            ),
-            2 => array(
+                "itemid" => 2,
+            ],
+            2 => [
                 "text" => "feedback to option 3",
                 "format" => 1,
-                "itemid" => 3
-            ),
-            3 => array(
+                "itemid" => 3,
+            ],
+            3 => [
                 "text" => "feedback to option 4",
                 "format" => 1,
-                "itemid" => 4
-            ),
-            4 => array(
+                "itemid" => 4,
+            ],
+            4 => [
                 "text" => "feedback to option 5",
                 "format" => 1,
-                "itemid" => 5
-            ),
-            5 => array(
+                "itemid" => 5,
+            ],
+            5 => [
                 "text" => "feedback to option 6",
                 "format" => 1,
-                "itemid" => 6
-            ),
-            6 => array(
+                "itemid" => 6,
+            ],
+            6 => [
                 "text" => "feedback to option 7",
                 "format" => 1,
-                "itemid" => 7
-            ),
-            7 => array(
+                "itemid" => 7,
+            ],
+            7 => [
                 "text" => "feedback to option 8",
                 "format" => 1,
-                "itemid" => 8
-            )
-        );
-        $qdata->weightbutton = array(
+                "itemid" => 8,
+            ],
+        ];
+        $qdata->weightbutton = [
             0 => 1,
             1 => 1,
             2 => 1,
@@ -665,26 +664,26 @@ class qtype_mtf_test_helper extends question_test_helper {
             4 => 2,
             5 => 2,
             6 => 2,
-            7 => 2
-        );
+            7 => 2,
+        ];
         $qdata->responsetext_1 = "True";
         $qdata->responsetext_2 = "False";
-        $qdata->hint = array(
-            0 => array(
+        $qdata->hint = [
+            0 => [
                 'text' => 'This is the 1st hint',
                 'format' => FORMAT_HTML,
                 'hintshownumcorrect' => 1,
                 'hintclearwrong' => 0,
                 'options' => 0,
-            ),
-            1  => array(
+            ],
+            1  => [
                 'text' => 'This is the 2nd hint',
                 'format' => FORMAT_HTML,
                 'hintshownumcorrect' => 1,
                 'hintclearwrong' => 1,
                 'options' => 1,
-            )
-        );
+            ],
+        ];
         return $qdata;
     }
 
@@ -700,14 +699,14 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-003';
-        $qdata->questiontext = array(
+        $qdata->questiontext = [
             "text" => 'Questiontext for Question 3',
-            'format' => FORMAT_HTML
-        );
-        $qdata->generalfeedback = array(
+            'format' => FORMAT_HTML,
+        ];
+        $qdata->generalfeedback = [
             "text" => 'This feedback is general',
-            'format' => FORMAT_HTML
-        );
+            'format' => FORMAT_HTML,
+        ];
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
@@ -718,91 +717,91 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
         $qdata->deduction = 0.0;
-        $qdata->option = array(
-            0 => array(
+        $qdata->option = [
+            0 => [
                 "text" => "option text 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "option text 2",
                 "format" => 1,
-                "itemid" => 2
-            ),
-            2 => array(
+                "itemid" => 2,
+            ],
+            2 => [
                 "text" => "option text 3",
                 "format" => 1,
-                "itemid" => 3
-            ),
-            3 => array(
+                "itemid" => 3,
+            ],
+            3 => [
                 "text" => "option text 4",
                 "format" => 1,
-                "itemid" => 4
-            ),
-            4 => array(
+                "itemid" => 4,
+            ],
+            4 => [
                 "text" => "option text 5",
                 "format" => 1,
-                "itemid" => 5
-            ),
-            5 => array(
+                "itemid" => 5,
+            ],
+            5 => [
                 "text" => "option text 6",
                 "format" => 1,
-                "itemid" => 6
-            ),
-            6 => array(
+                "itemid" => 6,
+            ],
+            6 => [
                 "text" => "option text 7",
                 "format" => 1,
-                "itemid" => 7
-            ),
-            7 => array(
+                "itemid" => 7,
+            ],
+            7 => [
                 "text" => "option text 8",
                 "format" => 1,
-                "itemid" => 8
-            )
-        );
-        $qdata->feedback = array(
-            0 => array(
+                "itemid" => 8,
+            ],
+        ];
+        $qdata->feedback = [
+            0 => [
                 "text" => "feedback to option 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "feedback to option 2",
                 "format" => 1,
-                "itemid" => 2
-            ),
-            2 => array(
+                "itemid" => 2,
+            ],
+            2 => [
                 "text" => "feedback to option 3",
                 "format" => 1,
-                "itemid" => 3
-            ),
-            3 => array(
+                "itemid" => 3,
+            ],
+            3 => [
                 "text" => "feedback to option 4",
                 "format" => 1,
-                "itemid" => 4
-            ),
-            4 => array(
+                "itemid" => 4,
+            ],
+            4 => [
                 "text" => "feedback to option 5",
                 "format" => 1,
-                "itemid" => 5
-            ),
-            5 => array(
+                "itemid" => 5,
+            ],
+            5 => [
                 "text" => "feedback to option 6",
                 "format" => 1,
-                "itemid" => 6
-            ),
-            6 => array(
+                "itemid" => 6,
+            ],
+            6 => [
                 "text" => "feedback to option 7",
                 "format" => 1,
-                "itemid" => 7
-            ),
-            7 => array(
+                "itemid" => 7,
+            ],
+            7 => [
                 "text" => "feedback to option 8",
                 "format" => 1,
-                "itemid" => 8
-            )
-        );
-        $qdata->weightbutton = array(
+                "itemid" => 8,
+            ],
+        ];
+        $qdata->weightbutton = [
             0 => 1,
             1 => 1,
             2 => 1,
@@ -810,8 +809,8 @@ class qtype_mtf_test_helper extends question_test_helper {
             4 => 2,
             5 => 2,
             6 => 2,
-            7 => 2
-        );
+            7 => 2,
+        ];
         $qdata->responsetext_1 = "True";
         $qdata->responsetext_2 = "False";
         return $qdata;
@@ -829,14 +828,14 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $qdata->qtype = 'mtf';
         $qdata->name = 'MTF-Question-004';
-        $qdata->questiontext = array(
+        $qdata->questiontext = [
             "text" => 'Questiontext for Question 4',
-            'format' => FORMAT_HTML
-        );
-        $qdata->generalfeedback = array(
+            'format' => FORMAT_HTML,
+        ];
+        $qdata->generalfeedback = [
             "text" => 'This feedback is general',
-            'format' => FORMAT_HTML
-        );
+            'format' => FORMAT_HTML,
+        ];
         $qdata->defaultmark = 1;
         $qdata->length = 1;
         $qdata->penalty = 0.3333333;
@@ -847,91 +846,91 @@ class qtype_mtf_test_helper extends question_test_helper {
         $qdata->numberofcolumns = 2;
         $qdata->answernumbering = 123;
         $qdata->deduction = 0.0;
-        $qdata->option = array(
-            0 => array(
+        $qdata->option = [
+            0 => [
                 "text" => "option text 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "option text 2",
                 "format" => 1,
-                "itemid" => 2
-            ),
-            2 => array(
+                "itemid" => 2,
+            ],
+            2 => [
                 "text" => "option text 3",
                 "format" => 1,
-                "itemid" => 3
-            ),
-            3 => array(
+                "itemid" => 3,
+            ],
+            3 => [
                 "text" => "option text 4",
                 "format" => 1,
-                "itemid" => 4
-            ),
-            4 => array(
+                "itemid" => 4,
+            ],
+            4 => [
                 "text" => "option text 5",
                 "format" => 1,
-                "itemid" => 5
-            ),
-            5 => array(
+                "itemid" => 5,
+            ],
+            5 => [
                 "text" => "option text 6",
                 "format" => 1,
-                "itemid" => 6
-            ),
-            6 => array(
+                "itemid" => 6,
+            ],
+            6 => [
                 "text" => "option text 7",
                 "format" => 1,
-                "itemid" => 7
-            ),
-            7 => array(
+                "itemid" => 7,
+            ],
+            7 => [
                 "text" => "option text 8",
                 "format" => 1,
-                "itemid" => 8
-            )
-        );
-        $qdata->feedback = array(
-            0 => array(
+                "itemid" => 8,
+            ],
+        ];
+        $qdata->feedback = [
+            0 => [
                 "text" => "feedback to option 1",
                 "format" => 1,
-                "itemid" => 1
-            ),
-            1 => array(
+                "itemid" => 1,
+            ],
+            1 => [
                 "text" => "feedback to option 2",
                 "format" => 1,
-                "itemid" => 2
-            ),
-            2 => array(
+                "itemid" => 2,
+            ],
+            2 => [
                 "text" => "feedback to option 3",
                 "format" => 1,
-                "itemid" => 3
-            ),
-            3 => array(
+                "itemid" => 3,
+            ],
+            3 => [
                 "text" => "feedback to option 4",
                 "format" => 1,
-                "itemid" => 4
-            ),
-            4 => array(
+                "itemid" => 4,
+            ],
+            4 => [
                 "text" => "feedback to option 5",
                 "format" => 1,
-                "itemid" => 5
-            ),
-            5 => array(
+                "itemid" => 5,
+            ],
+            5 => [
                 "text" => "feedback to option 6",
                 "format" => 1,
-                "itemid" => 6
-            ),
-            6 => array(
+                "itemid" => 6,
+            ],
+            6 => [
                 "text" => "feedback to option 7",
                 "format" => 1,
-                "itemid" => 7
-            ),
-            7 => array(
+                "itemid" => 7,
+            ],
+            7 => [
                 "text" => "feedback to option 8",
                 "format" => 1,
-                "itemid" => 8
-            )
-        );
-        $qdata->weightbutton = array(
+                "itemid" => 8,
+            ],
+        ];
+        $qdata->weightbutton = [
             0 => 1,
             1 => 1,
             2 => 1,
@@ -939,26 +938,26 @@ class qtype_mtf_test_helper extends question_test_helper {
             4 => 2,
             5 => 2,
             6 => 2,
-            7 => 2
-        );
+            7 => 2,
+        ];
         $qdata->responsetext_1 = "True";
         $qdata->responsetext_2 = "False";
-        $qdata->hint = array(
-            0 => array(
+        $qdata->hint = [
+            0 => [
                 'text' => 'This is the 1st hint',
                 'format' => FORMAT_HTML,
                 'hintshownumcorrect' => 1,
                 'hintclearwrong' => 0,
                 'options' => 0,
-            ),
-            1  => array(
+            ],
+            1  => [
                 'text' => 'This is the 2nd hint',
                 'format' => FORMAT_HTML,
                 'hintshownumcorrect' => 1,
                 'hintclearwrong' => 1,
                 'options' => 1,
-            )
-        );
+            ],
+        ];
         return $qdata;
     }
 }
