@@ -66,6 +66,7 @@
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import PleaseWait from '@/components/PleaseWait.vue';
+    import { useLogo } from '@/js/monochromelogo.js';
 
     const showreleasemodal = ref(false);
     const loading = ref(false);
@@ -75,6 +76,8 @@
     const emit = defineEmits(['released']);
 
     const toast = useToast();
+
+    const {monochrome, updateLogo} = useLogo();
 
     const props = defineProps({
         gradeitemid: Number,
@@ -116,6 +119,7 @@
         .then(() => {
             emit('released');
             showreleasemodal.value = false;
+            updateLogo();
             toast.success(mstrings.gradesreleased);
         })
         .catch((error) => {
@@ -147,6 +151,7 @@
         .then(() => {
             emit('released');
             showreleasemodal.value = false;
+            updateLogo();
             toast.success(mstrings.gradesunreleased);
         })
         .catch((error) => {

@@ -32,45 +32,14 @@
     import { useToast } from "vue-toastification";
     import ResetButton from '@/components/ResetButton.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
+    import { useLogo } from '@/js/monochromelogo.js';
 
     const mstrings = inject('mstrings');
     const disabledashboard = ref(false);
     const gradesreleased = ref(true);
 
     const toast = useToast();
-
-    /**
-     * Get current state of dashboard enabled/disabled
-     */
-    function get_dashboard_enabled() {
-        const GU = window.GU;
-        const courseid = GU.courseid;
-        const fetchMany = GU.fetchMany;
-
-        fetchMany([{
-            methodname: 'local_gugrades_get_dashboard_enabled',
-            args: {
-                courseid: courseid,
-            }
-        }])[0]
-        .then((result) => {
-            gradesreleased.value = result.gradesreleased;
-            const enabled = result.enabled;
-
-            // Bodge to get jQuery needed for Bootstrap JS.
-            const $ = window.jQuery;
-
-            //if (enabled) {
-            //    $('#mygradeslogo').css('filter', 'grayscale(0)');
-            //} else {
-            //    $('#mygradeslogo').css('filter', 'grayscale(1)');
-            //}
-        })
-        .catch((error) => {
-            window.console.error(error);
-            debug.value = error;
-        });
-    }
+    const {setmonochrome, updateLogo} = useLogo();
 
     /**
      * Submit button clicked
@@ -94,7 +63,7 @@
             }
         }])[0]
         .then(() => {
-            get_dashboard_enabled();
+            updateLogo();
             toast.success(mstrings.settingssaved);
         })
         .catch((error) => {
@@ -111,7 +80,7 @@
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
 
-        get_dashboard_enabled();
+        updateLogo();
 
         fetchMany([{
             methodname: 'local_gugrades_get_settings',

@@ -180,7 +180,7 @@
 </template>
 
 <script setup>
-    import {ref, computed, inject, watch, defineEmits, onMounted} from '@vue/runtime-core';
+    import {ref, computed, inject, watch, onMounted} from '@vue/runtime-core';
     import NameFilter from '@/components/NameFilter.vue';
     import CaptureSelect from '@/components/CaptureSelect.vue';
     import CaptureMenu from '@/components/CaptureMenu.vue';
@@ -193,6 +193,7 @@
     import PleaseWait from '@/components/PleaseWait.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import CustomPagination from '@/components/CustomPagination.vue';
+    import { useLogo } from '@/js/monochromelogo.js';
 
     const users = ref([]);
     const userids = ref([]);
@@ -241,12 +242,12 @@
     const collapseclasses = ref(['collapse', 'show']);
     const caneditgrades = ref(false);
     const toast = useToast();
-    const emit = defineEmits(['refreshlogo']);
     // pagination related.
     const dataTable = ref();
     const props = {
         dataTable: dataTable,
     }
+    const {monochrome, updateLogo} = useLogo();
 
     /**
      * onMounted, get write grades capability
@@ -744,7 +745,7 @@
      */
     function refresh() {
         get_page_data(itemid.value, groupid.value);
-        emit('refreshlogo');
+        updateLogo();
     }
 
     /**
