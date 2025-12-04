@@ -14,7 +14,7 @@
         <div v-else>
 
             <!-- already imported warning-->
-            <div class="alert alert-warning">
+            <div class="alert" :class="importclass">
                 <div class="row">
                     <div v-if="is_importgrades" class="col-md-10 col">
                         {{ mstrings.gradesimported }}
@@ -159,6 +159,14 @@
     const loading = ref(false);
     const debug = ref({});
     const mstrings = inject('mstrings');
+
+    /**
+     * What kind of alert do you get?
+     */
+    const importclass = computed(() => ({
+        'alert-warning' : is_importgrades.value,
+        'alert-info' : !is_importgrades.value,
+    }));
 
     /**
      * Options for NS/NS0 dropdown
