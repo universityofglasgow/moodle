@@ -38,7 +38,6 @@ require_once($CFG->dirroot . '/question/engine/bank.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_kprime_edit_form extends question_edit_form {
-
     /** @var int numberofrows */
     private $numberofrows;
     /** @var int numberofcolumns */
@@ -78,34 +77,52 @@ class qtype_kprime_edit_form extends question_edit_form {
             $mform->addElement('questioncategory', 'category', get_string('category', 'question'), ['contexts' => $contexts]);
         } else if (!($this->question->formoptions->canmove || $this->question->formoptions->cansaveasnew)) {
             // Editing question with no permission to move from category.
-            $mform->addElement('questioncategory', 'category', get_string('category', 'question'),
-                            ['contexts' => [$this->categorycontext]]);
+            $mform->addElement(
+                'questioncategory',
+                'category',
+                get_string('category', 'question'),
+                ['contexts' => [$this->categorycontext]]
+            );
             $mform->addElement('hidden', 'usecurrentcat', 1);
             $mform->setType('usecurrentcat', PARAM_BOOL);
             $mform->setConstant('usecurrentcat', 1);
         } else {
             // Editing question with permission to move from category or save as new q.
             $currentgrp = [];
-            $currentgrp[0] = $mform->createElement('questioncategory', 'category', get_string('categorycurrent', 'question'),
-                                                ['contexts' => [$this->categorycontext]]);
+            $currentgrp[0] = $mform->createElement(
+                'questioncategory',
+                'category',
+                get_string('categorycurrent', 'question'),
+                ['contexts' => [$this->categorycontext]]
+            );
             // Validate if the question is being duplicated.
             $beingcopied = false;
             if (isset($this->question->beingcopied)) {
                 $beingcopied = $this->question->beingcopied;
             }
+
             if (($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew) && ($beingcopied)) {
                 // Not move only form.
-                $currentgrp[1] = $mform->createElement('checkbox', 'usecurrentcat', '',
-                                                    get_string('categorycurrentuse', 'question'));
+                $currentgrp[1] = $mform->createElement(
+                    'checkbox',
+                    'usecurrentcat',
+                    '',
+                    get_string('categorycurrentuse', 'question')
+                );
                 $mform->setDefault('usecurrentcat', 1);
             }
+
             $currentgrp[0]->freeze();
             $currentgrp[0]->setPersistantFreeze(false);
             $mform->addGroup($currentgrp, 'currentgrp', get_string('categorycurrent', 'question'), null, false);
 
             if (($beingcopied)) {
-                $mform->addElement('questioncategory', 'categorymoveto', get_string('categorymoveto', 'question'),
-                                ['contexts' => [$this->categorycontext]]);
+                $mform->addElement(
+                    'questioncategory',
+                    'categorymoveto',
+                    get_string('categorymoveto', 'question'),
+                    ['contexts' => [$this->categorycontext]]
+                );
                 if ($this->question->formoptions->canedit || $this->question->formoptions->cansaveasnew) {
                     // Not move only form.
                     $mform->disabledIf('categorymoveto', 'usecurrentcat', 'checked');
@@ -113,8 +130,10 @@ class qtype_kprime_edit_form extends question_edit_form {
             }
         }
 
-        if (class_exists('qbank_editquestion\\editquestion_helper') &&
-            !empty($this->question->id) && !$this->question->beingcopied) {
+        if (
+            class_exists('qbank_editquestion\\editquestion_helper') &&
+            !empty($this->question->id) && !$this->question->beingcopied
+        ) {
             // Add extra information from plugins when editing a question (e.g.: Authors, version control and usage).
             $functionname = 'edit_form_display';
             $questiondata = [];
@@ -124,8 +143,13 @@ class qtype_kprime_edit_form extends question_edit_form {
                 $element->pluginhtml = component_callback($componentname, $functionname, [$this->question]);
                 $questiondata['editelements'][] = $element;
             }
-            $mform->addElement('static', 'versioninfo', get_string('versioninfo', 'qbank_editquestion'),
-                            $PAGE->get_renderer('qbank_editquestion')->render_question_info($questiondata));
+
+            $mform->addElement(
+                'static',
+                'versioninfo',
+                get_string('versioninfo', 'qbank_editquestion'),
+                $PAGE->get_renderer('qbank_editquestion')->render_question_info($questiondata)
+            );
         }
 
         $mform->addElement('text', 'name', get_string('tasktitle', 'qtype_kprime'), ['size' => 50, 'maxlength' => 255]);
@@ -142,11 +166,21 @@ class qtype_kprime_edit_form extends question_edit_form {
         $mform->setDefault('questiontext', ['text' => get_string('enterstemhere', 'qtype_kprime')]);
 
         if (class_exists('qbank_editquestion\\editquestion_helper')) {
-            $mform->addElement('select', 'status', get_string('status', 'qbank_editquestion'),
-                            \qbank_editquestion\editquestion_helper::get_question_status_list());
+            $mform->addElement(
+                'select',
+                'status',
+                get_string('status', 'qbank_editquestion'),
+                \qbank_editquestion\editquestion_helper::get_question_status_list()
+            );
         }
-        $mform->addElement('editor', 'generalfeedback', get_string('generalfeedback', 'question'), ['rows' => 10],
-                        $this->editoroptions);
+
+        $mform->addElement(
+            'editor',
+            'generalfeedback',
+            get_string('generalfeedback', 'question'),
+            ['rows' => 10],
+            $this->editoroptions
+        );
         $mform->setType('generalfeedback', PARAM_RAW);
         $mform->addHelpButton('generalfeedback', 'generalfeedback', 'question');
 
@@ -158,8 +192,10 @@ class qtype_kprime_edit_form extends question_edit_form {
         $this->definition_inner($mform);
         $this->add_interactive_settings();
 
-        if (core_tag_tag::is_enabled('core_question', 'question') &&
-             \core\plugininfo\qbank::is_plugin_enabled('qbank_tagquestion')) {
+        if (
+            core_tag_tag::is_enabled('core_question', 'question') &&
+             \core\plugininfo\qbank::is_plugin_enabled('qbank_tagquestion')
+        ) {
             $this->add_tag_fields($mform);
         }
 
@@ -183,13 +219,19 @@ class qtype_kprime_edit_form extends question_edit_form {
         if ($this->can_preview()) {
             if (class_exists('qbank_editquestion\\editquestion_helper')) {
                 if (\core\plugininfo\qbank::is_plugin_enabled('qbank_previewquestion')) {
-                    $previewlink = $PAGE->get_renderer('qbank_previewquestion')->question_preview_link($this->question->id,
-                                                                                                    $this->context, true);
+                    $previewlink = $PAGE->get_renderer('qbank_previewquestion')->question_preview_link(
+                        $this->question->id,
+                        $this->context,
+                        true
+                    );
                     $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
                 }
             } else {
-                $previewlink = $PAGE->get_renderer('core_question')->question_preview_link($this->question->id, $this->context,
-                    true);
+                $previewlink = $PAGE->get_renderer('core_question')->question_preview_link(
+                    $this->question->id,
+                    $this->context,
+                    true
+                );
                 $buttonarray[] = $mform->createElement('static', 'previewlink', '', $previewlink);
             }
         }
@@ -199,8 +241,10 @@ class qtype_kprime_edit_form extends question_edit_form {
 
         $this->add_action_buttons(true, get_string('savechanges'));
 
-        if ((!empty($this->question->id)) && (!($this->question->formoptions->canedit ||
-            $this->question->formoptions->cansaveasnew))) {
+        if (
+            (!empty($this->question->id)) && (!($this->question->formoptions->canedit ||
+            $this->question->formoptions->cansaveasnew))
+        ) {
             $mform->hardFreezeAllVisibleExcept(['categorymoveto', 'buttonar', 'currentgrp']);
         }
     }
@@ -238,17 +282,40 @@ class qtype_kprime_edit_form extends question_edit_form {
         $attributes = [];
         $scoringbuttons = [];
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
-            get_string('scoringkprime', 'qtype_kprime'), 'kprime', $attributes);
+        $scoringbuttons[] = &$mform->createElement(
+            'radio',
+            'scoringmethod',
+            '',
+            get_string('scoringkprime', 'qtype_kprime'),
+            'kprime',
+            $attributes
+        );
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
-            get_string('scoringkprimeonezero', 'qtype_kprime'), 'kprimeonezero', $attributes);
+        $scoringbuttons[] = &$mform->createElement(
+            'radio',
+            'scoringmethod',
+            '',
+            get_string('scoringkprimeonezero', 'qtype_kprime'),
+            'kprimeonezero',
+            $attributes
+        );
 
-        $scoringbuttons[] = &$mform->createElement('radio', 'scoringmethod', '',
-            get_string('scoringsubpoints', 'qtype_kprime'), 'subpoints', $attributes);
+        $scoringbuttons[] = &$mform->createElement(
+            'radio',
+            'scoringmethod',
+            '',
+            get_string('scoringsubpoints', 'qtype_kprime'),
+            'subpoints',
+            $attributes
+        );
 
-        $mform->addGroup($scoringbuttons, 'radiogroupscoring', get_string('scoringmethod', 'qtype_kprime'), [' <br/> '],
-            false);
+        $mform->addGroup(
+            $scoringbuttons,
+            'radiogroupscoring',
+            get_string('scoringmethod', 'qtype_kprime'),
+            [' <br/> '],
+            false
+        );
 
         $mform->addHelpButton('radiogroupscoring', 'scoringmethod', 'qtype_kprime');
         $mform->setDefault('scoringmethod', 'kprime');
@@ -298,8 +365,13 @@ class qtype_kprime_edit_form extends question_edit_form {
             $mform->addElement('html', '<div class="optionandresponses">');
             $mform->addElement('html', '<div class="optiontext">');
 
-            $mform->addElement('editor', 'option_' . $i, get_string('optionno', 'qtype_kprime', $i), ['rows' => 8],
-                            $this->editoroptions);
+            $mform->addElement(
+                'editor',
+                'option_' . $i,
+                get_string('optionno', 'qtype_kprime', $i),
+                ['rows' => 8],
+                $this->editoroptions
+            );
 
             $mform->setDefault('option_' . $i, ['text' => get_string('enteroptionhere', 'qtype_kprime')]);
             $mform->setType('option_' . $i, PARAM_RAW);
@@ -309,8 +381,13 @@ class qtype_kprime_edit_form extends question_edit_form {
             $mform->addElement('html', '</div>');
             $mform->addElement('html', '<div class="feedbacktext">');
 
-            $mform->addElement('editor', 'feedback_' . $i, get_string('feedbackforoption', 'qtype_kprime', $i),
-                            ['rows' => 2, 'placeholder' => ''], $this->editoroptions);
+            $mform->addElement(
+                'editor',
+                'feedback_' . $i,
+                get_string('feedbackforoption', 'qtype_kprime', $i),
+                ['rows' => 2, 'placeholder' => ''],
+                $this->editoroptions
+            );
 
             $mform->setType('feedback_' . $i, PARAM_RAW);
 
@@ -326,12 +403,19 @@ class qtype_kprime_edit_form extends question_edit_form {
 
             for ($j = 1; $j <= $this->numberofcolumns; ++$j) {
                 if (property_exists((object)$responsetexts, $j - 1)) {
-                    $radiobuttons[] = &$mform->createElement('radio', 'weightbutton_' . $i, '', $responsetexts[$j - 1], $j,
-                                                            $attributes);
+                    $radiobuttons[] = &$mform->createElement(
+                        'radio',
+                        'weightbutton_' . $i,
+                        '',
+                        $responsetexts[$j - 1],
+                        $j,
+                        $attributes
+                    );
                 } else {
                     $radiobuttons[] = &$mform->createElement('radio', 'weightbutton_' . $i, '', '', $j, $attributes);
                 }
             }
+
             $mform->addGroup($radiobuttons, 'weightsarray_' . $i, '', ['<br/>'], false);
             $mform->setDefault('weightbutton_' . $i, 1);
 
@@ -339,7 +423,6 @@ class qtype_kprime_edit_form extends question_edit_form {
             $mform->addElement('html', '</div>');
             $mform->addElement('html', '</div>');
         }
-
     }
 
     /**
@@ -350,7 +433,7 @@ class qtype_kprime_edit_form extends question_edit_form {
      * @return array form field elements for one hint.
      */
     protected function get_hint_fields($withclearwrong = false, $withshownumpartscorrect = false) {
-        list($repeated, $repeatedoptions) = parent::get_hint_fields(false, false);
+        [$repeated, $repeatedoptions] = parent::get_hint_fields(false, false);
         return [$repeated, $repeatedoptions];
     }
 
@@ -380,19 +463,30 @@ class qtype_kprime_edit_form extends question_edit_form {
                 // Restore all images in the option text.
                 $draftid = file_get_submitted_draft_itemid('option_' . $key);
 
-                $question->{'option_' . $key}['text'] = file_prepare_draft_area($draftid, $this->context->id, 'qtype_kprime',
-                                                                            'optiontext', !empty($row->id) ? (int)$row->id : null,
-                                                                            $this->fileoptions, $row->optiontext);
+                $question->{'option_' . $key}['text'] = file_prepare_draft_area(
+                    $draftid,
+                    $this->context->id,
+                    'qtype_kprime',
+                    'optiontext',
+                    !empty($row->id) ? (int)$row->id : null,
+                    $this->fileoptions,
+                    $row->optiontext
+                );
 
                 $question->{'option_' . $key}['itemid'] = $draftid;
 
                 // Now do the same for the feedback text.
                 $draftid = file_get_submitted_draft_itemid('feedback_' . $key);
 
-                $question->{'feedback_' . $key}['text'] = file_prepare_draft_area($draftid, $this->context->id, 'qtype_kprime',
-                                                                                'feedbacktext',
-                                                                                !empty($row->id) ? (int)$row->id : null,
-                                                                                $this->fileoptions, $row->optionfeedback);
+                $question->{'feedback_' . $key}['text'] = file_prepare_draft_area(
+                    $draftid,
+                    $this->context->id,
+                    'qtype_kprime',
+                    'feedbacktext',
+                    !empty($row->id) ? (int)$row->id : null,
+                    $this->fileoptions,
+                    $row->optionfeedback
+                );
 
                 $question->{'feedback_' . $key}['itemid'] = $draftid;
 
@@ -446,8 +540,9 @@ class qtype_kprime_edit_form extends question_edit_form {
         }
 
         // Make sure that the user can edit the question.
-        if (empty($data['makecopy']) && isset($this->question->id)
-            && !$this->question->formoptions->canedit) {
+        if (
+            empty($data['makecopy']) && isset($this->question->id) && !$this->question->formoptions->canedit
+        ) {
             $errors['currentgrp'] = get_string('nopermissionedit', 'question');
         }
 
@@ -464,17 +559,19 @@ class qtype_kprime_edit_form extends question_edit_form {
 
         // Can only have one idnumber per category.
         if (strpos($data['category'], ',') !== false) {
-            list($category, $categorycontextid) = explode(',', $data['category']);
+            [$category, $categorycontextid] = explode(',', $data['category']);
         } else {
             $category = $data['category'];
         }
+
         if (isset($data['idnumber']) && ((string) $data['idnumber'] !== '')) {
             if (empty($data['usecurrentcat']) && !empty($data['categorymoveto'])) {
                 $categoryinfo = $data['categorymoveto'];
             } else {
                 $categoryinfo = $data['category'];
             }
-            list($categoryid, $notused) = explode(',', $categoryinfo);
+
+            [$categoryid, $notused] = explode(',', $categoryinfo);
             $conditions = 'questioncategoryid = ? AND idnumber = ?';
             $params = [$categoryid, $data['idnumber']];
             if (!empty($this->question->id)) {

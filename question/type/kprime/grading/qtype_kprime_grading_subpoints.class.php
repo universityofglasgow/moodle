@@ -39,7 +39,6 @@ require_once($CFG->dirroot . '/question/type/kprime/grading/qtype_kprime_grading
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_kprime_grading_subpoints extends qtype_kprime_grading {
-
     /** @var string TYPE */
     const TYPE = 'subpoints';
 
@@ -74,6 +73,7 @@ class qtype_kprime_grading_subpoints extends qtype_kprime_grading {
                 ++$correctrows;
             }
         }
+
         // Subpoints: For each correct response, the student gets subpoints. That is: max. points
         // divided
         // by number of options times number of correct options.

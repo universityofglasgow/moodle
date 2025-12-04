@@ -53,6 +53,7 @@ function weight_records_to_array($weightrecords) {
         if (!property_exists((object) $weights, $weight->rowid)) {
             $weights[$weight->rowid] = [];
         }
+
         $weights[$weight->rowid][$weight->colid] = $weight;
     }
 
@@ -75,20 +76,22 @@ if (!$all && (!($courseid > 0 || $categoryid > 0))) {
 }
 
 if ($courseid > 0) {
-    if (!$course = $DB->get_record('course', ['id' => $courseid,
-    ])) {
+    if (!$course = $DB->get_record('course', ['id' => $courseid])) {
         echo "<br/><font color='red'>Course with ID $courseid  not found...!</font><br/>\n";
         die();
     }
+
     $coursecontext = context_course::instance($courseid);
-    $categories = $DB->get_records('question_categories',
-    ['contextid' => $coursecontext->id,
-    ]);
+    $categories = $DB->get_records(
+        'question_categories',
+        ['contextid' => $coursecontext->id,
+        ]
+    );
 
     $catids = array_keys($categories);
 
     if (!empty($catids)) {
-        list($csql, $params) = $DB->get_in_or_equal($catids);
+        [$csql, $params] = $DB->get_in_or_equal($catids);
         $sql .= " AND category $csql ";
     } else {
         echo "<br/><font color='red'>No question categories for course found... weird!</font><br/>\n";
@@ -98,8 +101,9 @@ if ($courseid > 0) {
 }
 
 if ($categoryid > 0) {
-    if ($category = $DB->get_record('question_categories', ['id' => $categoryid,
-    ])) {
+    if (
+        $category = $DB->get_record('question_categories', ['id' => $categoryid])
+    ) {
         echo 'Migration restricted to category "' . $category->name . "\".<br/>\n";
         $sql .= ' AND category = :category ';
         $params = ['category' => $categoryid,
@@ -135,9 +139,12 @@ foreach ($questions as $question) {
     $rows = $DB->get_records('question_matrix_rows', ['matrixid' => $matrix->id,
     ], ' id ASC ');
     $rowids = array_keys($rows);
-    $columns = $DB->get_records('question_matrix_cols',
-    ['matrixid' => $matrix->id,
-    ], ' id ASC ');
+    $columns = $DB->get_records(
+        'question_matrix_cols',
+        ['matrixid' => $matrix->id,
+        ],
+        ' id ASC '
+    );
 
     if ($dryrun) {
         echo '--------------------------------------------------------------------------------' .
@@ -154,6 +161,7 @@ foreach ($questions as $question) {
             echo 'Question: "' . $question->name . '" with ID ' . $question->id .
                      " would be migrated!<br/>\n";
         }
+
         echo shorten_text($question->questiontext, 100, false, '...');
         continue;
     } else {
@@ -168,6 +176,7 @@ foreach ($questions as $question) {
         $notmigrated[] = $question;
         continue;
     }
+
     if (count($columns) != QTYPE_KPRIME_NUMBER_OF_RESPONSES) {
         echo "&nbsp;&nbsp; Question has the wrong number of responses! Question is not migrated.<br/>\n";
         $notmigrated[] = $question;
@@ -188,7 +197,7 @@ foreach ($questions as $question) {
 
     echo 'New Kprime Question: "' . $question->name . '" with ID ' . $question->id . "<br/>\n";
 
-    list($rowsql, $rowparams) = $DB->get_in_or_equal($rowids, SQL_PARAMS_NAMED, 'row');
+    [$rowsql, $rowparams] = $DB->get_in_or_equal($rowids, SQL_PARAMS_NAMED, 'row');
 
     $weightsql = 'SELECT *
                     FROM {question_matrix_weights}
@@ -235,9 +244,11 @@ foreach ($questions as $question) {
             } else {
                 $kprimeweight->weight = 0.0;
             }
+
             $kprimeweight->id = $DB->insert_record('qtype_kprime_weights', $kprimeweight);
             ++$colcount;
         }
+
         ++$rowcount;
     }
 
@@ -262,10 +273,12 @@ foreach ($questions as $question) {
         default:
             $kprime->scoringmethod = 'kprime';
     }
+
     $kprime->id = $DB->insert_record('qtype_kprime_options', $kprime);
 
     $transaction->allow_commit();
 }
+
 echo '--------------------------------------------------------------------------------' . "<br/>\n";
 
 $endtime = time();
@@ -282,4 +295,5 @@ echo "----------------------------------------<br/>\n";
 foreach ($notmigrated as $question) {
     echo $question->id . ' , ' . $question->name . "<br/>\n";
 }
+
 die();

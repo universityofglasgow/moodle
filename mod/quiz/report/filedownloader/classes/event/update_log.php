@@ -70,18 +70,4 @@ class update_log extends \core\event\base {
             'mode' => 'filedownloader'
         ));
     }
-
-    /**
-     * Returns legacy log data.
-     * @return array
-     */
-    public function get_legacy_logdata() {
-        return array(
-            $this->courseid,
-            'course',
-            'download quiz submissions',
-            'report.php? id=' . $this->contextinstanceid . '&mode=filedownloader',
-            $this->contextinstanceid
-        );
-    }
 }

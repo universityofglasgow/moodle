@@ -32,30 +32,44 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('configintro', '', get_string('configintro', 'qtype_mtf')));
 
     // Scoring methods.
-    $options = array(
+    $options = [
         'mtfonezero' => get_string('scoringmtfonezero', 'qtype_mtf'),
         'subpointdeduction' => get_string('scoringsubpointdeduction', 'qtype_mtf'),
-        'subpoints' => get_string('scoringsubpoints', 'qtype_mtf'));
+        'subpoints' => get_string('scoringsubpoints', 'qtype_mtf'),
+        ];
 
-    $item = new admin_setting_configselect('qtype_mtf/scoringmethod',
+    $item = new admin_setting_configselect(
+        'qtype_mtf/scoringmethod',
         get_string('configscoringmethod', 'qtype_mtf'),
-        get_string('scoringmethod_help', 'qtype_mtf'), 'subpoints', $options);
+        get_string('scoringmethod_help', 'qtype_mtf'),
+        'subpoints',
+        $options
+    );
     $item->set_updatedcallback('mtf_settings_callback');
     $settings->add($item);
 
-    $item = new admin_setting_configcheckbox('qtype_mtf/allowdeduction',
+    $item = new admin_setting_configcheckbox(
+        'qtype_mtf/allowdeduction',
         get_string('allowdeduction', 'qtype_mtf'),
-        get_string('allowdeduction_help', 'qtype_mtf'), 0);
+        get_string('allowdeduction_help', 'qtype_mtf'),
+        0
+    );
     $item->set_updatedcallback('mtf_settings_callback');
     $settings->add($item);
 
     // Show Scoring Method in quizes.
-    $settings->add(new admin_setting_configcheckbox('qtype_mtf/showscoringmethod',
+    $settings->add(new admin_setting_configcheckbox(
+        'qtype_mtf/showscoringmethod',
         get_string('showscoringmethod', 'qtype_mtf'),
-        get_string('showscoringmethod_help', 'qtype_mtf'), 0));
+        get_string('showscoringmethod_help', 'qtype_mtf'),
+        0
+    ));
 
     // Shuffle options.
-    $settings->add(new admin_setting_configcheckbox('qtype_mtf/shuffleanswers',
+    $settings->add(new admin_setting_configcheckbox(
+        'qtype_mtf/shuffleanswers',
         get_string('shuffleanswers', 'qtype_mtf'),
-        get_string('shuffleanswers_help', 'qtype_mtf'), 1));
+        get_string('shuffleanswers_help', 'qtype_mtf'),
+        1
+    ));
 }

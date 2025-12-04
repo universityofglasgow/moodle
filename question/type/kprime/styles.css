@@ -119,6 +119,8 @@ body#page-question-type-kprime div#fitem_id_responsetext_2 div.fitemtitle {
 }
 
 body#page-question-type-kprime div.optionbox {
+    border: 1px solid #bbb;
+    background: #eee;
     margin-top: 0;
     padding-bottom: 15px;
     padding-top: 5px;

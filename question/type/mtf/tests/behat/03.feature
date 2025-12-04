@@ -34,7 +34,9 @@ Feature: Step 3
     And I navigate to "Questions" in current page administration
 
   @javascript
-  Scenario: Testcase 16
+  Scenario: Testcase 16 for Moodle ≤ 4.5
+
+    Given the site is running Moodle version 4.5 or lower
 
   # Repaginate
     When I press "Repaginate"
@@ -81,5 +83,65 @@ Feature: Step 3
   # Delete a question from a quiz
     When I click on "Delete" "link" in the "MTF Question 4" "list_item"
     And I click on "Yes" "button" in the ".moodle-dialogue-wrap" "css_element"
+    Then I should see "Questions"
+    And I should not see "MTF Question 4"
+
+
+  @javascript
+  Scenario: Testcase 16 for Moodle ≥ 5.0
+
+    Given the site is running Moodle version 5.0 or higher
+
+  # Repaginate
+    When I press "Repaginate"
+    And I should see "Repaginate with"
+    And I set the field "menuquestionsperpage" to "2"
+    And I click on "Go" "button" in the "Repaginate" "dialogue"
+    Then I should see "MTF Question 1" on quiz page "1"
+    And I should see "MTF Question 2" on quiz page "1"
+    And I should see "MTF Question 3" on quiz page "2"
+
+  # Add a new question to the quiz
+    And I click on "li:contains('Page 2') .add-menu-outer" "css_element"
+    And I click on ".menu-action-text:contains('a new question')" "css_element"
+    And I set the field "item_qtype_mtf" to "1"
+    And I press "submitbutton"
+    Then I should see "Adding a Multiple True/False question"
+    When I set the following fields to these values:
+      | id_name                  | MTF Question 4            |
+      | id_questiontext          | This is a questiontext.   |
+      | id_generalfeedback       | This feedback is general. |
+      | id_option_0              | 1st optiontext            |
+      | id_feedback_0            | 1st feedbacktext          |
+      | id_option_1              | 2nd optiontext            |
+      | id_feedback_1            | 2nd feedbacktext          |
+      | id_option_2              | 3rd optiontext            |
+      | id_feedback_2            | 3rd feedbacktext          |
+      | id_option_3              | 4th optiontext            |
+      | id_feedback_3            | 4th feedbacktext          |
+      | id_weightbutton_0_1      | checked                   |
+      | id_weightbutton_1_1      | checked                   |
+      | id_weightbutton_2_2      | checked                   |
+      | id_weightbutton_3_2      | checked                   |
+    And I press "id_submitbutton"
+    Then I should see "Questions"
+    And I should see "MTF Question 4"
+
+  # Add a question from the question bank to the quiz
+    And I open the "Page 1" add to quiz menu
+    And I follow "from question bank"
+    And I click on "Switch bank" "button"
+    And I click on "System shared question bank" "link" in the "Select question bank" "dialogue"
+    And I set the field "Filter type" to "Category"
+    And I set the field "Category" to "Default for c1"
+    And I press "Apply filters"
+    And I click on "Select" "checkbox" in the "MTF Question 5" "table_row"
+    And I click on "Add selected questions to the quiz" "button"
+    Then I should see "Quiz 1"
+    And I should see "MTF Question 5"
+
+  # Delete a question from a quiz
+    When I click on "Delete" "link" in the "MTF Question 4" "list_item"
+    And I click on "Yes" "button" in the "Confirm" "dialogue"
     Then I should see "Questions"
     And I should not see "MTF Question 4"

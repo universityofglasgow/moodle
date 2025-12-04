@@ -22,24 +22,36 @@ Feature: Step 2
     And I change window size to "large"
 
   @javascript @qtype_mtf_scenario9
-  Scenario: Testcase 9
+  Scenario: Testcase 9 for Moodle ≤ 4.5
+
+    Given the site is running Moodle version 4.5 or lower
 
   #Export question
-    When I navigate to "Question bank" in current page administration
-    And I click on "Question" "select"
-    And I click on "Export" "option"
+    When I am on the "Course 1" "core_question > course question export" page
+    And I set the field "id_format_xml" to "1"
+    And I press "Export questions to file"
+    And following "click here" should download between "0" and "25000" bytes
+    And I log out
+
+  @javascript @qtype_mtf_scenario9
+  Scenario: Testcase 9 for Moodle ≥ 5.0
+
+    Given the site is running Moodle version 5.0 or higher
+
+  #Export question
+    When I am on the "Course 1" "core_question > course question export" page
     And I set the field "id_format_xml" to "1"
     And I press "Export questions to file"
     And following "click here" should download between "0" and "25000" bytes
     And I log out
 
   @javascript @_file_upload @qtype_mtf_scenario25
-  Scenario: Testcase 25
+  Scenario: Testcase 25 for Moodle ≤ 4.5
+
+    Given the site is running Moodle version 4.5 or lower
 
   # Import question
-    When I navigate to "Question bank" in current page administration
-    And I click on "Question" "select"
-    And I click on "Import" "option"
+    When I am on the "Course 1" "core_question > course question import" page
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/mtf/tests/fixtures/testquestion.moodle.xml" file to "Import" filemanager
     And I press "id_submitbutton"
@@ -59,6 +71,46 @@ Feature: Step 2
     And I click on "Preview options" "link"
     When I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
+    And I click on "tr:contains('option text 1') input[value=1]" "css_element"
+    And I click on "tr:contains('option text 2') input[value=2]" "css_element"
+    And I press "Check"
+    Then I should see "feedback to option 1"
+    And I should see "feedback to option 1"
+    And I should see "option text 1: True"
+    And I should see "option text 2: False"
+    And I press "Close preview"
+
+    And I should see "MTF-Question-002"
+    And I choose "Preview" action for "MTF-Question-002" in the question bank
+    And I should see "MTF-Question-002"
+
+
+  @javascript @_file_upload @qtype_mtf_scenario25
+  Scenario: Testcase 25 for Moodle ≥ 5.0
+
+    Given the site is running Moodle version 5.0 or higher
+
+  # Import question
+    When I am on the "Course 1" "core_question > course question import" page
+    And I set the field "id_format_xml" to "1"
+    And I upload "question/type/mtf/tests/fixtures/testquestion.moodle.xml" file to "Import" filemanager
+    And I press "id_submitbutton"
+    Then I should see "Parsing questions from import file."
+    And I should see "Importing 2 questions from file"
+    And I press "Continue"
+
+    And I should see "MTF-Question-001"
+    And I choose "Preview" action for "MTF-Question-001" in the question bank
+    # no extra window anymore:    And I switch to "questionpreview" window
+    Then "[alt='testimage1AltDescription']" "css_element" should exist
+    And I should not see "testimage1AltDescription"
+    And "[alt='testimage2AltDescription']" "css_element" should exist
+    And I should not see "testimage2AltDescription"
+    And I should see "option text 1"
+    And I should see "option text 2"
+    And I click on "Preview options" "link"
+    When I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
     And I click on "tr:contains('option text 1') input[value=1]" "css_element"
     And I click on "tr:contains('option text 2') input[value=2]" "css_element"
     And I press "Check"

@@ -40,8 +40,7 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @group       qtype_mtf
  */
-class walkthrough_test extends \qbehaviour_walkthrough_test_base {
-
+final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
     /**
      * (non-PHPdoc)
      * @param int $index
@@ -51,10 +50,10 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
      * @return array
      */
     public function get_contains_mtf_radio_expectation($index, $value, $enabled = null, $checked = null) {
-        return $this->get_contains_radio_expectation(array(
+        return $this->get_contains_radio_expectation([
             'name' => $this->quba->get_field_prefix($this->slot) .  "option" .  $index,
-            'value' => $value
-        ), $enabled, $checked);
+            'value' => $value,
+        ], $enabled, $checked);
     }
 
     /**
@@ -78,76 +77,76 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $mtf->shuffleanswers = 0;
         $mtf->numberofrows = 2;
         $mtf->numberofcolumns = 2;
-        $mtf->rows = array(
-            5 => (object) array(
+        $mtf->rows = [
+            5 => (object) [
                 "id" => 5,
                 "questionid" => 5,
                 "number" => 1,
                 "optiontext" => "option text 1",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 1",
-                "optionfeedbackformat" => 1
-            ),
-            6 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+            6 => (object) [
                 "id" => 6,
                 "questionid" => 5,
                 "number" => 2,
                 "optiontext" => "option text 2",
                 "optiontextformat" => 1,
                 "optionfeedback" => "feedback to option 2",
-                "optionfeedbackformat" => 1
-            )
-        );
-        $mtf->columns = array(
-            3 => (object) array(
+                "optionfeedbackformat" => 1,
+            ],
+        ];
+        $mtf->columns = [
+            3 => (object) [
                 "id" => 3,
                 "questionid" => 5,
                 "number" => 1,
                 "responsetext" => "True",
-                "responsetextformat" => 0
-            ),
-            4 => (object) array(
+                "responsetextformat" => 0,
+            ],
+            4 => (object) [
                 "id" => 4,
                 "questionid" => 5,
                 "number" => 2,
                 "responsetext" => "False",
-                "responsetextformat" => 0
-            )
-        );
-        $mtf->weights = array(
-            1 => array(
-                1 => (object) array (
+                "responsetextformat" => 0,
+            ],
+        ];
+        $mtf->weights = [
+            1 => [
+                1 => (object)  [
                     "id" => 15,
                     "questionid" => 5,
                     "rownumber" => 1,
                     "columnnumber" => 1,
-                    "weight" => 1.000
-                ),
-                2 => (object) array (
+                    "weight" => 1.000,
+                ],
+                2 => (object)  [
                     "id" => 16,
                     "questionid" => 5,
                     "rownumber" => 1,
                     "columnnumber" => 2,
-                    "weight" => 0.000
-                )
-            ),
-            2 => array(
-                1 => (object) array (
+                    "weight" => 0.000,
+                ],
+            ],
+            2 => [
+                1 => (object)  [
                     "id" => 17,
                     "questionid" => 5,
                     "rownumber" => 2,
                     "columnnumber" => 1,
-                    "weight" => 0.000
-                ),
-                2 => (object) array (
+                    "weight" => 0.000,
+                ],
+                2 => (object)  [
                     "id" => 17,
                     "questionid" => 5,
                     "rownumber" => 2,
                     "columnnumber" => 2,
-                    "weight" => 1.000
-                )
-            )
-        );
+                    "weight" => 1.000,
+                ],
+            ],
+        ];
         return $mtf;
     }
 
@@ -156,10 +155,10 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
      *
      * @covers ::process_submission
      */
-    public function test_deferredfeedback_feedback_mtf() {
+    public function test_deferredfeedback_feedback_mtf(): void {
         $mtf = $this->make_a_mtf_question();
         $this->start_attempt_at_question($mtf, 'deferredfeedback', 1);
-        $this->process_submission(array("option0" => 1, "option1" => 2));
+        $this->process_submission(["option0" => 1, "option1" => 2]);
         $this->check_current_state(\question_state::$complete);
         $this->check_current_mark(null);
         $this->check_current_output(
@@ -168,7 +167,8 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
             $this->get_contains_mtf_radio_expectation(1, 1, true, false),
             $this->get_contains_mtf_radio_expectation(1, 2, true, true),
             $this->get_does_not_contain_correctness_expectation(),
-            $this->get_does_not_contain_feedback_expectation());
+            $this->get_does_not_contain_feedback_expectation()
+        );
         $this->quba->finish_all_questions();
         $this->check_current_state(\question_state::$gradedright);
         $this->check_current_mark(1);
@@ -186,19 +186,19 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
      *
      * @covers ::regrade_all_questions
      */
-    public function test_deduction_mtf() {
+    public function test_deduction_mtf(): void {
         $mtf = $this->make_a_mtf_question();
         $mtf->deduction = 0.5;
         $mtf->scoringmethod = 'subpointdeduction';
         $this->start_attempt_at_question($mtf, 'immediatefeedback', 1);
-        $this->process_submission(array('option0' => 1, 'option1' => '1'));
+        $this->process_submission(['option0' => 1, 'option1' => '1']);
         $this->quba->finish_all_questions();
         $this->check_current_state(\question_state::$gradedpartial);
         // One right, one wrong should give +0.5 -0.25 = 0.25.
         $this->check_current_mark(0.25);
 
         $this->start_attempt_at_question($mtf, 'immediatefeedback', 1);
-        $this->process_submission(array('option0' => 1, 'option1' => ''));
+        $this->process_submission(['option0' => 1, 'option1' => '']);
         $this->quba->finish_all_questions();
         $this->check_current_state(\question_state::$gradedpartial);
         // One right, one empty should give +0.5 -0 = 0.5.
@@ -210,13 +210,13 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
      *
      * @covers ::regrade_all_questions
      */
-    public function test_deduction_mtf_regrading() {
+    public function test_deduction_mtf_regrading(): void {
         $mtf = $this->make_a_mtf_question();
         $mtf->deduction = 0.5;
         $mtf->scoringmethod = 'subpointdeduction';
         $this->start_attempt_at_question($mtf, 'immediatefeedback', 1);
         // Correct answer would be 1 and 2, so we have one correct and one wrong.
-        $this->process_submission(array('option0' => 1, 'option1' => 1));
+        $this->process_submission(['option0' => 1, 'option1' => 1]);
         $this->quba->finish_all_questions();
         $this->check_current_state(\question_state::$gradedpartial);
         $this->check_current_mark(0.25);

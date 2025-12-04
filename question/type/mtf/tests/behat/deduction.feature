@@ -114,7 +114,9 @@ Feature: Deduction for wrong answers
     Then I should see "Please set a valid scoring method."
 
   @javascript
-  Scenario: Test deduction and overriding of deduction by admin
+  Scenario: Test deduction and overriding of deduction by admin for Moodle ≤ 4.5
+
+    Given the site is running Moodle version 4.5 or lower
     When I log in as "admin"
     And I set the following administration settings values:
       | Allow penalty deductions | 1 |
@@ -144,6 +146,45 @@ Feature: Deduction for wrong answers
     And I click on "Preview options" "link"
     And I set the field "How questions behave" to "Immediate feedback"
     And I press "Start again with these options"
+    And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
+    And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
+    And I press "Check"
+    # Now, the deduction should not be made anymore, because the admin has not allowed it
+    Then I should see "Mark 0.50 out of 1.00"
+
+  @javascript
+  Scenario: Test deduction and overriding of deduction by admin for Moodle ≥ 5.0
+
+    Given the site is running Moodle version 5.0 or higher
+    When I log in as "admin"
+    And I set the following administration settings values:
+      | Allow penalty deductions | 1 |
+    And I am on the "Course 1" "core_question > course question bank" page
+    And I choose "Edit question" action for "q1" in the question bank
+    And I set the following fields to these values:
+      | id_scoringmethod_subpointdeduction | 1   |
+      | id_deduction                       | 0.5 |
+    And I press "id_updatebutton"
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
+    And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
+    And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
+    And I press "Check"
+    # The deduction should be made
+    Then I should see "Mark 0.25 out of 1.00"
+    And I switch to the main window
+    And I set the following administration settings values:
+      | Allow penalty deductions | 0 |
+    And I am on the "Course 1" "core_question > course question bank" page
+    And I choose "Edit question" action for "q1" in the question bank
+    And I click on "Preview" "link"
+    And I switch to "questionpreview" window
+    And I click on "Preview options" "link"
+    And I set the field "How questions behave" to "Immediate feedback"
+    And I press "Save preview options and start again"
     And I click on ".qtype_mtf_row:contains('option text 1') input[value=1]" "css_element"
     And I click on ".qtype_mtf_row:contains('option text 2') input[value=1]" "css_element"
     And I press "Check"

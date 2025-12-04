@@ -24,6 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+use mod_quiz\quiz_settings;
 
 require_once($CFG->dirroot . '/mod/quiz/report/filedownloader/filedownloadersettings_form.php');
 
@@ -281,7 +282,7 @@ class quiz_filedownloader_report extends mod_quiz\local\reports\attempts_report 
         $quiz           = $DB->get_record('quiz', array('id' => $quiz->id), '*', MUST_EXIST);
         $cm             = get_coursemodule_from_instance('quiz', $quiz->id, $quiz->course);
         $course         = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-        $quizobj        = new quiz($quiz, $cm, $course);
+        $quizobj        = new quiz_settings($quiz, $cm, $course);
         $structure      = $quizobj->get_structure();
 
         foreach ($attempts as $attempt) {

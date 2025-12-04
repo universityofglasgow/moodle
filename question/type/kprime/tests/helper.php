@@ -38,7 +38,6 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_kprime_test_helper extends question_test_helper {
-
     /**
      * Get predefined questions
      * @return array
