@@ -499,7 +499,7 @@ class uofguser extends \gradereport_user\report\user {
                 }
             }
 
-            if (($mygradesconverted || $type == "categoryitem") && $mygradesreleasedflag) {
+            if (($mygradesconverted || $type == "categoryitem" || $type == "item") && $mygradesreleasedflag) {
                 // If the grade item is converted to a scale in MyGrades, we have to change the gradetype.
                 // Also convert all the aggregated (category) and released grades back to scale.
                 // We have to make sure that the released grade is a scale, so hopefully the converted one.
