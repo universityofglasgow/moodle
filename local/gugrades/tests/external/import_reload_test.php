@@ -138,7 +138,7 @@ final class import_reload_test extends \local_gugrades\external\gugrades_advance
             userlist:           $userlist,
             fillns:             '',
             reason:             'THIRD',
-            importadditional:   'missing'
+            importadditional:   'admin'
         );
 
         // Get capture page to demonstrate it worked.
@@ -160,7 +160,7 @@ final class import_reload_test extends \local_gugrades\external\gugrades_advance
             userlist:           $userlist,
             fillns:             '',
             reason:             'AGREED',
-            importadditional:   'admin'
+            importadditional:   'missing'
         );
 
         // Get capture page to demonstrate it worked.

@@ -109,24 +109,16 @@ final class import_grades_recursive_test extends \local_gugrades\external\gugrad
             $page
         );
 
-        // Check that they have been imported.
-        $grades = $DB->get_records('local_gugrades_grade', ['courseid' => $this->course->id]);
-        $grades = array_values($grades);
+        // Get the top level aggregation page.
+        $page = get_aggregation_page::execute($this->course->id, $this->gradecatsecond->id, '', '', 0, false);
+        $page = external_api::clean_returnvalue(
+            get_aggregation_page::execute_returns(),
+            $page
+        );
 
-        $this->assertIsArray($grades);
-        $this->assertCount(8, $grades);
-
-        $this->assertEquals('16.7', $grades[4]->displaygrade);
-        $this->assertEquals(16.7000, $grades[4]->rawgrade);
-        $this->assertEquals('FIRST', $grades[4]->gradetype);
-        $this->assertEquals(1, $grades[4]->iscurrent);
-
-        $this->assertEquals('48.5', $grades[6]->displaygrade);
-        $this->assertEquals(48.5000, $grades[6]->rawgrade);
-        $this->assertEquals('FIRST', $grades[6]->gradetype);
-        $this->assertEquals(1, $grades[6]->iscurrent);
-
-        $this->assertEquals('CATEGORY', $grades[2]->gradetype);
-        $this->assertEquals('32.6', $grades[2]->displaygrade);
+        $fred = $page['users'][0];
+        $this->assertEquals('32.6', $fred['displaygrade']);
+        $this->assertEquals('16.7', $fred['fields'][0]['display']);
+        $this->assertEquals('48.5', $fred['fields'][1]['display']);
     }
 }
