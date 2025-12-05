@@ -48,6 +48,7 @@ class import_grades_recursive extends external_api {
             'fillns' => new external_value(PARAM_ALPHANUM, 'Users with no submission given NS admin grade. Can be none, fillns or fillns0'),
             'reason' => new external_value(PARAM_TEXT, 'Reason for grade - SECOND, AGREED etc.'),
             'other' => new external_value(PARAM_TEXT, 'Detail if reason == OTHER'),
+            'dryrun' => new external_value(PARAM_BOOL, 'Dry run if true, only return numbers'),
         ]);
     }
 
@@ -58,9 +59,12 @@ class import_grades_recursive extends external_api {
      * @param int $groupid
      * @param string $additional
      * @param string $fillns
+     * @param string $reason
+     * @param string $other
+     * @param bool $dryrun
      * @return array
      */
-    public static function execute(int $courseid, int $gradeitemid, int $groupid, string $additional, string $fillns, string $reason, string $other) {
+    public static function execute(int $courseid, int $gradeitemid, int $groupid, string $additional, string $fillns, string $reason, string $other, bool $dryrun) {
 
         \local_gugrades\development::increase_debugging();
 
@@ -73,6 +77,7 @@ class import_grades_recursive extends external_api {
             'fillns' => $fillns,
             'reason' => $reason,
             'other' => $other,
+            'dryrun' => $dryrun,
         ]);
         $context = \context_course::instance($courseid);
         self::validate_context($context);
@@ -83,7 +88,7 @@ class import_grades_recursive extends external_api {
         }
 
         [$itemcount, $gradecount] = \local_gugrades\api::import_grades_recursive($courseid,
-            $gradeitemid, $groupid, $additional, $fillns, $reason, $other);
+            $gradeitemid, $groupid, $additional, $fillns, $reason, $other, $dryrun);
 
         // Log.
         $event = \local_gugrades\event\import_grades_recursive::create([

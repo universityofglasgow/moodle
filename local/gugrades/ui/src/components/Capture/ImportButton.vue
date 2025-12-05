@@ -7,11 +7,33 @@
     </button>
 
     <VueModal v-model="showimportmodal" :enableClose="false" modalClass="col-11 col-lg-5 rounded" :title="mstrings.importgrades">
+
         <div v-if="loading">
             <PleaseWait progresstype="import" :staffuserid="props.staffuserid"></PleaseWait>
         </div>
 
-        <div v-else>
+        <div v-if="showdryrun" class="text-center">
+
+            <p v-if="dryruncount > 0" v-html="mstrings.importdryrun"></p>
+            <p v-else v-html="mstrings.importdryrunzero"></p>
+            <p v-if="dryruncount > 0" class="display-4">{{ dryruncount }}</p>
+
+            <div class="mt-2 pt-2 border-top">
+                <button
+                        v-if="dryruncount > 0"
+                        class="btn btn-primary mr-1"
+                        @click="importgrades()"
+                        >{{ mstrings.yesimport }}
+                </button>
+                <button
+                    class="btn btn-warning"
+                    @click="showimportmodal = false"
+                    >{{ mstrings.cancel }}
+                </button>
+            </div>
+        </div>
+
+        <div v-if="!loading && !showdryrun">
 
             <!-- already imported warning-->
             <div class="alert" :class="importclass">
@@ -110,7 +132,7 @@
             <div class="mt-2 pt-2 border-top">
                 <button
                         class="btn btn-primary mr-1"
-                        @click="importgrades()"
+                        @click="dryrungrades()"
                         >{{ mstrings.yesimport }}
                 </button>
                 <button
@@ -156,6 +178,8 @@
     const gradetypes = ref([]);
     const other = ref('');
     const level = ref(0);
+    const dryruncount = ref(0);
+    const showdryrun = ref(false);
     const loading = ref(false);
     const debug = ref({});
     const mstrings = inject('mstrings');
@@ -186,7 +210,22 @@
     });
 
     /**
-     * Import confirmed. Select appropriate importfunction
+     * Do dry run. Select appropriate import function
+     */
+    function dryrungrades() {
+
+        loading.value = true;
+        dryruncount.value = 0;
+
+        if (recursiveselect.value == 'recursive') {
+            importrecursive();
+        } else {
+            importsingle();
+        }
+    }
+
+    /**
+     * Do proper import. Select appropriate import function
      */
     function importgrades() {
 
@@ -242,18 +281,27 @@
                 userlist: props.userids,
                 reason: is_importgrades.value ? reason.value : 'FIRST',
                 other: is_importgrades.value ? other.value : '',
+                dryrun: dryruncount.value == 0,
             }
         }])[0]
         .then((result) => {
             const importcount = result['importcount'];
-            emit('imported');
-            if (importcount) {
-                toast.success(mstrings.gradesimportedsuccess);
-            } else {
-                toast.warning(mstrings.nogradestoimport);
-            }
+            dryruncount.value = importcount;
+            loading.value = false;
 
-            showimportmodal.value = false;
+            // Only close the modal after we've shown the dry run count.
+            if (showdryrun.value) {
+                emit('imported');
+                if (importcount) {
+                    toast.success(mstrings.gradesimportedsuccess);
+                } else {
+                    toast.warning(mstrings.nogradestoimport);
+                }
+
+                showimportmodal.value = false;
+            } else {
+                showdryrun.value = true;
+            }
         })
         .catch((error) => {
             showimportmodal.value = false;
@@ -280,19 +328,29 @@
                 fillns: importfillns.value,
                 reason: is_importgrades.value ? reason.value : 'FIRST',
                 other: is_importgrades.value ? other.value : '',
+                dryrun: dryruncount.value == 0,
             }
         }])[0]
         .then((result) => {
             const itemcount = result.itemcount;
             const gradecount = result.gradecount;
-            emit('imported');
-            if (gradecount) {
-                toast.success(mstrings.gradesimportedsuccess);
-            } else {
-                toast.warning(mstrings.nogradestoimport);
-            }
+            dryruncount.value = gradecount;
+            loading.value = false;
 
-            showimportmodal.value = false;
+            // Only close the modal after we've shown the dry run count.
+            if (showdryrun.value) {
+                emit('imported');
+                if (gradecount) {
+                    toast.success(mstrings.gradesimportedsuccess);
+                } else {
+                    toast.warning(mstrings.nogradestoimport);
+                }
+
+                showimportmodal.value = false;
+            }
+            else {
+                showdryrun.value = true;
+            }
         })
         .catch((error) => {
             showimportmodal.value = false;
@@ -312,6 +370,8 @@
         importfillns.value = 'none';
         reason.value='SECOND';
         other.value='';
+        dryruncount.value = 0;
+        showdryrun.value = false;
         loading.value = false;
 
         const GU = window.GU;

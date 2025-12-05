@@ -544,6 +544,7 @@ class api {
      * @param string $reason
      * @param string $other
      * @param bool $noaggregation
+     * @param bool $dryrun 
      * @return bool - was a grade imported
      */
     public static function import_grade(
@@ -557,6 +558,7 @@ class api {
         string $reason,
         string $other,
         bool $noaggregation = false,
+        bool $dryrun = false,
         ) {
 
         $fillns = self::check_fillns($fillns);
@@ -580,6 +582,11 @@ class api {
                 return false;
             }
         } 
+
+        // If this is a dryrun then we're happy by this point that we'll be updating the user.
+        if ($dryrun) {
+            return true;
+        }
 
         // Can we aggregate?
         if (!$noaggregation) {
@@ -817,9 +824,10 @@ class api {
      * @param string $fillns
      * @param string $reason
      * @param string $other
+     * @param bool $dryrun
      * @return array [itemcount, gradecount]
      */
-    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, string $additional, string $fillns, string $reason, string $other) {
+    public static function import_grades_recursive(int $courseid, int $gradeitemid, int $groupid, string $additional, string $fillns, string $reason, string $other, bool $dryrun) {
         global $DB;
 
         // This could legitimately take forever
@@ -868,7 +876,8 @@ class api {
                     fillns: $fillns, 
                     reason: $reason,
                     other: $other,
-                    noaggregation: true
+                    noaggregation: true,
+                    dryrun: $dryrun
                     )) {
                     $gradecount++;
                 }
@@ -889,7 +898,9 @@ class api {
         \local_gugrades\progress::terminate($courseid, 0, 'import');
 
         // Finally, do the aggregation (once)
-        self::recalculate($courseid, $categoryid);
+        if (!$dryrun) {
+            self::recalculate($courseid, $categoryid);
+        }
 
         return [$itemcount, $gradecount];
     }

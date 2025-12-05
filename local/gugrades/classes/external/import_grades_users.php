@@ -47,6 +47,7 @@ class import_grades_users extends external_api {
             'fillns' => new external_value(PARAM_ALPHANUM, 'Users with no submission given NS admin grade. Can be none, fillns or fillns0'),
             'reason' => new external_value(PARAM_TEXT, 'Reason for grade - SECOND, AGREED etc.'),
             'other' => new external_value(PARAM_TEXT, 'Detail if reason == OTHER'),
+            'dryrun' => new external_value(PARAM_BOOL, 'Dry run if true, only return numbers'),
             'userlist' => new external_multiple_structure(
                 new external_value(PARAM_INT)
             ),
@@ -61,10 +62,11 @@ class import_grades_users extends external_api {
      * @param string $fillns
      * @param string $reason
      * @param string $other
+     * @param bool $dryrun
      * @param array $userlist
      * @return array
      */
-    public static function execute(int $courseid, int $gradeitemid, string $additional, string $fillns, string $reason, string $other, array $userlist) {
+    public static function execute(int $courseid, int $gradeitemid, string $additional, string $fillns, string $reason, string $other, bool $dryrun, array $userlist) {
 
         \local_gugrades\development::increase_debugging();
 
@@ -76,6 +78,7 @@ class import_grades_users extends external_api {
             'fillns' => $fillns,
             'reason' => $reason,
             'other' => $other,
+            'dryrun' => $dryrun,
             'userlist' => $userlist,
         ]);
         $context = \context_course::instance($courseid);
@@ -116,7 +119,9 @@ class import_grades_users extends external_api {
                 $additional,
                 $fillns,
                 $reason,
-                $other
+                $other,
+                false,
+                $dryrun,
                 )) {
                 $importcount++;
             }
