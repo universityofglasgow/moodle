@@ -1115,8 +1115,13 @@ class grades {
     public static function skip_update(int $gradeitemid, int $userid, string $additional) {
         global $DB;
 
-        // If there are no grades at all then we definitely won't be skipping
-        if (!$DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
+        // Get the provisional grade. If there isn't one, then no skip
+        if (!$provisional = self::get_provisional_from_id($gradeitemid, $userid)) {
+            return false;
+        }
+
+        // If the grade has neither admin or raw grade then also do not skip
+        if (($provisional->rawgrade == null) && ($provisional->admingrade == '')) {
             return false;
         }
 
@@ -1126,9 +1131,6 @@ class grades {
         }
 
         // Additional must be missing. If the grade is admin then we do not skip.
-
-        // Get the provisional grade to see if it's an admin grade.
-        $provisional = self::get_provisional_from_id($gradeitemid, $userid);
 
         // If there is an admin grade then do not skip (false)
         $isadmin = $provisional->admingrade != '';

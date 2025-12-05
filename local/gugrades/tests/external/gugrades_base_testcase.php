@@ -354,6 +354,7 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
             fillns:         $fillns,
             reason:         $reason,
             other:          '',
+            dryrun:         false,
             userlist:       $userlist
         );
         $status = external_api::clean_returnvalue(

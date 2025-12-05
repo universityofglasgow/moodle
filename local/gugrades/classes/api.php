@@ -583,11 +583,6 @@ class api {
             }
         } 
 
-        // If this is a dryrun then we're happy by this point that we'll be updating the user.
-        if ($dryrun) {
-            return true;
-        }
-
         // Can we aggregate?
         if (!$noaggregation) {
             [$aggregationsupported, $unsupportedscales] = \local_gugrades\grades::are_all_grades_supported($courseid, $gradeitemid);
@@ -607,29 +602,33 @@ class api {
 
             [$convertedgrade, $displaygrade] = $mapping->import($rawgrade);
 
-            // TODO: Is rawgrade correct? For scheduleB this will be completely
-            // unrelated. E.g. rawgrade 6 = converted grade = 14.
-            \local_gugrades\grades::write_grade(
-                courseid:       $courseid,
-                gradeitemid:    $gradeitemid,
-                userid:         $userid,
-                admingrade:     '',
-                //rawgrade:       $rawgrade,
-                rawgrade:       $convertedgrade,
-                convertedgrade: $convertedgrade,
-                displaygrade:   $displaygrade,
-                weightedgrade:  0,
-                gradetype:      $reason,
-                other:          $other,
-                iscurrent:      true,
-                iserror:        false,
-                auditcomment:   get_string('import', 'local_gugrades'),
-                ispoints:       !$mapping->is_scale(),
-            );
+            // don't write or aggregate if it's a dry run
+            if ($dryrun) {
 
-            // Re-aggregate this user
-            if (!$noaggregation && $aggregationsupported) {
-                \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+                // TODO: Is rawgrade correct? For scheduleB this will be completely
+                // unrelated. E.g. rawgrade 6 = converted grade = 14.
+                \local_gugrades\grades::write_grade(
+                    courseid:       $courseid,
+                    gradeitemid:    $gradeitemid,
+                    userid:         $userid,
+                    admingrade:     '',
+                    //rawgrade:       $rawgrade,
+                    rawgrade:       $convertedgrade,
+                    convertedgrade: $convertedgrade,
+                    displaygrade:   $displaygrade,
+                    weightedgrade:  0,
+                    gradetype:      $reason,
+                    other:          $other,
+                    iscurrent:      true,
+                    iserror:        false,
+                    auditcomment:   get_string('import', 'local_gugrades'),
+                    ispoints:       !$mapping->is_scale(),
+                );
+
+                // Re-aggregate this user
+                if (!$noaggregation && $aggregationsupported) {
+                    \local_gugrades\aggregation::aggregate_user_helper($courseid, $mapping->get_gradecategoryid(), $userid);
+                }
             }
 
             return true;

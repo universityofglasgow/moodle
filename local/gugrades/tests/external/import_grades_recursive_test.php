@@ -55,7 +55,8 @@ final class import_grades_recursive_test extends \local_gugrades\external\gugrad
             additional: 'update', 
             fillns: 'none',
             reason: 'FIRST',
-            other: ''
+            other: '',
+            dryrun: false
         );
         $counts = external_api::clean_returnvalue(
             import_grades_recursive::execute_returns(),
@@ -91,7 +92,8 @@ final class import_grades_recursive_test extends \local_gugrades\external\gugrad
             additional: 'update', 
             fillns: 'none',
             reason: 'FIRST',
-            other: ''
+            other: '',
+            dryrun: false,
         );
         $counts = external_api::clean_returnvalue(
             import_grades_recursive::execute_returns(),
