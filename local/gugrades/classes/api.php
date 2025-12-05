@@ -572,11 +572,11 @@ class api {
         }
 
         // Check for additional.
-        // admin - replace either missing or admin grade
-        // missing - replace only missing grades (not admin)
-        // update - just carry on abd replace anything
+        // admin - skip either missing or admin grade
+        // missing - skip only missing grades (not admin)
+        // update - just carry on and replace anything
         if ($additional != 'update') {
-            if (\local_gugrades\grades::block_overwrite($gradeitemid, $userid, $additional == 'missing')) {
+            if (\local_gugrades\grades::skip_update($gradeitemid, $userid, $additional)) {
                 return false;
             }
         } 

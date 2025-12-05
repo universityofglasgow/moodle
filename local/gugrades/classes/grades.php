@@ -1104,32 +1104,36 @@ class grades {
 
     /**
      * Check if gradeitem / user combo has any imported/added grades
-     * Prevent grades being overwritten with new value
+     * If true returned - then skip this update
+     * admin = skip if there is any grade at all
+     * missing = skip if there is a REAL grade (admin grades are NOT skipped)
      * @param int $gradeitemid
      * @param int $userid
-     * @param bool $realgrade require only normal grade (not admin) to allow
+     * @param string $additional (admin or missing)
      * @return bool
      */
-    public static function block_overwrite(int $gradeitemid, int $userid, bool $realgrade = false) {
+    public static function skip_update(int $gradeitemid, int $userid, string $additional) {
         global $DB;
 
-        // If there are no grades at all then nothing to block
+        // If there are no grades at all then we definitely won't be skipping
         if (!$DB->record_exists('local_gugrades_grade', ['gradeitemid' => $gradeitemid, 'userid' => $userid])) {
             return false;
         }
 
-        // If realgrade check is not required, then we can safely allow overwrite. 
-        if (!$realgrade) {
-            return false;
+        // If admin then we can skip if there was any kind of grade. 
+        if ($additional == 'admin') {
+            return true;
         }
+
+        // Additional must be missing. If the grade is admin then we do not skip.
 
         // Get the provisional grade to see if it's an admin grade.
         $provisional = self::get_provisional_from_id($gradeitemid, $userid);
 
-        // We block if IT IS an admin grade - that is must be a real grade.
+        // If there is an admin grade then do not skip (false)
         $isadmin = $provisional->admingrade != '';
 
-        return $isadmin;
+        return !$isadmin;
     }
 
     /**
