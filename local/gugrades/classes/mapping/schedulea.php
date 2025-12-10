@@ -161,7 +161,7 @@ class schedulea extends base {
         if ($this->converted || !$this->scaleitems) {
             $map = $this->get_map();
             if (!array_key_exists($grade, $map)) {
-                throw new \moodle_exception('Grade ' . $grade . 'is not in Schedule A');
+                throw new \moodle_exception('Grade ' . $grade . ' is not in Schedule A. Gradeitem = ' . $this->gradeitemid);
             } else {
                 return [$grade, $map[$grade]];
             }
