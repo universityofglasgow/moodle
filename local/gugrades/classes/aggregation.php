@@ -1070,6 +1070,13 @@ class aggregation {
 
         // Need to have a valid aggregation type to actually do the aggregation.
         if ($category->atype == \local_gugrades\GRADETYPE_ERROR) {
+
+            // Additional check for zero weights. This is an exceptional case for atype = ERROR. So check specifically. 
+            if ($aggregation->weight_error($items, $aggmethod)) {
+                $explain = get_string('explain_zeroweights', 'local_gugrades');
+                return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
+            }
+
             $explain = get_string('explain_gradetypeerror', 'local_gugrades');
 
             return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
@@ -1168,7 +1175,7 @@ class aggregation {
         // Record normalised weights
         self::record_weights($items, $userid);
 
-        // Check for zero weights.
+        // Check for zero weights with whatever items remain. 
         if ($aggregation->weight_error($items, $aggmethod)) {
             $explain = get_string('explain_zeroweights', 'local_gugrades');
             return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
