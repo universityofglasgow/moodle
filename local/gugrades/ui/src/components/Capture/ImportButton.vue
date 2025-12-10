@@ -218,9 +218,9 @@
         dryruncount.value = 0;
 
         if (recursiveselect.value == 'recursive') {
-            importrecursive();
+            importrecursive(true);
         } else {
-            importsingle();
+            importsingle(true);
         }
     }
 
@@ -232,9 +232,9 @@
         loading.value = true;
 
         if (recursiveselect.value == 'recursive') {
-            importrecursive();
+            importrecursive(false);
         } else {
-            importsingle();
+            importsingle(false);
         }
     }
 
@@ -266,7 +266,7 @@
     /**
      * Import single grade item
      */
-     function importsingle() {
+     function importsingle(is_dryrun) {
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
@@ -281,7 +281,7 @@
                 userlist: props.userids,
                 reason: is_importgrades.value ? reason.value : 'FIRST',
                 other: is_importgrades.value ? other.value : '',
-                dryrun: dryruncount.value == 0,
+                dryrun: is_dryrun,
             }
         }])[0]
         .then((result) => {
@@ -313,7 +313,7 @@
     /**
      * Import recursive grades
      */
-    function importrecursive() {
+    function importrecursive(is_dryrun) {
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
@@ -328,7 +328,7 @@
                 fillns: importfillns.value,
                 reason: is_importgrades.value ? reason.value : 'FIRST',
                 other: is_importgrades.value ? other.value : '',
-                dryrun: dryruncount.value == 0,
+                dryrun: is_dryrun,
             }
         }])[0]
         .then((result) => {

@@ -111,17 +111,17 @@ class import_grades_users extends external_api {
             //    continue;
             //}
             if (\local_gugrades\api::import_grade(
-                $courseid,
-                $gradeitemid,
-                $mapping,
-                $activity,
-                intval($userid),
-                $additional,
-                $fillns,
-                $reason,
-                $other,
-                false,
-                $dryrun,
+                courseid:       $courseid,
+                gradeitemid:    $gradeitemid,
+                mapping:        $mapping,
+                activity:       $activity,
+                userid:         intval($userid),
+                additional:     $additional,
+                fillns:         $fillns,
+                reason:         $reason,
+                other:          $other,
+                noaggregation:  false,
+                dryrun:         $dryrun,
                 )) {
                 $importcount++;
             }
@@ -135,17 +135,19 @@ class import_grades_users extends external_api {
         //\local_gugrades\development::xhprof_stop();
 
         // Log.
-        $event = \local_gugrades\event\import_grades_users::create([
-            'objectid' => $gradeitemid,
-            'context' => \context_course::instance($courseid),
-            'other' => [
-                'gradeitemid' => $gradeitemid,
-            ],
-        ]);
-        $event->trigger();
+        if (!$dryrun) {
+            $event = \local_gugrades\event\import_grades_users::create([
+                'objectid' => $gradeitemid,
+                'context' => \context_course::instance($courseid),
+                'other' => [
+                    'gradeitemid' => $gradeitemid,
+                ],
+            ]);
+            $event->trigger();
 
-        // Audit.
-        \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Grades imported.');
+            // Audit.
+            \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Grades imported.');
+        }
 
         return ['importcount' => $importcount];
     }

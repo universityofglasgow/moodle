@@ -603,7 +603,7 @@ class api {
             [$convertedgrade, $displaygrade] = $mapping->import($rawgrade);
 
             // don't write or aggregate if it's a dry run
-            if ($dryrun) {
+            if (!$dryrun) {
 
                 // TODO: Is rawgrade correct? For scheduleB this will be completely
                 // unrelated. E.g. rawgrade 6 = converted grade = 14.
@@ -639,22 +639,24 @@ class api {
             // an NS grade, instead.
             [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($fillns);
 
-            \local_gugrades\grades::write_grade(
-                courseid:       $courseid,
-                gradeitemid:    $gradeitemid,
-                userid:         $userid,
-                admingrade:     $fillns,
-                rawgrade:       0,
-                convertedgrade: 0,
-                displaygrade:   $displaygrade,
-                weightedgrade:  0,
-                gradetype:      $reason,
-                other:          $other,
-                iscurrent:      true,
-                iserror:        false,
-                auditcomment:   get_string('import', 'local_gugrades'),
-                ispoints:       false,
-            );
+            if (!$dryrun) {
+                \local_gugrades\grades::write_grade(
+                    courseid:       $courseid,
+                    gradeitemid:    $gradeitemid,
+                    userid:         $userid,
+                    admingrade:     $fillns,
+                    rawgrade:       0,
+                    convertedgrade: 0,
+                    displaygrade:   $displaygrade,
+                    weightedgrade:  0,
+                    gradetype:      $reason,
+                    other:          $other,
+                    iscurrent:      true,
+                    iserror:        false,
+                    auditcomment:   get_string('import', 'local_gugrades'),
+                    ispoints:       false,
+                );
+            }
 
             // Re-aggregate this user
             if (!$noaggregation) {
