@@ -1169,7 +1169,7 @@ class aggregation {
 
         // Check for zero weights.
         if ($aggregation->weight_error($items, $aggmethod)) {
-            $explain = get_string('explain_zeroweights', 'local_gugrade');
+            $explain = get_string('explain_zeroweights', 'local_gugrades');
             return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
         }
 
