@@ -167,56 +167,63 @@ class activity {
         $data = [];
         // We've lost all knowledge at this point of the course type - fetch it again.
         $mygradesenabled = course::is_type_mygrades($courseid);
+        // MGU-1368 The call to api::get_aggregation_dashboard_user() might not return data.
+        $hasgradedata = false;
 
         if ($mygradesenabled) {
             // This call should return grade data that has been processed through the MyGrades tool.
             // This includes grade category data as well as individual grade item data.
-            $gradedata = api::get_aggregation_dashboard_user($courseid, $subcategory, $userid);
+            if ($gradedata = api::get_aggregation_dashboard_user($courseid, $subcategory, $userid)) {
 
-            // MGU-1153 - Reinstate the label for the category grade.
-            $data['hascategorygrade'] = false;
-            if (is_object($gradedata->parent)) {
-                if ($gradedata->parent->released) {
-                    $data['hascategorygrade'] = true;
-                    $data['categorygrade'] = grade::is_admin_or_generic_grade($gradedata->parent->admingrade,
-                        $gradedata->parent->displaygrade);
+                // MGU-1153 - Reinstate the label for the category grade.
+                $data['hascategorygrade'] = false;
+                if (is_object($gradedata->parent)) {
+                    if ($gradedata->parent->released) {
+                        $data['hascategorygrade'] = true;
+                        $data['categorygrade'] = grade::is_admin_or_generic_grade($gradedata->parent->admingrade,
+                            $gradedata->parent->displaygrade);
+                    }
                 }
-            }
-            $tmpitems = $gradedata->fields;
+                $tmpitems = $gradedata->fields;
 
-            $gradecategories = [];
-            $gradeitems = [];
-            foreach ($tmpitems as $tmpitem) {
-                if ($tmpitem['iscategory'] == true) {
-                    $gradecategories[] = $tmpitem;
-                } else if ($tmpitem['iscategory'] == false) {
-                    $gradeitems[] = $tmpitem;
+                $gradecategories = [];
+                $gradeitems = [];
+                foreach ($tmpitems as $tmpitem) {
+                    if ($tmpitem['iscategory'] == true) {
+                        $gradecategories[] = $tmpitem;
+                    } else if ($tmpitem['iscategory'] == false) {
+                        $gradeitems[] = $tmpitem;
+                    }
                 }
-            }
-            $data['mygradesenabled'] = true;
+                $data['mygradesenabled'] = true;
 
-            // To get the weight for this grade category, we can tap into the $gradedata->parent property.
-            $weighttowardscourse = 0;
-            if ($item = \grade_item::fetch(['courseid' => $courseid, 'id' => $gradedata->parent->gradeitemid])) {
-                $weighttowardscourse = course::get_grade_category_weight($item, $activityitems->category);
-            }
-            $data['weighttowardscourse'] = $weighttowardscourse->grade_category_weight;
+                // To get the weight for this grade category, we can tap into the $gradedata->parent property.
+                $weighttowardscourse = 0;
+                if ($item = \grade_item::fetch(['courseid' => $courseid, 'id' => $gradedata->parent->gradeitemid])) {
+                    $weighttowardscourse = course::get_grade_category_weight($item, $activityitems->category);
+                }
+                $data['weighttowardscourse'] = $weighttowardscourse->grade_category_weight;
 
-            if ($gradecategories) {
-                $categorydata = [];
-                $categorydata = course::process_mygrades_subcategories($courseid, $gradecategories, $activityitems->categories,
-                    $assessmenttype);
-                $data['courseitems'] = $categorydata;
-                $data['hasgradecategory'] = true;
+                if ($gradecategories) {
+                    $categorydata = [];
+                    $categorydata = course::process_mygrades_subcategories($courseid, $gradecategories, $activityitems->categories,
+                        $assessmenttype);
+                    $data['courseitems'] = $categorydata;
+                    $data['hasgradecategory'] = true;
+                }
+                if ($gradeitems) {
+                    $activitydata = [];
+                    $activitydata = self::process_mygrades_items($gradeitems, $activityitems->items, $activetab, $assessmenttype);
+                    $data['courseitems'] = array_merge((array) ((!empty($data['courseitems'])) ? $data['courseitems'] : []),
+                        (array) $activitydata);
+                    $data['hascourseitems'] = true;
+                }
+
+                $hasgradedata = true;
             }
-            if ($gradeitems) {
-                $activitydata = [];
-                $activitydata = self::process_mygrades_items($gradeitems, $activityitems->items, $activetab, $assessmenttype);
-                $data['courseitems'] = array_merge((array) ((!empty($data['courseitems'])) ? $data['courseitems'] : []), (array)
-                    $activitydata);
-                $data['hascourseitems'] = true;
-            }
-        } else if (!$mygradesenabled) {
+        }
+        
+        if (!$mygradesenabled || $hasgradedata == false) {
             $data['mygradesenabled'] = false;
 
             // The weight for this grade category can be derived from the aggregation coefficient

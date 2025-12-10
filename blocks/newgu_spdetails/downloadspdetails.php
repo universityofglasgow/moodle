@@ -120,6 +120,8 @@ if ($coursestype) {
 
             $mygradesenabled = \block_newgu_spdetails\course::is_type_mygrades($course->id);
             $activitydata = [];
+            // MGU-1368 The call to api::get_aggregation_dashboard_user() further on might not return data.
+            $hasgradedata = false;
 
             if ($course->startdate) {
                 $dateobj = \DateTime::createFromFormat('U', $course->startdate);
@@ -142,60 +144,65 @@ if ($coursestype) {
                     foreach ($course->firstlevel as $firstlevel) {
                         $firstlevelid = 0;
                         $firstlevelid = $firstlevel['id'];
-                        $mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevelid, $USER->id);
-                        $tmpitems = $mygradesdata->fields;
-                        foreach ($tmpitems as $tmpitem) {
-                            if ($tmpitem['iscategory'] == true) {
-                                $fielditems = get_aggregation_items($course->id, $tmpitem['gradeitemid'], $USER->id, []);
-                                foreach ($fielditems as $fielditem) {
-                                    $mygradeitems[$fielditem['gradeitemid']] = $fielditem;
+                        if ($mygradesdata = \local_gugrades\api::get_aggregation_dashboard_user($course->id, $firstlevelid, $USER->id)) {
+                            $tmpitems = $mygradesdata->fields;
+                            foreach ($tmpitems as $tmpitem) {
+                                if ($tmpitem['iscategory'] == true) {
+                                    $fielditems = get_aggregation_items($course->id, $tmpitem['gradeitemid'], $USER->id, []);
+                                    foreach ($fielditems as $fielditem) {
+                                        $mygradeitems[$fielditem['gradeitemid']] = $fielditem;
+                                    }
+                                }
+                                if ($tmpitem['iscategory'] == false) {
+                                    $mygradeitems[$tmpitem['gradeitemid']] = $tmpitem;
                                 }
                             }
-                            if ($tmpitem['iscategory'] == false) {
-                                $mygradeitems[$tmpitem['gradeitemid']] = $tmpitem;
-                            }
+                            $hasgradedata = true;
                         }
                     }
                 }
-                // MGU-1243 - only keep an item in $mygradeitem if there is a corresponding item in $activities.
-                foreach ($mygradeitems as $mygradeitem) {
-                    $tempgradeitem = $mygradeitem['gradeitemid'];
-                    if (!array_key_exists($tempgradeitem, $activities)) {
-                        unset($mygradeitems[$tempgradeitem]);
-                    }
-                }
-                // MGU-1254 - do the same the other way around
-                // only keep items in $activities if they have equivalent in $mygradeitems.
-                foreach ($activities as $activity) {
-                    $tempactivityitem = $activity->id;
-                    if (!array_key_exists($tempactivityitem, $mygradeitems)) {
-                        unset($activities[$tempactivityitem]);
-                    }
-                }
-                // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
-                // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
-                // be/not able to access the arrays using the item id as an index.
-                ksort($mygradeitems);
-                asort($activities);
 
-                // This is clearly a rubbish way to do this but array_values doesn't seem to want to reindex either
-                // a regular array, or an array of objects. Temp workaround until I can think of a better solution.
-                $tmpmygradesitems = [];
-                foreach ($mygradeitems as $mygradeitem) {
-                    $tmpmygradesitems[] = $mygradeitem;
-                }
-                $mygradeitems = $tmpmygradesitems;
+                if ($hasgradedata == true) {
+                    // MGU-1243 - only keep an item in $mygradeitem if there is a corresponding item in $activities.
+                    foreach ($mygradeitems as $mygradeitem) {
+                        $tempgradeitem = $mygradeitem['gradeitemid'];
+                        if (!array_key_exists($tempgradeitem, $activities)) {
+                            unset($mygradeitems[$tempgradeitem]);
+                        }
+                    }
+                    // MGU-1254 - do the same the other way around
+                    // only keep items in $activities if they have equivalent in $mygradeitems.
+                    foreach ($activities as $activity) {
+                        $tempactivityitem = $activity->id;
+                        if (!array_key_exists($tempactivityitem, $mygradeitems)) {
+                            unset($activities[$tempactivityitem]);
+                        }
+                    }
+                    // In order for the 2 arrays to be compared/mapped in process_mygrades_items(), we need to first sort
+                    // the items, and then reindex everything, as $index in the method starts at 0 - and we don't want to
+                    // be/not able to access the arrays using the item id as an index.
+                    ksort($mygradeitems);
+                    asort($activities);
 
-                $tmpactivities = [];
-                foreach ($activities as $activity) {
-                    $tmpactivities[] = $activity;
+                    // This is clearly a rubbish way to do this but array_values doesn't seem to want to reindex either
+                    // a regular array, or an array of objects. Temp workaround until I can think of a better solution.
+                    $tmpmygradesitems = [];
+                    foreach ($mygradeitems as $mygradeitem) {
+                        $tmpmygradesitems[] = $mygradeitem;
+                    }
+                    $mygradeitems = $tmpmygradesitems;
+
+                    $tmpactivities = [];
+                    foreach ($activities as $activity) {
+                        $tmpactivities[] = $activity;
+                    }
+                    $activities = $tmpactivities;
+                    $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
+                        '');
                 }
-                $activities = $tmpactivities;
-                $activitydata = \block_newgu_spdetails\activity::process_mygrades_items($mygradeitems, $activities, $coursestype,
-                    '');
             }
 
-            if (!$mygradesenabled) {
+            if (!$mygradesenabled || $hasgradedata == false) {
                 $tmpactivities = [];
                 foreach ($activities as $activity) {
                     $tmpactivities[] = $activity;
