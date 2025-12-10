@@ -292,7 +292,7 @@
             // Only close the modal after we've shown the dry run count.
             if (showdryrun.value) {
                 emit('imported');
-                if (importcount) {
+                if (dryruncount) {
                     toast.success(mstrings.gradesimportedsuccess);
                 } else {
                     toast.warning(mstrings.nogradestoimport);
@@ -340,7 +340,7 @@
             // Only close the modal after we've shown the dry run count.
             if (showdryrun.value) {
                 emit('imported');
-                if (gradecount) {
+                if (dryruncount) {
                     toast.success(mstrings.gradesimportedsuccess);
                 } else {
                     toast.warning(mstrings.nogradestoimport);
