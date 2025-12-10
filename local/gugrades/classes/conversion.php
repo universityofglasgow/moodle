@@ -558,7 +558,7 @@ class conversion {
         $scalegrade = self::convert_grade($rawgrade, $maxgrade, $mapvalues);
 
         if (!$scalegrade) {
-            throw new \moodle_exception('Unable to convert aggregated grade');
+            throw new \moodle_exception('Unable to convert aggregated grade. Rawgrade = ' . $rawgrade . ' Maxgrade = ' . $maxgrade . ' MapID = ' . $mapid);
         }
 
         return [$scalegrade->band, $scalegrade->scalevalue];
