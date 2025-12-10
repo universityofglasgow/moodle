@@ -1167,8 +1167,13 @@ class aggregation {
         // Record normalised weights
         self::record_weights($items, $userid);
 
-        // Now call the appropriate aggregation function to do the sums.
+        // Check for zero weights.
+        if ($aggregation->weight_error($items, $aggmethod)) {
+            $explain = get_string('explain_zeroweights', 'local_gugrade');
+            return [null, null, '', null, $completion, get_string('cannotaggregate', 'local_gugrades'), $explain, false];
+        }
 
+        // Now call the appropriate aggregation function to do the sums.
         $aggregatedgrade = call_user_func([$aggregation, $aggfunction], $items);
 
         // If this is a scale convert the numeric grade to the appropriate.

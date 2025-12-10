@@ -521,6 +521,26 @@ class base {
         return $aggregationid == \GRADE_AGGREGATE_WEIGHTED_MEAN;
     }
 
+    /**
+     * Check for weights that sum to zero if weighted strategy
+     * @param array $items
+     * @param int $aggregationid
+     * @return boolean
+     */
+    public function weight_error(array $items, int $aggregationid) {
+        if (!$this::is_strategy_weighted($aggregationid)) {
+            return false;
+        }
+
+        $weight = 0;
+        foreach ($items as $item) {
+            $weight += $item->weight;
+        }
+
+        // Allow some 'slack'.
+        return $weight < 0.001;
+    }
+
     //
     // Following are functions for all the basic aggregation strategies. These mostly
     // replicate what core Moodle Gradebook does and are as specified in the Moodle docs.
