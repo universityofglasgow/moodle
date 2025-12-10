@@ -2135,7 +2135,7 @@ class api {
         $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
         // (Re-)aggregate this user. Regardless.
-        \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $userid);
+        \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $userid, true);
 
         // Build (and cache) grade structure (whole tree).
         \local_gugrades\aggregation::recurse_tree($courseid, $level1id, false);
