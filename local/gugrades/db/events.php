@@ -37,6 +37,6 @@ $observers = [
     [
         'eventname' => '\core\event\grade_item_updated',
         'callback' => '\local_gugrades\observers::grade_item_updated',
-    ],
+    ]
 
 ];

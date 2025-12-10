@@ -1759,4 +1759,21 @@ class grades {
 
         return $cm;
     }
+
+    /**
+     * Check if student has any data in the top level category
+     * @param int $gradecategoryid
+     * @param int $userid
+     * @return boolean
+     */
+    public static function user_has_data(int $gradecategoryid, int $userid) {
+        global $DB;
+
+        $level1id = self::get_level_one_parent($gradecategoryid);
+        $itemid = self::get_gradeitemid_from_gradecategoryid($level1id);
+
+        // There should be an entry for the above item if it's been properly aggregated
+        return $DB->record_exists('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid]);
+    }
+
 }

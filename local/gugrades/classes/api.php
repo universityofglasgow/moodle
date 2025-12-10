@@ -2132,13 +2132,13 @@ class api {
         global $DB;
 
         // Get the level 1 parent category.
-        $level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
+        //$level1id = \local_gugrades\grades::get_level_one_parent($gradecategoryid);
 
         // (Re-)aggregate this user. Regardless.
-        \local_gugrades\aggregation::aggregate_user_helper($courseid, $level1id, $userid, true);
+        \local_gugrades\aggregation::aggregate_user_helper($courseid, $gradecategoryid, $userid, true);
 
         // Build (and cache) grade structure (whole tree).
-        \local_gugrades\aggregation::recurse_tree($courseid, $level1id, false);
+        //\local_gugrades\aggregation::recurse_tree($courseid, $level1id, false);
 
         // Get categories and items at this level.
         [$columns, $atype, $warnings] = \local_gugrades\aggregation::get_columns($courseid, $gradecategoryid);
@@ -2157,9 +2157,14 @@ class api {
      * @param int $courseid
      * @param int $gradecategoryid
      * @param int $userid
-     * @return array
+     * @return array | null
      */
     public static function get_aggregation_dashboard_user(int $courseid, int $gradecategoryid, int $userid) {
+
+        // Check if this user has any data
+        if (!\local_gugrades\grades::user_has_data($gradecategoryid, $userid)) {
+            return null;
+        }
 
         // Get basic user field data
         $user = self::get_aggregation_user($courseid, $gradecategoryid, $userid);

@@ -55,7 +55,7 @@ class observers {
     }
 
     /**
-     * Handle dpdated grade item
+     * Handle updated grade item
      * @param \core\event\grade_item_updated $event
      */
     public static function grade_item_updated(\core\event\grade_item_updated $event) {
