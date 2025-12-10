@@ -481,6 +481,7 @@ class aggregation {
                 'gradeitemid' => $column->gradeitemid,
                 'fieldname' => $fieldname, // Required by WS.
                 'itemname' => $column->shortname, // Required by WS.
+                'fullname' => $column->fullname,
                 'display' => '', // Required by WS.
                 'schedule' => $column->schedule,
                 'weight' => $column->weight,

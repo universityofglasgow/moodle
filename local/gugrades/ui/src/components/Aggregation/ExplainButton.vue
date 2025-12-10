@@ -68,7 +68,7 @@
                 <table class="table table-striped">
                     <tbody>
                         <tr v-for="field in user.fields">
-                            <th>{{ field.itemname }}</th>
+                            <th>{{ field.fullname }}</th>
                             <td>
                                 <ul class="list-unstyled">
                                     <li><b>{{ field.display }}</b></li>

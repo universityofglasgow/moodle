@@ -108,6 +108,7 @@ class get_explain_aggregation extends external_api {
                 new external_single_structure([
                     'fieldname' => new external_value(PARAM_TEXT, 'Identifier for column'),
                     'itemname' => new external_value(PARAM_TEXT, 'Shortened item name (for debugging, mostly)'),
+                    'fullname' => new external_value(PARAM_TEXT, 'Full item name'),
                     'display' => new external_value(PARAM_TEXT, 'Grade for display'),
                     'dropped' => new external_value(PARAM_BOOL, 'Has this grade been dropped?'),
                     'isadmin' => new external_value(PARAM_BOOL, 'Is this an admin grade (for styling purposes)?'),
