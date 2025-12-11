@@ -427,13 +427,31 @@ class base {
 
         // Which item (index) is the resit item
         $resitindex = false;
+        $firstindex = false;
         foreach ($items as $index => $item) {
             if ($item->itemid == $resititemid) {
                 $resitindex = $index;
+            } 
+            if ($item->itemid != $resititemid) {
+                $firstindex = $index;
             }
         }
         if ($resitindex === false) {
             throw new \moodle_exception('Resit itemid was not in list of aggregation items. ResititemID = ' . $resititemid);
+        }
+
+        // If the resit grade is NS/NS0 then the first grade is taken,
+        // unless it too is admin. (This is 'rule 8').
+        $resit = $items[$resitindex];
+        if (($resit->admingrade == 'NOSUBMISSION') || ($resit->admingrade == 'NOSUBMISSION_0')) {
+            $first = $items[$firstindex];
+            if ($first->admingrade == '') {
+                $explain = get_string('explain_resitnosubmission', 'local_gugrades');
+
+                // Normalise grade. 
+                $norm = $maxgrade * $first->grade / $first->grademax;
+                return [$norm, $first->admingrade, $explain];                
+            }
         }
 
         // If there are any admin grades, then the resit item is the result

@@ -1111,8 +1111,13 @@ class aggregation {
             $resititemid = \local_gugrades\grades::get_resit_itemid($category->categoryid, true);
 
             [$rawgrade, $admingrade, $explain] = $aggregation->resit($items, $resititemid);
-            if ($explain) {
-                return [$rawgrade, $rawgrade, $admingrade, $rawgrade, 0, '', $explain, false];
+            if ($explain != '') {
+                if ($admingrade) {
+                    [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
+                    return [0, 0, $admingrade, $displaygrade, 0, '', $explain, false];
+                } else {
+                    return [$rawgrade, $rawgrade, '', $rawgrade, 0, '', $explain, false];
+                }
             }
         }
 

@@ -167,6 +167,7 @@ $string['explain_notavailable'] = 'All items in the Grade Category are not avail
 $string['explain_overridden'] = 'Aggregated grade has been overridden';
 $string['explain_points'] = 'Grades are aggregated in points';
 $string['explain_resitadmingrade'] = 'In a reassessment category with at least one admin grade, the result is the reassessment grade (or admin grade)';
+$string['explain_resitnosubmission'] = 'If the reassessment is NOSUBMISSION / NOSUBMISSION_0 then the first sitting grade is the result';
 $string['explain_resitoneitem'] = 'Only available grade left in reassessment category';
 $string['explain_schedule'] = 'Grades are aggregated according to Schedule A or B';
 $string['explain_zeroweights'] = 'Sum of weights approach zero for weighted aggregation strategy.';
