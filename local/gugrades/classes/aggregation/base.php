@@ -405,19 +405,24 @@ class base {
      * Return the appropriate explain.
      * @param array $items
      * @param int $resititemid
-     * @param [object|null, string]
+     * @return array  [rawgrade, admingrade, explain]
      */
     public function resit(array $items, $resititemid) {
 
         // Make very sure array is index 0.
         $items = array_values($items);
+        $maxgrade = $this->get_max_grade();
 
         $explain = '';
 
         // If only one item...
         if (count($items) == 1) {
             $explain = get_string('explain_resitoneitem', 'local_gugrades');
-            return [$items[0], $explain];
+            $item = $items[0];
+
+            // Normalise grade. 
+            $norm = $maxgrade * $item->grade / $item->grademax;
+            return [$norm, $item->admingrade, $explain];
         }
 
         // Which item (index) is the resit item
@@ -434,11 +439,16 @@ class base {
         // If there are any admin grades, then the resit item is the result
         if ($items[0]->admingrade || $items[1]->admingrade) {
             $explain = get_string('explain_resitadmingrade', 'local_gugrades');
-            return [$items[$resitindex], $explain];
+            $item = $items[$resitindex];
+
+            // Normalise grade. 
+            $norm = $maxgrade * $item->grade / $item->grademax;
+            return [$norm, $item->admingrade, $explain];
         }
 
         // In which case, we must have two grades and can allow normal aggregation to procede.
-        return [null, ''];
+        // Signified by empty explain.
+        return [0, '', ''];
     }
 
     /**

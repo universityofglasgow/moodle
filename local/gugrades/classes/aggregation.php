@@ -1110,9 +1110,9 @@ class aggregation {
             // Find the resit item id (must exist).
             $resititemid = \local_gugrades\grades::get_resit_itemid($category->categoryid, true);
 
-            [$aggitem, $explain] = $aggregation->resit($items, $resititemid);
-            if ($aggitem) {
-                return [$aggitem->grade, $aggitem->grade, $aggitem->admingrade, $aggitem->displaygrade, 0, '', $explain, false];
+            [$rawgrade, $admingrade, $explain] = $aggregation->resit($items, $resititemid);
+            if ($explain) {
+                return [$rawgrade, $rawgrade, $admingrade, $rawgrade, 0, '', $explain, false];
             }
         }
 
@@ -1471,7 +1471,8 @@ class aggregation {
         if (($level >= 2) && ($mapid = \local_gugrades\conversion::get_mapid_for_category($category->categoryid)) && $rawgrade) {
 
             // Get original maximum grade for conversion
-            $grademax = \local_gugrades\grades::get_grademax_for_gradecategory($category->categoryid);
+            //$grademax = \local_gugrades\grades::get_grademax_for_gradecategory($category->categoryid);
+            $grademax = $category->grademax;
 
             // Sanity check for conversion.
             if ($rawgrade > $grademax) {
