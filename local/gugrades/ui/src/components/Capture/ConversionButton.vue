@@ -107,6 +107,9 @@
         .then((result) => {
             maps.value = result;
             nomaps.value = maps.value.length == 0;
+            if (!nomaps.value) {
+                mapid.value = maps.value[0].id;
+            }
             loaded.value = true;
         })
         .catch((error) => {

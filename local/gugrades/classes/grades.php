@@ -1776,4 +1776,18 @@ class grades {
         return $DB->record_exists('local_gugrades_grade', ['gradeitemid' => $itemid, 'userid' => $userid]);
     }
 
+    /**
+     * Get (original) grademax for grade category.
+     * @param int $gradecategoryid
+     * @return float
+     */
+    public static function get_grademax_for_gradecategory(int $gradecategoryid) {
+        global $DB;
+
+        $itemid = self::get_gradeitemid_from_gradecategoryid($gradecategoryid);
+        $grademax = $DB->get_field('grade_items', 'grademax', ['id' => $itemid], MUST_EXIST);
+
+        return $grademax;
+    }
+
 }
