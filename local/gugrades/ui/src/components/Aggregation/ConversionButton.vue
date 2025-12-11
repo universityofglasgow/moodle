@@ -22,7 +22,9 @@
                     {{ mstrings.nomaps }}
                 </div>
 
-                <EasyDataTable v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
+                <div v-if="!nomaps && loaded" class="alert alert-primary" v-html="mstrings.conversion_warning"></div>
+
+                <EasyDataTable class="mb-2" v-if="!nomaps && loaded" :items="maps" :headers="headers" :hide-footer="true">
                     <template #item-select="item">
                         <input type="radio" :value="item.id" v-model="mapid"/>
                     </template>
