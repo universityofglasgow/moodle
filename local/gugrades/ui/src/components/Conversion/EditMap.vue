@@ -17,6 +17,10 @@
             v-model="mapname"
         ></FormKit>
         <FormKit
+            type="submit"
+            label="Save"
+        />
+        <FormKit
             type="text"
             outer-class="mb-3"
             :label="mstrings.maxgrade"
