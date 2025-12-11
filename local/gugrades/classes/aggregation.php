@@ -1468,9 +1468,8 @@ class aggregation {
 
         // If this is a points grade, level 2 or deeper, a grade is returned and a map exists then
         // we need to deal with this as a converted grade
-        if (($level >= 2) && ($mapid = \local_gugrades\conversion::get_mapid_for_category($category->categoryid)) && $rawgrade) {
+        if (!$category->isscale && ($level >= 2) && ($mapid = \local_gugrades\conversion::get_mapid_for_category($category->categoryid)) && $rawgrade) {
             [$display, $total] = \local_gugrades\conversion::aggregation_conversion($rawgrade, $category->grademax, $mapid);
-
         }
 
         // Write the aggregated category to the gugrades_grades table.
