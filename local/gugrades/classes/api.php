@@ -101,8 +101,6 @@ class api {
         // Cleanup unused columns for grade item.
         //\local_gugrades\grades::cleanup_empty_columns($gradeitemid);
 
-
-
         // Hidden or locked in gradebook?
         [$gradehidden, $gradelocked] = \local_gugrades\grades::is_grade_hidden_locked($gradeitemid);
 

@@ -175,6 +175,23 @@ class gugrades_base_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Update assignment grade
+     * @param int $assignid
+     * @param int $studentid
+     * @param float $gradeval
+     */
+    protected function update_assignment_grade(int $assignid, int $studentid, float $gradeval) {
+        global $USER, $DB;
+
+        $grade = $DB->get_record('assign_grades', ['assignment' => $assignid, 'userid' => $studentid], '*', MUST_EXIST);
+        $grade->timemodified = time();
+        $grade->grader = $USER->id;
+        $grade->grade = $gradeval;
+        $grade->attemptnumber = 0;
+        $gradeid = $DB->update_record('assign_grades', $grade);
+    }
+
+    /**
      * Enable/disable dashboard for MyGrades
      * @param int $courseid
      * @param bool $disable

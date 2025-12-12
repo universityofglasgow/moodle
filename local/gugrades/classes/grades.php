@@ -602,6 +602,20 @@ class grades {
             throw new \moodle_exception('No other text provided for other gradetype');
         }
 
+        // Is this an existing OTHER column. That is, gradetype looks like OTHER_nnnn where
+        // nnnn is the id in the gugrades_column table
+        // MGU-1365.
+        if (str_contains($gradetype, 'OTHER_')) {
+            $parts = explode('_', $gradetype);
+            if ((count($parts) != 2) || !is_numeric($parts[1])) {
+                throw new \moodle_exception('Invalid OTHER_ string. Gradetype = "' . $gradetype . '", gradeitemid = ' . $gradeitemid);
+            }
+            $columnid = $parts[1];
+            $column = $DB->get_record('local_gugrades_column', ['id' => $columnid], '*', MUST_EXIST);
+
+            return $column;
+        }
+
         // Does record exist?
         if (!$other) {
             if ($column = $DB->get_record('local_gugrades_column', ['gradeitemid' => $gradeitemid, 'gradetype' => $gradetype])) {
@@ -747,8 +761,8 @@ class grades {
                 AND userid = :userid
                 AND iscurrent = :iscurrent
                 AND columnid = :columnid
-                AND catoverride = 0
-                AND ' . $gradetypecompare . ' = :gradetype';
+                AND catoverride = 0';
+                //AND ' . $gradetypecompare . ' = :gradetype';
             if ($oldgrades = $DB->get_records_sql($sql, [
                 'courseid' => $courseid,
                 'gradeitemid' => $gradeitemid,

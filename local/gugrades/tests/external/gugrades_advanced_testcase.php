@@ -59,6 +59,11 @@ class gugrades_advanced_testcase extends gugrades_base_testcase {
     protected $gradecatsecond;
 
     /**
+     * @var object $assign1
+     */
+    protected $assign1;
+
+    /**
      * @var int $gradeitemidassign1
      */
     protected int $gradeitemidassign1;
@@ -125,6 +130,9 @@ class gugrades_advanced_testcase extends gugrades_base_testcase {
         $assign2 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
         $assign3 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
         $assign4 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'markingworkflow' => 1]);
+
+        // Ones we need elsewhere.
+        $this->assign1 = $assign1;
 
         // Assign22 is graded out of 22 (which is a special case).
         $assign22 = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'name' => 'Assign 22']);
