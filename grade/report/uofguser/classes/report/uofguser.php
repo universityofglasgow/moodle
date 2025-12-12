@@ -554,6 +554,15 @@ class uofguser extends \gradereport_user\report\user {
                 if ($activityrestriction && isset($this->viewasuser) && $this->viewasuser) {
                     $itemtitle = \html_writer::div($fullnamenolink, 'rowtitle');
                 }
+                // If the activity is selected for reassessment, we add a pill but only for teachers.
+                $resititem = \local_gugrades\grades::is_resit_gradeitem($gradegrade->grade_item->id);
+                if (isset($this->viewasuser) && !$this->viewasuser && $resititem && $mygradesactive) {
+                    $itemtitle .= \html_writer::tag(
+                        'span',
+                        get_string('resitselected', 'gradereport_uofguser'),
+                        ['class' => 'badge badge-info badge-pill']
+                    );
+                }
                 $content = \html_writer::div($itemtype . $itemtitle);
                 // If activity is restricted, we add the lock icon to the content.
                 if ($activityrestriction) {
