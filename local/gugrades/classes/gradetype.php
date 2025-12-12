@@ -102,11 +102,39 @@ class gradetype {
     }
 
     /**
+     * Get grade description from OTHER fields.
+     * Where gradetype is OTHER_nnn (nnn is id of column table)
+     * @param $gradetype
+     * @return $description
+     */
+    public static function get_other_description(string $gradetype) {
+        global $DB;
+
+        if (str_contains($gradetype, 'OTHER_')) {
+            $parts = explode('_', $gradetype);
+            if ((count($parts) != 2) || !is_numeric($parts[1])) {
+                throw new \moodle_exception('Invalid OTHER_ string. Gradetype = "' . $gradetype . '", gradeitemid = ' . $gradeitemid);
+            }
+            $columnid = $parts[1];
+            $column = $DB->get_record('local_gugrades_column', ['id' => $columnid], '*', MUST_EXIST);
+
+            return 'Other grade (' . $column->other . ')';
+        } else {
+            return '';
+        }
+    }
+
+    /**
      * Get description
      * @param string $gradetype
      * @return string
      */
     public static function get_description(string $gradetype) {
+
+        // Weird OTHER column?
+        if ($description = self::get_other_description($gradetype)) {
+            return $description;
+        }
 
         // Just handle CATEGORY on its own for simplicity.
         if ($gradetype == 'CATEGORY') {

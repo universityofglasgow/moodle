@@ -170,5 +170,23 @@ final class MGU_1365_test extends \local_gugrades\external\gugrades_advanced_tes
         $this->assertEquals($newreason, $fred['grades'][1]['gradetype']);
         $this->assertEquals('42.3', $fred['grades'][2]['displaygrade']);
         $this->assertEquals('PROVISIONAL', $fred['grades'][2]['gradetype']);
+
+        // Get history for all of this.
+        $history = get_history::execute($this->course->id, $this->gradeitemidassign1, $this->student->id);
+        $history = external_api::clean_returnvalue(
+            get_history::execute_returns(),
+            $history
+        );
+
+        $this->assertCount(3, $history);
+        $this->assertEquals('42.3', $history[0]['displaygrade']);
+        $this->assertEquals('Other grade (new column)', $history[0]['description']);
+        $this->assertTrue($history[0]['iscurrent']);
+        $this->assertEquals('95.5', $history[1]['displaygrade']);
+        $this->assertEquals('Other grade (new column)', $history[1]['description']);
+        $this->assertFalse($history[1]['iscurrent']);
+        $this->assertEquals('95.5', $history[2]['displaygrade']);
+        $this->assertEquals('1st grade', $history[2]['description']);
+        $this->assertTrue($history[0]['iscurrent']);
     }
 }
