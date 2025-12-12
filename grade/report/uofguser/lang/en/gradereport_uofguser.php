@@ -41,6 +41,7 @@ $string['mygradesenabled'] = 'MyGrades enabled';
 $string['mygradesinactive'] = 'MyGrades inactive';
 $string['pluginname'] = 'Student MyGrades User Report';
 $string['privacy:metadata'] = 'The Student MyGrades User Report plugin doesn\'t store any personal data.';
+$string['resitselected'] = 'Reassessment';
 $string['showsource'] = 'Show source of the grade';
 $string['showsource_help'] = 'If enabled, the source of the grade (e.g., Moodle Gradebook or MyGrades) will be displayed in the report.';
 $string['showstatus'] = 'Show status of the assessment';
