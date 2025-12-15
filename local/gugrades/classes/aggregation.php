@@ -1116,7 +1116,16 @@ class aggregation {
                     [$displaygrade, ] = \local_gugrades\admingrades::get_displaygrade_from_name($admingrade);
                     return [0, 0, $admingrade, $displaygrade, 0, '', $explain, false];
                 } else {
-                    return [$rawgrade, $rawgrade, '', $rawgrade, 0, '', $explain, false];
+                    if (($atype == \local_gugrades\GRADETYPE_SCHEDULEA) || ($atype == \local_gugrades\GRADETYPE_SCHEDULEB)) {
+                        [$convertedgrade, $convertedgradevalue] = $aggregation->convert($rawgrade, $atype);
+                        $parentgrade = $aggregation->get_grade_for_parent($rawgrade, $convertedgradevalue);
+                        $displaygrade = $aggregation->format_displaygrade(
+                            $convertedgrade, $rawgrade, $convertedgradevalue, 0, $level);
+
+                        return [$parentgrade, $parentgrade, '', $displaygrade, 0, '', $explain, false];
+                    } else {
+                        return [$rawgrade, $rawgrade, '', $rawgrade, 0, '', $explain, false];
+                    }
                 }
             }
         }
