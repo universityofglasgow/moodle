@@ -142,6 +142,42 @@ class usercapture {
      * @return boolean
      */
     protected function is_alert() {
+        $gradesbygt = $this->gradesbygradetype;
+
+        // 1st, 2nd and 3rd grade have to agree
+        // unless there is an agreed grade
+        if (array_key_exists('AGREED', $gradesbygt)) {
+            return false;
+        }
+
+        // Create a list of grades that are valid from 1st, 2nd, 3rd
+        $indexes = ['FIRST', 'SECOND', 'THIRD'];
+        $compare = [];
+        foreach ($indexes as $index) {
+            if (array_key_exists($index, $gradesbygt) && ($gradesbygt[$index]->rawgrade != null)) {
+                $compare[] = $gradesbygt[$index]->rawgrade;
+            }
+        }
+
+        // If there's none or one then not an alert
+        if (count($compare) <= 1) {
+            return false;
+        }
+
+        // After here, all the grades must be the same.
+        if (count(array_unique($compare)) == 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Determine if we need to place an alert on the capture row
+     * For example, 1st and 2nd grade not matching plus no agreed grade
+     * @return boolean
+     */
+    protected function old_is_alert() {
         $gradesbygt = $this->get_gradesbygradetype();
 
         // 1st, 2nd and 3rd grade have to agree
