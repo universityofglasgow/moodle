@@ -151,10 +151,15 @@ class usercapture {
         }
 
         // The -1 if they don't exist (not existing is proxy for equal).
-        // MGU-1374. 'No grade' for FIRST shouldn't be a discrepancy.
-        $first = array_key_exists('FIRST', $gradesbygt) && ($gradesbygt['FIRST']->displaygrade != 'No grade') ? $gradesbygt['FIRST']->rawgrade : -1;
+
+        $first = array_key_exists('FIRST', $gradesbygt)  ? $gradesbygt['FIRST']->rawgrade : -1;
         $second = array_key_exists('SECOND', $gradesbygt) ? $gradesbygt['SECOND']->rawgrade : -1;
         $third = array_key_exists('THIRD', $gradesbygt) ? $gradesbygt['THIRD']->rawgrade : -1;
+
+        // MGU-1374. 'No grade' for FIRST shouldn't be a discrepancy.
+        if ($first === null) {
+            $first = -1;
+        }
 
         // Only 1st grade is acceptable.
         if (($second == -1) && ($third == -1)) {
