@@ -1,5 +1,11 @@
 # Changelog
 
+### 1.6.4 (2025-12-11)
+
+- bugfix: exporting all answers in one PDF per attempt now working even if
+  question text is also exported
+- internal: update CI for upcoming Moodle 5.2
+
 ### 1.6.3 (2025-10-14)
 
 - assure compatibility with Moodle 5.1
