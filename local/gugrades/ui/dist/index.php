@@ -31,6 +31,7 @@ $courseid = required_param('id', PARAM_INT);
 $url = new moodle_url('/local/gugrades/ui/dist/index.php', ['id' => $courseid]);
 $PAGE->set_url($url);
 $PAGE->add_body_class("gugrades");
+$PAGE->set_pagelayout('report');
 
 // Set docroot to our own location
 $helpurl = get_config('local_gugrades', 'helpurl');

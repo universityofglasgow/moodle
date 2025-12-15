@@ -151,7 +151,8 @@ class usercapture {
         }
 
         // The -1 if they don't exist (not existing is proxy for equal).
-        $first = array_key_exists('FIRST', $gradesbygt) ? $gradesbygt['FIRST']->rawgrade : -1;
+        // MGU-1374. 'No grade' for FIRST shouldn't be a discrepancy.
+        $first = array_key_exists('FIRST', $gradesbygt) && ($gradesbygt['FIRST']->displaygrade != 'No grade') ? $gradesbygt['FIRST']->rawgrade : -1;
         $second = array_key_exists('SECOND', $gradesbygt) ? $gradesbygt['SECOND']->rawgrade : -1;
         $third = array_key_exists('THIRD', $gradesbygt) ? $gradesbygt['THIRD']->rawgrade : -1;
 
