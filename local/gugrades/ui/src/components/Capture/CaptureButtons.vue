@@ -1,7 +1,7 @@
 <template>
     <div class="col-12 mt-2">
         <ImportButton v-if="!converted && caneditgrades" :itemid="props.itemid" :groupid="props.groupid" :userids="props.userids" :staffuserid="props.staffuserid" @imported="emit('refreshtable')"></ImportButton>
-        <CSVImportButton v-if="caneditgrades" :itemid="props.itemid && caneditgrades" :groupid="props.groupid" :itemname="props.itemname" :show="props.showcsvimport" :staffuserid="props.staffuserid" @uploaded="emit('refreshtable')"></CSVImportButton>
+        <CSVImportButton v-if="caneditgrades" :itemid="props.itemid" :groupid="props.groupid" :itemname="props.itemname" :show="props.showcsvimport" :staffuserid="props.staffuserid" @uploaded="emit('refreshtable')"></CSVImportButton>
         <AddMultipleButton v-if="caneditgrades" :itemid="props.itemid"  @editcolumn="multipleclicked"></AddMultipleButton>
         <ReleaseButton v-if="props.gradesimported && caneditgrades" :gradeitemid="props.itemid" :groupid="props.groupid" :released="props.released" @released="emit('refreshtable')"></ReleaseButton>
         <ViewFullNamesButton v-if="props.usershidden"  @viewfullnames="viewfullnames"></ViewFullNamesButton>
