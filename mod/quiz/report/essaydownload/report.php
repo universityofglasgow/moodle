@@ -58,6 +58,12 @@ require_once($CFG->libdir . '/pdflib.php');
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
+    /** @var int */
+    const OUTPUT_QUESTIONTEXT = 1;
+
+    /** @var int */
+    const OUTPUT_RESPONSE = 2;
+
     /** @var object course object */
     protected object $course;
 
@@ -76,8 +82,11 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
     /** @var int id of the currently selected group */
     protected int $currentgroup;
 
-    /** @var customTCPDF output buffer when storing multiple questions in one PDF file */
-    protected ?customTCPDF $pdfoutputbuffer = null;
+    /** @var customTCPDF[] output buffers when storing multiple responses or question texts in one PDF file */
+    protected array $pdfoutputbuffers = [
+        self::OUTPUT_QUESTIONTEXT => null,
+        self::OUTPUT_RESPONSE => null,
+    ];
 
     /**
      * Override the parent function, because we have some custom stuff to initialise.
@@ -533,6 +542,7 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
                         }
 
                         $pdfcontent = $this->generate_pdf(
+                            self::OUTPUT_RESPONSE,
                             $this->add_statistics_if_requested($questiondetails['responsetext'], FORMAT_HTML),
                             $header,
                             $fullname,
@@ -560,14 +570,23 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
                     // Only include question text if instructed to do so.
                     if ($this->options->questiontext) {
                         if ($this->options->fileformat === 'pdf') {
-                            $zipwriter->add_file_from_string(
-                                $filenameprefix . 'questiontext.pdf',
-                                $this->generate_pdf(
-                                    $questiondetails['questiontext'],
-                                    get_string('questiontext', 'question'),
-                                    get_string('presentedto', 'quiz_essaydownload', $fullname)
-                                )
+                            $pdfcontent = $this->generate_pdf(
+                                self::OUTPUT_QUESTIONTEXT,
+                                $questiondetails['questiontext'],
+                                get_string('questiontext', 'question'),
+                                get_string('presentedto', 'quiz_essaydownload', $fullname),
+                                '',
+                                $shipout,
                             );
+
+                            // If the return value is not empty, i. e. if we are shipping out, we must now create a PDF file
+                            // in the archive.
+                            if ($pdfcontent !== '') {
+                                $zipwriter->add_file_from_string(
+                                    ($this->options->allinone ? $groupedpath : $filenameprefix) . 'questiontext.pdf',
+                                    $pdfcontent,
+                                );
+                            }
                         } else {
                             $zipwriter->add_file_from_string(
                                 $filenameprefix . 'questiontext.txt',
@@ -670,6 +689,7 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
     /**
      * Generate a PDF file from a given HTML code.
      *
+     * @param int $type whether we generate a PDF for the question text or the response
      * @param string $text HTML code to be typeset
      * @param string $header upper line of the header, printed in bold face
      * @param string $subheader lower line of the header
@@ -678,6 +698,7 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
      * @return string PDF code
      */
     protected function generate_pdf(
+        int $type,
         string $text,
         string $header = '',
         string $subheader = '',
@@ -695,7 +716,7 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
 
         // If there is no pending output, we create a new PDF document. Otherwise, we continue with the
         // document that has been created earlier.
-        $doc = &$this->pdfoutputbuffer;
+        $doc = &$this->pdfoutputbuffers[$type];
         if ($doc === null) {
             $doc = $this->prepare_pdf_document($author);
         }
@@ -712,7 +733,7 @@ class quiz_essaydownload_report extends quiz_essaydownload_report_parent_alias {
         // If we ship out, we finish the PDF, reset the output buffer. Otherwise, we simply return an empty string.
         if ($shipout) {
             $output = $doc->Output('', 'S');
-            $this->pdfoutputbuffer = null;
+            $this->pdfoutputbuffers[$type] = null;
             return $output;
         }
         return '';
