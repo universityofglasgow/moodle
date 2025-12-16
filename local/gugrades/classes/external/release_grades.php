@@ -83,7 +83,11 @@ class release_grades extends external_api {
         $event->trigger();
 
         // Audit.
-        \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Grades released.');
+        if ($revert) {
+            \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Grades un-released.');
+        } else {
+            \local_gugrades\audit::write($courseid, 0, $gradeitemid, 'Grades released.');
+        }
 
         return [];
     }
