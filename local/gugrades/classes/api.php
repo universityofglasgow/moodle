@@ -2084,7 +2084,7 @@ class api {
         // Only available for level 2 categories - MGU-997
         $level = \local_gugrades\grades::get_category_level($gradecategoryid);
         $mapname = \local_gugrades\conversion::get_map_name_for_category($gradecategoryid);
-        $allowconversion = ($level == 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
+        $allowconversion = ($level >= 2) && (!empty($mapname) || ($atype == \local_gugrades\GRADETYPE_POINTS));
 
         // Allow release. At the moment, this is just going to be "Not points" and "not error".
         $allowrelease = ($atype != \local_gugrades\GRADETYPE_POINTS) && ($atype != \local_gugrades\GRADETYPE_ERROR);

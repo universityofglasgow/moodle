@@ -52,6 +52,9 @@ ensureGUIsSet(timeout)
     app.component('VueModal', Modal);
     app.mount('#app');
 
+    // Remove tiles course format class
+    // Document.body.classList.remove('format-tiles');
+
     // Read strings
     // Strings are pushed to individual components using provide() / inject()
     const GU = window.GU;
