@@ -555,7 +555,9 @@
                 return (element.columnid == column.id);
             });
             if (grade) {
-                user.awaitingcapture = false;
+                if ((grade.displaygrade != 'No grade') && (grade.displaygrade != 'Awaiting capture')) {
+                    user.awaitingcapture = false;
+                }
                 user[columnname] = grade.displaygrade;
             } else if (column.gradetype == 'FIRST') {
                 user[columnname] = mstrings.awaitingcapture;
