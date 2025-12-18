@@ -74,7 +74,19 @@ class import_grade extends external_api {
 
         $mapping = \local_gugrades\grades::mapping_factory($courseid, $gradeitemid);
         $activity = \local_gugrades\users::activity_factory($gradeitemid, $courseid);
-        $success = \local_gugrades\api::import_grade($courseid, $gradeitemid, $mapping, $activity, $userid, false, false);
+        $success = \local_gugrades\api::import_grade(
+            courseid: $courseid, 
+            gradeitemid: $gradeitemid, 
+            mapping: $mapping, 
+            activity: $activity, 
+            userid: $userid, 
+            additional: 'update',
+            fillns: '',
+            reason: 'FIRST',
+            other: '',
+            noaggregation: false,
+            dryrun: false
+        );
 
         // Audit?
         if ($success) {
