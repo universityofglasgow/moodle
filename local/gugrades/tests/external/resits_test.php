@@ -89,7 +89,7 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         $this->setUser($this->teacher);
 
         // Test get_activities web service. 
-        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id, true);
         $treejson = external_api::clean_returnvalue(
             get_activities::execute_returns(),
             $treejson
@@ -119,7 +119,7 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         );
 
         // Get the updated data
-        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id, true);
         $treejson = external_api::clean_returnvalue(
             get_activities::execute_returns(),
             $treejson
@@ -149,7 +149,7 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         $this->setUser($this->teacher);
 
         // Test get_activities web service. 
-        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id, true);
         $treejson = external_api::clean_returnvalue(
             get_activities::execute_returns(),
             $treejson
@@ -176,7 +176,7 @@ final class resits_test extends \local_gugrades\external\gugrades_aggregation_te
         );
 
         // Get the updated data
-        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id);
+        $treejson = get_activities::execute($this->course->id, $this->gradecatsummative->id, true);
         $treejson = external_api::clean_returnvalue(
             get_activities::execute_returns(),
             $treejson

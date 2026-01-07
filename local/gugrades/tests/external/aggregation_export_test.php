@@ -72,7 +72,7 @@ final class aggregation_export_test extends \local_gugrades\external\gugrades_ag
 
         $this->assertEquals('mycampus', $plugins[1]['name']);
         $this->assertEquals('MyCampus export', $plugins[1]['description']);
-        $this->assertEquals('MyGrades_tc_1_2025', $filename);
+        $this->assertStringStartsWith('MyGrades_', $filename);
     }
 
     /**

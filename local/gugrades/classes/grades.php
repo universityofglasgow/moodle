@@ -378,9 +378,10 @@ class grades {
      * Get the category/item tree beneath the selected depth==2 category.
      * @param int $courseid
      * @param int $categoryid
+     * £param bool $detailed
      * @return object
      */
-    public static function get_activitytree(int $courseid, int $categoryid) {
+    public static function get_activitytree(int $courseid, int $categoryid, bool $detailed = false) {
         global $DB;
 
         $category = $DB->get_record('grade_categories', ['id' => $categoryid], '*', MUST_EXIST);
@@ -390,7 +391,7 @@ class grades {
 
         $category->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($categoryid);
 
-        $categorytree = self::recurse_activitytree($category);
+        $categorytree = self::recurse_activitytree($category, $detailed);
 
         return $categorytree;
     }
@@ -404,11 +405,10 @@ class grades {
      *     categories -> array of grade categories, children of this category (recursive)
      * }
      * @param object $category
-     * @param array $gradeitems
-     * @param array $gradecategories
+     * @param bool $detailed
      * @return object
      */
-    private static function recurse_activitytree($category) {
+    private static function recurse_activitytree($category, bool $detailed = false) {
         global $OUTPUT, $DB;
 
         $tree = [];
@@ -420,8 +420,12 @@ class grades {
             if (self::is_gradeitem_grade_type_none($item)) {
                 continue;
             }
-            $item->info = (object) \local_gugrades\api::get_grade_item($item->id);
-            $item->icon = $OUTPUT->image_url('monologo', $item->itemmodule)->out();
+
+            // Only for detailed page.
+            if ($detailed) {
+                $item->info = (object) \local_gugrades\api::get_grade_item($item->id);
+                $item->icon = $OUTPUT->image_url('monologo', $item->itemmodule)->out();
+            }
             $items[$item->id] = $item;
         }
 
@@ -437,30 +441,34 @@ class grades {
             // Add gradeitemid.
             $gradecategories[$id]->itemid = self::get_gradeitemid_from_gradecategoryid($id);
 
-            // Add aggregation strategy.
-            $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
-            $gradecategories[$id]->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($id);
-            $gradecategories[$id]->info = (object) \local_gugrades\api::get_grade_item($gradecategories[$id]->itemid);
+            // Only for additional detail
+            if ($detailed) {
 
-            // Add reset candidate.
-            $resitcandidate = self::is_resit_category_candidate($id);
-            $gradecategories[$id]->resitcandidate = $resitcandidate;
-            $gradecategories[$id]->resititemid = self::get_resit_itemid($id);
-            if ($resitcandidate) {
-                $anyresitcandidates = true;
+                // Add aggregation strategy.
+                $gradecategories[$id]->strategy = \local_gugrades\aggregation::get_formatted_strategy($id);
+                $gradecategories[$id]->weighted = \local_gugrades\aggregation::is_gradecategory_weighted($id);
+                $gradecategories[$id]->info = (object) \local_gugrades\api::get_grade_item($gradecategories[$id]->itemid);
+
+                // Add resit candidate.
+                $resitcandidate = self::is_resit_category_candidate($id);
+                $gradecategories[$id]->resitcandidate = $resitcandidate;
+                $gradecategories[$id]->resititemid = self::get_resit_itemid($id);
+                if ($resitcandidate) {
+                    $anyresitcandidates = true;
+                }
+
+                // Add odd/even for style to second level only.
+                $level = self::get_category_level($id);
+                $even = false;
+                if ($level == 2) {
+                    $gradecategories[$id]->even = $even;
+                    $even = !$even;
+                } else {
+                    $gradecategories[$id]->even = false;
+                }
             }
 
-            // Add odd/even for style to second level only.
-            $level = self::get_category_level($id);
-            $even = false;
-            if ($level == 2) {
-                $gradecategories[$id]->even = $even;
-                $even = !$even;
-            } else {
-                $gradecategories[$id]->even = false;
-            }
-
-            $categories[$gradecategory->id] = self::recurse_activitytree($gradecategory);
+            $categories[$gradecategory->id] = self::recurse_activitytree($gradecategory, $detailed);
         }
 
         // Add this all up

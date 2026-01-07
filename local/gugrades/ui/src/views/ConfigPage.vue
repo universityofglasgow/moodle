@@ -137,7 +137,8 @@
             methodname: 'local_gugrades_get_activities',
             args: {
                 courseid: courseid,
-                categoryid: catid
+                categoryid: catid,
+                detailed: true,
             }
         }])[0]
         .then((result) => {

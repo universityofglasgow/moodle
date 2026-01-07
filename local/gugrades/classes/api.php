@@ -38,9 +38,10 @@ class api {
      * Get activities
      * @param int $courseid
      * @param int $categoryid
+     * @param bool $detailed
      * @return object List of activities/subcategories in
      */
-    public static function get_activities(int $courseid, int $categoryid) {
+    public static function get_activities(int $courseid, int $categoryid, bool $detailed) {
 
         $error = '';
 
@@ -50,7 +51,7 @@ class api {
         if (!$aggregationsupported) {
             return ['[]', $error];
         }
-        $tree = \local_gugrades\grades::get_activitytree($courseid, $categoryid);
+        $tree = \local_gugrades\grades::get_activitytree($courseid, $categoryid, $detailed);
 
         return [$tree, $error];
     }

@@ -43,6 +43,7 @@ class get_activities extends external_api {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course id'),
             'categoryid' => new external_value(PARAM_INT, 'Grade category id'),
+            'detailed' => new external_value(PARAM_BOOL, 'Extra stuff for reassessment page', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -50,18 +51,19 @@ class get_activities extends external_api {
      * Execute function
      * @param int $courseid
      * @param int $categoryid
+     * @param bool $detailed
      */
-    public static function execute($courseid, $categoryid) {
+    public static function execute($courseid, $categoryid, $detailed = false) {
 
         \local_gugrades\development::increase_debugging();
 
         // Security.
-        $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'categoryid' => $categoryid]);
+        $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'categoryid' => $categoryid, 'detailed' => $detailed]);
         $context = \context_course::instance($courseid);
         self::validate_context($context);
 
         // Get data.
-        [$tree, $error] = \local_gugrades\api::get_activities($courseid, $categoryid);
+        [$tree, $error] = \local_gugrades\api::get_activities($courseid, $categoryid, $detailed);
 
         return [
             'activities' => json_encode($tree),
