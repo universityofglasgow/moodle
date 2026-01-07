@@ -41,7 +41,7 @@ class api {
      * @param bool $detailed
      * @return object List of activities/subcategories in
      */
-    public static function get_activities(int $courseid, int $categoryid, bool $detailed) {
+    public static function get_activities(int $courseid, int $categoryid, bool $detailed = false) {
 
         $error = '';
 
