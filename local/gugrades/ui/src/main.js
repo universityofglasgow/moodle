@@ -6,6 +6,8 @@ import Vue3EasyDataTable from 'vue3-easy-data-table';
 import 'vue3-easy-data-table/dist/style.css';
 import { plugin, defaultConfig } from '@formkit/vue';
 import { Modal } from '@kouts/vue-modal';
+import { createPinia } from 'pinia';
+import { usePopulateTrees } from '../src/js/setuptrees.js';
 import '../src/assets/VueModal.css';
 import '../src/assets/MyGrades.css';
 
@@ -39,9 +41,16 @@ const toastoptions = {
     timeout: 5000,
 };
 
+// Pinia.
+const pinia = createPinia();
+
+// Trees.
+const populatetrees = usePopulateTrees();
+
 ensureGUIsSet(timeout)
 .then(() => {
     const app = createApp(App);
+    app.use(pinia);
     const mstrings = reactive([]);
     app.provide('mstrings', mstrings);
     app.use(Toast, toastoptions);
@@ -73,7 +82,11 @@ ensureGUIsSet(timeout)
     })
     .catch((error) => {
         window.console.error(error);
-    })
+    });
+
+    // Populate activity trees.
+    populatetrees.populate();
+
 });
 
 

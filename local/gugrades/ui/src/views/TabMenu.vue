@@ -1,42 +1,46 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <GreyLogo></GreyLogo>
+    <PleaseWait v-if="waiting" message="Setting up MyGrades"></PleaseWait>
 
-    <div v-if="!available" class="alert alert-danger">
-        MyGrades cannot be used in this course as it has too many enrolled participants.
-    </div>
-    <div v-else id="tabmenu">
-        <TabsNav @tabchange="tabChange" :viewaggregation="viewaggregation"></TabsNav>
+    <div v-if="!waiting">
+        <GreyLogo></GreyLogo>
 
-        <div v-if="currenttab == 'configure'">
-            <ConfigPage></ConfigPage>
+        <div v-if="!available" class="alert alert-danger">
+            MyGrades cannot be used in this course as it has too many enrolled participants.
         </div>
+        <div v-else id="tabmenu">
+            <TabsNav @tabchange="tabChange" :viewaggregation="viewaggregation"></TabsNav>
 
-        <div v-if="currenttab == 'capture'">
-            <CaptureTable></CaptureTable>
-        </div>
+            <div v-if="currenttab == 'configure'">
+                <ConfigPage></ConfigPage>
+            </div>
 
-        <div v-if="currenttab == 'conversion'">
-            <ConversionPage></ConversionPage>
-        </div>
+            <div v-if="currenttab == 'capture'">
+                <CaptureTable></CaptureTable>
+            </div>
 
-        <div v-if="(currenttab == 'aggregation') && viewaggregation">
-            <AggregationTable></AggregationTable>
-        </div>
+            <div v-if="currenttab == 'conversion'">
+                <ConversionPage></ConversionPage>
+            </div>
 
-        <div v-if="currenttab == 'settings'">
-            <SettingsPage></SettingsPage>
-        </div>
+            <div v-if="(currenttab == 'aggregation') && viewaggregation">
+                <AggregationTable></AggregationTable>
+            </div>
 
-        <div v-if="currenttab == 'audit'">
-            <AuditPage></AuditPage>
+            <div v-if="currenttab == 'settings'">
+                <SettingsPage></SettingsPage>
+            </div>
+
+            <div v-if="currenttab == 'audit'">
+                <AuditPage></AuditPage>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-    import {ref, onMounted} from '@vue/runtime-core';
+    import {ref, onMounted, computed} from '@vue/runtime-core';
     import TabsNav from '@/components/TabsNav.vue';
     import ConfigPage from '@/views/ConfigPage.vue';
     import CaptureTable from '@/views/CaptureTable.vue';
@@ -47,6 +51,8 @@
     import { useToast } from "vue-toastification";
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import GreyLogo from '@/components/GreyLogo.vue';
+    import PleaseWait from '@/components/PleaseWait.vue';
+    import { useActivityTreeStore } from '../stores/activitytree.js';
 
     const currenttab = ref('capture');
     const level1category = ref(0);
@@ -69,6 +75,15 @@
         showactivityselect.value = false;
         itemid.value = 0;
     }
+
+    /**
+     * Anything in here that involves MyGrades waiting to open
+     */
+    const waiting = computed(() => {
+        const treestore = useActivityTreeStore();
+
+        return !treestore.ready;
+    })
 
     /**
      * Check for aggregation tab permission

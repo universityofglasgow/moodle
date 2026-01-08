@@ -23,6 +23,7 @@
     import ActivityTree from '@/components/ActivityTree.vue';
     import DebugDisplay from '@/components/DebugDisplay.vue';
     import ConfigError from '@/components/ConfigError.vue';
+    import { useActivityTreeStore } from '../stores/activitytree.js';
 
     const props = defineProps({
         categoryid: Number,
@@ -42,6 +43,22 @@
 
     // Get the sub-category / activity
     function getActivity() {
+        const treestore = useActivityTreeStore();
+        const catid = props.categoryid;
+        const tree = JSON.parse(treestore.trees[catid]);
+        treeerror.value = treestore.errors[catid];
+        if (!treeerror.value) {
+            activitytree.value = tree;
+            categoryname.value = tree.category.fullname;
+        } else {
+            activitytree.value = [];
+            categoryname.value = '';
+        }
+        loaded.value = true;
+    }
+
+    // Get the sub-category / activity
+    function getActivityOld() {
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;

@@ -12,16 +12,17 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@formkit/core": "latest",
     "@formkit/icons": "latest",
     "@formkit/themes": "latest",
     "@formkit/vue": "latest",
-    "@formkit/core": "latest",
     "@kouts/vue-modal": "^5.0.1",
     "@kyvg/vue3-notification": "^2.9.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vueuse/core": "^10.7.2",
     "core-js": "^3.8.3",
     "file-saver": "^2.0.5",
+    "pinia": "^3.0.4",
     "primeicons": "^6.0.1",
     "underscore": "^1.13.7",
     "vite": "^5.1.5",
