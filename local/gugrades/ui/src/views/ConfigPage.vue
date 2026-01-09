@@ -1,10 +1,6 @@
 <template>
     <DebugDisplay :debug="debug"></DebugDisplay>
 
-    <div v-if="recalculating">
-        <PleaseWait progresstype="aggregate"></PleaseWait>
-    </div>
-
     <div class="border rounded p-2 mt-2">
         <div class="col-12 col-lg-6">
             <LevelOneSelect  @levelchange="levelOneChange"></LevelOneSelect>
@@ -47,7 +43,6 @@
     const caneditgrades = ref(false);
     const debug = ref({});
     const treeerror = ref('');
-    const recalculating = ref(false);
     const mstrings = inject('mstrings');
 
     /**
@@ -101,13 +96,13 @@
 
     /**
      * Configuring resits finished. Mostly we run recalculate. 
+     * We don't need to wait for this finishing as it does not
+     * affect this screen at all.
      */
     function click_finish() {
         const GU = window.GU;
         const courseid = GU.courseid;
         const fetchMany = GU.fetchMany;
-
-        recalculating.value = true;
 
         fetchMany([{
             methodname: 'local_gugrades_recalculate',
@@ -117,7 +112,8 @@
             }
         }])[0]
         .then(() => {
-            recalculating.value = false;
+
+            // Nothing.
         })
         .catch((error) => {
             window.console.error(error);
